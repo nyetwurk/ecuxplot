@@ -12,6 +12,16 @@ public class MapPackParser
     private String version;
     private ArrayList<Project> projects;
 
+    public class MapParserException extends Exception {
+	public ByteBuffer b;
+	public Object o;
+	public MapParserException(ByteBuffer b, String msg, Object o) {
+	    super(msg);
+	    this.b=b;
+	    this.o=o;
+	}
+    }
+
     private class HexValue {
 	public int v;
 	public String toString() { return String.format("0x%x", v); }
@@ -36,16 +46,17 @@ public class MapPackParser
 	return dumpHex(b, b.limit()-b.position());
     }
 
-    private static final String parseString(ByteBuffer b) {
+    private final String parseString(ByteBuffer b) throws MapParserException {
+	b.mark();
 	int len = b.getInt();
 	if(len==0) return "";
 	if(len<0) {
-	    System.out.println(len + " invalid:" + String.format("%08x@0x%x", len, b.position()-4));
-	    return "";
+	    b.reset();
+	    throw new MapParserException(b, "negative len", len);
 	}
 	if(len>b.limit()-b.position()) {
-	    System.out.println(len + " bytes is too big: " + String.format("%08x@0x%x", len, b.position()-4));
-	    return "";
+	    b.reset();
+	    throw new MapParserException(b, "invalid len", len);
 	}
 	byte[] buf = new byte[len];
 	b.get(buf, 0, buf.length);
@@ -203,7 +214,7 @@ public class MapPackParser
 	    public String toString() {
 		return "(" + description + ")/" + units + " -  f/o: " + factor + "/" + offset;
 	    }
-	    public Value(ByteBuffer b) {
+	    public Value(ByteBuffer b) throws MapParserException {
 		description = parseString(b);
 		units = parseString(b);
 		factor = b.getDouble();
@@ -224,7 +235,7 @@ public class MapPackParser
 	    private int header4;
 	    public HexValue signature;
 
-	    public Axis(ByteBuffer b) {
+	    public Axis(ByteBuffer b) throws MapParserException {
 		super(b);
 		datasource = new DataSource(b);
 		addr = new HexValue(b);
@@ -267,7 +278,9 @@ public class MapPackParser
 	    private int header1;		// unk
 	    private byte header1a;		// unk
 	    public int[] range = new int[4];
-	    private HexValue[] header2 = new HexValue[8];	// unk
+	    private HexValue[] header2 = new HexValue[6];	// unk
+	    public int term;
+	    public int header2a;
 	    public boolean reciprocal;
 	    public boolean sign;
 	    public boolean difference;
@@ -290,12 +303,13 @@ public class MapPackParser
 	    private int header9b;		// unk
 	    private byte header9c;		// unk
 	    private HexValue[] header10 = new HexValue[5];// unk
-	    private int term;
-	    private HexValue[] header11 = new HexValue[3];// unk
+	    private int term2;
+	    private HexValue[] header11 = new HexValue[2];// unk
+	    public byte[] term3 = new byte[4];
 
 	    private String remain;
 
-	    public Map(ByteBuffer b) {
+	    public Map(ByteBuffer b) throws MapParserException {
 		name = parseString(b);
 		organization = new Organization(b);
 		header = b.getInt();
@@ -306,6 +320,13 @@ public class MapPackParser
 		header1a = b.get();		// unk
 		parseBuffer(b, range);
 		parseBuffer(b, header2);	// unk
+		b.mark();
+		term = b.getInt();		// -1
+		if(term!=-1) {
+		    b.reset();
+		    throw new MapParserException(b, "term not -1", term);
+		}
+		header2a = b.getInt();		// unk
 		reciprocal = b.get()==1;
 		sign = b.get()==1;
 		difference = b.get()==1;
@@ -328,8 +349,14 @@ public class MapPackParser
 		header9b = b.getInt();		// unk
 		header9c = b.get();		// unk
 		parseBuffer(b, header10);	// unk
-		term = b.getInt();
+		b.mark();
+		term2 = b.getInt();		// -1
+		if(term2!=-1) {
+		    b.reset();
+		    throw new MapParserException(b, "term2 not -1", term2);
+		}
 		parseBuffer(b, header11);	// unk
+		b.get(term3);
 
 		remain = dumpHex(b, 16);
 		System.out.println(toString());
@@ -342,7 +369,7 @@ public class MapPackParser
 		out += "   h1: " + header1 + "\n";
 		out += "  h1a: " + header1a + " (byte)\n";
 		out += "range: " + range[0] + "-" + range[2]+ "\n";
-		out += "   h2: " + Arrays.toString(header2) + "\n";
+		out += "   h2: " + Arrays.toString(header2) + " " + term + " " + header2a + "\n";
 		out += "flags: ";
 		if(reciprocal) out += "R";
 		if(sign) out += "S";
@@ -366,12 +393,14 @@ public class MapPackParser
 		out += "  h9a: " + header9a + " (short)\n";
 		out += "  h9b: " + header9b + "\n";
 		out += "  h9c: " + header9c + " (byte)\n";
-		out += "  h10: " + Arrays.toString(header10) + " " + term + "\n";
+		out += "  h10: " + Arrays.toString(header10) + " " + term2 + "\n";
 		out += "  h11: " + Arrays.toString(header11) + "\n";
+		out += " term: " + Arrays.toString(term3) + "\n";
 		// out += remain + "\n";
 		return out;
 	    }
 	}
+
 	public String name;
 	private HexValue[] header = new HexValue[4];
 	public String version;
@@ -379,7 +408,7 @@ public class MapPackParser
 	public int numMaps;
 	private byte header1a;
 	public ArrayList<Map> maps;
-	public Project(ByteBuffer b) {
+	public Project(ByteBuffer b) throws MapParserException {
 	    name = parseString(b);
 	    parseBuffer(b, header);	// unk
 	    version = parseString(b);
@@ -388,8 +417,14 @@ public class MapPackParser
 	    header1a = b.get();
 	    maps = new ArrayList<Map>();
 	    System.out.println(toString());
-	    for(int i=0;i<numMaps;i++)
-		maps.add(new Map(b));
+	    for(int i=0;i<numMaps;i++) {
+		try {
+		    maps.add(new Map(b));
+		} catch (MapParserException e) {
+		    System.out.println("error parsing map " + i + ": " + e.getMessage() + " obj=" + e.o);
+		    break;
+		}
+	    }
 	}
 	public String toString () {
 	    String out ="project: '" + name + "': (" + version + ") - " + numMaps + " maps\n";
