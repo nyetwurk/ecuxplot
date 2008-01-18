@@ -20,6 +20,11 @@ public class MapPackParser
 	    this.b=b;
 	    this.o=o;
 	}
+	public String getMessage()
+	{
+	    return String.format("%s: obj=%s @ 0x%x:\n%s", super.getMessage(),
+		this.o.toString(), dumpHex(b, 64));
+	}
     }
 
     private class HexValue {
@@ -97,16 +102,17 @@ public class MapPackParser
     private static final void eatNumber(ByteBuffer b, int count) { eatNumber(b, count, 4); }
     private static final void eatNumber(ByteBuffer b) { eatNumber(b, 1); }
 
-    private static final boolean parseHeader(ByteBuffer b) {
+    private static final void parseHeader(ByteBuffer b) throws Exception {
 	eatNumber(b);		// 0
 	eatNumber(b);		// 1
 	eatNumber(b);		// 49
 	eatNumber(b,3);		// 0 x 3
 	eatNumber(b,1,2);	// 0 (short)
 	eatNumber(b);		// 2
-	if(b.getInt()!=-1) {
-	    return false;
-	}
+
+	if(b.getInt()!=-1)
+	    throw new Exception("can't find first term");
+
 	eatNumber(b,2);		// 0 x 2
 	eatNumber(b);		// 1
 	eatNumber(b,4);		// 0 x 4
@@ -122,9 +128,10 @@ public class MapPackParser
 	eatNumber(b);		// 0
 	eatNumber(b,1,2);	// 0 (short)
 	eatNumber(b,1,1);	// 0 (char)
-	if(b.getInt()!=-1) {
-	    return false;
-	}
+
+	if(b.getInt()!=-1)
+	    throw new Exception("can't find second term");
+
 	eatNumber(b,2);		// 0 x 2
 	eatNumber(b);		// 1
 	eatNumber(b,4);		// 0 x 4
@@ -132,16 +139,15 @@ public class MapPackParser
 	eatNumber(b,0x14,2);	// 14 shorts 0,1,2,3 etc
 	eatNumber(b,0x10,2);	// 10 shorts 0,1,2,3 etc
 	eatNumber(b,18);	// 0 x 18
-	if(b.getInt()!=-1) {
-	    return false;
-	}
+
+	if(b.getInt()!=-1)
+	    throw new Exception("can't find third term");
+
 	eatNumber(b);		// 1
 	eatNumber(b);		// 0x00002844
 	eatNumber(b);		// 0
 	eatNumber(b);		// 0x42007899
 	eatNumber(b);		// 2
-
-	return true;
     }
 
     private class Project {
@@ -307,8 +313,6 @@ public class MapPackParser
 	    private HexValue[] header11 = new HexValue[2];// unk
 	    public byte[] term3 = new byte[4];
 
-	    private String remain;
-
 	    public Map(ByteBuffer b) throws MapParserException {
 		name = parseString(b);
 		organization = new Organization(b);
@@ -357,9 +361,6 @@ public class MapPackParser
 		}
 		parseBuffer(b, header11);	// unk
 		b.get(term3);
-
-		remain = dumpHex(b, 16);
-		System.out.println(toString());
 	    }
 	    public String toString() {
 		String out = "  map: " + name + " [" + id + "] " + values + "\n";
@@ -396,7 +397,6 @@ public class MapPackParser
 		out += "  h10: " + Arrays.toString(header10) + " " + term2 + "\n";
 		out += "  h11: " + Arrays.toString(header11) + "\n";
 		out += " term: " + Arrays.toString(term3) + "\n";
-		// out += remain + "\n";
 		return out;
 	    }
 	}
@@ -416,13 +416,14 @@ public class MapPackParser
 	    numMaps = b.getInt();
 	    header1a = b.get();
 	    maps = new ArrayList<Map>();
-	    System.out.println(toString());
 	    for(int i=0;i<numMaps;i++) {
 		try {
 		    maps.add(new Map(b));
 		} catch (MapParserException e) {
-		    System.out.println("error parsing map " + i + ": " + e.getMessage() + " obj=" + e.o);
-		    break;
+		    throw new MapParserException(e.b,
+			String.format("error parsing map %d/%d: %s",
+			    (i+1), numMaps, e.getMessage()),
+			e.o);
 		}
 	    }
 	}
@@ -438,8 +439,7 @@ public class MapPackParser
     public MapPackParser (String fname) throws Exception {
 	File file = new File(fname);
 	if(!file.exists()) {
-	    System.out.println(fname + ": no such file");
-	    return;
+	    throw new Exception(fname + ": no such file");
 	}
 
 	long length = file.length();
@@ -451,10 +451,8 @@ public class MapPackParser
 	filename = parseString(in);
 	version = parseString(in);
 
-	if(!parseHeader(in)) {
-	    System.out.println(fname + ": header parse failed at " + in.position());
-	    return;
-	}
+	parseHeader(in);
+
 	projects = new ArrayList<Project>();
 	projects.add(new Project(in));
     }
@@ -476,16 +474,5 @@ public class MapPackParser
 	}
 
 	return out;
-    }
-
-    public static void main(String[] args) throws Exception
-    {
-	if(args.length!=1) {
-	    System.out.println("need argument");
-	    return;
-	}
-	String filename = args[0];
-	MapPackParser mp = new MapPackParser(args[0]);
-	// System.out.print(mp);
     }
 }
