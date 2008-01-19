@@ -15,7 +15,7 @@ public class mapdump {
 	    Iterator itm = p.maps.iterator();
 	    while(itm.hasNext()) {
 		Map m = (Map) itm.next();
-		System.out.print(m);
+		System.out.println(m.toCSV());
 	    }
 	}
     }

@@ -11,6 +11,6 @@ public class ParserException extends Exception {
     public String getMessage()
     {
 	return String.format("%s: obj=%s @ 0x%x:\n%s", super.getMessage(),
-	    this.o.toString(), HexValue.dumpHex(b, 64));
+	    this.o.toString(), b.position(), HexValue.dumpHex(b, 64));
     }
 }

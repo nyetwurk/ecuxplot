@@ -138,9 +138,7 @@ public class Map {
     private int header1;		// unk
     private byte header1a;		// unk
     public int[] range = new int[4];
-    private HexValue[] header2 = new HexValue[6];	// unk
-    public int term;
-    public int header2a;
+    private HexValue[] header2 = new HexValue[8];	// unk
     public boolean reciprocal;
     public boolean sign;
     public boolean difference;
@@ -178,13 +176,6 @@ public class Map {
 	header1a = b.get();		// unk
 	Parse.buffer(b, range);
 	Parse.buffer(b, header2);	// unk
-	b.mark();
-	term = b.getInt();		// -1
-	if(term!=-1) {
-	    b.reset();
-	    throw new ParserException(b, "term not -1", term);
-	}
-	header2a = b.getInt();		// unk
 	reciprocal = b.get()==1;
 	sign = b.get()==1;
 	difference = b.get()==1;
@@ -217,6 +208,32 @@ public class Map {
 	b.get(term3);
     }
 
+    private class CSVRow extends ArrayList<String> {
+	public String toString() {
+	    String out = "";
+	    Iterator i = iterator();
+	    while(i.hasNext())
+		out += i.next().toString() + ",";
+	    return out;
+	}
+
+	public boolean add(int i) {
+	    return super.add(String.valueOf(i));
+	}
+    }
+
+    public String toCSV() {
+	CSVRow row = new CSVRow();
+	row.add(id);
+	row.add(range[0]);
+	row.add(name);
+	row.add(size.toString());
+	row.add(values.toString());
+	row.add(value.description);
+	row.add(value.units);
+	return row.toString();
+    }
+
     public String toString() {
 	String out = "  map: " + name + " [" + id + "] " + values + "\n";
 	out += "  org: " + organization + "\n";
@@ -225,7 +242,7 @@ public class Map {
 	out += "   h1: " + header1 + "\n";
 	out += "  h1a: " + header1a + " (byte)\n";
 	out += "range: " + range[0] + "-" + range[2]+ "\n";
-	out += "   h2: " + Arrays.toString(header2) + " " + term + " " + header2a + "\n";
+	out += "   h2: " + Arrays.toString(header2) + "\n";
 	out += "flags: ";
 	if(reciprocal) out += "R";
 	if(sign) out += "S";
