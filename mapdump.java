@@ -8,8 +8,9 @@ public class mapdump {
 	    return;
 	}
 	MapPackParser mp = new MapPackParser(args[0]);
-	System.out.print(mp);
+	// System.out.print(mp);
 	Iterator itp = mp.projects.iterator();
+	System.out.println(Map.CSVHeader());
 	while(itp.hasNext()) {
 	    Project p = (Project) itp.next();
 	    Iterator itm = p.maps.iterator();

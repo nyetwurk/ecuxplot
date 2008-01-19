@@ -206,6 +206,7 @@ public class Map {
 	}
 	Parse.buffer(b, header11);	// unk
 	b.get(term3);
+	// System.out.println(this);
     }
 
     private class CSVRow extends ArrayList<String> {
@@ -213,7 +214,7 @@ public class Map {
 	    String out = "";
 	    Iterator i = iterator();
 	    while(i.hasNext())
-		out += i.next().toString() + ",";
+		out += "\"" + i.next().toString() + "\"" + ",";
 	    return out;
 	}
 
@@ -222,10 +223,14 @@ public class Map {
 	}
     }
 
+    public static final String CSVHeader() {
+	return "ID,Address,Name,Size,Organization,Description,Units";
+    }
+
     public String toCSV() {
 	CSVRow row = new CSVRow();
 	row.add(id);
-	row.add(range[0]);
+	row.add(extent[0].toString());
 	row.add(name);
 	row.add(size.toString());
 	row.add(values.toString());
