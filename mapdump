@@ -1,2 +1,2 @@
 #!/bin/sh
-java mapdump $*
+LANG=en_US.iso885915 java mapdump $*

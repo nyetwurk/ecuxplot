@@ -224,7 +224,7 @@ public class Map {
     }
 
     public static final String CSVHeader() {
-	return "ID,Address,Name,Size,Organization,Description,Units";
+	return "ID,Address,Name,Size,Organization,Description,Units,\"X Units\",\"Y Units\"";
     }
 
     public String toCSV() {
@@ -236,6 +236,8 @@ public class Map {
 	row.add(values.toString());
 	row.add(value.description);
 	row.add(value.units);
+	row.add(x_axis.units);
+	row.add(y_axis.units);
 	return row.toString();
     }
 

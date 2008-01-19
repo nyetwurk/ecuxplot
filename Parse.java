@@ -1,3 +1,4 @@
+import java.io.*;
 import java.nio.ByteBuffer;
 
 public class Parse {
@@ -16,7 +17,11 @@ public class Parse {
 	byte[] buf = new byte[len];
 	b.get(buf, 0, buf.length);
 	b.get();
-	return new String(buf);
+	try {
+	    return new String(buf, "ISO-8859-15");
+	} catch (UnsupportedEncodingException e) {
+	    throw new ParserException(b, e.getMessage(), buf);
+	}
     }
 
     public static final ByteBuffer buffer(ByteBuffer b, short[] dst) {
