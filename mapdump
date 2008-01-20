@@ -1,2 +1,2 @@
 #!/bin/sh
-LANG=en_US.iso885915 java mapdump $*
+LANG=en_US.iso885915 java -classpath '.;MapPack' mapdump $*
