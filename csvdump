@@ -1,0 +1,2 @@
+#!/bin/sh
+LANG=en_US.iso885915 java -classpath '.;opencsv-1.8.jar' csvdump $*

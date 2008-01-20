@@ -4,10 +4,10 @@ MP_SOURCES=HexValue.java Map.java Parser.java Parse.java \
 SOURCES=$(addprefix MapPack/,$(MP_SOURCES))
 
 CLASSES=$(SOURCES:%.java=%.class)
-TARGET=mapdump.class
+TARGETS=mapdump.class csvdump.class
 REFERENCE=data/4Z7907551R.kp
 
-all: $(TARGET)
+all: $(TARGETS)
 clean:
 	rm *.class
 
@@ -15,6 +15,7 @@ clean:
 	./mapdump -r $(REFERENCE) $< > $@
 
 mapdump.class: mapdump.java $(CLASSES)
+csvdump.class: csvdump.java
 
 %.class: %.java
-	javac -cp MapPack $<
+	javac -classpath 'MapPack;opencsv-1.8.jar' $<
