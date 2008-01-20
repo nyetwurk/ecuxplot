@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-public class MapPackParser {
+public class Parser {
     private String signature;
     private String filename;
     private String version;
@@ -73,7 +73,7 @@ public class MapPackParser {
 	eatNumber(b);		// 2
     }
 
-    public MapPackParser (String fname) throws Exception {
+    public Parser (String fname) throws Exception {
 	File file = new File(fname);
 	if(!file.exists()) {
 	    throw new Exception(fname + ": no such file");

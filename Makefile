@@ -1,5 +1,7 @@
-SOURCES=HexValue.java Map.java MapPackParser.java Parse.java \
-	ParserException.java Project.java SmartIntArray.java
+MP_SOURCES=HexValue.java Map.java Parser.java Parse.java \
+	ParserException.java Project.java
+
+SOURCES=$(addprefix MapPack/,$(MP_SOURCES))
 
 CLASSES=$(SOURCES:%.java=%.class)
 TARGET=mapdump.class
@@ -15,4 +17,4 @@ clean:
 mapdump.class: mapdump.java $(CLASSES)
 
 %.class: %.java
-	javac $<
+	javac -cp MapPack $<

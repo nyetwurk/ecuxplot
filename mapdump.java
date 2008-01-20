@@ -25,10 +25,10 @@ public class mapdump {
     public static void main(String[] args) throws Exception
     {
 	Options opts = new Options(args);	
-	MapPackParser mp = new MapPackParser(opts.filename);
-	MapPackParser ref=null;
+	Parser mp = new Parser(opts.filename);
+	Parser ref=null;
 	if(opts.reference!=null) {
-	    ref = new MapPackParser(opts.reference);
+	    ref = new Parser(opts.reference);
 	}
 	// System.out.print(mp);
 	Iterator itp = mp.projects.iterator();
