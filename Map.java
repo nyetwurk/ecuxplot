@@ -160,10 +160,9 @@ public class Map {
     private short header9a;		// unk
     private int header9b;		// unk
     private byte header9c;		// unk
-    private HexValue[] header10 = new HexValue[5];// unk
-    private int term2;
+    private HexValue[] header10 = new HexValue[6];// unk
     private HexValue[] header11 = new HexValue[2];// unk
-    public byte[] term3 = new byte[4];
+    public byte[] term2 = new byte[4];
 
     public Map(ByteBuffer b) throws ParserException {
 	name = Parse.string(b);
@@ -198,14 +197,8 @@ public class Map {
 	header9b = b.getInt();		// unk
 	header9c = b.get();		// unk
 	Parse.buffer(b, header10);	// unk
-	b.mark();
-	term2 = b.getInt();		// -1
-	if(term2!=-1) {
-	    b.reset();
-	    throw new ParserException(b, "term2 not -1", term2);
-	}
 	Parse.buffer(b, header11);	// unk
-	b.get(term3);
+	b.get(term2);
 	// System.out.println(this);
     }
 
@@ -224,7 +217,18 @@ public class Map {
     }
 
     public static final String CSVHeader() {
-	return "ID,Address,Name,Size,Organization,Description,Units,\"X Units\",\"Y Units\"";
+	return "\"ID\",\"Address\",\"Name\",\"Size\",\"Organization\",\"Description\",\"Units\",\"X Units\",\"Y Units\"";
+    }
+
+    public boolean equals(Map map) {
+	String stem=map.id.split("[? ]")[0];
+	if(stem.length()==0) return false;
+	return equals(stem);
+    }
+
+    public boolean equals(String id) {
+	if(id.length()==0 || this.id.length() == 0) return false;
+	return (id.equals(this.id.split("[? ]")[0]));
     }
 
     public String toCSV() {
@@ -273,9 +277,9 @@ public class Map {
 	out += "  h9a: " + header9a + " (short)\n";
 	out += "  h9b: " + header9b + "\n";
 	out += "  h9c: " + header9c + " (byte)\n";
-	out += "  h10: " + Arrays.toString(header10) + " " + term2 + "\n";
+	out += "  h10: " + Arrays.toString(header10) + "\n";
 	out += "  h11: " + Arrays.toString(header11) + "\n";
-	out += " term: " + Arrays.toString(term3) + "\n";
+	out += " term2: " + Arrays.toString(term2) + "\n";
 	return out;
     }
 }

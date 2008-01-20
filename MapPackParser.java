@@ -108,4 +108,34 @@ public class MapPackParser {
 
 	return out;
     }
+
+    public ArrayList<Map> find(Map map) {
+	ArrayList<Map> matches = new ArrayList<Map>();
+	Iterator itp = projects.iterator();
+	while(itp.hasNext()) {
+	    Project p = (Project) itp.next();
+	    matches.addAll(p.find(map));
+	}
+	return matches;
+    }
+
+    public ArrayList<Map> find(String id) {
+	ArrayList<Map> matches = new ArrayList<Map>();
+	Iterator itp = projects.iterator();
+	while(itp.hasNext()) {
+	    Project p = (Project) itp.next();
+	    matches.addAll(p.find(id));
+	}
+	return matches;
+    }
+
+    public ArrayList<Map> find(HexValue v) {
+	ArrayList<Map> matches = new ArrayList<Map>();
+	Iterator itp = projects.iterator();
+	while(itp.hasNext()) {
+	    Project p = (Project) itp.next();
+	    matches.addAll(p.find(v));
+	}
+	return matches;
+    }
 }

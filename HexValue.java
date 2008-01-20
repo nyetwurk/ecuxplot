@@ -4,8 +4,8 @@ import java.nio.ByteBuffer;
 public class HexValue {
     public int v;
     public String toString() { return String.format("0x%x", v); }
-    public HexValue(int vv) { v=vv; }
-    public HexValue(ByteBuffer b) { v = b.getInt(); }
+    public HexValue(int vv) { this.v=vv; }
+    public HexValue(ByteBuffer b) { this.v = b.getInt(); }
 
     public static final String dumpHex(ByteBuffer b, int length) {
 	if(length > b.limit()-b.position())
@@ -20,6 +20,8 @@ public class HexValue {
 	return "[" + s + "]";
     }
 
+    public boolean equals(HexValue v) { return (v.v==this.v); }
+    public boolean equals(int v) { return (v==this.v); }
     public static final String dumpHex(ByteBuffer b) {
 	return dumpHex(b, b.limit()-b.position());
     }
