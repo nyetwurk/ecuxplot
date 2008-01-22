@@ -1,2 +1,2 @@
 #!/bin/sh
-LANG=en_US.iso885915 java -classpath '.;opencsv-1.8.jar' csvdump $*
+LANG=en_US.iso885915 java -classpath '.;LogFile;opencsv-1.8.jar;jfreechart-1.0.9.jar;jcommon-1.0.12.jar' csvdump $*
