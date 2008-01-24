@@ -1,3 +1,5 @@
+package org.nyet.MapPack;
+
 import java.util.*;
 import java.nio.ByteBuffer;
 

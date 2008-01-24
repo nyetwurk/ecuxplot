@@ -1,3 +1,5 @@
+package org.nyet.Util;
+
 public class SmartIntArray
 {
     int sp = 0; // "stack pointer" to keep track of position in the array

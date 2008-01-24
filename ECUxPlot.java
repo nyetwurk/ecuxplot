@@ -15,6 +15,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
+import org.nyet.LogFile.Dataset;
+
 public class ECUxPlot extends ApplicationFrame {
 
     public static JFreeChart Create2AxisXYLineChart(

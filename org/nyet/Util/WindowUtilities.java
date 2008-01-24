@@ -1,3 +1,5 @@
+package org.nyet.Util;
+
 import javax.swing.*;
 import java.awt.*;
 

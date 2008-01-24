@@ -1,3 +1,5 @@
+package org.nyet.MapPack;
+
 import java.nio.ByteBuffer;
 
 public class ParserException extends Exception {
