@@ -1,2 +1,3 @@
 #!/bin/sh
-LANG=en_US.iso885915 java mapdump $*
+export LANG=en_US.iso885915
+java mapdump $*
