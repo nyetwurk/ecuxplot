@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.nyet.MapPack.*;
-import org.nyet.Util.*;
+import org.nyet.mappack.*;
+import org.nyet.util.*;
 
 public class mapdump {
     private static class Options {

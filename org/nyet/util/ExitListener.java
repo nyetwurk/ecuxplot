@@ -1,4 +1,4 @@
-package org.nyet.Util;
+package org.nyet.util;
 
 import java.awt.*;
 import java.awt.event.*;

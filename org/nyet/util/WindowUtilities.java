@@ -1,4 +1,4 @@
-package org.nyet.Util;
+package org.nyet.util;
 
 import javax.swing.*;
 import java.awt.*;

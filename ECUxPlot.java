@@ -15,7 +15,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
-import org.nyet.LogFile.Dataset;
+import org.nyet.logfile.Dataset;
 
 public class ECUxPlot extends ApplicationFrame {
 

@@ -1,4 +1,4 @@
-package org.nyet.LogFile;
+package org.nyet.logfile;
 
 import java.io.*;
 import java.util.*;

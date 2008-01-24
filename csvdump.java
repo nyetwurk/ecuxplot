@@ -8,7 +8,7 @@ import org.jfree.chart.*;
 import org.jfree.chart.plot.*;
 import org.jfree.data.xy.*;
 
-import org.nyet.MapPack.*;
+import org.nyet.mappack.*;
 
 public class csvdump {
 
