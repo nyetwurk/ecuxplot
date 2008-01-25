@@ -40,7 +40,7 @@ public class ECUxPlot extends ApplicationFrame {
 	plot.mapDatasetToRangeAxis(1, 1);
 	final StandardXYItemRenderer renderer2 = new StandardXYItemRenderer();
 	plot.setRenderer(1, renderer2);
-       
+
 	return chart;
     }
 
@@ -52,25 +52,26 @@ public class ECUxPlot extends ApplicationFrame {
 	renderer.setSeriesPaint(0, paint);
     }
 
-    public ECUxPlot(final String fname, final String title, final String chartTitle) throws Exception {
+    public ECUxPlot(final String fname, final String title) throws Exception {
         super(title);
 	Dataset data = new Dataset(fname);
 
+	final String[] what = {"TIME", "RPM", "EngineLoad"};
 	final String xAxisLegend = "X Axis";
 
-        final XYDataset dataset1 = createDataset(data, "RPM");
+        final XYDataset dataset1 = createDataset(data, what[0], what[1]);
 	final String yAxisLegend = "RPM";
 
-        final XYDataset dataset2 = createDataset(data, "EngineLoad");
+        final XYDataset dataset2 = createDataset(data, what[0], what[2]);
 	final String y2AxisLegend = "%";
 
         final JFreeChart chart = Create2AxisXYLineChart(
-            chartTitle, xAxisLegend, 
-            yAxisLegend, y2AxisLegend,
-            dataset1, dataset2, 
+            what[0] + " and " + what[1],
+	    xAxisLegend, yAxisLegend, y2AxisLegend,
+            dataset1, dataset2,
 	    PlotOrientation.VERTICAL,
-            true, 	// show legend
-            true, 	// show tooltips
+            true,	// show legend
+            true,	// show tooltips
             false	// show urls
         );
 	SetSeriesPaint(chart, 0, Color.red);
@@ -81,17 +82,19 @@ public class ECUxPlot extends ApplicationFrame {
         setContentPane(chartPanel);
     }
 
-    private XYDataset createDataset(Dataset data, Comparable key) {
+    private XYDataset createDataset(Dataset data, Comparable xkey, Comparable ykey) {
         final DefaultXYDataset dataset = new DefaultXYDataset();
-	double[][] s = {data.asDoubles("TIME"), data.asDoubles(key.toString())};
-        dataset.addSeries(key, s);
+	double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
+        dataset.addSeries(ykey, s);
 
         return dataset;
     }
 
     public static void main(final String[] args) {
 	try {
-	    final ECUxPlot plot = new ECUxPlot(args[0], "ECUxPlot", "Chart Title");
+	    final ECUxPlot plot = new ECUxPlot(args[0],
+		"ECUxPlot");
+
 	    plot.pack();
 	    RefineryUtilities.centerFrameOnScreen(plot);
 	    plot.setVisible(true);

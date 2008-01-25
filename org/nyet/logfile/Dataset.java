@@ -47,9 +47,11 @@ public class Dataset {
 
     public double[] asDoubles(String id) {
 	Column c = find(id);
+	int divisor=1;
+	if(id.equals("TIME")) divisor=1000;
 	if(c==null) return new double[0];
 	double[] out = new double[c.data.size()];
-	for(int i=0;i<c.data.size();i++) out[i]=c.data.get(i);
+	for(int i=0;i<c.data.size();i++) out[i]=c.data.get(i)/divisor;
 	return out;
     }
 }
