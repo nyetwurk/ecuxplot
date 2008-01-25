@@ -52,15 +52,9 @@ public class ECUxPlot extends ApplicationFrame {
 	renderer.setSeriesPaint(0, paint);
     }
 
-    public ECUxPlot(final String fname, final String title, final String chartTitle) {
+    public ECUxPlot(final String fname, final String title, final String chartTitle) throws Exception {
         super(title);
-	Dataset data;
-	try {
-	    data = new Dataset(fname);
-	} catch (Exception e) {
-	    System.out.println(e.getMessage());
-	    return;
-	}
+	Dataset data = new Dataset(fname);
 
 	final String xAxisLegend = "X Axis";
 
@@ -96,11 +90,15 @@ public class ECUxPlot extends ApplicationFrame {
     }
 
     public static void main(final String[] args) {
+	try {
+	    final ECUxPlot plot = new ECUxPlot(args[0], "ECUxPlot", "Chart Title");
+	    plot.pack();
+	    RefineryUtilities.centerFrameOnScreen(plot);
+	    plot.setVisible(true);
 
-        final ECUxPlot plot = new ECUxPlot(args[0], "ECUxPlot", "Chart Title");
-        plot.pack();
-        RefineryUtilities.centerFrameOnScreen(plot);
-        plot.setVisible(true);
+	} catch (Exception e) {
+	    System.out.println(e.getMessage());
+	    System.exit(-1);
+	}
     }
 }
-
