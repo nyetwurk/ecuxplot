@@ -3,7 +3,7 @@ MP_SOURCES=HexValue.java Map.java Parser.java Parse.java \
 
 LF_SOURCES=Dataset.java
 
-UT_SOURCES=ExitListener.java WindowUtilities.java
+UT_SOURCES=ExitListener.java WindowUtilities.java Cursor.java WaitCursor.java
 
 MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
@@ -14,7 +14,7 @@ REFERENCE=data/4Z7907551R.kp
 
 CLASSPATH='.:jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar'
 
-JFLAGS=-classpath $(CLASSPATH)
+JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation
 
 all: $(TARGETS)
 clean:

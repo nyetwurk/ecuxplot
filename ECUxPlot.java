@@ -1,4 +1,15 @@
+import java.io.File;
+
 import java.awt.Color;
+import java.awt.event.*;
+
+import javax.swing.JPanel;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -8,16 +19,20 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
+
 import org.jfree.data.time.Month;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
+
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
 import org.nyet.logfile.Dataset;
+import org.nyet.util.WaitCursor;
 
-public class ECUxPlot extends ApplicationFrame {
+public class ECUxPlot extends ApplicationFrame implements ActionListener {
+    private JPanel mainPanel;
 
     public static JFreeChart Create2AxisXYLineChart(
 	String title, String xAxisLabel,
@@ -52,8 +67,56 @@ public class ECUxPlot extends ApplicationFrame {
 	renderer.setSeriesPaint(0, paint);
     }
 
-    public ECUxPlot(final String fname, final String title) throws Exception {
+    public void actionPerformed(ActionEvent event) {
+	JMenuItem source = (JMenuItem) (event.getSource());
+	if(source.getText().equals("Quit")) {
+	    System.exit(0);
+	} else if(source.getText().equals("Open File")) {
+	    final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+	    int ret = fc.showOpenDialog(this);
+	    if(ret == JFileChooser.APPROVE_OPTION) {
+		File file = fc.getSelectedFile();
+		try {
+		    WaitCursor.startWaitCursor(mainPanel);
+		    ChartPanel chart = CreateChartPanel(file.getAbsolutePath());
+		    mainPanel.add(chart);
+		    mainPanel.revalidate();
+		    mainPanel.repaint();
+		    WaitCursor.stopWaitCursor(mainPanel);
+		} catch (Exception e) {
+		    JOptionPane.showMessageDialog(this, e.getMessage());
+		}
+	    }
+	}
+    }
+
+    public ECUxPlot(final String title) {
         super(title);
+
+	JMenuBar menuBar = new JMenuBar();
+	JMenu filemenu = new JMenu("File");
+	menuBar.add(filemenu);
+
+
+	JMenuItem openitem = new JMenuItem("Open File");
+	openitem.setAccelerator(KeyStroke.getKeyStroke(
+	    KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+	filemenu.add(openitem);
+	openitem.addActionListener(this);
+	JMenuItem quititem = new JMenuItem("Quit");
+	quititem.setAccelerator(KeyStroke.getKeyStroke(
+	    KeyEvent.VK_F4, ActionEvent.ALT_MASK));
+	filemenu.add(quititem);
+	quititem.addActionListener(this);
+	setJMenuBar(menuBar);
+	// file_dialog = new FileDialog(this, "Open File", FileDialog.LOAD);
+
+	mainPanel = new JPanel();
+	mainPanel.setPreferredSize(new java.awt.Dimension(1024,768));
+	setContentPane(mainPanel);
+    }
+
+    private static ChartPanel CreateChartPanel(String fname) throws Exception {
 	Dataset data = new Dataset(fname);
 
 	final String[] what = {"TIME", "RPM", "EngineLoad"};
@@ -79,10 +142,10 @@ public class ECUxPlot extends ApplicationFrame {
 
         final ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
-        setContentPane(chartPanel);
+	return chartPanel;
     }
 
-    private XYDataset createDataset(Dataset data, Comparable xkey, Comparable ykey) {
+    private static XYDataset createDataset(Dataset data, Comparable xkey, Comparable ykey) throws Exception {
         final DefaultXYDataset dataset = new DefaultXYDataset();
 	double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
         dataset.addSeries(ykey, s);
@@ -92,9 +155,7 @@ public class ECUxPlot extends ApplicationFrame {
 
     public static void main(final String[] args) {
 	try {
-	    final ECUxPlot plot = new ECUxPlot(args[0],
-		"ECUxPlot");
-
+	    final ECUxPlot plot = new ECUxPlot("ECUxPlot");
 	    plot.pack();
 	    RefineryUtilities.centerFrameOnScreen(plot);
 	    plot.setVisible(true);
