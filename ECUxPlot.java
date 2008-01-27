@@ -1,6 +1,7 @@
 import java.io.File;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.*;
 
 import javax.swing.JPanel;
@@ -32,7 +33,9 @@ import org.nyet.logfile.Dataset;
 import org.nyet.util.WaitCursor;
 
 public class ECUxPlot extends ApplicationFrame implements ActionListener {
-    private JPanel mainPanel;
+
+    JMenu xAxisMenu;
+    JMenu[] yAxisMenu;
 
     public static JFreeChart Create2AxisXYLineChart(
 	String title, String xAxisLabel,
@@ -71,21 +74,28 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
 	JMenuItem source = (JMenuItem) (event.getSource());
 	if(source.getText().equals("Quit")) {
 	    System.exit(0);
+	} else if(source.getText().equals("Close Chart")) {
+	    this.dispose();
+	} else if(source.getText().equals("New Chart")) {
+	    final ECUxPlot plot = new ECUxPlot("ECUxPlot");
+	    plot.pack();
+	    Point where = this.getLocation();
+	    where.translate(20,20);
+	    plot.setLocation(where);
+	    plot.setVisible(true);
 	} else if(source.getText().equals("Open File")) {
 	    final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
 		File file = fc.getSelectedFile();
+		WaitCursor.startWaitCursor(this);
 		try {
-		    WaitCursor.startWaitCursor(mainPanel);
 		    ChartPanel chart = CreateChartPanel(file.getAbsolutePath());
-		    mainPanel.add(chart);
-		    mainPanel.revalidate();
-		    mainPanel.repaint();
-		    WaitCursor.stopWaitCursor(mainPanel);
+		    setContentPane(chart);
 		} catch (Exception e) {
 		    JOptionPane.showMessageDialog(this, e.getMessage());
 		}
+		WaitCursor.stopWaitCursor(this);
 	    }
 	}
     }
@@ -94,26 +104,42 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
         super(title);
 
 	JMenuBar menuBar = new JMenuBar();
+
 	JMenu filemenu = new JMenu("File");
 	menuBar.add(filemenu);
 
+	xAxisMenu = new JMenu("X Axis");
+	yAxisMenu = new JMenu[2];
+	yAxisMenu[0] = new JMenu("Y Axis");
+	yAxisMenu[1] = new JMenu("Y Axis2");
+
+	JMenuItem newitem = new JMenuItem("New Chart");
+	newitem.setAccelerator(KeyStroke.getKeyStroke(
+	    KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+	filemenu.add(newitem);
+	newitem.addActionListener(this);
 
 	JMenuItem openitem = new JMenuItem("Open File");
 	openitem.setAccelerator(KeyStroke.getKeyStroke(
 	    KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 	filemenu.add(openitem);
 	openitem.addActionListener(this);
+
+	JMenuItem closeitem = new JMenuItem("Close Chart");
+	closeitem.setAccelerator(KeyStroke.getKeyStroke(
+	    KeyEvent.VK_F4, ActionEvent.ALT_MASK));
+	filemenu.add(closeitem);
+	closeitem.addActionListener(this);
+
 	JMenuItem quititem = new JMenuItem("Quit");
 	quititem.setAccelerator(KeyStroke.getKeyStroke(
 	    KeyEvent.VK_F4, ActionEvent.ALT_MASK));
 	filemenu.add(quititem);
 	quititem.addActionListener(this);
-	setJMenuBar(menuBar);
-	// file_dialog = new FileDialog(this, "Open File", FileDialog.LOAD);
 
-	mainPanel = new JPanel();
-	mainPanel.setPreferredSize(new java.awt.Dimension(1024,768));
-	setContentPane(mainPanel);
+	setJMenuBar(menuBar);
+
+	setPreferredSize(new java.awt.Dimension(800,600));
     }
 
     private static ChartPanel CreateChartPanel(String fname) throws Exception {
