@@ -9,19 +9,35 @@ public class WaitCursor implements Cursors {
 
   private WaitCursor() {}
 
-  public static void startWaitCursor(JComponent component) {
-    RootPaneContainer root =
-      ((RootPaneContainer) component.getTopLevelAncestor());
+  public static void startWaitCursor(RootPaneContainer root) {
     root.getGlassPane().setCursor(WAIT_CURSOR);
     root.getGlassPane().addMouseListener(mouseAdapter);
     root.getGlassPane().setVisible(true);
   }
 
-  public static void stopWaitCursor(JComponent component) {
+  public static void startWaitCursor(JComponent component) {
     RootPaneContainer root =
       ((RootPaneContainer) component.getTopLevelAncestor());
+    startWaitCursor(root);
+  }
+
+  public static void startWaitCursor(JFrame frame) {
+    startWaitCursor(frame.getRootPane());
+  }
+
+  public static void stopWaitCursor(RootPaneContainer root) {
     root.getGlassPane().setCursor(DEFAULT_CURSOR);
     root.getGlassPane().removeMouseListener(mouseAdapter);
     root.getGlassPane().setVisible(false);
+  }
+
+  public static void stopWaitCursor(JFrame frame) {
+    stopWaitCursor(frame.getRootPane());
+  }
+
+  public static void stopWaitCursor(JComponent component) {
+    RootPaneContainer root =
+      ((RootPaneContainer) component.getTopLevelAncestor());
+    stopWaitCursor(root);
   }
 }
