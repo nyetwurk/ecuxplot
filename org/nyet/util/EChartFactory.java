@@ -75,8 +75,8 @@ public class EChartFactory {
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
 	    for(int j=0;j<dataset.getSeriesCount();j++) {
 		Comparable ykey = dataset.getSeriesKey(j);
-		boolean filt = xkey.equals("RPM");
-		double[][] s = {data.asDoubles(xkey.toString(), filt), data.asDoubles(ykey.toString(), filt)};
+		data.filter.enabled = xkey.equals("RPM");
+		double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
 		newdataset.addSeries(ykey, s);
 	    }
 	    plot.setDataset(i, newdataset);
@@ -94,15 +94,15 @@ public class EChartFactory {
 	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(series);
 	if(add) {
 	    String xkey = plot.getDomainAxis().getLabel();
-	    boolean filt = xkey.equals("RPM");
-	    double[][] s = {data.asDoubles(xkey.toString(), filt), data.asDoubles(ykey.toString(), filt)};
+	    data.filter.enabled = xkey.equals("RPM");
+	    double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
 	    dataset.addSeries(ykey, s);
 
 	    plot.setDataset(series, dataset);
 	} else {
 	    dataset.removeSeries(ykey);
 	}
-	String l = Units.find(dataset.getSeriesKey(0));
+	String l = dataset.getSeriesCount()>0?Units.find(dataset.getSeriesKey(0)):"";
 	for(int i=1;i<dataset.getSeriesCount(); i++) {
 	    l = Units.find(dataset.getSeriesKey(i));
 	    String prev = Units.find(dataset.getSeriesKey(i-1));
