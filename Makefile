@@ -1,7 +1,7 @@
 MP_SOURCES=HexValue.java Map.java Parser.java Parse.java \
 	ParserException.java Project.java
 
-LF_SOURCES=Dataset.java Units.java
+LF_SOURCES=Dataset.java Units.java CSVFileFilter.java
 
 UT_SOURCES=ExitListener.java WindowUtilities.java Cursors.java WaitCursor.java EChartFactory.java
 
