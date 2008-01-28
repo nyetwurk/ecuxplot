@@ -3,7 +3,7 @@ MP_SOURCES=HexValue.java Map.java Parser.java Parse.java \
 
 LF_SOURCES=Dataset.java
 
-UT_SOURCES=ExitListener.java WindowUtilities.java Cursors.java WaitCursor.java
+UT_SOURCES=ExitListener.java WindowUtilities.java Cursors.java WaitCursor.java EChartFactory.java
 
 MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
