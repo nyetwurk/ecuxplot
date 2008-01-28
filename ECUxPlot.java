@@ -55,7 +55,7 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
 	    JCheckBox cb = new JCheckBox(headers[i], headers[i].equals("RPM"));
 	    yAxisMenu[0].add(cb);
 	    cb.addActionListener(this);
-	    cb = new JCheckBox(headers[i]);
+	    cb = new JCheckBox(headers[i],headers[i].equals("EngineLoad"));
 	    yAxisMenu[1].add(cb);
 	    cb.addActionListener(this);
 	}
@@ -108,9 +108,9 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
 	    if(parent.getText().equals("X Axis")) {
 		EChartFactory.setChartX(chart, dataSet, source.getText());
 	    } else if(parent.getText().equals("Y Axis")) {
-		setYAxis(source.getText(), source.isSelected());
+		EChartFactory.editChartY(chart, dataSet, source.getText(),0,source.isSelected());
 	    } else if(parent.getText().equals("Y Axis2")) {
-		setYAxis2(source.getText(), source.isSelected());
+		EChartFactory.editChartY(chart, dataSet, source.getText(),1,source.isSelected());
 	    }
 	}
     }

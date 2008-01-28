@@ -80,4 +80,29 @@ public class EChartFactory {
 	}
 	plot.getDomainAxis().setLabel(xkey.toString());
     }
+
+    public static void editChartY(ChartPanel chartPanel, Dataset data, Comparable ykey, int series, boolean add) {
+	editChartY(chartPanel.getChart(), data, ykey, series, add);
+    }
+
+    public static void editChartY(JFreeChart chart, Dataset data, Comparable ykey, int series, boolean add) {
+
+	final XYPlot plot = chart.getXYPlot();
+	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(series);
+	if(add) {
+	    String xkey = plot.getDomainAxis().getLabel();
+	    double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
+	    dataset.addSeries(ykey, s);
+
+	    plot.setDataset(series, dataset);
+	} else {
+	    dataset.removeSeries(ykey);
+	}
+	if(dataset.getSeriesCount() == 1) {
+	    plot.getRangeAxis(series).setLabel(dataset.getSeriesKey(0).toString());
+	} else {
+	    plot.getRangeAxis(series).setLabel("");
+	}
+	chart.setTitle("");
+    }
 }
