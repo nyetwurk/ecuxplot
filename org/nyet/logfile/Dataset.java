@@ -5,6 +5,7 @@ import java.util.*;
 import au.com.bytecode.opencsv.*;
 
 public class Dataset {
+    public String[] headers;
     public class Column {
 	public String id;
 	public ArrayList<Double> data;
@@ -22,11 +23,11 @@ public class Dataset {
     public ArrayList<Column> data;
     public Dataset(String filename) throws Exception {
 	CSVReader reader = new CSVReader(new FileReader(filename));
-	String [] header = reader.readNext();
+	headers = reader.readNext();
 	data = new ArrayList<Column>();
 	int i;
-	for(i=0;i<header.length;i++) {
-	    data.add(new Column(header[i]));
+	for(i=0;i<headers.length;i++) {
+	    data.add(new Column(headers[i]));
 	}
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
@@ -44,7 +45,6 @@ public class Dataset {
 	}
 	return null;
     }
-
     public double[] asDoubles(String id) {
 	Column c = find(id);
 	int divisor=1;
