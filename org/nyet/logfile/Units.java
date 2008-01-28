@@ -13,7 +13,7 @@ public class Units {
 	{"EGTbank1OXS", "degrees C"},
 	{"EGTbank2", "degrees C"},
 	{"EGTbank2OXS", "degrees C"},
-	{"EngineLoad", "%"}
+	{"EngineLoad", "%"},
 	{"EngineLoadCorrectedSpecified", "%"},
 	{"EngineLoadDesired", "%"},
 	{"EngineLoadSpecified", "%"},
