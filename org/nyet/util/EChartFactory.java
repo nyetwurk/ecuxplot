@@ -1,6 +1,7 @@
 package org.nyet.util;
 
 import org.nyet.logfile.Dataset;
+import org.nyet.logfile.Units;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -26,6 +27,7 @@ public class EChartFactory {
 	    dataset1, orientation, legend, tooltips, urls);
 
 	final XYPlot plot = chart.getXYPlot();
+	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
 
 	/* create axis 2 and renderer */
 	final NumberAxis axis2 = new NumberAxis(y2AxisLabel);
@@ -73,7 +75,8 @@ public class EChartFactory {
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
 	    for(int j=0;j<dataset.getSeriesCount();j++) {
 		Comparable ykey = dataset.getSeriesKey(j);
-		double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
+		boolean filt = xkey.equals("RPM");
+		double[][] s = {data.asDoubles(xkey.toString(), filt), data.asDoubles(ykey.toString(), filt)};
 		newdataset.addSeries(ykey, s);
 	    }
 	    plot.setDataset(i, newdataset);
@@ -91,18 +94,24 @@ public class EChartFactory {
 	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(series);
 	if(add) {
 	    String xkey = plot.getDomainAxis().getLabel();
-	    double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
+	    boolean filt = xkey.equals("RPM");
+	    double[][] s = {data.asDoubles(xkey.toString(), filt), data.asDoubles(ykey.toString(), filt)};
 	    dataset.addSeries(ykey, s);
 
 	    plot.setDataset(series, dataset);
 	} else {
 	    dataset.removeSeries(ykey);
 	}
-	if(dataset.getSeriesCount() == 1) {
-	    plot.getRangeAxis(series).setLabel(dataset.getSeriesKey(0).toString());
-	} else {
-	    plot.getRangeAxis(series).setLabel("");
+	String l = Units.find(dataset.getSeriesKey(0));
+	for(int i=1;i<dataset.getSeriesCount(); i++) {
+	    l = Units.find(dataset.getSeriesKey(i));
+	    String prev = Units.find(dataset.getSeriesKey(i-1));
+	    if(!l.equals(prev)) {
+		l = "";
+		break;
+	    }
 	}
+	plot.getRangeAxis(series).setLabel(l);
 	chart.setTitle("");
     }
 }

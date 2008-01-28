@@ -197,8 +197,8 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
             true,	// show tooltips
             false	// show urls
         );
-	EChartFactory.setSeriesPaint(chart, 0, Color.red);
-	EChartFactory.setSeriesPaint(chart, 1, Color.blue);
+	//EChartFactory.setSeriesPaint(chart, 0, Color.red);
+	//EChartFactory.setSeriesPaint(chart, 1, Color.blue);
 
         final ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));

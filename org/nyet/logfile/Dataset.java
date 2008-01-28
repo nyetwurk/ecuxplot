@@ -1,13 +1,23 @@
 package org.nyet.logfile;
 
 import java.io.*;
+import java.lang.Math;
 import java.util.*;
 import au.com.bytecode.opencsv.*;
 
 public class Dataset {
+    public class Filter {
+	public boolean monotonicRPM = true;
+	public double monotonicRPMfuzz = 100;
+	public double minRPM = 2500;
+	public double maxRPM = 8000;
+	public double minPedal = 95;
+	public int gear = 3;
+    }
     public String[] headers;
     public class Column {
 	public String id;
+	public String units;
 	public ArrayList<Double> data;
 
 	public Column(String id) {
@@ -53,5 +63,33 @@ public class Dataset {
 	double[] out = new double[c.data.size()];
 	for(int i=0;i<c.data.size();i++) out[i]=c.data.get(i)/divisor;
 	return out;
+    }
+
+    public double[] asDoubles(String id, Filter filter) {
+	Column c = find(id);
+	Column rpm = find("RPM");
+	Column pedal = find("AcceleratorPedalPosition");
+	Column gear = find("Gear");
+	int divisor=1;
+	if(id.equals("TIME")) divisor=1000;
+	if(c==null) return new double[0];
+	double[] f = new double[c.data.size()];
+	int j=0;
+	for(int i=0;i<c.data.size(); i++) {
+	    if(Math.round(gear.data.get(i)) != filter.gear) continue;
+	    if(rpm.data.get(i)<filter.minRPM) continue;
+	    if(rpm.data.get(i)>filter.maxRPM) continue;
+	    if(pedal.data.get(i)<filter.minPedal) continue;
+	    if(i<1 || rpm.data.get(i-1) - rpm.data.get(i) > filter.monotonicRPMfuzz) continue;
+	    f[j++]=c.data.get(i)/divisor;
+	}
+	double out[] = new double[j];
+	System.arraycopy(f, 0, out, 0, j);
+	return out;
+    }
+
+    public double[] asDoubles(String id, boolean filt) {
+	if(filt) return asDoubles(id, new Dataset.Filter());
+	return asDoubles(id);
     }
 }
