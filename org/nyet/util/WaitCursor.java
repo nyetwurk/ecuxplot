@@ -7,8 +7,6 @@ public class WaitCursor implements Cursors {
   private final static MouseAdapter mouseAdapter =
     new MouseAdapter() {};
 
-  private WaitCursor() {}
-
   public static void startWaitCursor(RootPaneContainer root) {
     root.getGlassPane().setCursor(WAIT_CURSOR);
     root.getGlassPane().addMouseListener(mouseAdapter);
