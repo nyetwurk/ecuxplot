@@ -29,6 +29,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
+import org.nyet.logfile.CSVFileFilter;
 import org.nyet.logfile.Dataset;
 import org.nyet.util.WaitCursor;
 import org.nyet.util.EChartFactory;
@@ -87,7 +88,9 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
 	    plot.setLocation(where);
 	    plot.setVisible(true);
 	} else if(source.getText().equals("Open File")) {
-	    final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+	    //final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+	    final JFileChooser fc = new JFileChooser();
+	    fc.setFileFilter(new CSVFileFilter());
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
 		File file = fc.getSelectedFile();
@@ -103,7 +106,7 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
 		}
 		WaitCursor.stopWaitCursor(this);
 	    }	
-	} else if (source.getParent() instanceof JPopupMenu) {
+	} else if (source.getParent() != null) {
 	    JMenu parent = (JMenu)((JPopupMenu)source.getParent()).getInvoker();
 	    if(parent.getText().equals("X Axis")) {
 		EChartFactory.setChartX(chart, dataSet, source.getText());
@@ -197,12 +200,8 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
             true,	// show tooltips
             false	// show urls
         );
-	//EChartFactory.setSeriesPaint(chart, 0, Color.red);
-	//EChartFactory.setSeriesPaint(chart, 1, Color.blue);
 
-        final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
-	return chartPanel;
+        return new ChartPanel(chart);
     }
 
     public static void main(final String[] args) {
