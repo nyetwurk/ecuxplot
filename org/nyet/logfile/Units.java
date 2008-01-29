@@ -6,7 +6,7 @@ public class Units {
 	{"AirFuelRatioDesired", "AFR"},
 	{"BaroPressure", "mBar"},
 	{"BatteryVoltage", "V"},
-	{"BoostFrequencyValveDutyCycle", "mBar"},
+	{"BoostFrequencyValveDutyCycle", "%"},
 	{"BoostPressureActual", "mBar"},
 	{"BoostPressureDesired", "mBar"},
 	{"EGTbank1", "degrees C"},
