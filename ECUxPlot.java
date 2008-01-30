@@ -33,36 +33,106 @@ import org.nyet.logfile.CSVFileFilter;
 import org.nyet.logfile.Dataset;
 import org.nyet.util.WaitCursor;
 import org.nyet.util.EChartFactory;
+import org.nyet.util.MenuListener;
+import org.nyet.util.SubActionListener;
 
-public class ECUxPlot extends ApplicationFrame implements ActionListener {
+public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private Dataset dataSet;
     private ChartPanel chart;
-    private JMenu xAxisMenu;
-    private JMenu[] yAxisMenu;
+    private JMenuBar menuBar;
+
+    private static JMenu[] createMenuTriplet(String label)
+    {
+	JMenu[] out={
+	    new JMenu(label),
+	    new JMenu(label),
+	    new JMenu(label)};
+	return out;
+    }
+
+    private static JMenu[] createMenuTriplet(String[] label)
+    {
+	JMenu[] out={
+	    new JMenu(label[0]),
+	    new JMenu(label[1]),
+	    new JMenu(label[2])};
+	return out;
+    }
+
+    private static void addMenuTriplet(JMenu[] dest, AbstractButton[] src) {
+	dest[0].add(src[0]);
+	dest[1].add(src[1]);
+	dest[2].add(src[2]);
+    }
 
     private void setupAxisMenus(String[] headers) {
-	ButtonGroup bg = new ButtonGroup();
-	xAxisMenu.removeAll();
-	yAxisMenu[0].removeAll();
-	yAxisMenu[1].removeAll();
 	if(headers.length<=0) return;
+
+	String[] menus = {"X Axis", "Y Axis", "Y Axis2"};
+	JMenu[] triplet = createMenuTriplet(menus);
+
+	MenuListener[] ltriplet = {
+	    new MenuListener(this, menus[0]),
+	    new MenuListener(this, menus[1]),
+	    new MenuListener(this, menus[2])};
+
+	menuBar.add(triplet[0]);
+	menuBar.add(triplet[1]);
+	menuBar.add(triplet[2]);
+
+	ButtonGroup bg = new ButtonGroup();
+	JMenu[] boost = null;
+	JMenu[] ignition = null;
+	JMenu[] knock = null;
+	JMenu[] load = null;
+	JMenu[] egt = null;
+
 	for(int i=0;i<headers.length;i++) {
-	    if(headers[i].equals("TIME") || headers[i].equals("RPM")) {
-		JRadioButtonMenuItem jrbmt = new JRadioButtonMenuItem(headers[i], headers[i].equals("TIME"));
-		bg.add(jrbmt);
-		xAxisMenu.add(jrbmt);
-		jrbmt.addActionListener(this);
+	    AbstractButton[] item = {
+		new JRadioButtonMenuItem(headers[i], headers[i].equals("TIME")),
+		new JCheckBox(headers[i],headers[i].equals("RPM")),
+		new JCheckBox(headers[i],headers[i].equals("EngineLoad"))};
+
+	    item[0].addActionListener(ltriplet[0]);
+	    item[1].addActionListener(ltriplet[1]);
+	    item[2].addActionListener(ltriplet[2]);
+
+	    bg.add(item[0]);
+
+	    if(headers[i].matches("^Boost.*")) {
+		if(boost==null) {
+		    boost=createMenuTriplet("Boost...");
+		    addMenuTriplet(triplet, boost);
+		}
+		addMenuTriplet(boost, item);
+	    } else if(headers[i].matches("^Ignition.*")) {
+		if(ignition==null) {
+		    ignition=createMenuTriplet("Ignition...");
+		    addMenuTriplet(triplet, ignition);
+		}
+		addMenuTriplet(ignition, item);
+	    } else if(headers[i].matches("^Knock.*")) {
+		if(knock==null) {
+		    knock=createMenuTriplet("Knock...");
+		    addMenuTriplet(triplet, knock);
+		}
+		addMenuTriplet(knock, item);
+	    } else if(headers[i].matches(".*Load.*")) {
+		if(load==null) {
+		    load=createMenuTriplet("Load...");
+		    addMenuTriplet(triplet, load);
+		}
+		addMenuTriplet(load, item);
+	    } else if(headers[i].matches("^EGT.*")) {
+		if(egt==null) {
+		    egt=createMenuTriplet("EGT...");
+		    addMenuTriplet(triplet, egt);
+		}
+		addMenuTriplet(egt, item);
+	    } else {
+		addMenuTriplet(triplet, item);
 	    }
-	    JCheckBox cb = new JCheckBox(headers[i], headers[i].equals("RPM"));
-	    yAxisMenu[0].add(cb);
-	    cb.addActionListener(this);
-	    cb = new JCheckBox(headers[i],headers[i].equals("EngineLoad"));
-	    yAxisMenu[1].add(cb);
-	    cb.addActionListener(this);
 	}
-	xAxisMenu.setEnabled(true);
-	yAxisMenu[0].setEnabled(true);
-	yAxisMenu[1].setEnabled(true);
     }
 
     private void setXAxis(String id) {
@@ -106,15 +176,17 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
 		}
 		WaitCursor.stopWaitCursor(this);
 	    }	
-	} else if (source.getParent() != null) {
-	    JMenu parent = (JMenu)((JPopupMenu)source.getParent()).getInvoker();
-	    if(parent.getText().equals("X Axis")) {
-		EChartFactory.setChartX(chart, dataSet, source.getText());
-	    } else if(parent.getText().equals("Y Axis")) {
-		EChartFactory.editChartY(chart, dataSet, source.getText(),0,source.isSelected());
-	    } else if(parent.getText().equals("Y Axis2")) {
-		EChartFactory.editChartY(chart, dataSet, source.getText(),1,source.isSelected());
-	    }
+	}
+    }
+
+    public void actionPerformed(ActionEvent event, Comparable id) {
+	AbstractButton source = (AbstractButton) (event.getSource());
+	if(id.equals("X Axis")) {
+	    EChartFactory.setChartX(chart, dataSet, source.getText());
+	} else if(id.equals("Y Axis")) {
+	    EChartFactory.editChartY(chart, dataSet, source.getText(),0,source.isSelected());
+	} else if(id.equals("Y Axis2")) {
+	    EChartFactory.editChartY(chart, dataSet, source.getText(),1,source.isSelected());
 	}
     }
 
@@ -151,29 +223,12 @@ public class ECUxPlot extends ApplicationFrame implements ActionListener {
     public ECUxPlot(final String title) {
         super(title);
 
-	JMenuBar menuBar = new JMenuBar();
+	menuBar = new JMenuBar();
 
 	/* File Menu */
 	JMenu filemenu = new JMenu("File");
 	PopulateFileMenu(filemenu);
 	menuBar.add(filemenu);
-
-	/* X axis Menu */
-	xAxisMenu = new JMenu("X Axis");
-	xAxisMenu.setEnabled(false);
-	menuBar.add(xAxisMenu);
-	yAxisMenu = new JMenu[2];
-
-	/* Y axis Menu */
-	yAxisMenu[0] = new JMenu("Y Axis");
-	yAxisMenu[0].setEnabled(false);
-	menuBar.add(yAxisMenu[0]);
-
-	/* Y axis2 Menu */
-	yAxisMenu[1] = new JMenu("Y Axis2");
-	yAxisMenu[1].setEnabled(false);
-	menuBar.add(yAxisMenu[1]);
-
 
 	setJMenuBar(menuBar);
 

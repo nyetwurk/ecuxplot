@@ -75,7 +75,7 @@ public class EChartFactory {
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
 	    for(int j=0;j<dataset.getSeriesCount();j++) {
 		Comparable ykey = dataset.getSeriesKey(j);
-		data.filter.enabled = xkey.equals("RPM");
+		data.filter.enabled = !xkey.equals("TIME");
 		double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
 		newdataset.addSeries(ykey, s);
 	    }

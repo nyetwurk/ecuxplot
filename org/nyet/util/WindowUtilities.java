@@ -51,7 +51,7 @@ public class WindowUtilities {
     content.setBackground(bgColor);
     frame.setSize(width, height);
     frame.setContentPane(content);
-    frame.addWindowListener(new ExitListener());
+    frame.addWindowListener(new ExitListener(frame));
     frame.setVisible(true);
     return(frame);
   }
