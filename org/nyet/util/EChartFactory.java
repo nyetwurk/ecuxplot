@@ -15,6 +15,15 @@ import org.jfree.data.xy.DefaultXYDataset;
 
 
 public class EChartFactory {
+    private static void addAxis(XYPlot plot, String label, XYDataset dataset, int series, boolean lines, boolean shapes) {
+	final NumberAxis axis = new NumberAxis(label);
+	axis.setAutoRangeIncludesZero(false);
+	plot.setRangeAxis(1, axis);
+	plot.setDataset(1, dataset);
+	plot.mapDatasetToRangeAxis(1, 1);
+	plot.setRenderer(1, new XYLineAndShapeRenderer(lines, shapes));
+    }
+
     public static JFreeChart create2AxisXYLineChart (
 	String title, String xAxisLabel,
 	String yAxisLabel, String y2AxisLabel,
@@ -29,14 +38,26 @@ public class EChartFactory {
 	final XYPlot plot = chart.getXYPlot();
 	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
 
-	/* create axis 2 and renderer */
-	final NumberAxis axis2 = new NumberAxis(y2AxisLabel);
-	axis2.setAutoRangeIncludesZero(false);
-	plot.setRangeAxis(1, axis2);
-	plot.setDataset(1, dataset2);
-	plot.mapDatasetToRangeAxis(1, 1);
-	final StandardXYItemRenderer renderer2 = new StandardXYItemRenderer();
-	plot.setRenderer(1, renderer2);
+	addAxis(plot, y2AxisLabel, dataset2, 1, true, false);
+
+	return chart;
+    }
+
+    public static JFreeChart create2AxisScatterPlot (
+	String title, String xAxisLabel,
+	String yAxisLabel, String y2AxisLabel,
+	XYDataset dataset1, XYDataset dataset2,
+	PlotOrientation orientation,
+	boolean legend, boolean tooltips, boolean urls) {
+
+	final JFreeChart chart = ChartFactory.createScatterPlot(
+	    title, xAxisLabel, yAxisLabel,
+	    dataset1, orientation, legend, tooltips, urls);
+
+	final XYPlot plot = chart.getXYPlot();
+	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
+
+	addAxis(plot, y2AxisLabel, dataset2, 1, false, true);
 
 	return chart;
     }

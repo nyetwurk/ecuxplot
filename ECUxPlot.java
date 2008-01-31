@@ -175,7 +175,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    JOptionPane.showMessageDialog(this, e.getMessage());
 		}
 		WaitCursor.stopWaitCursor(this);
-	    }	
+	    }
 	}
     }
 
@@ -190,34 +190,37 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    private final void PopulateFileMenu(JMenu filemenu) {
-	JMenuItem openitem = new JMenuItem("Open File");
-	openitem.setAccelerator(KeyStroke.getKeyStroke(
-	    KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-	openitem.addActionListener(this);
-	filemenu.add(openitem);
+    private final class FileMenu extends JMenu {
+	public FileMenu(String id, ActionListener listener) {
+	    super(id);
+	    JMenuItem openitem = new JMenuItem("Open File");
+	    openitem.setAccelerator(KeyStroke.getKeyStroke(
+		KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+	    openitem.addActionListener(listener);
+	    this.add(openitem);
 
-	filemenu.add(new JSeparator());
+	    this.add(new JSeparator());
 
-	JMenuItem newitem = new JMenuItem("New Chart");
-	newitem.setAccelerator(KeyStroke.getKeyStroke(
-	    KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-	newitem.addActionListener(this);
-	filemenu.add(newitem);
+	    JMenuItem newitem = new JMenuItem("New Chart");
+	    newitem.setAccelerator(KeyStroke.getKeyStroke(
+		KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+	    newitem.addActionListener(listener);
+	    this.add(newitem);
 
-	JMenuItem closeitem = new JMenuItem("Close Chart");
-	closeitem.setAccelerator(KeyStroke.getKeyStroke(
-	    KeyEvent.VK_W, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK));
-	closeitem.addActionListener(this);
-	filemenu.add(closeitem);
+	    JMenuItem closeitem = new JMenuItem("Close Chart");
+	    closeitem.setAccelerator(KeyStroke.getKeyStroke(
+		KeyEvent.VK_W, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK));
+	    closeitem.addActionListener(listener);
+	    this.add(closeitem);
 
-	filemenu.add(new JSeparator());
+	    this.add(new JSeparator());
 
-	JMenuItem quititem = new JMenuItem("Quit");
-	quititem.setAccelerator(KeyStroke.getKeyStroke(
-	    KeyEvent.VK_F4, ActionEvent.ALT_MASK));
-	quititem.addActionListener(this);
-	filemenu.add(quititem);
+	    JMenuItem quititem = new JMenuItem("Quit");
+	    quititem.setAccelerator(KeyStroke.getKeyStroke(
+		KeyEvent.VK_F4, ActionEvent.ALT_MASK));
+	    quititem.addActionListener(listener);
+	    this.add(quititem);
+	}
     }
 
     public ECUxPlot(final String title) {
@@ -225,9 +228,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	menuBar = new JMenuBar();
 
-	/* File Menu */
-	JMenu filemenu = new JMenu("File");
-	PopulateFileMenu(filemenu);
+	FileMenu filemenu = new FileMenu("File", this);
 	menuBar.add(filemenu);
 
 	setJMenuBar(menuBar);
@@ -246,7 +247,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
         final XYDataset dataset2 = EChartFactory.createDataset(data, what[0], what[2]);
 	final String y2AxisLegend = "%";
 
-        final JFreeChart chart = EChartFactory.create2AxisXYLineChart(
+        final JFreeChart chart = EChartFactory.create2AxisScatterPlot(
             what[0] + " and " + what[1],
 	    xAxisLegend, yAxisLegend, y2AxisLegend,
             dataset1, dataset2,

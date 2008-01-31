@@ -1,17 +1,22 @@
 package org.nyet.mappack;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.nio.ByteBuffer;
+import org.nyet.logfile.CSVRow;
 
 public class Map {
-    private class Enm {
-	private int value;
+    private class Enm implements Comparable {
+	protected int value;
 	public String[] legend;
 	public Enm(ByteBuffer b) { value=b.getInt(); }
 	public String toString() {
 	    if(value<0 || value>legend.length-1)
 		return String.format("(len %d) %x", legend.length, value);
 	    return legend[value];
+	}
+	public int compareTo(Object o) {
+	    return (new Integer(value).compareTo(((Enm)o).value));
 	}
     }
 
@@ -30,7 +35,8 @@ public class Map {
 	}
     }
 
-    private class ValueType extends Enm {
+    public class ValueType extends Enm {
+	private int width;
 	public ValueType(ByteBuffer b) {
 	    super(b);
 	    String[] l= {
@@ -44,7 +50,18 @@ public class Map {
 		"32 BitFloat (LoHiLoHi)"
 	    };
 	    legend = l;
+	    switch(this.value) {
+		case 1: width=1; break;
+		case 2:
+		case 3: width=2; break;
+		case 4:
+		case 5:
+		case 6:
+		case 7: width=4; break;
+		default: width=0;
+	    }
 	}
+	public int width() { return this.width; }
     }
 
     private class DataSource extends Enm {
@@ -61,15 +78,19 @@ public class Map {
 	}
     }
 
-    private class Dimension {
+    public class Dimension implements Comparable {
 	public int x;
 	public int y;
 	public Dimension(int xx, int yy) { x = xx; y = yy; }
 	public Dimension(ByteBuffer b) { x = b.getInt(); y = b.getInt(); }
 	public String toString() { return x + "x" + y; }
+	public int compareTo(Object o) {
+	    return (new Integer(areaOf())).compareTo(((Dimension)o).areaOf());
+	}
+	public int areaOf() { return this.x*this.y; }
     }
 
-    private class Value {
+    public class Value {
 	public String description;
 	public String units;
 	public double factor;
@@ -83,6 +104,7 @@ public class Map {
 	    factor = b.getDouble();
 	    offset = b.getDouble();
 	}
+	public double convert(double in) { return in*factor+offset; }
     }
 
     private class Axis extends Value {
@@ -204,22 +226,10 @@ public class Map {
 	// System.out.println(this);
     }
 
-    private class CSVRow extends ArrayList<String> {
-	public String toString() {
-	    String out = "";
-	    Iterator i = iterator();
-	    while(i.hasNext())
-		out += "\"" + i.next().toString() + "\"" + ",";
-	    return out;
-	}
-
-	public boolean add(int i) {
-	    return super.add(String.valueOf(i));
-	}
-    }
-
     public static final String CSVHeader() {
-	return "\"ID\",\"Address\",\"Name\",\"Size\",\"Organization\",\"Description\",\"Units\",\"X Units\",\"Y Units\"";
+	final String[] header = {"ID","Address","Name","Size","Organization","Description","Units","X Units","Y Units"};
+	final CSVRow out = new CSVRow(header);
+	return out.toString();
     }
 
     public boolean equals(Map map) {
@@ -233,19 +243,25 @@ public class Map {
 	return (id.equals(this.id.split("[? ]")[0]));
     }
 
-    public String toCSV() {
+    public String toCSV(ByteBuffer image) throws Exception {
 	CSVRow row = new CSVRow();
-	row.add(id);
-	row.add(extent[0].toString());
-	row.add(name);
-	row.add(size.toString());
-	row.add(values.toString());
-	row.add(value.description);
-	row.add(value.units);
-	row.add(x_axis.units);
-	row.add(y_axis.units);
+	row.add(this.id);
+	row.add(this.extent[0]);
+	row.add(this.name);
+	row.add(this.size);
+	row.add(this.values);
+	row.add(this.value.description);
+	row.add(this.value.units);
+	row.add(this.x_axis.units);
+	row.add(this.y_axis.units);
+	if(image.limit()>0) {
+	    MapData mapdata = new MapData(this, image);
+	    row.add(mapdata.getMinimum());
+	    row.add(mapdata.getMaximum());
+	}
 	return row.toString();
     }
+    public String toCSV() throws Exception { return toCSV((ByteBuffer)null); }
 
     public String toString() {
 	String out = "  map: " + name + " [" + id + "] " + values + "\n";

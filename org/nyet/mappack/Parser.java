@@ -7,7 +7,9 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-public class Parser {
+import org.nyet.util.MMapFile;
+
+public class Parser extends MMapFile {
     private String signature;
     private String filename;
     private String version;
@@ -76,24 +78,17 @@ public class Parser {
     }
 
     public Parser (String fname) throws Exception {
-	File file = new File(fname);
-	if(!file.exists()) {
-	    throw new Exception(fname + ": no such file");
-	}
+	super(fname, ByteOrder.LITTLE_ENDIAN);
+	ByteBuffer buf = this.getByteBuffer();
+	signature = Parse.string(buf);
+	buf.position(0x5c);
+	filename = Parse.string(buf);
+	version = Parse.string(buf);
 
-	long length = file.length();
-        MappedByteBuffer in = new FileInputStream(fname).getChannel().map(
-	    FileChannel.MapMode.READ_ONLY, 0, length);
-	in.order(ByteOrder.LITTLE_ENDIAN);
-	signature = Parse.string(in);
-	in.position(0x5c);
-	filename = Parse.string(in);
-	version = Parse.string(in);
-
-	parseHeader(in);
+	parseHeader(buf);
 
 	projects = new ArrayList<Project>();
-	projects.add(new Project(in));
+	projects.add(new Project(buf));
     }
 
     public String toString() {

@@ -3,7 +3,7 @@ package org.nyet.mappack;
 import java.util.*;
 import java.nio.ByteBuffer;
 
-public class HexValue {
+public class HexValue implements Comparable {
     public int v;
     public String toString() { return String.format("0x%x", v); }
     public HexValue(int vv) { this.v=vv; }
@@ -24,6 +24,10 @@ public class HexValue {
 
     public boolean equals(HexValue v) { return (v.v==this.v); }
     public boolean equals(int v) { return (v==this.v); }
+    public int compareTo(Object o) {
+	return (new Integer(v).compareTo(((HexValue)o).v));
+    }
+
     public static final String dumpHex(ByteBuffer b) {
 	return dumpHex(b, b.limit()-b.position());
     }
