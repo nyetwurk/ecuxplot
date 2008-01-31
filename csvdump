@@ -1,4 +1,6 @@
 #!/bin/sh
-export CLASSPATH='.:jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar'
 export LANG=en_US.iso885915
+if [ -r .classpath ]; then
+    source .classpath
+fi
 java csvdump $*
