@@ -1,0 +1,41 @@
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>C:\cygwin\home\nyet\src\mesim\ECUxPlot.jar</jar>
+  <outfile>C:\cygwin\home\nyet\src\mesim\ECUxPlot.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
+  <customProcName>false</customProcName>
+  <stayAlive>false</stayAlive>
+  <icon></icon>
+  <classPath>
+    <mainClass>ECUxPlot</mainClass>
+    <cp>jcommon-1.0.12.jar</cp>
+    <cp>jfreechart-1.0.9.jar</cp>
+    <cp>opencsv-1.8.jar</cp>
+  </classPath>
+  <jre>
+    <path></path>
+    <minVersion>1.5.0</minVersion>
+    <maxVersion></maxVersion>
+    <dontUsePrivateJres>false</dontUsePrivateJres>
+    <initialHeapSize>0</initialHeapSize>
+    <maxHeapSize>0</maxHeapSize>
+  </jre>
+  <versionInfo>
+    <fileVersion>0.0.0.2</fileVersion>
+    <txtFileVersion>0.0.0.2</txtFileVersion>
+    <fileDescription>ECUx log csv plotter</fileDescription>
+    <copyright>Nye Liu</copyright>
+    <productVersion>0.0.0.2</productVersion>
+    <txtProductVersion>0.0.0.2</txtProductVersion>
+    <productName>ECUx log csv plotter</productName>
+    <companyName></companyName>
+    <internalName>ECUxPlot</internalName>
+    <originalFilename>ECUxPlot.exe</originalFilename>
+  </versionInfo>
+</launch4jConfig>

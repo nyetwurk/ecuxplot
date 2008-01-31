@@ -35,7 +35,7 @@ ECUxPlot.class: ECUxPlot.java $(LF_CLASSES) $(UT_CLASSES)
 ECUxPlot.jar: ECUxPlot.class
 	jar cfm $@ Manifest.txt ECUxPlot.class `find org/nyet -name \*.class`
 
-ECUxPlot.exe: ECUxPlot.class ECUxPlot.xml
+ECUxPlot.exe: ECUxPlot.class ECUxPlotWin32.xml
 	launch4jc '$(shell cygpath -d $(shell pwd))\ECUxPlot.xml'
 
 ECUxPlot.zip: ECUxPlot.exe
