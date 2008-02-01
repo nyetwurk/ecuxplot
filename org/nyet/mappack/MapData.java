@@ -2,10 +2,13 @@ package org.nyet.mappack;
 
 import java.nio.ByteBuffer;
 
+import org.nyet.util.Unsigned;
+
 public class MapData {
     private Double[][] data;
     private double maximum = Double.NEGATIVE_INFINITY;
     private double minimum = Double.POSITIVE_INFINITY;
+
     public MapData(Map map, ByteBuffer b) {
 	b.position(map.extent[0].v);
 	data = new Double[map.size.x][map.size.y];
@@ -13,9 +16,9 @@ public class MapData {
 	    for(int j=0;j<map.size.y;j++) {
 		double out = Double.NaN;
 		switch(map.values.width()) {
-		    case 1: out=b.get(); break;
-		    case 2: out=b.getShort(); break;
-		    case 4: out=b.getInt(); break;
+		    case 1: out=Unsigned.getUnsignedByte(b); break;
+		    case 2: out=Unsigned.getUnsignedShort(b); break;
+		    case 4: out=Unsigned.getUnsignedInt(b); break;
 		    default: data[i][j]=Double.NaN; continue;
 		}
 		data[i][j]=map.value.convert(out);
