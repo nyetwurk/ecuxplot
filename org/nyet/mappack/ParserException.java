@@ -12,7 +12,7 @@ public class ParserException extends Exception {
     }
     public String getMessage()
     {
-	return String.format("%s: obj=%s @ 0x%x:\n%s", super.getMessage(),
+	return String.format("%s: obj=%s @ 0x%x:\n%s", super.toString(),
 	    this.o.toString(), b.position(), HexValue.dumpHex(b, 64));
     }
 }

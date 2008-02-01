@@ -29,9 +29,9 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
-import org.nyet.logfile.CSVFileFilter;
 import org.nyet.logfile.Dataset;
 import org.nyet.util.WaitCursor;
+import org.nyet.util.GenericFileFilter;
 import org.nyet.util.EChartFactory;
 import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
@@ -148,6 +148,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(source.getText().equals("Quit")) {
 	    System.exit(0);
+	} else if(source.getText().equals("Export Chart")) {
+	    if(chart == null) {
+		JOptionPane.showMessageDialog(this, "Open a CSV first");
+	    } else {
+		try {
+		    this.chart.doSaveAs();
+		} catch (Exception e) {
+		    JOptionPane.showMessageDialog(this, e);
+		    e.printStackTrace();
+		}
+	    }
 	} else if(source.getText().equals("Close Chart")) {
 	    this.dispose();
 	} else if(source.getText().equals("New Chart")) {
@@ -160,19 +171,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("Open File")) {
 	    //final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
 	    final JFileChooser fc = new JFileChooser();
-	    fc.setFileFilter(new CSVFileFilter());
+	    fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
 		File file = fc.getSelectedFile();
 		WaitCursor.startWaitCursor(this);
 		try {
 		    dataSet = new Dataset(file.getAbsolutePath());
-		    chart = CreateChartPanel(dataSet);
-		    setContentPane(chart);
+		    this.chart = CreateChartPanel(dataSet);
+		    setContentPane(this.chart);
 		    this.setTitle("ECUxPlot " + file.getName());
 		    setupAxisMenus(dataSet.headers);
 		} catch (Exception e) {
-		    JOptionPane.showMessageDialog(this, e.getMessage());
+		    JOptionPane.showMessageDialog(this, e);
+		    e.printStackTrace();
 		}
 		WaitCursor.stopWaitCursor(this);
 	    }
@@ -182,11 +194,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public void actionPerformed(ActionEvent event, Comparable id) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(id.equals("X Axis")) {
-	    EChartFactory.setChartX(chart, dataSet, source.getText());
+	    EChartFactory.setChartX(this.chart, dataSet, source.getText());
 	} else if(id.equals("Y Axis")) {
-	    EChartFactory.editChartY(chart, dataSet, source.getText(),0,source.isSelected());
+	    EChartFactory.editChartY(this.chart, dataSet, source.getText(),0,source.isSelected());
 	} else if(id.equals("Y Axis2")) {
-	    EChartFactory.editChartY(chart, dataSet, source.getText(),1,source.isSelected());
+	    EChartFactory.editChartY(this.chart, dataSet, source.getText(),1,source.isSelected());
 	}
     }
 
@@ -212,6 +224,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		KeyEvent.VK_W, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK));
 	    closeitem.addActionListener(listener);
 	    this.add(closeitem);
+
+	    this.add(new JSeparator());
+
+	    JMenuItem exportitem = new JMenuItem("Export Chart");
+	    exportitem.setAccelerator(KeyStroke.getKeyStroke(
+		KeyEvent.VK_F4, ActionEvent.ALT_MASK));
+	    exportitem.addActionListener(listener);
+	    this.add(exportitem);
 
 	    this.add(new JSeparator());
 

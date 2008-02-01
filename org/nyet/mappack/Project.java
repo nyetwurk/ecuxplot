@@ -25,7 +25,7 @@ public class Project {
 	    } catch (ParserException e) {
 		throw new ParserException(e.b,
 		    String.format("error parsing map %d/%d: %s",
-			(i+1), numMaps, e.getMessage()),
+			(i+1), numMaps, e.toString()),
 		    e.o);
 	    }
 	}

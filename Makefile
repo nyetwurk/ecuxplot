@@ -6,7 +6,7 @@ MP_SOURCES=HexValue.java Map.java Parser.java Parse.java \
 
 LF_SOURCES=Dataset.java Units.java CSVFileFilter.java CSVRow.java
 
-UT_SOURCES=ExitListener.java WindowUtilities.java Cursors.java WaitCursor.java EChartFactory.java MMapFile.java
+UT_SOURCES=ExitListener.java WindowUtilities.java Cursors.java WaitCursor.java EChartFactory.java MMapFile.java GenericFileFilter.java
 
 MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
@@ -29,7 +29,7 @@ clean:
 
 .classpath: Makefile
 	echo export CLASSPATH='$(CLASSPATH)' > .classpath
-    	
+
 mapdump.class: mapdump.java $(MP_CLASSES)
 ECUxPlot.class: ECUxPlot.java $(LF_CLASSES) $(UT_CLASSES)
 ECUxPlot.jar: ECUxPlot.class
