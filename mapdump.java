@@ -10,7 +10,7 @@ import org.nyet.util.*;
 public class mapdump {
     private static class Options {
 	String filename = null;
-	String reference = null;
+	ArrayList<String> reference = new ArrayList<String>();
 	String image = null;
 	public Options(String[] args) throws Exception {
 	    if(args.length<1) {
@@ -22,7 +22,7 @@ public class mapdump {
 		    i++;
 		    if(i>=args.length)
 			throw new Exception("-r requires argument");
-		    reference=args[i];
+		    reference.add(args[i]);
 		} else if(args[i].equals("-i")) {
 		    i++;
 		    if(i>=args.length)
@@ -39,10 +39,14 @@ public class mapdump {
     {
 	Options opts = new Options(args);
 	Parser mp = new Parser(opts.filename);
-	Parser ref=null;
+	ArrayList<Parser> refs = new ArrayList<Parser>();
 	ByteBuffer imagebuf=null;
-	if(opts.reference!=null) {
-	    ref = new Parser(opts.reference);
+	Iterator i = opts.reference.iterator();
+	String refsHeader="";
+	while(i.hasNext()) {
+	    String s = (String)i.next();
+	    refs.add(new Parser(s));
+	    refsHeader+=",\"" + s + "\"";
 	}
 	if(opts.image!=null) {
 	    MMapFile mmap = new MMapFile(opts.image, ByteOrder.LITTLE_ENDIAN);
@@ -50,7 +54,7 @@ public class mapdump {
 	}
 	// System.out.print(mp);
 	Iterator itp = mp.projects.iterator();
-	System.out.print(Map.CSVHeader());
+	System.out.print(Map.CSVHeader()+refsHeader);
 	System.out.println();
 	while(itp.hasNext()) {
 	    Project p = (Project) itp.next();
@@ -58,13 +62,13 @@ public class mapdump {
 	    while(itm.hasNext()) {
 		Map m = (Map) itm.next();
 		System.out.print(m.toCSV(imagebuf));
-		if(ref!=null) {
-		    ArrayList<Map> matches = ref.find(m);
+		Iterator itr = refs.iterator();
+		while(itr.hasNext()) {
+		    Parser pa = (Parser) itr.next();
+		    ArrayList<Map> matches = pa.find(m);
 		    if(matches.size()>0) {
 			Map r = matches.get(0);
-			System.out.print("\"" + r.name + "\"");
-		    } else {
-			System.out.print("\"can't find " + m.id + "\"");
+			System.out.print(",\"" + r.name + "\"");
 		    }
 		}
 		System.out.println();

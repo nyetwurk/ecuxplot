@@ -135,4 +135,6 @@ public class Parser extends MMapFile {
 	}
 	return matches;
     }
+
+    public String getFilename() { return this.filename; }
 }
