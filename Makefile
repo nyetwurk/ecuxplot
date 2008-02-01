@@ -15,9 +15,9 @@ UT_CLASSES=$(UT_SOURCES:%.java=org/nyet/util/%.class)
 TARGETS=mapdump.class ECUxPlot.class
 REFERENCE=data/4Z7907551R.kp
 
-CLASSPATH=.$(CLASSPATH_SEP)jcommon-1.0.12.jar$(CLASSPATH_SEP)jfreechart-1.0.9.jar$(CLASSPATH_SEP)opencsv-1.8.jar
+CLASSPATH=jcommon-1.0.12.jar$(CLASSPATH_SEP)jfreechart-1.0.9.jar$(CLASSPATH_SEP)opencsv-1.8.jar
 
-JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -target 1.5
+JFLAGS=-classpath .$(CLASSPATH_SEP)$(CLASSPATH) -Xlint:deprecation -target 1.5
 
 all: $(TARGETS) .classpath
 zip: ECUxPlot.zip
@@ -28,7 +28,7 @@ clean:
 	./mapdump -r $(REFERENCE) $< > $@
 
 .classpath: Makefile
-	echo export CLASSPATH='$(CLASSPATH)' > .classpath
+	echo export CLASSPATH='`dirname $$0`$(CLASSPATH_SEP)$(CLASSPATH)' > .classpath
 
 mapdump.class: mapdump.java $(MP_CLASSES)
 ECUxPlot.class: ECUxPlot.java $(LF_CLASSES) $(UT_CLASSES)

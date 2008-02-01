@@ -1,6 +1,6 @@
 #!/bin/sh
 export LANG=en_US.iso885915
-if [ -r .classpath ]; then
-    source .classpath
+if [ -r `dirname $0`/.classpath ]; then
+    source `dirname $0`/.classpath
 fi
 java mapdump $*

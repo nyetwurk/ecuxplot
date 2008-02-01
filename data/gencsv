@@ -1,0 +1,5 @@
+#!/bin/sh
+source=$1
+dest=`basename $source .kp`.csv
+stem=`echo $source | cut -d - -f 1`
+../mapdump -r 4Z7907551R.kp -r 8D0907551K.kp -i $stem.bin $source > $dest

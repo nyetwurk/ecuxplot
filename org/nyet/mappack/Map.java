@@ -227,7 +227,7 @@ public class Map {
     }
 
     public static final String CSVHeader() {
-	final String[] header = {"ID","Address","Name","Size","Organization","Description","Units","X Units","Y Units","Value MAX","Value Min"};
+	final String[] header = {"ID","Address","Name","Size","Organization","Description","Units","X Units","Y Units","Value min","Value max"};
 	final CSVRow out = new CSVRow(header);
 	return out.toString();
     }

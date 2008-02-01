@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ -r .classpath ]; then
-    source .classpath
+if [ -r `dirname $0`/.classpath ]; then
+    source `dirname $0`/.classpath
 fi
 java ECUxPlot $*
