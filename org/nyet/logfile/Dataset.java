@@ -93,9 +93,9 @@ public class Dataset {
 	    if(c.id.equals(id)) return c;
 	}
 	if(id.equals("CalcLoad")) {
-	    DoubleArray a = this.find("MassAirFlow").data.mult(60); // g/sec to g/min
+	    DoubleArray a = this.find("MassAirFlow").data.mult(3.6); // g/sec to kg/hr
 	    DoubleArray b = this.find("RPM").data;
-	    c = new Column(id, "%", a.div(b));
+	    c = new Column(id, "%", a.div(b).div(.001072)); // KUMSRL
 	} else if(id.equals("CalcIDC")) {
 	    DoubleArray a = this.find("FuelInjectorOnTime").data.div(60*1000); // msec to minutes
 	    DoubleArray b = this.find("RPM").data.div(2); // half cycle
