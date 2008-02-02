@@ -1,32 +1,32 @@
 package org.nyet.util;
 
-public class SmartIntArray
+public class DoubleArray
 {
     int sp = 0; // "stack pointer" to keep track of position in the array
-    private int[] array;
+    private double[] array;
     private int growthSize;
 
-    public SmartIntArray()
+    public DoubleArray()
     {
         this( 1024 );
     }
 
-    public SmartIntArray( int initialSize )
+    public DoubleArray( int initialSize )
     {
         this( initialSize, (int)( initialSize / 4 ) );
     }
 
-    public SmartIntArray( int initialSize, int growthSize )
+    public DoubleArray( int initialSize, int growthSize )
     {
         this.growthSize = growthSize;
-        array = new int[ initialSize ];
+        array = new double[ initialSize ];
     }
 
-    public void add( int i )
+    public void append( double i )
     {
         if( sp >= array.length ) // time to grow!
         {
-            int[] tmpArray = new int[ array.length + growthSize ];
+            double[] tmpArray = new double[ array.length + growthSize ];
             System.arraycopy( array, 0, tmpArray, 0, array.length );
             array = tmpArray;
         }
@@ -34,9 +34,9 @@ public class SmartIntArray
         sp += 1;
     }
 
-    public int[] toArray()
+    public double[] toArray()
     {
-        int[] trimmedArray = new int[ sp ];
+        double[] trimmedArray = new double[ sp ];
         System.arraycopy( array, 0, trimmedArray, 0, trimmedArray.length );
         return trimmedArray;
     }
