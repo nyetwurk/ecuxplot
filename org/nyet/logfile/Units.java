@@ -1,6 +1,6 @@
 package org.nyet.logfile;
 
-public class Units {
+public final class Units {
     private static final String[][] legend = {
 	{"AcceleratorPedalPosition", "%"},
 	{"AirFuelRatioDesired", "AFR"},
@@ -44,10 +44,11 @@ public class Units {
 	{"OXSVoltS1B1", "V"},
 	{"OXSVoltS1B2", "V"},
 	{"ThrottlePlateAngle", "%"},
+	{"RPM", "1/min"},
 	{"Time", "s"},
 	{"VehicleSpeed", "mph"},
     };
-    public static String find(Comparable id) {
+    public final static String find(Comparable id) {
 	for(int i=0;i<legend.length;i++) {
 	    if(legend[i][0].equals(id)) return legend[i][1];
 	}

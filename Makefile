@@ -6,7 +6,9 @@ MP_SOURCES=HexValue.java Map.java Parser.java Parse.java \
 
 LF_SOURCES=Dataset.java Units.java CSVFileFilter.java CSVRow.java
 
-UT_SOURCES=ExitListener.java WindowUtilities.java Cursors.java WaitCursor.java EChartFactory.java MMapFile.java GenericFileFilter.java Unsigned.java
+UT_SOURCES=ExitListener.java WindowUtilities.java Cursors.java \
+	    WaitCursor.java EChartFactory.java MMapFile.java \
+	    GenericFileFilter.java Unsigned.java DoubleArray.java
 
 MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
@@ -33,9 +35,9 @@ clean:
 mapdump.class: mapdump.java $(MP_CLASSES)
 ECUxPlot.class: ECUxPlot.java $(LF_CLASSES) $(UT_CLASSES)
 ECUxPlot.jar: ECUxPlot.class
-	jar cfm $@ Manifest.txt ECUxPlot.class `find org/nyet -name \*.class`
+	jar cfm $@ Manifest.txt *.class `find org/nyet -name \*.class`
 
-ECUxPlot.exe: ECUxPlot.class ECUxPlotWin32.xml
+ECUxPlot.exe: ECUxPlot.class ECUxPlot.jar ECUxPlotWin32.xml
 	launch4jc '$(shell cygpath -d $(shell pwd))\ECUxPlotWin32.xml'
 
 ECUxPlot.zip: ECUxPlot.exe

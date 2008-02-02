@@ -2,7 +2,7 @@ package org.nyet.util;
 
 public class DoubleArray
 {
-    int sp = 0; // "stack pointer" to keep track of position in the array
+    private int sp = 0; // "stack pointer" to keep track of position in the array
     private double[] array;
     private int growthSize;
 
@@ -11,9 +11,16 @@ public class DoubleArray
         this( 1024 );
     }
 
+    public DoubleArray( double[] a)
+    {
+	this(a.length);
+	System.arraycopy( a, 0, this.array, 0, a.length );
+	this.sp=a.length;
+    }
+
     public DoubleArray( int initialSize )
     {
-        this( initialSize, (int)( initialSize / 4 ) );
+        this( initialSize, initialSize );
     }
 
     public DoubleArray( int initialSize, int growthSize )
@@ -22,7 +29,7 @@ public class DoubleArray
         array = new double[ initialSize ];
     }
 
-    public void append( double i )
+    public void append( double d )
     {
         if( sp >= array.length ) // time to grow!
         {
@@ -30,14 +37,88 @@ public class DoubleArray
             System.arraycopy( array, 0, tmpArray, 0, array.length );
             array = tmpArray;
         }
-        array[ sp ] = i;
+        array[ sp ] = d;
         sp += 1;
     }
+
+    public int size() { return sp; }
 
     public double[] toArray()
     {
         double[] trimmedArray = new double[ sp ];
         System.arraycopy( array, 0, trimmedArray, 0, trimmedArray.length );
         return trimmedArray;
+    }
+
+    public double get(int i) {
+	return i<this.sp?array[i]:0;
+    }
+
+    public double[] _add(double d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=this.array[i]+d;
+	}
+	return out;
+    }
+    public DoubleArray add(double d) {
+	return new DoubleArray(this._add(d));
+    }
+
+    public double[] _add(double[] d) {
+	int len = this.sp>d.length?this.sp:d.length;
+        double[] out = new double[ len ];
+	for(int i=0;i<len;i++) {
+	    out[i]=this.get(i)+(i<d.length?d[i]:0);
+	}
+	return out;
+    }
+    public DoubleArray add(DoubleArray d) {
+	return new DoubleArray(this._add(d.toArray()));
+    }
+
+    public double[] _mult(double d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=this.array[i]*d;
+	}
+	return out;
+    }
+    public DoubleArray mult(double d) {
+	return new DoubleArray(this._mult(d));
+    }
+
+    public double[] _mult(double[] d) {
+	int len = sp>d.length?this.sp:d.length;
+        double[] out = new double[ len ];
+	for(int i=0;i<len;i++) {
+	    out[i]=this.get(i)*(i<d.length?d[i]:0);
+	}
+	return out;
+    }
+    public DoubleArray mult(DoubleArray d) {
+	return new DoubleArray(this._mult(d.toArray()));
+    }
+
+    public double[] _div(double d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=this.array[i]/d;
+	}
+	return out;
+    }
+    public DoubleArray div(double d) {
+	return new DoubleArray(this._div(d));
+    }
+
+    public double[] _div(double[] d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=this.get(i)/(i<d.length?d[i]:1);
+	}
+	return out;
+    }
+    public DoubleArray div(DoubleArray d) {
+	return new DoubleArray(this._div(d.toArray()));
     }
 }

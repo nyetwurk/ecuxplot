@@ -23,7 +23,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 
 import org.jfree.data.time.Month;
-import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYSeries;
 
 import org.jfree.ui.ApplicationFrame;
@@ -40,6 +40,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private Dataset dataSet;
     private ChartPanel chart;
     private JMenuBar menuBar;
+    private JMenu[] axisTriplet;
+    private Comparable xkey="TIME";
 
     private static JMenu[] createMenuTriplet(String label)
     {
@@ -65,20 +67,40 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	dest[2].add(src[2]);
     }
 
+    private static AbstractButton[] createItemTriplet(String id, MenuListener[] ltriplet) {
+	AbstractButton[] item = {
+	    new JRadioButtonMenuItem(id, id.equals("TIME")),
+	    new JCheckBox(id,id.equals("RPM")),
+	    new JCheckBox(id,id.equals("EngineLoad"))
+	};
+
+	item[0].addActionListener(ltriplet[0]);
+	item[1].addActionListener(ltriplet[1]);
+	item[2].addActionListener(ltriplet[2]);
+	return item;
+    }
+
     private void setupAxisMenus(String[] headers) {
 	if(headers.length<=0) return;
 
+	if(menuBar.getMenuCount()>1) {
+	    menuBar.remove(axisTriplet[0]);
+	    menuBar.remove(axisTriplet[1]);
+	    menuBar.remove(axisTriplet[2]);
+	}
+
 	String[] menus = {"X Axis", "Y Axis", "Y Axis2"};
-	JMenu[] triplet = createMenuTriplet(menus);
+	axisTriplet = createMenuTriplet(menus);
 
 	MenuListener[] ltriplet = {
 	    new MenuListener(this, menus[0]),
 	    new MenuListener(this, menus[1]),
-	    new MenuListener(this, menus[2])};
+	    new MenuListener(this, menus[2])
+	};
 
-	menuBar.add(triplet[0]);
-	menuBar.add(triplet[1]);
-	menuBar.add(triplet[2]);
+	menuBar.add(axisTriplet[0]);
+	menuBar.add(axisTriplet[1]);
+	menuBar.add(axisTriplet[2]);
 
 	ButtonGroup bg = new ButtonGroup();
 	JMenu[] boost = null;
@@ -88,51 +110,53 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	JMenu[] egt = null;
 
 	for(int i=0;i<headers.length;i++) {
-	    AbstractButton[] item = {
-		new JRadioButtonMenuItem(headers[i], headers[i].equals("TIME")),
-		new JCheckBox(headers[i],headers[i].equals("RPM")),
-		new JCheckBox(headers[i],headers[i].equals("EngineLoad"))};
-
-	    item[0].addActionListener(ltriplet[0]);
-	    item[1].addActionListener(ltriplet[1]);
-	    item[2].addActionListener(ltriplet[2]);
-
+	    AbstractButton[] item = createItemTriplet(headers[i], ltriplet);
 	    bg.add(item[0]);
 
 	    if(headers[i].matches("^Boost.*")) {
 		if(boost==null) {
 		    boost=createMenuTriplet("Boost...");
-		    addMenuTriplet(triplet, boost);
+		    addMenuTriplet(axisTriplet, boost);
 		}
 		addMenuTriplet(boost, item);
 	    } else if(headers[i].matches("^Ignition.*")) {
 		if(ignition==null) {
 		    ignition=createMenuTriplet("Ignition...");
-		    addMenuTriplet(triplet, ignition);
+		    addMenuTriplet(axisTriplet, ignition);
 		}
 		addMenuTriplet(ignition, item);
 	    } else if(headers[i].matches("^Knock.*")) {
 		if(knock==null) {
 		    knock=createMenuTriplet("Knock...");
-		    addMenuTriplet(triplet, knock);
+		    addMenuTriplet(axisTriplet, knock);
 		}
 		addMenuTriplet(knock, item);
 	    } else if(headers[i].matches(".*Load.*")) {
 		if(load==null) {
 		    load=createMenuTriplet("Load...");
-		    addMenuTriplet(triplet, load);
+		    addMenuTriplet(axisTriplet, load);
 		}
 		addMenuTriplet(load, item);
 	    } else if(headers[i].matches("^EGT.*")) {
 		if(egt==null) {
 		    egt=createMenuTriplet("EGT...");
-		    addMenuTriplet(triplet, egt);
+		    addMenuTriplet(axisTriplet, egt);
 		}
 		addMenuTriplet(egt, item);
 	    } else {
-		addMenuTriplet(triplet, item);
+		addMenuTriplet(axisTriplet, item);
 	    }
 	}
+	JMenu[] calcs=createMenuTriplet("Calcs...");
+	addMenuTriplet(axisTriplet, calcs);
+
+	AbstractButton[] calcLoad = createItemTriplet("CalcLoad", ltriplet);
+	bg.add(calcLoad[0]);
+	addMenuTriplet(calcs, calcLoad);
+
+	AbstractButton[] calcIDC = createItemTriplet("CalcIDC", ltriplet);
+	bg.add(calcIDC[0]);
+	addMenuTriplet(calcs, calcIDC);
     }
 
     private void setXAxis(String id) {
@@ -178,7 +202,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		WaitCursor.startWaitCursor(this);
 		try {
 		    dataSet = new Dataset(file.getAbsolutePath());
-		    this.chart = CreateChartPanel(dataSet);
+		    this.chart = CreateChartPanel(dataSet, this.xkey);
 		    setContentPane(this.chart);
 		    this.setTitle("ECUxPlot " + file.getName());
 		    setupAxisMenus(dataSet.headers);
@@ -194,11 +218,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public void actionPerformed(ActionEvent event, Comparable id) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(id.equals("X Axis")) {
-	    EChartFactory.setChartX(this.chart, dataSet, source.getText());
+	    this.xkey=source.getText();
+	    EChartFactory.setChartX(this.chart, dataSet, this.xkey);
 	} else if(id.equals("Y Axis")) {
-	    EChartFactory.editChartY(this.chart, dataSet, source.getText(),0,source.isSelected());
+	    EChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),0,source.isSelected());
 	} else if(id.equals("Y Axis2")) {
-	    EChartFactory.editChartY(this.chart, dataSet, source.getText(),1,source.isSelected());
+	    EChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),1,source.isSelected());
 	}
     }
 
@@ -256,26 +281,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	setPreferredSize(new java.awt.Dimension(800,600));
     }
 
-    private static ChartPanel CreateChartPanel(Dataset data) throws Exception {
-
-	final String[] what = {"TIME", "RPM", "EngineLoad"};
-	final String xAxisLegend = "TIME";
-
-        final XYDataset dataset1 = EChartFactory.createDataset(data, what[0], what[1]);
-	final String yAxisLegend = "RPM";
-
-        final XYDataset dataset2 = EChartFactory.createDataset(data, what[0], what[2]);
-	final String y2AxisLegend = "%";
-
+    private static ChartPanel CreateChartPanel(Dataset data, Comparable xkey) throws Exception {
         final JFreeChart chart = EChartFactory.create2AxisScatterPlot(
-            what[0] + " and " + what[1],
-	    xAxisLegend, yAxisLegend, y2AxisLegend,
-            dataset1, dataset2,
+            "", // title
+	    "", "", "", // xaxis, yaxis, yaxis2 label
+            new DefaultXYDataset(), new DefaultXYDataset(),
 	    PlotOrientation.VERTICAL,
             true,	// show legend
             true,	// show tooltips
             false	// show urls
         );
+
+	EChartFactory.setChartX(chart, data, xkey);
+	EChartFactory.addChartY(chart, data, xkey, "RPM", 0);
+	EChartFactory.addChartY(chart, data, xkey, "EngineLoad", 1);
 
         return new ChartPanel(chart);
     }

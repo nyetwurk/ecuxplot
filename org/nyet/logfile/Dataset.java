@@ -5,9 +5,12 @@ import java.lang.Math;
 import java.util.*;
 import au.com.bytecode.opencsv.*;
 
+import org.jfree.data.xy.XYDataset;
+import org.nyet.util.DoubleArray;
+
 public class Dataset {
     public String[] headers;
-    public ArrayList<Column> data;
+    private ArrayList<Column> columns;
     public Filter filter = new Filter();
     private Column rpm, pedal, gear;
 
@@ -20,47 +23,87 @@ public class Dataset {
 	public double minPedal = 95;
 	public int gear = 3;
     }
-    public class Column {
-	public String id;
-	public String units;
-	public ArrayList<Double> data;
 
-	public Column(String id) {
+    public class Column {
+	private Comparable id;
+	public String units;
+	public DoubleArray data;
+
+	public Column(Comparable id) {
 	    this.id = id;
-	    data = new ArrayList<Double>();
+	    this.units = Units.find(id);
+	    this.data = new DoubleArray();
+	}
+
+	public Column(Comparable id, double[] data) {
+	    this.id = id;
+	    this.units = Units.find(id);
+	    this.data = new DoubleArray(data);
+	}
+
+	public Column(Comparable id, String units, double[] data) {
+	    this.id = id;
+	    this.units = units;
+	    this.data = new DoubleArray(data);
+	}
+
+	public Column(Comparable id, String units, DoubleArray data) {
+	    this.id = id;
+	    this.units = units;
+	    this.data = data;
 	}
 
 	public void add(String s) {
-	    data.add(Double.valueOf(s));
+	    data.append(Double.valueOf(s));
 	}
     }
 
     public Dataset(String filename) throws Exception {
 	CSVReader reader = new CSVReader(new FileReader(filename));
-	headers = reader.readNext();
-	data = new ArrayList<Column>();
+	this.headers = reader.readNext();
+	this.columns = new ArrayList<Column>();
 	int i;
-	for(i=0;i<headers.length;i++) {
-	    data.add(new Column(headers[i]));
+	for(i=0;i<this.headers.length;i++) {
+	    this.columns.add(new Column(this.headers[i]));
 	}
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
 	    for(i=0;i<nextLine.length;i++) {
-		data.get(i).add(nextLine[i]);
+		this.columns.get(i).add(nextLine[i]);
 	    }
 	}
-	rpm = find("RPM");
-	pedal = find("AcceleratorPedalPosition");
-	gear = find("Gear");
+	this.rpm = find("RPM");
+	this.pedal = find("AcceleratorPedalPosition");
+	this.gear = find("Gear");
     }
 
-    public Column find(String id) {
-	Iterator itc = data.iterator();
+    public Column get(int id) {
+	return (Column) this.columns.get(id);
+    }
+
+    public String units(Comparable id) {
+	return this.find(id).units;
+    }
+
+    public Column find(Comparable id) {
+	Iterator itc = this.columns.iterator();
+	Column c = null;
 	while(itc.hasNext()) {
-	    Column c = (Column) itc.next();
+	    c = (Column) itc.next();
 	    if(c.id.equals(id)) return c;
 	}
-	return null;
+	if(id.equals("CalcLoad")) {
+	    DoubleArray a = this.find("MassAirFlow").data.mult(60); // g/sec to g/min
+	    DoubleArray b = this.find("RPM").data;
+	    c = new Column(id, "%", a.div(b));
+	} else if(id.equals("CalcIDC")) {
+	    DoubleArray a = this.find("FuelInjectorOnTime").data.div(60*1000); // msec to minutes
+	    DoubleArray b = this.find("RPM").data.div(2); // half cycle
+	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
+	}
+	if(c!=null) this.columns.add(c);
+
+	return c;
     }
 
     private boolean dataValid(int i) {
