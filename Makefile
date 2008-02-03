@@ -4,14 +4,14 @@ CLASSPATH_SEP=:
 MP_SOURCES= HexValue.java Map.java Parser.java Parse.java \
 	    ParserException.java Project.java MapData.java
 
-LF_SOURCES= Dataset.java Units.java CSVFileFilter.java CSVRow.java \
-	    ECUxDataset.java
+LF_SOURCES= Dataset.java Units.java CSVFileFilter.java CSVRow.java
 
 UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 	    WaitCursor.java MMapFile.java \
+	    MenuListener.java SubActionListener.java \
 	    GenericFileFilter.java Unsigned.java DoubleArray.java
 
-EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java
+EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java AxisMenu.java
 
 MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
@@ -37,8 +37,8 @@ clean:
 	echo export CLASSPATH='`dirname $$0`$(CLASSPATH_SEP)$(CLASSPATH)' > .classpath
 
 mapdump.class: mapdump.java $(MP_CLASSES)
-$(EC_CLASSES): $(UT_CLASSES) $(LF_CLASSES)
-ECUxPlot.jar: $(EC_CLASSES)
+$(EX_CLASSES): $(UT_CLASSES) $(LF_CLASSES)
+ECUxPlot.jar: $(EX_CLASSES)
 	jar cfe $@ org.nyet.ecuxplot.ECUxPlot `find org/nyet -name \*.class`
 
 ECUxPlot.exe: ECUxPlot.jar ECUxPlotWin32.xml

@@ -4,14 +4,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 public class MenuListener implements ActionListener {
-    private SubActionListener sub;
-    private Comparable id;
-    public MenuListener(SubActionListener sub, Comparable id) {
+    private SubActionListener listener;
+    private Comparable parentId;
+    public MenuListener(SubActionListener listener, Comparable parentId) {
 	super();
-	this.id = id;
-	this.sub = sub;
+	this.parentId = parentId;
+	this.listener = listener;
     }
     public void actionPerformed(ActionEvent event) {
-	sub.actionPerformed(event, id);
+	listener.actionPerformed(event, parentId);
     }
 }

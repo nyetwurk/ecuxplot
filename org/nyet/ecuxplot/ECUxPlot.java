@@ -13,9 +13,6 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JMenuItem;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JCheckBox;
-import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
@@ -33,141 +30,33 @@ import org.jfree.ui.RefineryUtilities;
 
 import org.nyet.util.WaitCursor;
 import org.nyet.util.GenericFileFilter;
-import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private ECUxDataset dataSet;
     private ChartPanel chart;
     private JMenuBar menuBar;
-    private JMenu[] axisTriplet;
     private Comparable xkey="TIME";
-
-    private static JMenu[] createMenuTriplet(String label)
-    {
-	JMenu[] out={
-	    new JMenu(label),
-	    new JMenu(label),
-	    new JMenu(label)};
-	return out;
-    }
-
-    private static JMenu[] createMenuTriplet(String[] label)
-    {
-	JMenu[] out={
-	    new JMenu(label[0]),
-	    new JMenu(label[1]),
-	    new JMenu(label[2])};
-	return out;
-    }
-
-    private static void addMenuTriplet(JMenu[] dest, AbstractButton[] src) {
-	dest[0].add(src[0]);
-	dest[1].add(src[1]);
-	dest[2].add(src[2]);
-    }
-
-    private static AbstractButton[] createItemTriplet(String id, MenuListener[] ltriplet) {
-	AbstractButton[] item = {
-	    new JRadioButtonMenuItem(id, id.equals("TIME")),
-	    new JCheckBox(id,id.equals("RPM")),
-	    new JCheckBox(id,id.equals("EngineLoad"))
-	};
-
-	item[0].addActionListener(ltriplet[0]);
-	item[1].addActionListener(ltriplet[1]);
-	item[2].addActionListener(ltriplet[2]);
-	return item;
-    }
+    private AxisMenu xAxis;
+    private AxisMenu yAxis;
+    private AxisMenu yAxis2;
 
     private void setupAxisMenus(String[] headers) {
+	if(xAxis!=null) this.menuBar.remove(xAxis);
+	if(yAxis!=null) this.menuBar.remove(yAxis);
+	if(yAxis2!=null) this.menuBar.remove(yAxis2);
+
 	if(headers.length<=0) return;
 
-	if(menuBar.getMenuCount()>1) {
-	    menuBar.remove(axisTriplet[0]);
-	    menuBar.remove(axisTriplet[1]);
-	    menuBar.remove(axisTriplet[2]);
-	}
+	xAxis = new AxisMenu("X Axis", headers, this, true, "TIME");
+	yAxis = new AxisMenu("Y Axis", headers, this, false, "RPM");
+	yAxis2 = new AxisMenu("Y Axis2", headers, this, false, "BoostPressureActual");
 
-	String[] menus = {"X Axis", "Y Axis", "Y Axis2"};
-	axisTriplet = createMenuTriplet(menus);
-
-	MenuListener[] ltriplet = {
-	    new MenuListener(this, menus[0]),
-	    new MenuListener(this, menus[1]),
-	    new MenuListener(this, menus[2])
-	};
-
-	menuBar.add(axisTriplet[0]);
-	menuBar.add(axisTriplet[1]);
-	menuBar.add(axisTriplet[2]);
-
-	ButtonGroup bg = new ButtonGroup();
-	JMenu[] boost = null;
-	JMenu[] ignition = null;
-	JMenu[] knock = null;
-	JMenu[] load = null;
-	JMenu[] egt = null;
-
-	for(int i=0;i<headers.length;i++) {
-	    AbstractButton[] item = createItemTriplet(headers[i], ltriplet);
-	    bg.add(item[0]);
-
-	    if(headers[i].matches("^Boost.*")) {
-		if(boost==null) {
-		    boost=createMenuTriplet("Boost...");
-		    addMenuTriplet(axisTriplet, boost);
-		}
-		addMenuTriplet(boost, item);
-	    } else if(headers[i].matches("^Ignition.*")) {
-		if(ignition==null) {
-		    ignition=createMenuTriplet("Ignition...");
-		    addMenuTriplet(axisTriplet, ignition);
-		}
-		addMenuTriplet(ignition, item);
-	    } else if(headers[i].matches("^Knock.*")) {
-		if(knock==null) {
-		    knock=createMenuTriplet("Knock...");
-		    addMenuTriplet(axisTriplet, knock);
-		}
-		addMenuTriplet(knock, item);
-	    } else if(headers[i].matches(".*Load.*")) {
-		if(load==null) {
-		    load=createMenuTriplet("Load...");
-		    addMenuTriplet(axisTriplet, load);
-		}
-		addMenuTriplet(load, item);
-	    } else if(headers[i].matches("^EGT.*")) {
-		if(egt==null) {
-		    egt=createMenuTriplet("EGT...");
-		    addMenuTriplet(axisTriplet, egt);
-		}
-		addMenuTriplet(egt, item);
-	    } else {
-		addMenuTriplet(axisTriplet, item);
-	    }
-	}
-	JMenu[] calcs=createMenuTriplet("Calcs...");
-	addMenuTriplet(axisTriplet, calcs);
-
-	AbstractButton[] calcLoad = createItemTriplet("CalcLoad", ltriplet);
-	bg.add(calcLoad[0]);
-	addMenuTriplet(calcs, calcLoad);
-
-	AbstractButton[] calcIDC = createItemTriplet("CalcIDC", ltriplet);
-	bg.add(calcIDC[0]);
-	addMenuTriplet(calcs, calcIDC);
+	this.menuBar.add(xAxis);
+	this.menuBar.add(yAxis);
+	this.menuBar.add(yAxis2);
     }
 
-    private void setXAxis(String id) {
-	System.out.println("xaxis " + id);
-    }
-    private void setYAxis(String id, boolean on) {
-	System.out.println("yaxis " + id);
-    }
-    private void setYAxis2(String id, boolean on) {
-	System.out.println("yaxis2 " + id);
-    }
     public void actionPerformed(ActionEvent event) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(source.getText().equals("Quit")) {
@@ -215,14 +104,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    public void actionPerformed(ActionEvent event, Comparable id) {
+    public void actionPerformed(ActionEvent event, Comparable parentId) {
 	AbstractButton source = (AbstractButton) (event.getSource());
-	if(id.equals("X Axis")) {
+	// System.out.println(source.getText() + ":" + parentId);
+	if(parentId.equals("X Axis")) {
 	    this.xkey=source.getText();
 	    ECUxChartFactory.setChartX(this.chart, dataSet, this.xkey);
-	} else if(id.equals("Y Axis")) {
+	} else if(parentId.equals("Y Axis")) {
 	    ECUxChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),0,source.isSelected());
-	} else if(id.equals("Y Axis2")) {
+	} else if(parentId.equals("Y Axis2")) {
 	    ECUxChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),1,source.isSelected());
 	}
     }
@@ -294,7 +184,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	ECUxChartFactory.setChartX(chart, data, xkey);
 	ECUxChartFactory.addChartY(chart, data, xkey, "RPM", 0);
-	ECUxChartFactory.addChartY(chart, data, xkey, "EngineLoad", 1);
+	ECUxChartFactory.addChartY(chart, data, xkey, "BoostPressureActual", 1);
 
         return new ChartPanel(chart);
     }
