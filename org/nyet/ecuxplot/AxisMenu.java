@@ -28,8 +28,8 @@ public class AxisMenu extends JMenu {
 	addToSubmenu(id, item, true);
     }
 
-    private void handleHeader(String id,
-	SubActionListener listener, ButtonGroup bg, boolean checked) {
+    private void handleHeader(String id, SubActionListener listener,
+	ButtonGroup bg, boolean checked) {
 	AbstractButton item = (bg==null)?new JCheckBox(id, checked):
 	    new JRadioButtonMenuItem(id, checked);
 
@@ -38,6 +38,11 @@ public class AxisMenu extends JMenu {
 	if(id.matches("MassAirFlow")) {
 	    handleHeader("CalcLoad", listener, bg);
 	    this.add(item);
+	// goes before .*Load.* to catch CalcLoad
+	} else if(id.matches("^Calc.*")) {
+	    // calc is added last, do not auto add
+	    addToSubmenu("Calc", item, false);
+
 	} else if(id.matches(".*Fuel.*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("FuelInjectorOnTime")) {
@@ -53,9 +58,7 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("EGT", item);
 	} else if(id.matches("^OXS.*")) {
 	    addToSubmenu("OXS", item);
-	} else if(id.matches("^Calc.*")) {
-	    addToSubmenu("Calc", item, false);
-	} else if(id.matches(".*Load.*")) { // goes last, its very loose
+	} else if(id.matches(".*Load.*")) {
 	    addToSubmenu("Load", item);
 	} else {
 	    this.add(item);
@@ -74,9 +77,11 @@ public class AxisMenu extends JMenu {
 	if(radioButton) bg = new ButtonGroup();
 
 	for(int i=0;i<headers.length;i++) {
-	    handleHeader(headers[i], listener, bg, headers[i].equals(initialChecked));
+	    handleHeader(headers[i], listener, bg,
+		headers[i].equals(initialChecked));
 	}
 
+	// put calc at bottom
     	if(this.subMenus.get("Calc")!=null) {
 	    this.add(new JSeparator());
 	    this.add(this.subMenus.get("Calc"));
