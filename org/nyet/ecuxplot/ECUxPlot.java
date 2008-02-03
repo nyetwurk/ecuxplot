@@ -1,3 +1,5 @@
+package org.nyet.ecuxplot;
+
 import java.io.File;
 
 import java.awt.Color;
@@ -29,15 +31,13 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
-import org.nyet.logfile.Dataset;
 import org.nyet.util.WaitCursor;
 import org.nyet.util.GenericFileFilter;
-import org.nyet.util.EChartFactory;
 import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
-    private Dataset dataSet;
+    private ECUxDataset dataSet;
     private ChartPanel chart;
     private JMenuBar menuBar;
     private JMenu[] axisTriplet;
@@ -201,7 +201,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		File file = fc.getSelectedFile();
 		WaitCursor.startWaitCursor(this);
 		try {
-		    dataSet = new Dataset(file.getAbsolutePath());
+		    dataSet = new ECUxDataset(file.getAbsolutePath());
 		    this.chart = CreateChartPanel(dataSet, this.xkey);
 		    setContentPane(this.chart);
 		    this.setTitle("ECUxPlot " + file.getName());
@@ -219,11 +219,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(id.equals("X Axis")) {
 	    this.xkey=source.getText();
-	    EChartFactory.setChartX(this.chart, dataSet, this.xkey);
+	    ECUxChartFactory.setChartX(this.chart, dataSet, this.xkey);
 	} else if(id.equals("Y Axis")) {
-	    EChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),0,source.isSelected());
+	    ECUxChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),0,source.isSelected());
 	} else if(id.equals("Y Axis2")) {
-	    EChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),1,source.isSelected());
+	    ECUxChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),1,source.isSelected());
 	}
     }
 
@@ -281,8 +281,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	setPreferredSize(new java.awt.Dimension(800,600));
     }
 
-    private static ChartPanel CreateChartPanel(Dataset data, Comparable xkey) throws Exception {
-        final JFreeChart chart = EChartFactory.create2AxisScatterPlot(
+    private static ChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey) throws Exception {
+        final JFreeChart chart = ECUxChartFactory.create2AxisScatterPlot(
             "", // title
 	    "", "", "", // xaxis, yaxis, yaxis2 label
             new DefaultXYDataset(), new DefaultXYDataset(),
@@ -292,9 +292,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
             false	// show urls
         );
 
-	EChartFactory.setChartX(chart, data, xkey);
-	EChartFactory.addChartY(chart, data, xkey, "RPM", 0);
-	EChartFactory.addChartY(chart, data, xkey, "EngineLoad", 1);
+	ECUxChartFactory.setChartX(chart, data, xkey);
+	ECUxChartFactory.addChartY(chart, data, xkey, "RPM", 0);
+	ECUxChartFactory.addChartY(chart, data, xkey, "EngineLoad", 1);
 
         return new ChartPanel(chart);
     }

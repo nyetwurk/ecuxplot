@@ -2,4 +2,4 @@
 if [ -r `dirname $0`/.classpath ]; then
     source `dirname $0`/.classpath
 fi
-java ECUxPlot $*
+java org.nyet.ecuxplot.ECUxPlot $*
