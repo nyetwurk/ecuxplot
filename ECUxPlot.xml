@@ -1,8 +1,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>C:\cygwin\home\nyet\src\mesim\ECUxPlot.jar</jar>
-  <outfile>C:\cygwin\home\nyet\src\mesim\ECUxPlot.exe</outfile>
+  <jar>ECUxPlot.jar</jar>
+  <outfile>ECUxPlot.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>

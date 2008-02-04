@@ -1,5 +1,14 @@
-CLASSPATH_SEP=:
-#CLASSPATH_SEP=\;
+UNAME := $(shell uname -o)
+
+ifeq ($(UNAME),Cygwin)
+CLASSPATH_SEP :='\;'
+PWD := $(shell cygpath -d $(shell pwd))\\
+LAUNCH4J := launch4jc
+else
+CLASSPATH_SEP :=':'
+PWD := $(shell pwd)/
+LAUNCH4J := /usr/local/launch4j/launch4j
+endif
 
 MP_SOURCES= HexValue.java Map.java Parser.java Parse.java \
 	    ParserException.java Project.java MapData.java
@@ -28,7 +37,9 @@ JFLAGS=-classpath .$(CLASSPATH_SEP)$(CLASSPATH) -Xlint:deprecation -target 1.5
 all: $(TARGETS) .classpath
 zip: ECUxPlot.zip
 clean:
+	rm ECUxPlot.exe ECUxPlot.zip ECUxPlot.jar .classpath
 	rm *.class
+	find org/nyet -name \*.class | xargs rm
 
 %.csv: %.kp mapdump
 	./mapdump -r $(REFERENCE) $< > $@
@@ -39,12 +50,14 @@ clean:
 mapdump.class: mapdump.java $(MP_CLASSES)
 $(EX_CLASSES): $(UT_CLASSES) $(LF_CLASSES)
 ECUxPlot.jar: $(EX_CLASSES)
+	@rm -f $@
 	jar cfe $@ org.nyet.ecuxplot.ECUxPlot `find org/nyet -name \*.class`
 
-ECUxPlot.exe: ECUxPlot.jar ECUxPlotWin32.xml
-	launch4jc '$(shell cygpath -d $(shell pwd))\ECUxPlotWin32.xml'
+ECUxPlot.exe: ECUxPlot.jar ECUxPlot.xml
+	$(LAUNCH4J) '$(PWD)ECUxPlotWin.xml'
 
 ECUxPlot.zip: ECUxPlot.exe
+	@rm -f $@
 	zip $@ ECUxPlot.exe jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar
 
 %.class: %.java
