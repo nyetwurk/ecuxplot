@@ -27,12 +27,12 @@
     <maxHeapSize>0</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>0.0.0.4</fileVersion>
-    <txtFileVersion>0.0.0.4</txtFileVersion>
+    <fileVersion>VERSION.RELEASE</fileVersion>
+    <txtFileVersion>VERSION Pre-release RELEASE</txtFileVersion>
     <fileDescription>ECUx log csv plotter</fileDescription>
     <copyright>Nye Liu</copyright>
-    <productVersion>0.0.0.4</productVersion>
-    <txtProductVersion>0.0.0.4</txtProductVersion>
+    <productVersion>VERSION.RELEASE</productVersion>
+    <txtProductVersion>VERSION Pre-release RELEASE</txtProductVersion>
     <productName>ECUx log csv plotter</productName>
     <companyName></companyName>
     <internalName>ECUxPlot</internalName>

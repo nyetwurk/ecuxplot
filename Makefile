@@ -1,3 +1,6 @@
+VERSION := 0.0
+RELEASE := 0.4
+
 UNAME := $(shell uname -o)
 
 ifeq ($(UNAME),Cygwin)
@@ -35,9 +38,9 @@ CLASSPATH=jcommon-1.0.12.jar$(CLASSPATH_SEP)jfreechart-1.0.9.jar$(CLASSPATH_SEP)
 JFLAGS=-classpath .$(CLASSPATH_SEP)$(CLASSPATH) -Xlint:deprecation -target 1.5
 
 all: $(TARGETS) .classpath
-zip: ECUxPlot.zip
+zip: ECUxPlot-$(VERSION)r$(RELEASE).zip
 clean:
-	rm ECUxPlot.exe ECUxPlot.zip ECUxPlot.jar .classpath
+	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar .classpath
 	rm *.class
 	find org/nyet -name \*.class | xargs rm
 
@@ -53,10 +56,12 @@ ECUxPlot.jar: $(EX_CLASSES)
 	@rm -f $@
 	jar cfe $@ org.nyet.ecuxplot.ECUxPlot `find org/nyet -name \*.class`
 
+%.xml: %.xml.template
+	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
 ECUxPlot.exe: ECUxPlot.jar ECUxPlot.xml
 	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
 
-ECUxPlot.zip: ECUxPlot.exe
+ECUxPlot-$(VERSION)r$(RELEASE).zip: ECUxPlot.exe
 	@rm -f $@
 	zip $@ ECUxPlot.exe jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar
 
