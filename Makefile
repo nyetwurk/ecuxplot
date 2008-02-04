@@ -1,5 +1,5 @@
 VERSION := 0.0
-RELEASE := 0.4
+RELEASE := 0.5
 
 UNAME := $(shell uname -o)
 
@@ -7,10 +7,12 @@ ifeq ($(UNAME),Cygwin)
 CLASSPATH_SEP :=\;
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := launch4jc
+SCP := pscp
 else
 CLASSPATH_SEP :=:
 PWD := $(shell pwd)/
 LAUNCH4J := /usr/local/launch4j/launch4j
+SCP := scp
 endif
 
 MP_SOURCES= HexValue.java Map.java Parser.java Parse.java \
@@ -39,6 +41,9 @@ JFLAGS=-classpath .$(CLASSPATH_SEP)$(CLASSPATH) -Xlint:deprecation -target 1.5
 
 all: $(TARGETS) .classpath
 zip: ECUxPlot-$(VERSION)r$(RELEASE).zip
+scp: ECUxPlot-$(VERSION)r$(RELEASE).zip
+	$(SCP) $< nyet.org:public_html/cars/files/
+
 clean:
 	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot.xml .classpath
 	rm *.class
