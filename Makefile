@@ -40,7 +40,7 @@ JFLAGS=-classpath .$(CLASSPATH_SEP)$(CLASSPATH) -Xlint:deprecation -target 1.5
 all: $(TARGETS) .classpath
 zip: ECUxPlot-$(VERSION)r$(RELEASE).zip
 clean:
-	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar .classpath
+	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot.xml .classpath
 	rm *.class
 	find org/nyet -name \*.class | xargs rm
 
