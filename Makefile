@@ -54,7 +54,7 @@ ECUxPlot.jar: $(EX_CLASSES)
 	jar cfe $@ org.nyet.ecuxplot.ECUxPlot `find org/nyet -name \*.class`
 
 ECUxPlot.exe: ECUxPlot.jar ECUxPlot.xml
-	$(LAUNCH4J) '$(PWD)ECUxPlotWin.xml'
+	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
 
 ECUxPlot.zip: ECUxPlot.exe
 	@rm -f $@
