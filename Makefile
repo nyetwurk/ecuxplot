@@ -1,11 +1,11 @@
 UNAME := $(shell uname -o)
 
 ifeq ($(UNAME),Cygwin)
-CLASSPATH_SEP :='\;'
+CLASSPATH_SEP :=\;
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := launch4jc
 else
-CLASSPATH_SEP :=':'
+CLASSPATH_SEP :=:
 PWD := $(shell pwd)/
 LAUNCH4J := /usr/local/launch4j/launch4j
 endif
