@@ -45,7 +45,7 @@ scp: ECUxPlot-$(VERSION)r$(RELEASE).zip
 	$(SCP) $< nyet.org:public_html/cars/files/
 
 clean:
-	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot.xml .classpath
+	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml .classpath
 	rm *.class
 	find org/nyet -name \*.class | xargs rm
 
@@ -57,18 +57,18 @@ clean:
 
 mapdump.class: mapdump.java $(MP_CLASSES)
 $(EX_CLASSES): $(UT_CLASSES) $(LF_CLASSES)
-ECUxPlot.jar: $(EX_CLASSES)
+ECUxPlot-$(VERSION)r$(RELEASE).jar: $(EX_CLASSES)
 	@rm -f $@
 	jar cfe $@ org.nyet.ecuxplot.ECUxPlot `find org/nyet -name \*.class`
 
 %.xml: %.xml.template
 	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
-ECUxPlot.exe: ECUxPlot.jar ECUxPlot.xml
+ECUxPlot.exe: ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml
 	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
 
-ECUxPlot-$(VERSION)r$(RELEASE).zip: ECUxPlot.exe
+ECUxPlot-$(VERSION)r$(RELEASE).zip: ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar
 	@rm -f $@
-	zip $@ ECUxPlot.exe jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar
+	zip $@ ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar
 
 %.class: %.java
 	javac $(JFLAGS) $<
