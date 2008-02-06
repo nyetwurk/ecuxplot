@@ -36,27 +36,48 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private ECUxDataset dataSet;
     private ChartPanel chart;
     private JMenuBar menuBar;
-    private Comparable xkey="TIME";
+    private Comparable xkey="RPM";
     private AxisMenu xAxis;
     private AxisMenu yAxis;
     private AxisMenu yAxis2;
+    private static final Comparable[] initialYkey = {
+	"BoostPressureDesired",
+	"EngineLoadDesired"
+    };
+
 
     private void setupAxisMenus(String[] headers) {
+
 	if(xAxis!=null) this.menuBar.remove(xAxis);
 	if(yAxis!=null) this.menuBar.remove(yAxis);
 	if(yAxis2!=null) this.menuBar.remove(yAxis2);
 
 	if(headers.length<=0) return;
 
-	xAxis = new AxisMenu("X Axis", headers, this, true, "TIME");
-	yAxis = new AxisMenu("Y Axis", headers, this, false, "RPM");
-	yAxis2 = new AxisMenu("Y Axis2", headers, this, false, "BoostPressureActual");
+	xAxis = new AxisMenu("X Axis", headers, this, true, this.xkey);
+	yAxis = new AxisMenu("Y Axis", headers, this, false, initialYkey[0]);
+	yAxis2 = new AxisMenu("Y Axis2", headers, this, false,initialYkey[1]);
 
 	this.menuBar.add(xAxis);
 	this.menuBar.add(yAxis);
 	this.menuBar.add(yAxis2);
     }
 
+    private void loadFile(File file) {
+	WaitCursor.startWaitCursor(this);
+	try {
+	    this.dataSet = new ECUxDataset(file.getAbsolutePath());
+	    this.chart = CreateChartPanel(this.dataSet, this.xkey);
+	    setContentPane(this.chart);
+	    this.setTitle("ECUxPlot " + file.getName());
+	    setupAxisMenus(this.dataSet.headers);
+	} catch (Exception e) {
+	    JOptionPane.showMessageDialog(this, e);
+	    e.printStackTrace();
+	}
+	WaitCursor.stopWaitCursor(this);
+    }
+    
     public void actionPerformed(ActionEvent event) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(source.getText().equals("Quit")) {
@@ -87,19 +108,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
-		File file = fc.getSelectedFile();
-		WaitCursor.startWaitCursor(this);
-		try {
-		    dataSet = new ECUxDataset(file.getAbsolutePath());
-		    this.chart = CreateChartPanel(dataSet, this.xkey);
-		    setContentPane(this.chart);
-		    this.setTitle("ECUxPlot " + file.getName());
-		    setupAxisMenus(dataSet.headers);
-		} catch (Exception e) {
-		    JOptionPane.showMessageDialog(this, e);
-		    e.printStackTrace();
-		}
-		WaitCursor.stopWaitCursor(this);
+		loadFile(fc.getSelectedFile());
 	    }
 	}
     }
@@ -158,7 +167,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    public ECUxPlot(final String title) {
+    public ECUxPlot(final String title, String[] args) {
         super(title);
 
 	menuBar = new JMenuBar();
@@ -169,6 +178,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	setJMenuBar(menuBar);
 
 	setPreferredSize(new java.awt.Dimension(800,600));
+
+	if(args!=null && args.length>0) loadFile(new File(args[0]));
+    }
+
+    public ECUxPlot(final String title) {
+	this(title, null);
     }
 
     private static ChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey) throws Exception {
@@ -183,14 +198,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
         );
 
 	ECUxChartFactory.setChartX(chart, data, xkey);
-	ECUxChartFactory.addChartY(chart, data, xkey, "RPM", 0);
-	ECUxChartFactory.addChartY(chart, data, xkey, "BoostPressureActual", 1);
+	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey[0], 0);
+	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey[1], 1);
 
         return new ChartPanel(chart);
     }
 
     public static void main(final String[] args) {
-	final ECUxPlot plot = new ECUxPlot("ECUxPlot");
+	final ECUxPlot plot = new ECUxPlot("ECUxPlot", args);
 	plot.pack();
 	RefineryUtilities.centerFrameOnScreen(plot);
 	plot.setVisible(true);

@@ -59,6 +59,9 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("^OXS.*")) {
 	    addToSubmenu("OXS", item);
 	} else if(id.matches(".*Load.*")) {
+	    if(id.matches("EngineLoadCorrectedSpecified")) {
+		handleHeader("CalcBoostPressureDesired", listener, bg);
+	    }
 	    addToSubmenu("Load", item);
 	} else {
 	    this.add(item);
@@ -70,7 +73,7 @@ public class AxisMenu extends JMenu {
     }
 
     public AxisMenu (String text, String[] headers, SubActionListener listener,
-	boolean radioButton, String initialChecked) {
+	boolean radioButton, Comparable initialChecked) {
 	super(text);
 
 	ButtonGroup bg = null;

@@ -114,6 +114,7 @@ public class ECUxChartFactory {
 	    String label=null, prev=null;
 	    for(int j=0; dataset!=null && j<dataset.getSeriesCount(); j++) {
 		Comparable key = dataset.getSeriesKey(j);
+		if(key==null) continue;
 		String l = data.units(key);
 		if(l!=null) {
 		    if(label==null) label=l;
@@ -143,7 +144,9 @@ public class ECUxChartFactory {
 	if(add) {
 	    data.filter.enabled = !xkey.equals("TIME");
 	    double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
-	    dataset.addSeries(ykey, s);
+	    if(s[0].length == s[1].length) {
+		dataset.addSeries(ykey, s);
+	    }
 	} else {
 	    dataset.removeSeries(ykey);
 	}
