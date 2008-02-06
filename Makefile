@@ -62,7 +62,7 @@ version.txt: Makefile
 
 mapdump.class: mapdump.java $(MP_CLASSES)
 $(EX_CLASSES): $(UT_CLASSES) $(LF_CLASSES)
-ECUxPlot-$(VERSION)r$(RELEASE).jar: $(EX_CLASSES)
+ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
 	jar cfm $@ ECUxPlot.MF `find org/nyet -name \*.class`
 
