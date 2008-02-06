@@ -39,7 +39,8 @@ JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -target 1.5
 
-all: $(TARGETS) .classpath
+all: $(TARGETS) .classpath version.txt
+jar: ECUxPlot-$(VERSION)r$(RELEASE).jar
 zip: ECUxPlot-$(VERSION)r$(RELEASE).zip
 scp: ECUxPlot-$(VERSION)r$(RELEASE).zip
 	$(SCP) $< nyet.org:public_html/cars/files/
@@ -63,7 +64,7 @@ mapdump.class: mapdump.java $(MP_CLASSES)
 $(EX_CLASSES): $(UT_CLASSES) $(LF_CLASSES)
 ECUxPlot-$(VERSION)r$(RELEASE).jar: $(EX_CLASSES)
 	@rm -f $@
-	jar cfe $@ org.nyet.ecuxplot.ECUxPlot `find org/nyet -name \*.class`
+	jar cfm $@ ECUxPlot.MF `find org/nyet -name \*.class`
 
 %.xml: %.xml.template
 	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
