@@ -59,9 +59,6 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("^OXS.*")) {
 	    addToSubmenu("OXS", item);
 	} else if(id.matches(".*Load.*")) {
-	    if(id.matches("EngineLoadCorrectedSpecified")) {
-		handleHeader("CalcBoostPressureDesired", listener, bg);
-	    }
 	    addToSubmenu("Load", item);
 	} else {
 	    this.add(item);
