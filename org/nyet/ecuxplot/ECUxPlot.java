@@ -179,7 +179,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	setPreferredSize(new java.awt.Dimension(800,600));
 
-	if(args!=null && args.length>0) loadFile(new File(args[0]));
+	if(args!=null && args.length>0 && args[0].length()>0)
+	    loadFile(new File(args[0]));
     }
 
     public ECUxPlot(final String title) {
