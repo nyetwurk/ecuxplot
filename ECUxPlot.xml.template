@@ -1,7 +1,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>ECUxPlot.jar</jar>
+  <jar>ECUxPlot-VERSIONrRELEASE.jar</jar>
   <outfile>ECUxPlot.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>

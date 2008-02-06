@@ -4,12 +4,12 @@ RELEASE := 0.5
 UNAME := $(shell uname -o)
 
 ifeq ($(UNAME),Cygwin)
-CLASSPATH_SEP :=\;
+CLASSPATH = '$(shell cygpath -wsp .:$(JARS))'
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := launch4jc
 SCP := pscp
 else
-CLASSPATH_SEP :=:
+CLASSPATH = .:$(JARS)
 PWD := $(shell pwd)/
 LAUNCH4J := /usr/local/launch4j/launch4j
 SCP := scp
@@ -35,9 +35,9 @@ EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
-CLASSPATH=jcommon-1.0.12.jar$(CLASSPATH_SEP)jfreechart-1.0.9.jar$(CLASSPATH_SEP)opencsv-1.8.jar
+JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar
 
-JFLAGS=-classpath .$(CLASSPATH_SEP)$(CLASSPATH) -Xlint:deprecation -target 1.5
+JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -target 1.5
 
 all: $(TARGETS) .classpath
 zip: ECUxPlot-$(VERSION)r$(RELEASE).zip
@@ -45,7 +45,7 @@ scp: ECUxPlot-$(VERSION)r$(RELEASE).zip
 	$(SCP) $< nyet.org:public_html/cars/files/
 
 clean:
-	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml .classpath
+	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml version.txt .classpath
 	rm *.class
 	find org/nyet -name \*.class | xargs rm
 
@@ -53,7 +53,11 @@ clean:
 	./mapdump -r $(REFERENCE) $< > $@
 
 .classpath: Makefile
-	echo export CLASSPATH='`dirname $$0`$(CLASSPATH_SEP)$(CLASSPATH)' > .classpath
+	echo "export CLASSPATH=$(CLASSPATH)" > .classpath
+
+version.txt: Makefile
+	@rm -f version.txt
+	echo $(VERSION)r$(RELEASE) > $@
 
 mapdump.class: mapdump.java $(MP_CLASSES)
 $(EX_CLASSES): $(UT_CLASSES) $(LF_CLASSES)
@@ -66,9 +70,9 @@ ECUxPlot-$(VERSION)r$(RELEASE).jar: $(EX_CLASSES)
 ECUxPlot.exe: ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml
 	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
 
-ECUxPlot-$(VERSION)r$(RELEASE).zip: ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar
+ECUxPlot-$(VERSION)r$(RELEASE).zip: ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh version.txt
 	@rm -f $@
-	zip $@ ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar
+	zip $@ $^ jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar
 
 %.class: %.java
 	javac $(JFLAGS) $<

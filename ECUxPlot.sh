@@ -2,4 +2,4 @@
 if [ -r `dirname $0`/.classpath ]; then
     source `dirname $0`/.classpath
 fi
-java -cp $CLASSPATH org.nyet.ecuxplot.ECUxPlot "$*"
+java -jar ECUxPlot-`cat version.txt`.jar "$*"
