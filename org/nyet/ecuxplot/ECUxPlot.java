@@ -77,7 +77,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
 	WaitCursor.stopWaitCursor(this);
     }
-    
+
     public void actionPerformed(ActionEvent event) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(source.getText().equals("Quit")) {
