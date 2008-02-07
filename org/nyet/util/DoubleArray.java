@@ -1,5 +1,7 @@
 package org.nyet.util;
 
+import vec_math.SavitzkyGolaySmoothing;
+
 public class DoubleArray
 {
     private int sp = 0; // "stack pointer" to keep track of position in the array
@@ -16,6 +18,13 @@ public class DoubleArray
 	this(a.length);
 	System.arraycopy( a, 0, this.array, 0, a.length );
 	this.sp=a.length;
+    }
+
+    public DoubleArray( double[] a, int initialSize)
+    {
+	this(initialSize);
+	System.arraycopy( a, 0, this.array, 0, a.length );
+	this.sp=initialSize;
     }
 
     public DoubleArray( int initialSize )
@@ -120,5 +129,32 @@ public class DoubleArray
     }
     public DoubleArray div(DoubleArray d) {
 	return new DoubleArray(this._div(d.toArray()));
+    }
+
+    public double[] _derivative(double[] d) {
+        double[] out = new double[ sp ];
+	if(sp==1 || d.length<2 || d.length!=sp) {
+	    System.out.println("sp: " + sp +", d.len: " + d.length +
+	    ", sp=" + sp);
+	}
+	for(int i=0;i<this.sp;i++) {
+	    double dy, dx;
+	    int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
+	    out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
+	}
+	return out;
+    }
+    public DoubleArray derivative(DoubleArray d) {
+	return new DoubleArray(this._derivative(d.toArray()));
+    }
+    public DoubleArray derivative(DoubleArray d, boolean smooth) {
+	if(!smooth) return this.derivative(d);
+	SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
+	return new DoubleArray(s.smoothAll(this._derivative(d.toArray()))).smooth();
+    }
+
+    public DoubleArray smooth() {
+	SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
+	return new DoubleArray(s.smoothAll(this.array));
     }
 }

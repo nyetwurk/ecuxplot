@@ -28,25 +28,28 @@ public class AxisMenu extends JMenu {
 	addToSubmenu(id, item, true);
     }
 
-    private void handleHeader(String id, SubActionListener listener,
+    private void add(String id, SubActionListener listener,
 	ButtonGroup bg, boolean checked) {
 	AbstractButton item = (bg==null)?new JCheckBox(id, checked):
 	    new JRadioButtonMenuItem(id, checked);
 
 	item.addActionListener(new MenuListener(listener,this.getText()));
 	if(bg!=null) bg.add(item);
-	if(id.matches("MassAirFlow")) {
-	    handleHeader("CalcLoad", listener, bg);
+	if(id.matches("RPM")) {
+	    this.add("Calc Acceleration", listener, bg);
+	    this.add(item);
+	} else if(id.matches("MassAirFlow")) {
+	    this.add("Calc Load", listener, bg);
 	    this.add(item);
 	// goes before .*Load.* to catch CalcLoad
-	} else if(id.matches("^Calc.*")) {
+	} else if(id.matches("^Calc .*")) {
 	    // calc is added last, do not auto add
 	    addToSubmenu("Calc", item, false);
 
 	} else if(id.matches(".*Fuel.*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("FuelInjectorOnTime")) {
-		handleHeader("FuelInjectorDutyCycle", listener, bg);
+		add("FuelInjectorDutyCycle", listener, bg);
 	    }
 	} else if(id.matches("^Boost.*")) {
 	    addToSubmenu("Boost", item);
@@ -64,9 +67,9 @@ public class AxisMenu extends JMenu {
 	    this.add(item);
 	}
     }
-    private void handleHeader(String id,
+    private void add(String id,
 	SubActionListener listener, ButtonGroup bg) {
-	handleHeader(id, listener, bg, false);
+	this.add(id, listener, bg, false);
     }
 
     public AxisMenu (String text, String[] headers, SubActionListener listener,
@@ -77,14 +80,15 @@ public class AxisMenu extends JMenu {
 	if(radioButton) bg = new ButtonGroup();
 
 	for(int i=0;i<headers.length;i++) {
-	    handleHeader(headers[i], listener, bg,
+	    this.add(headers[i], listener, bg,
 		headers[i].equals(initialChecked));
 	}
 
 	// put calc at bottom
-    	if(this.subMenus.get("Calc")!=null) {
+	JMenu calc=subMenus.get("Calc");
+	if(calc!=null) {
 	    this.add(new JSeparator());
-	    this.add(this.subMenus.get("Calc"));
+	    this.add(calc);
 	}
     }
 }

@@ -29,7 +29,7 @@ public class ECUxDataset extends Dataset {
 	if(id.equals("TIME")) {
 	    DoubleArray a = super.find("TIME").data;
 	    c = new Column("TIME", "s", a.div(1000));	// msec to seconds
-	} else if(id.equals("CalcLoad")) {
+	} else if(id.equals("Calc Load")) {
 	    DoubleArray a = super.find("MassAirFlow").data.mult(3.6); // g/sec to kg/hr
 	    DoubleArray b = super.find("RPM").data;
 	    c = new Column(id, "%", a.div(b).div(.001072)); // KUMSRL
@@ -37,6 +37,12 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray a = super.find("FuelInjectorOnTime").data.div(60*1000); // msec to minutes
 	    DoubleArray b = super.find("RPM").data.div(2); // half cycle
 	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
+	} else if(id.equals("Calc Acceleration")) {
+	    final double rpm_per_mph = 72.1;
+	    final double mph_per_mps = 2.23693629;
+	    DoubleArray y = super.find("RPM").data.div(rpm_per_mph).div(mph_per_mps);	// in mps
+	    DoubleArray x = this.find("TIME").data;
+	    c = new Column(id, "g", y.derivative(x,true).div(9.80665));
 	}
 	if(c!=null) {
 	    this.getColumns().add(c);

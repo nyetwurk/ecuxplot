@@ -27,10 +27,13 @@ UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 
 EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java AxisMenu.java
 
+VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
+
 MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
 UT_CLASSES=$(UT_SOURCES:%.java=org/nyet/util/%.class)
 EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
+VM_CLASSES=$(VM_SOURCES:%.java=vec_math/%.class)
 
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
@@ -61,7 +64,7 @@ version.txt: Makefile
 	echo $(VERSION)r$(RELEASE) > $@
 
 mapdump.class: mapdump.java $(MP_CLASSES)
-$(EX_CLASSES): $(UT_CLASSES) $(LF_CLASSES)
+$(EX_CLASSES): $(UT_CLASSES) $(LF_CLASSES) $(VM_CLASSES)
 ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
 	jar cfm $@ ECUxPlot.MF `find org/nyet -name \*.class`
