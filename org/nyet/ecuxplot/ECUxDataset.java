@@ -6,6 +6,7 @@ import org.nyet.util.DoubleArray;
 public class ECUxDataset extends Dataset {
     private Column rpm, pedal, gear;
     public Filter filter = new Filter();
+    private String filename;
 
     public class Filter {
 	public boolean enabled = false;
@@ -22,6 +23,7 @@ public class ECUxDataset extends Dataset {
 	this.rpm = find("RPM");
 	this.pedal = find("AcceleratorPedalPosition");
 	this.gear = find("Gear");
+	this.filename = filename;
     }
 
     public Column find(Comparable id) {
@@ -60,4 +62,6 @@ public class ECUxDataset extends Dataset {
 	if(i<1 || rpm.data.get(i-1) - rpm.data.get(i) > filter.monotonicRPMfuzz) return false;
 	return true;
     }
+
+    public String getFilename() { return this.filename; }
 }

@@ -17,7 +17,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 
@@ -34,7 +33,7 @@ import org.nyet.util.SubActionListener;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private ECUxDataset dataSet;
-    private ChartPanel chart;
+    private ECUxChartPanel chart;
     private JMenuBar menuBar;
     private Comparable xkey="RPM";
     private AxisMenu xAxis;
@@ -87,7 +86,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		JOptionPane.showMessageDialog(this, "Open a CSV first");
 	    } else {
 		try {
-		    this.chart.doSaveAs();
+		    String [] a=this.dataSet.getFilename().split("\\.");
+		    String stem="";
+		    for(int i=0; i<a.length-1; i++) stem+=a[i];
+		    this.chart.doSaveAs(stem);
 		} catch (Exception e) {
 		    JOptionPane.showMessageDialog(this, e);
 		    e.printStackTrace();
@@ -187,7 +189,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this(title, null);
     }
 
-    private static ChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey) throws Exception {
+    private static ECUxChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey) throws Exception {
         final JFreeChart chart = ECUxChartFactory.create2AxisScatterPlot(
             "", // title
 	    "", "", "", // xaxis, yaxis, yaxis2 label
@@ -202,7 +204,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey[0], 0);
 	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey[1], 1);
 
-        return new ChartPanel(chart);
+        return new ECUxChartPanel(chart);
     }
 
     public static void main(final String[] args) {

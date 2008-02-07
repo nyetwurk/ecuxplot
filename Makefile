@@ -25,7 +25,7 @@ UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 	    MenuListener.java SubActionListener.java \
 	    GenericFileFilter.java Unsigned.java DoubleArray.java
 
-EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java AxisMenu.java
+EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java ECUxChartPanel.java AxisMenu.java
 
 VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
