@@ -49,7 +49,7 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches(".*Fuel.*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("FuelInjectorOnTime")) {
-		add("FuelInjectorDutyCycle", listener, bg);
+		this.add("FuelInjectorDutyCycle", listener, bg);
 	    }
 	} else if(id.matches("^Boost.*")) {
 	    addToSubmenu("Boost", item);
