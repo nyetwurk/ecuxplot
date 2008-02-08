@@ -185,7 +185,7 @@ public class DoubleArray
     }
     public DoubleArray derivative(DoubleArray d, boolean smooth) {
 	if(!smooth) return this.derivative(d);
-	return this.smooth().derivative(d).smooth();
+	return this.smooth().derivative(d.smooth()).smooth().smooth();
     }
 
     public DoubleArray smooth() {
