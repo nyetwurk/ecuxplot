@@ -14,9 +14,7 @@
   <icon></icon>
   <classPath>
     <mainClass>org.nyet.ecuxplot.ECUxPlot</mainClass>
-    <cp>jcommon-1.0.12.jar</cp>
-    <cp>jfreechart-1.0.9.jar</cp>
-    <cp>opencsv-1.8.jar</cp>
+    <cp>.</cp>
   </classPath>
   <jre>
     <path></path>
