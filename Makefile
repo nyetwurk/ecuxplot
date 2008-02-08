@@ -55,8 +55,8 @@ scp: ECUxPlot-$(VERSION)r$(RELEASE).zip
 	$(SCP) $< nyet.org:public_html/cars/files/
 
 clean:
-	rm ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml version.txt .classpath
-	rm *.class
+	rm -f ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml version.txt .classpath
+	rm -f *.class
 	find org/nyet -name \*.class | xargs rm
 
 %.csv: %.kp mapdump
