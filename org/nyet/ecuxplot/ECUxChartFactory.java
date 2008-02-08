@@ -84,7 +84,7 @@ public class ECUxChartFactory {
     }
 
     public static void setChartX(JFreeChart chart, ECUxDataset data,
-    	Comparable xkey) {
+	Comparable xkey) {
 	final XYPlot plot = chart.getXYPlot();
 	for(int i=0;i<plot.getDatasetCount();i++) {
 	    XYDataset dataset = plot.getDataset(i);
@@ -111,15 +111,15 @@ public class ECUxChartFactory {
 	for(int i=0; i<plot.getDatasetCount(); i++) {
 	    final XYDataset dataset = plot.getDataset(i);
 	    String seriesTitle = "";
-	    String label=null, prev=null;
+	    String label="", prev=null;
 	    for(int j=0; dataset!=null && j<dataset.getSeriesCount(); j++) {
 		Comparable key = dataset.getSeriesKey(j);
 		if(key==null) continue;
 		String l = data.units(key);
 		if(l!=null) {
-		    if(label==null) label=l;
-		    if(prev!=null && !l.equals(prev)) {
-			label="";
+		    if(prev==null || !l.equals(prev)) {
+			if(!label.equals("")) label += ", ";
+			label += l;
 		    }
 		    if(!seriesTitle.equals("")) seriesTitle += ", ";
 		    seriesTitle += key.toString();
@@ -130,7 +130,6 @@ public class ECUxChartFactory {
 		if(!title.equals("")) title += " and ";
 		title += seriesTitle;
 	    }
-	    if(label==null) label="";
 	    plot.getRangeAxis(i).setLabel(label);
 	}
 	chart.setTitle(title);
@@ -160,8 +159,13 @@ public class ECUxChartFactory {
 	Comparable xkey, Comparable ykey, int series) {
 	editChartY(chart, data, xkey, ykey, series, true);
     }
+    public static void addChartY(JFreeChart chart, ECUxDataset data,
+	Comparable xkey, Comparable[] ykey, int series) {
+	for(int i=0; i<ykey.length; i++)
+	    editChartY(chart, data, xkey, ykey[i], series, true);
+    }
     public static void removeChartY(JFreeChart chart, ECUxDataset data,
-    	Comparable xkey, Comparable ykey, int series) {
+	Comparable xkey, Comparable ykey, int series) {
 	editChartY(chart, data, xkey, ykey, series, false);
     }
 }

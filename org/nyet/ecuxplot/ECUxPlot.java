@@ -35,15 +35,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private ECUxDataset dataSet;
     private ECUxChartPanel chart;
     private JMenuBar menuBar;
-    private Comparable xkey="RPM";
     private AxisMenu xAxis;
     private AxisMenu yAxis;
     private AxisMenu yAxis2;
-    private static final Comparable[] initialYkey = {
-	"BoostPressureDesired",
-	"EngineLoadDesired"
-    };
+    private Comparable xkey;
 
+    private static final Comparable[] initialXkey = { "RPM" };
+    private static final Comparable[] initialYkey = {
+	"Calc WHP",
+	"Calc WTQ"
+    };
+    private static final Comparable[] initialYkey2 = {
+	"BoostPressureDesired",
+	"BoostPressureActual"
+    };
 
     private void setupAxisMenus(String[] headers) {
 
@@ -53,9 +58,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	if(headers.length<=0) return;
 
-	xAxis = new AxisMenu("X Axis", headers, this, true, this.xkey);
-	yAxis = new AxisMenu("Y Axis", headers, this, false, initialYkey[0]);
-	yAxis2 = new AxisMenu("Y Axis2", headers, this, false,initialYkey[1]);
+	xAxis = new AxisMenu("X Axis", headers, this, true, this.initialXkey);
+	yAxis = new AxisMenu("Y Axis", headers, this, false, this.initialYkey);
+	yAxis2 = new AxisMenu("Y Axis2", headers, this, false, this.initialYkey2);
 
 	this.menuBar.add(xAxis);
 	this.menuBar.add(yAxis);
@@ -171,8 +176,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     public ECUxPlot(final String title, String[] args) {
         super(title);
-
-	menuBar = new JMenuBar();
+	this.xkey = this.initialXkey[0];
+	this.menuBar = new JMenuBar();
 
 	FileMenu filemenu = new FileMenu("File", this);
 	menuBar.add(filemenu);
@@ -201,8 +206,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
         );
 
 	ECUxChartFactory.setChartX(chart, data, xkey);
-	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey[0], 0);
-	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey[1], 1);
+	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey, 0);
+	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey2, 1);
 
         return new ECUxChartPanel(chart);
     }

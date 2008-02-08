@@ -241,6 +241,7 @@ public abstract class LinearSmoothing extends Object
 	// System.out.println("input="+input.length+", nk="+nk);
 	double[] a = smoothAll(input, -nk, input.length+nk-1);
 	double[] output = input.clone();
+	//double[] output = new double[input.length];
 	System.arraycopy(a, 0, output, -nk, a.length);
 
 	return output;

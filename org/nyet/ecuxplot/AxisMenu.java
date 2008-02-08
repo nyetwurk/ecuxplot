@@ -36,7 +36,12 @@ public class AxisMenu extends JMenu {
 	item.addActionListener(new MenuListener(listener,this.getText()));
 	if(bg!=null) bg.add(item);
 	if(id.matches("RPM")) {
-	    this.add("Calc Acceleration", listener, bg);
+	    this.add("Calc Velocity", listener, bg);
+	    this.add("Calc Acceleration (RPM/s)", listener, bg);
+	    this.add("Calc Acceleration (m/s^2)", listener, bg);
+	    this.add("Calc Acceleration (g)", listener, bg);
+	    this.add("Calc WHP", listener, bg);
+	    this.add("Calc WTQ", listener, bg);
 	    this.add(item);
 	} else if(id.matches("MassAirFlow")) {
 	    this.add("Calc Load", listener, bg);
@@ -73,15 +78,21 @@ public class AxisMenu extends JMenu {
     }
 
     public AxisMenu (String text, String[] headers, SubActionListener listener,
-	boolean radioButton, Comparable initialChecked) {
+	boolean radioButton, Comparable[] initialChecked) {
 	super(text);
 
 	ButtonGroup bg = null;
 	if(radioButton) bg = new ButtonGroup();
 
 	for(int i=0;i<headers.length;i++) {
-	    this.add(headers[i], listener, bg,
-		headers[i].equals(initialChecked));
+	    boolean checked = false;
+	    for(int j=0;j<initialChecked.length;j++) {
+		if(headers[i].equals(initialChecked[j])) {
+		    checked = true;
+		    break;
+		}
+	    }
+	    this.add(headers[i], listener, bg, checked);
 	}
 
 	// put calc at bottom

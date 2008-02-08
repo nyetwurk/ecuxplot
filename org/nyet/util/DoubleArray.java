@@ -131,17 +131,53 @@ public class DoubleArray
 	return new DoubleArray(this._div(d.toArray()));
     }
 
+
+    public double[] _pow(double d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=Math.pow(this.array[i],d);
+	}
+	return out;
+    }
+    public DoubleArray pow(double d) {
+	return new DoubleArray(this._pow(d));
+    }
+
+    public double[] _min(double d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=Math.min(this.array[i],d);
+	}
+	return out;
+    }
+    public DoubleArray min(double d) {
+	return new DoubleArray(this._min(d));
+    }
+
+    public double[] _max(double d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=Math.max(this.array[i],d);
+	}
+	return out;
+    }
+    public DoubleArray max(double d) {
+	return new DoubleArray(this._max(d));
+    }
+
     public double[] _derivative(double[] d) {
         double[] out = new double[ sp ];
-	if(sp==1 || d.length<2 || d.length!=sp) {
-	    System.out.println("sp: " + sp +", d.len: " + d.length +
-	    ", sp=" + sp);
-	}
-	for(int i=0;i<this.sp;i++) {
-	    double dy, dx;
-	    int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
-	    out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
-	}
+        if(sp==1 || d.length<2 || d.length!=sp) {
+            System.out.println("sp: " + sp +", d.len: " + d.length +
+            ", sp=" + sp);
+        }
+        for(int i=0;i<this.sp;i++) {
+            double dy, dx;
+            int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
+            out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
+        }
+	//SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(4,6,0,1);
+	//return s.smoothAll(out);
 	return out;
     }
     public DoubleArray derivative(DoubleArray d) {
@@ -149,12 +185,11 @@ public class DoubleArray
     }
     public DoubleArray derivative(DoubleArray d, boolean smooth) {
 	if(!smooth) return this.derivative(d);
-	SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
-	return new DoubleArray(s.smoothAll(this._derivative(d.toArray()))).smooth();
+	return this.smooth().derivative(d).smooth();
     }
 
     public DoubleArray smooth() {
 	SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
-	return new DoubleArray(s.smoothAll(this.array));
+	return new DoubleArray(s.smoothAll(this.toArray()));
     }
 }
