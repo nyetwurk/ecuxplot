@@ -23,39 +23,33 @@ public class ECUxChartFactory {
     }
 
     public static JFreeChart create2AxisXYLineChart (
-	String title, String xAxisLabel,
-	String yAxisLabel, String y2AxisLabel,
-	XYDataset dataset1, XYDataset dataset2,
 	PlotOrientation orientation,
 	boolean legend, boolean tooltips, boolean urls) {
 
 	final JFreeChart chart = ChartFactory.createXYLineChart(
-	    title, xAxisLabel, yAxisLabel,
-	    dataset1, orientation, legend, tooltips, urls);
+	    "", "", "",
+	    new DefaultXYDataset(), orientation, legend, tooltips, urls);
 
 	final XYPlot plot = chart.getXYPlot();
 	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
 
-	addAxis(plot, y2AxisLabel, dataset2, 1, true, false);
+	addAxis(plot, "", new DefaultXYDataset(), 1, true, false);
 
 	return chart;
     }
 
     public static JFreeChart create2AxisScatterPlot (
-	String title, String xAxisLabel,
-	String yAxisLabel, String y2AxisLabel,
-	XYDataset dataset1, XYDataset dataset2,
 	PlotOrientation orientation,
 	boolean legend, boolean tooltips, boolean urls) {
 
 	final JFreeChart chart = ChartFactory.createScatterPlot(
-	    title, xAxisLabel, yAxisLabel,
-	    dataset1, orientation, legend, tooltips, urls);
+	    "", "", "",
+	    new DefaultXYDataset(), orientation, legend, tooltips, urls);
 
 	final XYPlot plot = chart.getXYPlot();
 	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
 
-	addAxis(plot, y2AxisLabel, dataset2, 1, false, true);
+	addAxis(plot, "", new DefaultXYDataset(), 1, false, true);
 
 	return chart;
     }

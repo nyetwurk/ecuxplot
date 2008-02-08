@@ -196,9 +196,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     private static ECUxChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey) throws Exception {
         final JFreeChart chart = ECUxChartFactory.create2AxisScatterPlot(
-            "", // title
-	    "", "", "", // xaxis, yaxis, yaxis2 label
-            new DefaultXYDataset(), new DefaultXYDataset(),
 	    PlotOrientation.VERTICAL,
             true,	// show legend
             true,	// show tooltips
