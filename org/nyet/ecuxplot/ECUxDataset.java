@@ -34,7 +34,7 @@ public class ECUxDataset extends Dataset {
 	final double FA=2.034;
 	final double D=1.293;	// kg/m^3 air, standard density
 
-	DoubleArray windDrag = v.pow(3).mult(1/2 * Cd * D * FA);
+	DoubleArray windDrag = v.pow(3).mult(0.5 * Cd * D * FA);
 
 	final double rolling_drag=0.015;
 
