@@ -29,14 +29,16 @@ VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
 EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java ECUxChartPanel.java AxisMenu.java
 
-
-
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
 UT_CLASSES=$(UT_SOURCES:%.java=org/nyet/util/%.class)
 VM_CLASSES=$(VM_SOURCES:%.java=vec_math/%.class)
+MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 
-MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class) $(LF_CLASSES) $(UT_CLASSES)
-EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class) $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
+mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
+EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
+
+$(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
+$(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
@@ -66,10 +68,9 @@ version.txt: Makefile
 	@rm -f version.txt
 	echo $(VERSION)r$(RELEASE) > $@
 
-mapdump.class: mapdump.java $(MP_CLASSES)
 ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
-	jar cfm $@ ECUxPlot.MF $(EX_CLASSES)
+	jar cfm $@ ECUxPlot.MF org vec_math
 
 %.xml: %.xml.template Makefile
 	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
