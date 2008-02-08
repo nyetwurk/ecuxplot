@@ -13,6 +13,8 @@ import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 
 public class AxisMenu extends JMenu {
+    private Comparable[] initialChecked;
+
     private Hashtable<String, JMenu> subMenus = new Hashtable<String, JMenu>();
 
     private void addToSubmenu(String id, AbstractButton item, boolean autoadd) {
@@ -25,11 +27,20 @@ public class AxisMenu extends JMenu {
 	sub.add(item);
     }
     private void addToSubmenu(String id, AbstractButton item) {
-	addToSubmenu(id, item, true);
+	addToSubmenu(id, item, true);	// autoadd to submenu
     }
 
     private void add(String id, SubActionListener listener,
-	ButtonGroup bg, boolean checked) {
+	ButtonGroup bg) {
+	boolean checked = false;
+
+	for(int i=0;i<initialChecked.length;i++) {
+	    if(id.equals(initialChecked[i])) {
+		checked = true;
+		break;
+	    }
+	}
+
 	AbstractButton item = (bg==null)?new JCheckBox(id, checked):
 	    new JRadioButtonMenuItem(id, checked);
 
@@ -48,7 +59,7 @@ public class AxisMenu extends JMenu {
 	    this.add(item);
 	// goes before .*Load.* to catch CalcLoad
 	} else if(id.matches("^Calc .*")) {
-	    // calc is added last, do not auto add
+	    // calc is added last, do not autoadd to submenu
 	    addToSubmenu("Calc", item, false);
 
 	} else if(id.matches(".*Fuel.*")) {
@@ -72,27 +83,17 @@ public class AxisMenu extends JMenu {
 	    this.add(item);
 	}
     }
-    private void add(String id,
-	SubActionListener listener, ButtonGroup bg) {
-	this.add(id, listener, bg, false);
-    }
 
     public AxisMenu (String text, String[] headers, SubActionListener listener,
 	boolean radioButton, Comparable[] initialChecked) {
 	super(text);
+	this.initialChecked=initialChecked;
 
 	ButtonGroup bg = null;
 	if(radioButton) bg = new ButtonGroup();
 
 	for(int i=0;i<headers.length;i++) {
-	    boolean checked = false;
-	    for(int j=0;j<initialChecked.length;j++) {
-		if(headers[i].equals(initialChecked[j])) {
-		    checked = true;
-		    break;
-		}
-	    }
-	    this.add(headers[i], listener, bg, checked);
+	    this.add(headers[i], listener, bg);
 	}
 
 	// put calc at bottom
