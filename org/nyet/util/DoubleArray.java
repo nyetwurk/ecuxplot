@@ -176,16 +176,15 @@ public class DoubleArray
             int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
             out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
         }
-	//SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(4,6,0,1);
-	//return s.smoothAll(out);
-	return out;
+	MovingAverageSmoothing s = new MovingAverageSmoothing(11);
+	return s.smoothAll(out);
     }
     public DoubleArray derivative(DoubleArray d) {
 	return new DoubleArray(this._derivative(d.toArray()));
     }
     public DoubleArray derivative(DoubleArray d, boolean smooth) {
 	if(!smooth) return this.derivative(d);
-	return this.smooth().derivative(d.smooth()).smooth().smooth();
+	return this.smooth().derivative(d).smooth();
     }
 
     public DoubleArray smooth() {

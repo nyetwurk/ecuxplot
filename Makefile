@@ -23,7 +23,8 @@ LF_SOURCES= Dataset.java Units.java CSVFileFilter.java CSVRow.java
 UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 	    WaitCursor.java MMapFile.java \
 	    MenuListener.java SubActionListener.java \
-	    GenericFileFilter.java Unsigned.java DoubleArray.java
+	    GenericFileFilter.java Unsigned.java DoubleArray.java \
+	    MovingAverageSmoothing.java
 
 VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
