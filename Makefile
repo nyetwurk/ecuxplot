@@ -35,11 +35,8 @@ UT_CLASSES=$(UT_SOURCES:%.java=org/nyet/util/%.class)
 VM_CLASSES=$(VM_SOURCES:%.java=vec_math/%.class)
 MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 
-mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
 
-$(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
-$(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
@@ -68,6 +65,10 @@ clean:
 version.txt: Makefile
 	@rm -f version.txt
 	echo $(VERSION)r$(RELEASE) > $@
+
+mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
+$(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
+$(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
 ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
