@@ -6,4 +6,4 @@ clean:
 	rm -f $(TARGETS)
 
 %.csv: %.kp %.bin
-	../mapdump -i $*.bin $< > $@
+	(cd ..; ./mapdump -i data/$*.bin data/$< > data/$@)
