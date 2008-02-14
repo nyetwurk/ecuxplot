@@ -41,9 +41,9 @@ EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
-JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar
+JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar:applib.jar
 
-JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -target 1.5
+JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
 
 all: $(TARGETS) .classpath version.txt
 jar: ECUxPlot-$(VERSION)r$(RELEASE).jar
