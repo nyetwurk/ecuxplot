@@ -160,7 +160,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	    JMenuItem exportitem = new JMenuItem("Export Chart");
 	    exportitem.setAccelerator(KeyStroke.getKeyStroke(
-		KeyEvent.VK_F4, ActionEvent.ALT_MASK));
+		KeyEvent.VK_E, ActionEvent.CTRL_MASK));
 	    exportitem.addActionListener(listener);
 	    this.add(exportitem);
 
