@@ -54,7 +54,8 @@ scp: ECUxPlot-$(VERSION)r$(RELEASE).zip
 clean:
 	rm -f ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml version.txt .classpath
 	rm -f *.class
-	find org/nyet -name \*.class | xargs rm
+	find org -name \*.class | xargs rm
+	find vec_math -name \*.class | xargs rm
 
 %.csv: %.kp mapdump
 	./mapdump -r $(REFERENCE) $< > $@
@@ -72,7 +73,7 @@ $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
 ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
-	jar cfm $@ ECUxPlot.MF org vec_math
+	jar cfm $@ ECUxPlot.MF `find org -name \*.class` `find vec_math -name \*.class`
 
 %.xml: %.xml.template Makefile
 	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
