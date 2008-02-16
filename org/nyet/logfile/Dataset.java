@@ -56,14 +56,10 @@ public class Dataset {
 
     public class Key implements Comparable {
 	private String s;
-	private Comparable c;
 	private Integer series;
-	public Key (Comparable c, int series) {
-	    if(c instanceof String) {
-		this.s=(String)c;
-		this.series=new Integer(series);
-	    } else
-		throw new ClassCastException(c.toString() + ": not a String!");
+	public Key (String s, int series) {
+	    this.s=s;
+	    this.series=new Integer(series);
 	}
 	public String toString() { return this.s + " " + (this.series+1); }
 	public String getString() { return this.s; }

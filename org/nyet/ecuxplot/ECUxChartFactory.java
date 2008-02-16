@@ -82,7 +82,7 @@ public class ECUxChartFactory {
 	for(int i=0;i<ranges.size();i++) {
 	    Dataset.Range r=ranges.get(i);
 	    double[][] s = {data.getData(xkey, r), data.getData(ykey,r)};
-	    d.addSeries(data.new Key(ykey,i), s);
+	    d.addSeries(data.new Key(ykey.toString(),i), s);
 	}
     }
     private static void removeDataset(DefaultXYDataset d, Comparable ykey) {
