@@ -61,6 +61,20 @@ public class ECUxChartFactory {
 	}
     }
 
+    public static void setChartStyle(JFreeChart chart, boolean lines,
+	boolean shapes) {
+
+	final XYPlot plot = chart.getXYPlot();
+	for(int i=0; i<plot.getDatasetCount(); i++) {
+	    final XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer(i);
+	    XYDataset dataset = plot.getDataset(i);
+	    for(int j=0; j<dataset.getSeriesCount(); j++) {
+		renderer.setSeriesLinesVisible(j, lines);
+		renderer.setSeriesShapesVisible(j, shapes);
+	    }
+	}
+    }
+
     public static void setSeriesPaint(JFreeChart chart, int series,
 	java.awt.Paint paint) {
 

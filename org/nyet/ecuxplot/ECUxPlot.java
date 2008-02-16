@@ -10,6 +10,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
+import javax.swing.JCheckBox;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JMenuItem;
@@ -32,7 +33,7 @@ import org.nyet.util.SubActionListener;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private ECUxDataset dataSet;
-    private ECUxChartPanel chart;
+    private ECUxChartPanel chartPanel;
     private JMenuBar menuBar;
     private AxisMenu xAxis;
     private AxisMenu yAxis;
@@ -70,8 +71,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	WaitCursor.startWaitCursor(this);
 	try {
 	    this.dataSet = new ECUxDataset(file.getAbsolutePath());
-	    this.chart = CreateChartPanel(this.dataSet, this.xkey);
-	    setContentPane(this.chart);
+	    this.chartPanel = CreateChartPanel(this.dataSet, this.xkey);
+	    setContentPane(this.chartPanel);
 	    this.setTitle("ECUxPlot " + file.getName());
 	    setupAxisMenus(this.dataSet.headers);
 	} catch (Exception e) {
@@ -86,14 +87,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	if(source.getText().equals("Quit")) {
 	    System.exit(0);
 	} else if(source.getText().equals("Export Chart")) {
-	    if(chart == null) {
+	    if(this.chartPanel == null) {
 		JOptionPane.showMessageDialog(this, "Open a CSV first");
 	    } else {
 		try {
 		    String [] a=this.dataSet.getFilename().split("\\.");
 		    String stem="";
 		    for(int i=0; i<a.length-1; i++) stem+=a[i];
-		    this.chart.doSaveAs(stem);
+		    this.chartPanel.doSaveAs(stem);
 		} catch (Exception e) {
 		    JOptionPane.showMessageDialog(this, e);
 		    e.printStackTrace();
@@ -109,13 +110,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    plot.setLocation(where);
 	    plot.setVisible(true);
 	} else if(source.getText().equals("Open File")) {
+	    // current working dir 
 	    //final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+	    // home dir
 	    final JFileChooser fc = new JFileChooser();
 	    fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
 		loadFile(fc.getSelectedFile());
 	    }
+	} else if(source.getText().equals("Scatter plot")) {
+	    boolean scatter = source.isSelected();
+	    ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !scatter, scatter);
+	} else if(source.getText().equals("Filter data")) {
+	    // todo
 	}
     }
 
@@ -124,11 +132,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	// System.out.println(source.getText() + ":" + parentId);
 	if(parentId.equals("X Axis")) {
 	    this.xkey=source.getText();
-	    ECUxChartFactory.setChartX(this.chart, dataSet, this.xkey);
+	    ECUxChartFactory.setChartX(this.chartPanel, dataSet, this.xkey);
 	} else if(parentId.equals("Y Axis")) {
-	    ECUxChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),0,source.isSelected());
+	    ECUxChartFactory.editChartY(this.chartPanel, dataSet, this.xkey, source.getText(),0,source.isSelected());
 	} else if(parentId.equals("Y Axis2")) {
-	    ECUxChartFactory.editChartY(this.chart, dataSet, this.xkey, source.getText(),1,source.isSelected());
+	    ECUxChartFactory.editChartY(this.chartPanel, dataSet, this.xkey, source.getText(),1,source.isSelected());
 	}
     }
 
@@ -173,6 +181,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
+    private final class OptionsMenu extends JMenu {
+	public OptionsMenu(String id, ActionListener listener) {
+	    super(id);
+	    JCheckBox scatter = new JCheckBox("Scatter plot");
+	    scatter.addActionListener(listener);
+	    this.add(scatter);
+	    // todo
+	    //JCheckBox filter = new JCheckBox("Filter data", true);
+	    //filter.addActionListener(listener);
+	    //this.add(filter);
+	}
+    }
+
     public ECUxPlot(final String title, String[] args) {
         super(title);
 	this.xkey = this.initialXkey[0];
@@ -180,6 +201,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	FileMenu filemenu = new FileMenu("File", this);
 	menuBar.add(filemenu);
+
+
+	OptionsMenu optmenu = new OptionsMenu("Options", this);
+	menuBar.add(optmenu);
 
 	setJMenuBar(menuBar);
 
