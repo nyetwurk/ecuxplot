@@ -71,6 +71,11 @@ mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
+ECUxPlot.MF: Makefile
+	@echo "Manifest-Version: 1.0" > $@
+	@echo "Main-Class: org.nyet.ecuxplot.ECUxPlot" >> $@
+	@echo "Class-Path: $(subst :, ,$(JARS))" >> $@
+
 ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
 	jar cfm $@ ECUxPlot.MF `find org -name \*.class` `find vec_math -name \*.class`
@@ -80,9 +85,9 @@ ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 ECUxPlot.exe: ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml version.txt
 	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
 
-ECUxPlot-$(VERSION)r$(RELEASE).zip: ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh
+ECUxPlot-$(VERSION)r$(RELEASE).zip: ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh $(subst :, ,$(JARS))
 	@rm -f $@
-	zip $@ $^ jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar
+	zip $@ $^ version.txt $(subst :, ,$(JARS))
 
 %.class: %.java
 	javac $(JFLAGS) $<

@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: org.nyet.ecuxplot.ECUxPlot
-Class-Path: jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar
