@@ -108,8 +108,8 @@ public class ECUxChartFactory {
 	    XYDataset dataset = plot.getDataset(i);
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
 	    for(int j=0;j<dataset.getSeriesCount();j++) {
-		Comparable ykey = dataset.getSeriesKey(j);
-		addDataset(newdataset, data, xkey, ykey);
+		Dataset.Key ykey = (Dataset.Key)dataset.getSeriesKey(j);
+		addDataset(newdataset, data, xkey, ykey.getString());
 	    }
 	    plot.setDataset(i, newdataset);
 	}

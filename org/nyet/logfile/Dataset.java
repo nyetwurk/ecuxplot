@@ -63,7 +63,7 @@ public class Dataset {
 		this.s=(String)c;
 		this.series=new Integer(series);
 	    } else
-		throw new ClassCastException("Not a String!");
+		throw new ClassCastException(c.toString() + ": not a String!");
 	}
 	public String toString() { return this.s + " " + (this.series+1); }
 	public String getString() { return this.s; }
@@ -140,14 +140,17 @@ public class Dataset {
 	Range r = null;
 	ArrayList<Range> out = new ArrayList<Range>();
 	for(int i=0;i<this.rows; i++) {
+	    boolean end = false;
 	    if(dataValid(i)) {
 		if(r==null) r = new Range(i);
+		if(i==this.rows-1) end=true; // we hit end of data
 	    } else {
-		if(r!=null) {
-		    r.end=i;
-		    if(rangeValid(r)) out.add(r);
-		    r=null;
-		}
+		end = true;
+	    }
+	    if(r!=null && end) {
+		r.end=i;
+		if(rangeValid(r)) out.add(r);
+		r=null;
 	    }
 	}
 	return out;
