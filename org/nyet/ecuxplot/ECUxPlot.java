@@ -18,7 +18,6 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
 
 import org.jfree.data.time.Month;
 import org.jfree.data.xy.DefaultXYDataset;
@@ -195,12 +194,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private static ECUxChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey) throws Exception {
-        final JFreeChart chart = ECUxChartFactory.create2AxisScatterPlot(
-	    PlotOrientation.VERTICAL,
-            true,	// show legend
-            true,	// show tooltips
-            false	// show urls
-        );
+        final JFreeChart chart = ECUxChartFactory.create2AxisChart(false);
 
 	ECUxChartFactory.setChartX(chart, data, xkey);
 	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey, 0);

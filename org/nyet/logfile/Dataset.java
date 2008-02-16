@@ -11,6 +11,16 @@ import org.nyet.util.DoubleArray;
 public class Dataset {
     public String[] headers;
     private ArrayList<Column> columns;
+    private int rows;
+
+    public class Range {
+	public int start;
+	public int end;
+	public Range(int s, int e) { this.start=s; this.end=e; }
+	public Range(int s) { this(s,s); }
+	public Range() { this(0,0); }
+	public int size() { return this.end-this.start+1; }
+    }
 
     public class Column {
 	private Comparable id;
@@ -41,8 +51,46 @@ public class Dataset {
 	    this.data = data;
 	}
 
-	public void add(String s) {
-	    data.append(Double.valueOf(s));
+	public void add(String s) { data.append(Double.valueOf(s)); }
+    }
+
+    public class Key implements Comparable {
+	private String s;
+	private Comparable c;
+	private Integer series;
+	public Key (Comparable c, int series) {
+	    if(c instanceof String) {
+		this.s=(String)c;
+		this.series=new Integer(series);
+	    } else
+		throw new ClassCastException("Not a String!");
+	}
+	public String toString() { return this.s + " " + (this.series+1); }
+	public String getString() { return this.s; }
+	public Integer getSeries() { return this.series; }
+
+	public int compareTo(Object o) {
+	    if(o instanceof Key) {
+		Key k = (Key)o;
+		int out = this.s.compareTo(k.s);
+		if(out!=0) return out;
+		return this.series.compareTo(k.series);
+	    }
+	    if(o instanceof String) {
+		return this.s.compareTo((String)o);
+	    }
+	    throw new ClassCastException("Not a Key or a String!");
+	}
+	public boolean equals(Object o) {
+	    if(o instanceof Key) {
+		Key k = (Key)o;
+		if(!this.s.equals(k.s)) return false;
+		return this.series.equals(k.series);
+	    }
+	    if(o instanceof String) {
+		return this.s.equals((String)o);
+	    }
+	    throw new ClassCastException("Not a Key or a String!");
 	}
     }
 
@@ -50,6 +98,7 @@ public class Dataset {
 
     public Dataset(String filename) throws Exception {
 	CSVReader reader = new CSVReader(new FileReader(filename));
+	this.rows = 0;
 	this.headers = reader.readNext();
 	this.columns = new ArrayList<Column>();
 	int i;
@@ -61,6 +110,7 @@ public class Dataset {
 	    for(i=0;i<nextLine.length;i++) {
 		this.columns.get(i).add(nextLine[i]);
 	    }
+	    this.rows++;
 	}
     }
 
@@ -69,31 +119,42 @@ public class Dataset {
     }
 
     public String units(Comparable id) {
-	return this.find(id).units;
+	return this.get(id).units;
     }
 
-    public Column find(Comparable id) {
+    public Column get(Comparable id) {
 	Iterator itc = this.columns.iterator();
 	Column c = null;
 	while(itc.hasNext()) {
 	    c = (Column) itc.next();
-	    if(c.id.equals(id)) return c;
+	    // order is important!
+	    if(id.equals(c.id)) return c;
 	}
 	return null;
     }
 
     protected boolean dataValid(int i) { return true; }
+    protected boolean rangeValid(Range r) { return true; }
 
-    public double[] asDoubles(String id) {
-	Column c = find(id);
-	if(c==null) return new double[0];
-	double[] f = new double[c.data.size()];
-	int j=0;
-	for(int i=0;i<c.data.size(); i++) {
-	    if(dataValid(i)) f[j++]=c.data.get(i);
+    public ArrayList<Range> getRanges() {
+	Range r = null;
+	ArrayList<Range> out = new ArrayList<Range>();
+	for(int i=0;i<this.rows; i++) {
+	    if(dataValid(i)) {
+		if(r==null) r = new Range(i);
+	    } else {
+		if(r!=null) {
+		    r.end=i;
+		    if(rangeValid(r)) out.add(r);
+		    r=null;
+		}
+	    }
 	}
-	double out[] = new double[j];
-	System.arraycopy(f, 0, out, 0, j);
 	return out;
+    }
+
+    public double[] getData(Comparable id, Range r) {
+	Column c = this.get(id);
+	return c.data.toArray(r.start, r.end);
     }
 }

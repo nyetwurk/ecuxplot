@@ -1,6 +1,9 @@
 package org.nyet.util;
 
 import vec_math.SavitzkyGolaySmoothing;
+import ru.sscc.spline.Spline;
+import ru.sscc.spline.polynomial.POddSplineCreator;
+import ru.sscc.util.CalculatingException;
 
 public class DoubleArray
 {
@@ -57,6 +60,18 @@ public class DoubleArray
         double[] trimmedArray = new double[ sp ];
         System.arraycopy( array, 0, trimmedArray, 0, trimmedArray.length );
         return trimmedArray;
+    }
+
+    public double[] toArray(int start, int end)	// end is inclusive
+    {
+        double[] trimmedArray = new double[ end-start+1 ];
+        System.arraycopy( array, start, trimmedArray, 0, trimmedArray.length );
+        return trimmedArray;
+    }
+
+    public double[] toArray(int start)
+    {
+	return this.toArray(start, this.sp-1);
     }
 
     public double get(int i) {
@@ -190,5 +205,33 @@ public class DoubleArray
     public DoubleArray smooth() {
 	SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
 	return new DoubleArray(s.smoothAll(this.toArray()));
+    }
+
+    public Spline spline(int order, double[] mesh) {
+	try {
+	    return POddSplineCreator.createSpline(order, mesh, this.toArray());
+	} catch (CalculatingException e){
+	    System.out.println(e);
+	}
+	return null;
+    }
+    public Spline spline(double[] mesh) { return this.spline(2, mesh); }
+    public Spline spline(int order) {
+	try {
+	    return POddSplineCreator.createSpline(order, 0, 1, this.sp, this.toArray());
+	} catch (CalculatingException e){
+	    System.out.println(e);
+	}
+	return null;
+    }
+    public Spline spline() throws CalculatingException { return this.spline(2); }
+
+    public double[] _splineDerivative(double[] d) {
+        double[] out = new double[ sp ];
+	Spline spl = this.spline(d);
+        for(int i=0;i<this.sp;i++) {
+	    out[i]=spl.value(d[i], 1);
+	}
+	return out;
     }
 }

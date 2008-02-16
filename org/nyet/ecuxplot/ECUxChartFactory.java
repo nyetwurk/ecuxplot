@@ -1,8 +1,11 @@
 package org.nyet.ecuxplot;
 
+import java.util.ArrayList;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.renderer.xy.*;
 import org.jfree.chart.plot.XYPlot;
@@ -10,6 +13,8 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.DefaultXYDataset;
 
+
+import org.nyet.logfile.Dataset;
 
 public class ECUxChartFactory {
     private static void addAxis(XYPlot plot, String label, XYDataset dataset,
@@ -22,13 +27,10 @@ public class ECUxChartFactory {
 	plot.setRenderer(1, new XYLineAndShapeRenderer(lines, shapes));
     }
 
-    public static JFreeChart create2AxisXYLineChart (
-	PlotOrientation orientation,
-	boolean legend, boolean tooltips, boolean urls) {
-
+    public static JFreeChart create2AxisXYLineChart () {
 	final JFreeChart chart = ChartFactory.createXYLineChart(
 	    "", "", "",
-	    new DefaultXYDataset(), orientation, legend, tooltips, urls);
+	    new DefaultXYDataset(), PlotOrientation.VERTICAL, true, true, false);
 
 	final XYPlot plot = chart.getXYPlot();
 	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
@@ -38,13 +40,10 @@ public class ECUxChartFactory {
 	return chart;
     }
 
-    public static JFreeChart create2AxisScatterPlot (
-	PlotOrientation orientation,
-	boolean legend, boolean tooltips, boolean urls) {
-
+    public static JFreeChart create2AxisScatterPlot () {
 	final JFreeChart chart = ChartFactory.createScatterPlot(
 	    "", "", "",
-	    new DefaultXYDataset(), orientation, legend, tooltips, urls);
+	    new DefaultXYDataset(), PlotOrientation.VERTICAL, true, true, false);
 
 	final XYPlot plot = chart.getXYPlot();
 	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
@@ -52,6 +51,14 @@ public class ECUxChartFactory {
 	addAxis(plot, "", new DefaultXYDataset(), 1, false, true);
 
 	return chart;
+    }
+
+    public static JFreeChart create2AxisChart (boolean scatter) {
+	if(scatter) {
+	    return ECUxChartFactory.create2AxisScatterPlot();
+	} else {
+	    return ECUxChartFactory.create2AxisXYLineChart();
+	}
     }
 
     public static void setSeriesPaint(JFreeChart chart, int series,
@@ -69,12 +76,44 @@ public class ECUxChartFactory {
 	renderer.setSeriesPaint(subseries, paint);
     }
 
-    public static XYDataset createDataset(ECUxDataset data, Comparable xkey, Comparable ykey) throws Exception {
-        final DefaultXYDataset dataset = new DefaultXYDataset();
-	double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
-        dataset.addSeries(ykey, s);
-
-        return dataset;
+    private static void addSeries(DefaultXYDataset d, ECUxDataset data, Comparable xkey, Dataset.Key ykey) {
+	data.filter.enabled = !xkey.equals("TIME");
+	ArrayList<Dataset.Range> ranges = data.getRanges();
+	int i = ykey.getSeries();
+	if(i<=ranges.size()) {
+	    Comparable k=ykey;
+	    if(ranges.size()>1) {
+		Dataset.Range r=ranges.get(i);
+	    } else {
+		k=ykey.getString();
+	    }
+	    double[][] s = {data.getData(xkey, ranges.get(i)), data.getData(ykey,ranges.get(i))};
+	    d.addSeries(ykey, s);
+	}
+    }
+    private static void addDataset(DefaultXYDataset d, ECUxDataset data, Comparable xkey, Comparable ykey) {
+	data.filter.enabled = !xkey.equals("TIME");
+	ArrayList<Dataset.Range> ranges = data.getRanges();
+	for(int i=0;i<ranges.size();i++) {
+	    addSeries(d, data, xkey, data.new Key(ykey, i));
+	}
+    }
+    private static void removeDataset(DefaultXYDataset d, Comparable ykey) {
+	if(ykey instanceof Dataset.Key) {
+	    ykey = ((Dataset.Key)ykey).getString();
+	}
+	for(int i=0;i<d.getSeriesCount();i++) {
+	    Comparable k = d.getSeriesKey(i);
+	    if(k.equals(ykey)) {
+		if(k instanceof Dataset.Key) {
+		    Dataset.Key dk = (Dataset.Key)k;
+		}
+		d.removeSeries(k);
+		// stay here, we just removed this index, the next one in
+		// the list will appear at i again.
+		i--;
+	    }
+	}
     }
 
     public static void setChartX(JFreeChart chart, ECUxDataset data,
@@ -85,9 +124,7 @@ public class ECUxChartFactory {
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
 	    for(int j=0;j<dataset.getSeriesCount();j++) {
 		Comparable ykey = dataset.getSeriesKey(j);
-		data.filter.enabled = !xkey.equals("TIME");
-		double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
-		newdataset.addSeries(ykey, s);
+		addDataset(newdataset, data, xkey, ykey);
 	    }
 	    plot.setDataset(i, newdataset);
 	}
@@ -104,21 +141,26 @@ public class ECUxChartFactory {
 	String title = "";
 	for(int i=0; i<plot.getDatasetCount(); i++) {
 	    final XYDataset dataset = plot.getDataset(i);
-	    String seriesTitle = "";
-	    String label="", prev=null;
+	    String seriesTitle = "", sprev=null;
+	    String label="", lprev=null;
 	    for(int j=0; dataset!=null && j<dataset.getSeriesCount(); j++) {
-		Comparable key = dataset.getSeriesKey(j);
+		Dataset.Key key = (Dataset.Key)dataset.getSeriesKey(j);
 		if(key==null) continue;
+		String s = key.getString();
 		String l = data.units(key);
-		if(l!=null) {
-		    if(prev==null || !l.equals(prev)) {
-			if(!label.equals("")) label += ", ";
-			label += l;
-		    }
+
+		if(sprev==null || !s.equals(sprev)) {
 		    if(!seriesTitle.equals("")) seriesTitle += ", ";
-		    seriesTitle += key.toString();
-		    prev=l;
+		    seriesTitle += s;
 		}
+		sprev=s;
+
+		if(l==null) continue;
+		if(lprev==null || !l.equals(lprev)) {
+		    if(!label.equals("")) label += ", ";
+		    label += l;
+		}
+		lprev=l;
 	    }
 	    if(!seriesTitle.equals("")) {
 		if(!title.equals("")) title += " and ";
@@ -134,15 +176,8 @@ public class ECUxChartFactory {
 
 	final XYPlot plot = chart.getXYPlot();
 	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(series);
-	if(add) {
-	    data.filter.enabled = !xkey.equals("TIME");
-	    double[][] s = {data.asDoubles(xkey.toString()), data.asDoubles(ykey.toString())};
-	    if(s[0].length == s[1].length) {
-		dataset.addSeries(ykey, s);
-	    }
-	} else {
-	    dataset.removeSeries(ykey);
-	}
+	if(add) addDataset(dataset, data, xkey, ykey);
+	else removeDataset(dataset, ykey);
 	updateLabelTitle(chart, data);
     }
     public static void editChartY(ChartPanel chartPanel, ECUxDataset data,
