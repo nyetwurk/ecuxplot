@@ -1,5 +1,5 @@
 VERSION := 0.0
-RELEASE := 1.1
+RELEASE := 1.2
 
 UNAME := $(shell uname -o)
 
