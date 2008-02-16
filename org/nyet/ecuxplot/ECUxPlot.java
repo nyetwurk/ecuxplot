@@ -39,6 +39,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private AxisMenu yAxis;
     private AxisMenu yAxis2;
     private Comparable xkey;
+    private boolean scatter=false;
 
     private static final Comparable[] initialXkey = { "RPM" };
     private static final Comparable[] initialYkey = {
@@ -71,7 +72,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	WaitCursor.startWaitCursor(this);
 	try {
 	    this.dataSet = new ECUxDataset(file.getAbsolutePath());
-	    this.chartPanel = CreateChartPanel(this.dataSet, this.xkey);
+	    this.chartPanel = CreateChartPanel(this.dataSet, this.xkey, this.scatter);
 	    setContentPane(this.chartPanel);
 	    this.setTitle("ECUxPlot " + file.getName());
 	    setupAxisMenus(this.dataSet.headers);
@@ -120,8 +121,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		loadFile(fc.getSelectedFile());
 	    }
 	} else if(source.getText().equals("Scatter plot")) {
-	    boolean scatter = source.isSelected();
-	    ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !scatter, scatter);
+	    this.scatter = source.isSelected();
+	    ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !this.scatter, this.scatter);
 	} else if(source.getText().equals("Filter data")) {
 	    // todo
 	}
@@ -218,8 +219,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this(title, null);
     }
 
-    private static ECUxChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey) throws Exception {
-        final JFreeChart chart = ECUxChartFactory.create2AxisChart(false);
+    private static ECUxChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey, boolean scatter) throws Exception {
+        final JFreeChart chart = ECUxChartFactory.create2AxisChart(scatter);
 
 	ECUxChartFactory.setChartX(chart, data, xkey);
 	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey, 0);
