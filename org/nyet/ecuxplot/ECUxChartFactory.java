@@ -76,38 +76,23 @@ public class ECUxChartFactory {
 	renderer.setSeriesPaint(subseries, paint);
     }
 
-    private static void addSeries(DefaultXYDataset d, ECUxDataset data, Comparable xkey, Dataset.Key ykey) {
-	data.filter.enabled = !xkey.equals("TIME");
-	ArrayList<Dataset.Range> ranges = data.getRanges();
-	int i = ykey.getSeries();
-	if(i<=ranges.size()) {
-	    Comparable k=ykey;
-	    if(ranges.size()>1) {
-		Dataset.Range r=ranges.get(i);
-	    } else {
-		k=ykey.getString();
-	    }
-	    double[][] s = {data.getData(xkey, ranges.get(i)), data.getData(ykey,ranges.get(i))};
-	    d.addSeries(ykey, s);
-	}
-    }
     private static void addDataset(DefaultXYDataset d, ECUxDataset data, Comparable xkey, Comparable ykey) {
 	data.filter.enabled = !xkey.equals("TIME");
 	ArrayList<Dataset.Range> ranges = data.getRanges();
 	for(int i=0;i<ranges.size();i++) {
-	    addSeries(d, data, xkey, data.new Key(ykey, i));
+	    Dataset.Range r=ranges.get(i);
+	    double[][] s = {data.getData(xkey, r), data.getData(ykey,r)};
+	    d.addSeries(data.new Key(ykey,i), s);
 	}
     }
     private static void removeDataset(DefaultXYDataset d, Comparable ykey) {
 	if(ykey instanceof Dataset.Key) {
 	    ykey = ((Dataset.Key)ykey).getString();
 	}
+	// ykey might be a string, so we have to walk series ourselves
 	for(int i=0;i<d.getSeriesCount();i++) {
 	    Comparable k = d.getSeriesKey(i);
 	    if(k.equals(ykey)) {
-		if(k instanceof Dataset.Key) {
-		    Dataset.Key dk = (Dataset.Key)k;
-		}
 		d.removeSeries(k);
 		// stay here, we just removed this index, the next one in
 		// the list will appear at i again.
@@ -144,9 +129,13 @@ public class ECUxChartFactory {
 	    String seriesTitle = "", sprev=null;
 	    String label="", lprev=null;
 	    for(int j=0; dataset!=null && j<dataset.getSeriesCount(); j++) {
-		Dataset.Key key = (Dataset.Key)dataset.getSeriesKey(j);
+		Comparable key = dataset.getSeriesKey(j);
 		if(key==null) continue;
-		String s = key.getString();
+		String s;
+
+		if(key instanceof Dataset.Key) s = ((Dataset.Key)key).getString();
+		else s = key.toString();
+
 		String l = data.units(key);
 
 		if(sprev==null || !s.equals(sprev)) {
