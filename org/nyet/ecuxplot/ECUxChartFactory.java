@@ -187,6 +187,7 @@ public class ECUxChartFactory {
 	if(add) addDataset(dataset, data, xkey, ykey);
 	else removeDataset(dataset, ykey);
 	updateLabelTitle(chart, data);
+	plot.getRangeAxis(series).setVisible(dataset.getSeriesCount()>0);
     }
     public static void editChartY(ChartPanel chartPanel, ECUxDataset data,
 	Comparable xkey, Comparable ykey, int series, boolean add) {
