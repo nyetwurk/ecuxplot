@@ -69,6 +69,12 @@ public class AxisMenu extends JMenu {
 	    }
 	} else if(id.matches("^Boost.*")) {
 	    addToSubmenu("Boost", item);
+	    if(id.matches("BoostPressureDesired")) {
+		this.add("Calc BoostPressureDesired (PSI)", listener, bg);
+	    }
+	    if(id.matches("BoostPressureActual")) {
+		this.add("Calc BoostPressureActual (PSI)", listener, bg);
+	    }
 	} else if(id.matches("^Ignition.*")) {
 	    addToSubmenu("Ignition", item);
 	} else if(id.matches("^Knock.*")) {

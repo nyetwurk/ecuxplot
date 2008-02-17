@@ -44,6 +44,13 @@ public class ECUxDataset extends Dataset {
 	return windDrag.add(rollingDrag);
     }
 
+    private DoubleArray toPSI(DoubleArray abs) {
+	final double mbar_per_psi=68.9475729;
+	DoubleArray ambient = this.get("BaroPressure").data;
+	if(ambient==null) return abs.add(-1013).div(mbar_per_psi);
+	return abs.add(ambient.mult(-1)).div(mbar_per_psi);
+    }
+
     public Column get(Comparable id) {
 	Column c=null;
 	if(id.equals("TIME")) {
@@ -85,6 +92,12 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray whp = this.get("Calc WHP").data;
 	    DoubleArray rpm = super.get("RPM").data;
 	    c = new Column(id, "ft-lb", whp.mult(5252).div(rpm).smooth());
+	} else if(id.equals("Calc BoostPressureDesired (PSI)")) {
+	    DoubleArray abs = this.get("BoostPressureDesired").data;
+	    c = new Column(id, "PSI", this.toPSI(abs));
+	} else if(id.equals("Calc BoostPressureActual (PSI)")) {
+	    DoubleArray abs = this.get("BoostPressureActual").data;
+	    c = new Column(id, "PSI", this.toPSI(abs));
 	}
 	if(c!=null) {
 	    this.getColumns().add(c);
