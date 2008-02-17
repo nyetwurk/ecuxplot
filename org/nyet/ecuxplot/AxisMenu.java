@@ -70,13 +70,16 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("^Boost.*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
-		this.add("Calc BoostPressureDesired (PSI)", listener, bg);
+		this.add("BoostPressureDesired (PSI)", listener, bg);
 	    }
 	    if(id.matches("BoostPressureActual")) {
-		this.add("Calc BoostPressureActual (PSI)", listener, bg);
+		this.add("BoostPressureActual (PSI)", listener, bg);
 	    }
 	} else if(id.matches("^Ignition.*")) {
 	    addToSubmenu("Ignition", item);
+	    if(id.matches("IgnitionTimingAngleOverall")) {
+		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
+	    }
 	} else if(id.matches("^Knock.*")) {
 	    addToSubmenu("Knock", item);
 	} else if(id.matches("^EGT.*")) {
