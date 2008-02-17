@@ -67,11 +67,16 @@ public class ECUxChartFactory {
 	final XYPlot plot = chart.getXYPlot();
 	for(int i=0; i<plot.getDatasetCount(); i++) {
 	    final XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer(i);
+	    renderer.setBaseLinesVisible(lines);
+	    renderer.setBaseShapesVisible(shapes);
+	    /* not needed, until we play with custom shapes/lines */
+	    /*
 	    XYDataset dataset = plot.getDataset(i);
 	    for(int j=0; j<dataset.getSeriesCount(); j++) {
 		renderer.setSeriesLinesVisible(j, lines);
 		renderer.setSeriesShapesVisible(j, shapes);
 	    }
+	    */
 	}
     }
 
