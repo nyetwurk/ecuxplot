@@ -48,7 +48,7 @@ public class ECUxDataset extends Dataset {
 	final double mbar_per_psi=68.9475729;
 	DoubleArray ambient = this.get("BaroPressure").data;
 	if(ambient==null) return abs.add(-1013).div(mbar_per_psi);
-	return abs.add(ambient.mult(-1)).div(mbar_per_psi);
+	return abs.sub(ambient).div(mbar_per_psi);
     }
 
     public Column get(Comparable id) {

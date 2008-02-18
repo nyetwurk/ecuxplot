@@ -101,6 +101,29 @@ public class DoubleArray
 	return new DoubleArray(this._add(d.toArray()));
     }
 
+    public double[] _sub(double d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=this.array[i]-d;
+	}
+	return out;
+    }
+    public DoubleArray sub(double d) {
+	return new DoubleArray(this._sub(d));
+    }
+
+    public double[] _sub(double[] d) {
+	int len = this.sp>d.length?this.sp:d.length;
+        double[] out = new double[ len ];
+	for(int i=0;i<len;i++) {
+	    out[i]=this.get(i)-(i<d.length?d[i]:0);
+	}
+	return out;
+    }
+    public DoubleArray sub(DoubleArray d) {
+	return new DoubleArray(this._sub(d.toArray()));
+    }
+
     public double[] _mult(double d) {
         double[] out = new double[ sp ];
 	for(int i=0;i<this.sp;i++) {
