@@ -125,10 +125,12 @@ public class ECUxDataset extends Dataset {
     protected boolean dataValid(int i) {
 	if(!this.filter.enabled) return true;
 	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear) return false;
-	if(rpm.data.get(i)<filter.minRPM) return false;
-	if(rpm.data.get(i)>filter.maxRPM) return false;
 	if(pedal!=null && pedal.data.get(i)<filter.minPedal) return false;
-	if(i<1 || rpm.data.get(i-1) - rpm.data.get(i) > filter.monotonicRPMfuzz) return false;
+	if(rpm!=null) {
+	    if(rpm.data.get(i)<filter.minRPM) return false;
+	    if(rpm.data.get(i)>filter.maxRPM) return false;
+	    if(i<1 || rpm.data.get(i-1) - rpm.data.get(i) > filter.monotonicRPMfuzz) return false;
+	}
 	return true;
     }
 
