@@ -199,6 +199,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
         super(title);
 	this.xkey = this.initialXkey[0];
 	this.menuBar = new JMenuBar();
+	java.net.URL imageURL = getClass().getResource("icons/ECUxPlot2-64.png");
+	if(imageURL==null) {
+	    System.out.println("cant open icon");
+	    System.exit(0);
+	}
+	this.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
 
 	FileMenu filemenu = new FileMenu("File", this);
 	menuBar.add(filemenu);

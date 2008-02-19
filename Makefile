@@ -78,7 +78,7 @@ ECUxPlot.MF: Makefile
 
 ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
-	jar cfm $@ ECUxPlot.MF `find org -name \*.class` `find vec_math -name \*.class` `find icons -name \*.png`
+	jar cfm $@ ECUxPlot.MF `find org -name \*.class -o -name \*.png` `find vec_math -name \*.class`
 
 %.xml: %.xml.template Makefile
 	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
