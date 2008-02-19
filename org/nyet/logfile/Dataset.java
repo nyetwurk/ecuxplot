@@ -51,7 +51,12 @@ public class Dataset {
 	    this.data = data;
 	}
 
-	public void add(String s) { data.append(Double.valueOf(s)); }
+	public void add(String s) { 
+	    try {
+		data.append(Double.valueOf(s));
+	    } catch (Exception e) {
+	    }
+	}
     }
 
     public class Key implements Comparable {
