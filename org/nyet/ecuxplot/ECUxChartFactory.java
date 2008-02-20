@@ -96,7 +96,6 @@ public class ECUxChartFactory {
     }
 
     private static void addDataset(DefaultXYDataset d, ECUxDataset data, Comparable xkey, Comparable ykey) {
-	data.filter.enabled = !xkey.equals("TIME");
 	ArrayList<Dataset.Range> ranges = data.getRanges();
 	if(ranges.size()==0) {
 	    // add empty data in case we turn off filter

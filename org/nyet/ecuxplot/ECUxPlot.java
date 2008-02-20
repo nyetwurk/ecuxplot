@@ -124,7 +124,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.scatter = source.isSelected();
 	    ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !this.scatter, this.scatter);
 	} else if(source.getText().equals("Filter data")) {
-	    // todo
+	    this.dataSet.getFilter().enabled=source.isSelected();
+	    ECUxChartFactory.setChartX(this.chartPanel, this.dataSet, this.xkey);
 	}
     }
 
@@ -133,11 +134,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	// System.out.println(source.getText() + ":" + parentId);
 	if(parentId.equals("X Axis")) {
 	    this.xkey=source.getText();
-	    ECUxChartFactory.setChartX(this.chartPanel, dataSet, this.xkey);
+	    ECUxChartFactory.setChartX(this.chartPanel, this.dataSet, this.xkey);
 	} else if(parentId.equals("Y Axis")) {
-	    ECUxChartFactory.editChartY(this.chartPanel, dataSet, this.xkey, source.getText(),0,source.isSelected());
+	    ECUxChartFactory.editChartY(this.chartPanel, this.dataSet, this.xkey, source.getText(),0,source.isSelected());
 	} else if(parentId.equals("Y Axis2")) {
-	    ECUxChartFactory.editChartY(this.chartPanel, dataSet, this.xkey, source.getText(),1,source.isSelected());
+	    ECUxChartFactory.editChartY(this.chartPanel, this.dataSet, this.xkey, source.getText(),1,source.isSelected());
 	}
     }
 
@@ -188,10 +189,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    JCheckBox scatter = new JCheckBox("Scatter plot");
 	    scatter.addActionListener(listener);
 	    this.add(scatter);
-	    // todo
-	    //JCheckBox filter = new JCheckBox("Filter data", true);
-	    //filter.addActionListener(listener);
-	    //this.add(filter);
+	    JCheckBox filter = new JCheckBox("Filter data", true);
+	    filter.addActionListener(listener);
+	    this.add(filter);
 	}
     }
 
