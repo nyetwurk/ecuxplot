@@ -93,11 +93,20 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray rpm = super.get("RPM").data;
 	    c = new Column(id, "ft-lb", whp.mult(5252).div(rpm).smooth());
 	} else if(id.equals("BoostPressureDesired (PSI)")) {
-	    DoubleArray abs = this.get("BoostPressureDesired").data;
+	    DoubleArray abs = super.get("BoostPressureDesired").data;
 	    c = new Column(id, "PSI", this.toPSI(abs));
 	} else if(id.equals("BoostPressureActual (PSI)")) {
-	    DoubleArray abs = this.get("BoostPressureActual").data;
+	    DoubleArray abs = super.get("BoostPressureActual").data;
 	    c = new Column(id, "PSI", this.toPSI(abs));
+	} else if(id.equals("Calc LDR error")) {
+	    DoubleArray set = super.get("BoostPressureDesired").data;
+	    DoubleArray out = super.get("BoostPressureActual").data;
+	    c = new Column(id, "100 mBar", set.sub(out).div(100));
+	} else if(id.equals("Calc LDR de/dt")) {
+	    DoubleArray set = super.get("BoostPressureDesired").data;
+	    DoubleArray out = super.get("BoostPressureActual").data;
+	    DoubleArray t = super.get("TIME").data;
+	    c = new Column(id, "mBar/sec", set.sub(out).derivative(t,false));
 	} else if(id.equals("IgnitionTimingAngleOverallDesired")) {
 	    DoubleArray averetard = null;
 	    int count=0;
