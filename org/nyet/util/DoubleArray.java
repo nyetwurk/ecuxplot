@@ -203,7 +203,7 @@ public class DoubleArray
 	return new DoubleArray(this._max(d));
     }
 
-    public double[] _derivative(double[] d) {
+    public double[] _derivative(double[] d, int movingAverage) {
         double[] out = new double[ sp ];
         if(sp==1 || d.length<2 || d.length!=sp) {
             System.out.println("sp: " + sp +", d.len: " + d.length +
@@ -214,15 +214,18 @@ public class DoubleArray
             int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
             out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
         }
-	MovingAverageSmoothing s = new MovingAverageSmoothing(11);
-	return s.smoothAll(out);
+	if(movingAverage>0) {
+	    MovingAverageSmoothing s = new MovingAverageSmoothing(movingAverage);
+	    return s.smoothAll(out);
+	} else {
+	    return out;
+	}
     }
     public DoubleArray derivative(DoubleArray d) {
-	return new DoubleArray(this._derivative(d.toArray()));
+	return new DoubleArray(this._derivative(d.toArray(), 0));
     }
     public DoubleArray derivative(DoubleArray d, boolean smooth) {
-	if(!smooth) return this.derivative(d);
-	return this.smooth().derivative(d).smooth();
+	return new DoubleArray(this._derivative(d.toArray(), smooth?11:0));
     }
 
     public DoubleArray smooth() {
