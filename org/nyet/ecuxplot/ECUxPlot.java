@@ -236,9 +236,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     public static void main(final String[] args) {
-	final ECUxPlot plot = new ECUxPlot("ECUxPlot", args);
-	plot.pack();
-	RefineryUtilities.centerFrameOnScreen(plot);
-	plot.setVisible(true);
+	javax.swing.SwingUtilities.invokeLater(new Runnable() { public void run() {
+	    final ECUxPlot plot = new ECUxPlot("ECUxPlot", args);
+	    plot.pack();
+	    RefineryUtilities.centerFrameOnScreen(plot);
+	    plot.setVisible(true);
+	} });
     }
 }
