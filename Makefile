@@ -8,11 +8,13 @@ CLASSPATH = '$(shell cygpath -wsp .:$(JARS))'
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := launch4jc
 SCP := pscp
+INSTALL_DIR := '$(shell cygpath -u "C:\Program Files\ECUxPlot")'
 else
 CLASSPATH = .:$(JARS)
 PWD := $(shell pwd)/
 LAUNCH4J := /usr/local/launch4j/launch4j
 SCP := scp
+INSTALL_DIR := /usr/local/ecuxplot
 endif
 
 MP_SOURCES= HexValue.java Map.java Parser.java Parse.java \
@@ -85,9 +87,17 @@ ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 ECUxPlot.exe: ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml ECUxPlot.ico version.txt
 	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
 
-ECUxPlot-$(VERSION)r$(RELEASE).zip: ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh $(subst :, ,$(JARS))
+
+INSTALL_FILES = ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
+		$(subst :, ,$(JARS)) version.txt
+
+ECUxPlot-$(VERSION)r$(RELEASE).zip: $(INSTALL_FILES)
 	@rm -f $@
-	zip $@ $^ version.txt $(subst :, ,$(JARS))
+	zip $@ $(INSTALL_FILES)
+
+install: $(INSTALL_FILES)
+	mkdir -p $(INSTALL_DIR)
+	cp -avp $(INSTALL_FILES) $(INSTALL_DIR)/
 
 %.class: %.java
 	javac $(JFLAGS) $<
