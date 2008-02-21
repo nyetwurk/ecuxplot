@@ -188,6 +188,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public void rebuild() {
 	if(this.chartPanel==null) return;
 	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
+	WaitCursor.startWaitCursor(this);
 	for(int i=0;i<plot.getDatasetCount();i++) {
 	    org.jfree.data.xy.XYDataset dataset = plot.getDataset(i);
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
@@ -199,6 +200,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
 	String units = this.dataSet.units(this.xkey);
 	plot.getDomainAxis().setLabel(this.xkey.toString() + " ("+units+")");
+	WaitCursor.stopWaitCursor(this);
     }
 
     private void editChartY(Comparable ykey, int series, boolean add) {
