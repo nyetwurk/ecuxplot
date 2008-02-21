@@ -30,7 +30,7 @@ UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 
 VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
-EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java ECUxChartPanel.java AxisMenu.java ECUxFilter.java
+EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java ECUxChartPanel.java AxisMenu.java ECUxFilter.java FileMenu.java OptionsMenu.java
 
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
 UT_CLASSES=$(UT_SOURCES:%.java=org/nyet/util/%.class)

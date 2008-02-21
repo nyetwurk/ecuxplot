@@ -4,19 +4,14 @@ import java.io.File;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JCheckBox;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.JMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
 
 import org.jfree.chart.JFreeChart;
 
@@ -30,6 +25,8 @@ import org.jfree.ui.RefineryUtilities;
 import org.nyet.util.WaitCursor;
 import org.nyet.util.GenericFileFilter;
 import org.nyet.util.SubActionListener;
+
+import org.nyet.logfile.Dataset;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private ECUxDataset dataSet;
@@ -53,15 +50,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     private void setupAxisMenus(String[] headers) {
 
-	if(xAxis!=null) this.menuBar.remove(xAxis);
-	if(yAxis!=null) this.menuBar.remove(yAxis);
-	if(yAxis2!=null) this.menuBar.remove(yAxis2);
+	if(this.xAxis!=null) this.menuBar.remove(this.xAxis);
+	if(this.yAxis!=null) this.menuBar.remove(this.yAxis);
+	if(this.yAxis2!=null) this.menuBar.remove(this.yAxis2);
 
 	if(headers.length<=0) return;
 
-	xAxis = new AxisMenu("X Axis", headers, this, true, this.initialXkey);
-	yAxis = new AxisMenu("Y Axis", headers, this, false, this.initialYkey);
-	yAxis2 = new AxisMenu("Y Axis2", headers, this, false, this.initialYkey2);
+	this.xAxis = new AxisMenu("X Axis", headers, this, true, this.initialXkey);
+	this.yAxis = new AxisMenu("Y Axis", headers, this, false, this.initialYkey);
+	this.yAxis2 = new AxisMenu("Y Axis2", headers, this, false, this.initialYkey2);
 
 	this.menuBar.add(xAxis);
 	this.menuBar.add(yAxis);
@@ -69,18 +66,24 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private void loadFile(File file) {
-	WaitCursor.startWaitCursor(this);
 	try {
 	    this.dataSet = new ECUxDataset(file.getAbsolutePath());
-	    this.chartPanel = CreateChartPanel(this.dataSet, this.xkey, this.scatter);
-	    setContentPane(this.chartPanel);
-	    this.setTitle("ECUxPlot " + file.getName());
-	    setupAxisMenus(this.dataSet.headers);
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
+	    return;
 	}
-	WaitCursor.stopWaitCursor(this);
+
+	this.setTitle("ECUxPlot " + file.getName());
+
+	final JFreeChart chart = ECUxChartFactory.create2AxisChart(this.scatter);
+	this.chartPanel = new ECUxChartPanel(chart);
+
+	setContentPane(this.chartPanel);
+	rebuild();
+	addChartY(this.initialYkey, 0);
+	addChartY(this.initialYkey2, 1);
+	setupAxisMenus(this.dataSet.headers);
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -111,22 +114,98 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    plot.setLocation(where);
 	    plot.setVisible(true);
 	} else if(source.getText().equals("Open File")) {
-	    // current working dir 
+	    // current working dir
 	    //final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
 	    // home dir
 	    final JFileChooser fc = new JFileChooser();
 	    fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
+		WaitCursor.startWaitCursor(this);
 		loadFile(fc.getSelectedFile());
+		WaitCursor.stopWaitCursor(this);
 	    }
 	} else if(source.getText().equals("Scatter plot")) {
 	    this.scatter = source.isSelected();
 	    ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !this.scatter, this.scatter);
 	} else if(source.getText().equals("Filter data")) {
 	    this.dataSet.getFilter().enabled=source.isSelected();
-	    ECUxChartFactory.setChartX(this.chartPanel, this.dataSet, this.xkey);
+	    rebuild();
+	} else if(source.getText().equals("Edit constants...")) {
+	    // EnvEditor ee = new EnvEditor(this.dataSet.getEnv());
+	    // ee.showOpenDialog(this);
+	} else if(source.getText().equals("Configure filter...")) {
+	    // FilterEditor fe = new FilterEditor(this.dataSet.getFilter());
+	    // fe.showOpenDialog(this);
 	}
+    }
+
+    private void updateLabelTitle() {
+	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
+	String title = "";
+	for(int i=0; i<plot.getDatasetCount(); i++) {
+	    final org.jfree.data.xy.XYDataset dataset = plot.getDataset(i);
+	    String seriesTitle = "", sprev=null;
+	    String label="", lprev=null;
+	    for(int j=0; dataset!=null && j<dataset.getSeriesCount(); j++) {
+		Comparable key = dataset.getSeriesKey(j);
+		if(key==null) continue;
+		String s;
+
+		if(key instanceof Dataset.Key) s = ((Dataset.Key)key).getString();
+		else s = key.toString();
+
+		String l = this.dataSet.units(key);
+
+		if(sprev==null || !s.equals(sprev)) {
+		    if(!seriesTitle.equals("")) seriesTitle += ", ";
+		    seriesTitle += s;
+		}
+		sprev=s;
+
+		if(l==null) continue;
+		if(lprev==null || !l.equals(lprev)) {
+		    if(!label.equals("")) label += ", ";
+		    label += l;
+		}
+		lprev=l;
+	    }
+	    if(!seriesTitle.equals("")) {
+		if(!title.equals("")) title += " and ";
+		title += seriesTitle;
+	    }
+	    plot.getRangeAxis(i).setLabel(label);
+	}
+	this.chartPanel.getChart().setTitle(title);
+    }
+
+    private void rebuild() {
+	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
+	for(int i=0;i<plot.getDatasetCount();i++) {
+	    org.jfree.data.xy.XYDataset dataset = plot.getDataset(i);
+	    final DefaultXYDataset newdataset = new DefaultXYDataset();
+	    for(int j=0;j<dataset.getSeriesCount();j++) {
+		Dataset.Key ykey = (Dataset.Key)dataset.getSeriesKey(j);
+		ECUxChartFactory.addDataset(newdataset, this.dataSet, this.xkey, ykey.getString());
+	    }
+	    plot.setDataset(i, newdataset);
+	}
+	String units = this.dataSet.units(this.xkey);
+	plot.getDomainAxis().setLabel(this.xkey.toString() + " ("+units+")");
+    }
+
+    private void editChartY(Comparable ykey, int series, boolean add) {
+	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
+	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(series);
+	if(add) ECUxChartFactory.addDataset(dataset, this.dataSet, this.xkey, ykey);
+	else ECUxChartFactory.removeDataset(dataset, ykey);
+	updateLabelTitle();
+	plot.getRangeAxis(series).setVisible(dataset.getSeriesCount()>0);
+    }
+
+    private void addChartY(Comparable[] ykey, int series) {
+	for(int i=0; i<ykey.length; i++)
+	    editChartY(ykey[i], series, true);
     }
 
     public void actionPerformed(ActionEvent event, Comparable parentId) {
@@ -134,64 +213,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	// System.out.println(source.getText() + ":" + parentId);
 	if(parentId.equals("X Axis")) {
 	    this.xkey=source.getText();
-	    ECUxChartFactory.setChartX(this.chartPanel, this.dataSet, this.xkey);
+	    rebuild();
 	} else if(parentId.equals("Y Axis")) {
-	    ECUxChartFactory.editChartY(this.chartPanel, this.dataSet, this.xkey, source.getText(),0,source.isSelected());
+	    editChartY(source.getText(),0,source.isSelected());
 	} else if(parentId.equals("Y Axis2")) {
-	    ECUxChartFactory.editChartY(this.chartPanel, this.dataSet, this.xkey, source.getText(),1,source.isSelected());
-	}
-    }
-
-    private final class FileMenu extends JMenu {
-	public FileMenu(String id, ActionListener listener) {
-	    super(id);
-	    JMenuItem openitem = new JMenuItem("Open File");
-	    openitem.setAccelerator(KeyStroke.getKeyStroke(
-		KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-	    openitem.addActionListener(listener);
-	    this.add(openitem);
-
-	    this.add(new JSeparator());
-
-	    JMenuItem newitem = new JMenuItem("New Chart");
-	    newitem.setAccelerator(KeyStroke.getKeyStroke(
-		KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-	    newitem.addActionListener(listener);
-	    this.add(newitem);
-
-	    JMenuItem closeitem = new JMenuItem("Close Chart");
-	    closeitem.setAccelerator(KeyStroke.getKeyStroke(
-		KeyEvent.VK_W, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK));
-	    closeitem.addActionListener(listener);
-	    this.add(closeitem);
-
-	    this.add(new JSeparator());
-
-	    JMenuItem exportitem = new JMenuItem("Export Chart");
-	    exportitem.setAccelerator(KeyStroke.getKeyStroke(
-		KeyEvent.VK_E, ActionEvent.CTRL_MASK));
-	    exportitem.addActionListener(listener);
-	    this.add(exportitem);
-
-	    this.add(new JSeparator());
-
-	    JMenuItem quititem = new JMenuItem("Quit");
-	    quititem.setAccelerator(KeyStroke.getKeyStroke(
-		KeyEvent.VK_F4, ActionEvent.ALT_MASK));
-	    quititem.addActionListener(listener);
-	    this.add(quititem);
-	}
-    }
-
-    private final class OptionsMenu extends JMenu {
-	public OptionsMenu(String id, ActionListener listener) {
-	    super(id);
-	    JCheckBox scatter = new JCheckBox("Scatter plot");
-	    scatter.addActionListener(listener);
-	    this.add(scatter);
-	    JCheckBox filter = new JCheckBox("Filter data", true);
-	    filter.addActionListener(listener);
-	    this.add(filter);
+	    editChartY(source.getText(),1,source.isSelected());
 	}
     }
 
@@ -223,16 +249,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     public ECUxPlot(final String title) {
 	this(title, null);
-    }
-
-    private static ECUxChartPanel CreateChartPanel(ECUxDataset data, Comparable xkey, boolean scatter) throws Exception {
-        final JFreeChart chart = ECUxChartFactory.create2AxisChart(scatter);
-
-	ECUxChartFactory.setChartX(chart, data, xkey);
-	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey, 0);
-	ECUxChartFactory.addChartY(chart, data, xkey, initialYkey2, 1);
-
-        return new ECUxChartPanel(chart);
     }
 
     public static void main(final String[] args) {
