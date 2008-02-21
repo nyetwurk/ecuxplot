@@ -7,7 +7,7 @@ public class ECUxDataset extends Dataset {
     private Column rpm, pedal, gear;
     private String filename;
     private Env env = new Env();
-    private ECUxFilter filter = new ECUxFilter();
+    private ECUxFilter filter;
 
     public ECUxDataset(String filename) throws Exception {
 	super(filename);
@@ -132,7 +132,7 @@ public class ECUxDataset extends Dataset {
     }
 
     protected boolean rangeValid(Range r) {
-	return (r.size()>filter.minimumPoints);
+	return (r.size()>filter.minPoints);
     }
 
     public String getFilename() { return this.filename; }

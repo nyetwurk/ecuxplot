@@ -16,7 +16,6 @@ public final class OptionsMenu extends JMenu {
 	JCheckBox filter = new JCheckBox("Filter data", true);
 	filter.addActionListener(listener);
 	this.add(filter);
-	/*
 	this.add(new JSeparator());
 	JMenuItem constants = new JMenuItem("Edit constants...");
 	constants.addActionListener(listener);
@@ -24,6 +23,5 @@ public final class OptionsMenu extends JMenu {
 	JMenuItem cf = new JMenuItem("Configure filter...");
 	cf.addActionListener(listener);
 	this.add(cf);
-	*/
     }
 }

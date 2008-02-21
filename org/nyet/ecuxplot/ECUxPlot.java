@@ -37,6 +37,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private AxisMenu yAxis2;
     private Comparable xkey;
     private boolean scatter=false;
+    private ECUxFilter defaultFilter;
+    private Env defaultEnv;
+    private FilterEditor fe;
+    private ConstantEditor ce;
 
     private static final Comparable[] initialXkey = { "RPM" };
     private static final Comparable[] initialYkey = {
@@ -74,6 +78,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    return;
 	}
 
+	this.dataSet.setFilter(this.defaultFilter);
+	this.dataSet.setEnv(this.defaultEnv);
 	this.setTitle("ECUxPlot " + file.getName());
 
 	final JFreeChart chart = ECUxChartFactory.create2AxisChart(this.scatter);
@@ -132,11 +138,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.dataSet.getFilter().enabled=source.isSelected();
 	    rebuild();
 	} else if(source.getText().equals("Edit constants...")) {
-	    // EnvEditor ee = new EnvEditor(this.dataSet.getEnv());
-	    // ee.showOpenDialog(this);
+	    if(this.ce == null) this.ce = new ConstantEditor();
+	    this.ce.showDialog(this, "Constants", defaultEnv);
 	} else if(source.getText().equals("Configure filter...")) {
-	    // FilterEditor fe = new FilterEditor(this.dataSet.getFilter());
-	    // fe.showOpenDialog(this);
+	    if(this.fe == null) this.fe = new FilterEditor();
+	    this.fe.showDialog(this, "Filter", defaultFilter);
 	}
     }
 
@@ -179,7 +185,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.chartPanel.getChart().setTitle(title);
     }
 
-    private void rebuild() {
+    public void rebuild() {
+	if(this.chartPanel==null) return;
 	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	for(int i=0;i<plot.getDatasetCount();i++) {
 	    org.jfree.data.xy.XYDataset dataset = plot.getDataset(i);
@@ -225,6 +232,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
         super(title);
 	this.xkey = this.initialXkey[0];
 	this.menuBar = new JMenuBar();
+	this.defaultFilter = new ECUxFilter();
+	this.defaultEnv = new Env();
 	java.net.URL imageURL = getClass().getResource("icons/ECUxPlot2-64.png");
 	if(imageURL==null) {
 	    System.out.println("cant open icon");

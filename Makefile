@@ -30,7 +30,7 @@ UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 
 VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
-EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java ECUxChartPanel.java AxisMenu.java ECUxFilter.java FileMenu.java OptionsMenu.java
+EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java ECUxChartPanel.java AxisMenu.java ECUxFilter.java FileMenu.java OptionsMenu.java PreferencesEditor.java FilterEditor.java ConstantEditor.java
 
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
 UT_CLASSES=$(UT_SOURCES:%.java=org/nyet/util/%.class)
@@ -50,6 +50,7 @@ JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
 all: $(TARGETS) .classpath version.txt
 jar: ECUxPlot-$(VERSION)r$(RELEASE).jar
 zip: ECUxPlot-$(VERSION)r$(RELEASE).zip
+exe: ECUxPlot.exe
 scp: ECUxPlot-$(VERSION)r$(RELEASE).zip
 	$(SCP) $< nyet.org:public_html/cars/files/
 

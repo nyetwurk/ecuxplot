@@ -3,10 +3,10 @@ package org.nyet.ecuxplot;
 public class ECUxFilter {
     public boolean enabled = true;
     public boolean monotonicRPM = true;
-    public double monotonicRPMfuzz = 100;
-    public double minRPM = 2500;
-    public double maxRPM = 8000;
-    public double minPedal = 95;
+    public int monotonicRPMfuzz = 100;
+    public int minRPM = 2500;
+    public int maxRPM = 8000;
+    public int minPedal = 95;
     public int gear = 3;
-    public int minimumPoints = 10;
+    public int minPoints = 30;
 }
