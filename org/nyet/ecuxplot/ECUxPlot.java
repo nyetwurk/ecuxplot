@@ -38,10 +38,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private AxisMenu yAxis2;
     private Comparable xkey;
     private boolean scatter=false;
-    private ECUxFilter defaultFilter;
-    private Env defaultEnv;
+    private ECUxFilter filter;
+    private Env env;
     private FilterEditor fe;
     private ConstantEditor ce;
+    private JFileChooser fc;
 
     private static final Comparable[] initialXkey = { "RPM" };
     private static final Comparable[] initialYkey = {
@@ -72,15 +73,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     private void loadFile(File file) {
 	try {
-	    this.dataSet = new ECUxDataset(file.getAbsolutePath());
+	    this.dataSet = new ECUxDataset(file.getAbsolutePath(), this.env, this.filter);
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
 	    return;
 	}
 
-	this.dataSet.setFilter(this.defaultFilter);
-	this.dataSet.setEnv(this.defaultEnv);
 	this.setTitle("ECUxPlot " + file.getName());
 
 	final JFreeChart chart = ECUxChartFactory.create2AxisChart(this.scatter);
@@ -121,11 +120,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    plot.setLocation(where);
 	    plot.setVisible(true);
 	} else if(source.getText().equals("Open File")) {
-	    // current working dir
-	    //final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-	    // home dir
-	    final JFileChooser fc = new JFileChooser();
-	    fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
+	    if(fc==null) {
+		// current working dir
+		// fc = new JFileChooser(System.getProperty("user.dir"));
+		// home dir
+		fc = new JFileChooser();
+		fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
+	    }
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
 		WaitCursor.startWaitCursor(this);
@@ -140,10 +141,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    rebuild();
 	} else if(source.getText().equals("Edit constants...")) {
 	    if(this.ce == null) this.ce = new ConstantEditor();
-	    this.ce.showDialog(this, "Constants", defaultEnv);
+	    this.ce.showDialog(this, "Constants", this.env);
 	} else if(source.getText().equals("Configure filter...")) {
 	    if(this.fe == null) this.fe = new FilterEditor();
-	    this.fe.showDialog(this, "Filter", defaultFilter);
+	    this.fe.showDialog(this, "Filter", this.filter);
 	}
     }
 
@@ -236,8 +237,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	WindowUtilities.setNativeLookAndFeel();
 	this.xkey = this.initialXkey[0];
 	this.menuBar = new JMenuBar();
-	this.defaultFilter = new ECUxFilter();
-	this.defaultEnv = new Env();
+	this.filter = new ECUxFilter();
+	this.env = new Env();
 	java.net.URL imageURL = getClass().getResource("icons/ECUxPlot2-64.png");
 	if(imageURL==null) {
 	    System.out.println("cant open icon");

@@ -6,15 +6,23 @@ import org.nyet.util.DoubleArray;
 public class ECUxDataset extends Dataset {
     private Column rpm, pedal, gear;
     private String filename;
-    private Env env = new Env();
+    private Env env;
     private ECUxFilter filter;
 
-    public ECUxDataset(String filename) throws Exception {
+    public ECUxDataset(String filename, Env env, ECUxFilter filter) throws Exception {
 	super(filename);
 	this.rpm = get("RPM");
 	this.pedal = get("AcceleratorPedalPosition");
 	this.gear = get("Gear");
 	this.filename = filename;
+	this.env = env;
+	this.filter = filter;
+    }
+    public ECUxDataset(String filename, Env env) throws Exception {
+	this(filename, env, new ECUxFilter());
+    }
+    public ECUxDataset(String filename) throws Exception {
+	this(filename, new Env(), new ECUxFilter());
     }
 
     private DoubleArray drag () {
