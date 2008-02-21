@@ -12,6 +12,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JPopupMenu;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import org.nyet.util.WindowUtilities;
 
 import org.jfree.chart.JFreeChart;
 
@@ -232,6 +233,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     public ECUxPlot(final String title, String[] args) {
         super(title);
+	WindowUtilities.setNativeLookAndFeel();
 	this.xkey = this.initialXkey[0];
 	this.menuBar = new JMenuBar();
 	this.defaultFilter = new ECUxFilter();
