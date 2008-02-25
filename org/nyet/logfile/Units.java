@@ -3,7 +3,7 @@ package org.nyet.logfile;
 public final class Units {
     private static final String[][] legend = {
 	{"AcceleratorPedalPosition", "%"},
-	{"AirFuelRatioDesired", "AFR"},
+	{"AirFuelRatioDesired", "lambda"},
 	{"BaroPressure", "mBar"},
 	{"BatteryVoltage", "V"},
 	{"BoostFrequencyValveDutyCycle", "%"},
