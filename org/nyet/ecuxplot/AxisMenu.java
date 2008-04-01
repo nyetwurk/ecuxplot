@@ -55,6 +55,7 @@ public class AxisMenu extends JMenu {
 	    this.add("Calc WTQ", listener, bg);
 	    this.add("Calc HP", listener, bg);
 	    this.add("Calc TQ", listener, bg);
+	    this.add("Calc Drag", listener, bg);
 	    this.add(item);
 	} else if(id.matches("MassAirFlow")) {
 	    this.add("Calc Load", listener, bg);

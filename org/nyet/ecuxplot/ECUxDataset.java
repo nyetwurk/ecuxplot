@@ -8,6 +8,8 @@ public class ECUxDataset extends Dataset {
     private String filename;
     private Env env;
     private ECUxFilter filter;
+    private final double hp_per_watt = 0.00134102209;
+    private final double mbar_per_psi = 68.9475729;
 
     public ECUxDataset(String filename, Env env, ECUxFilter filter) throws Exception {
 	super(filename);
@@ -25,19 +27,17 @@ public class ECUxDataset extends Dataset {
 	this(filename, new Env(), new ECUxFilter());
     }
 
-    private DoubleArray drag () {
-	DoubleArray v=this.get("Calc Velocity").data;
+    private DoubleArray drag (DoubleArray v) {
 
-	final double D=1.293;	// kg/m^3 air, standard density
+	final double rho=1.293;	// kg/m^3 air, standard density
 
-	DoubleArray windDrag = v.pow(3).mult(0.5 * this.env.Cd *this.env.FA * D);
+	DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.Cd *this.env.FA);
 	DoubleArray rollingDrag = v.mult(this.env.rolling_drag * this.env.mass * 9.80665);
 
 	return windDrag.add(rollingDrag);
     }
 
     private DoubleArray toPSI(DoubleArray abs) {
-	final double mbar_per_psi=68.9475729;
 	DoubleArray ambient = this.get("BaroPressure").data;
 	if(ambient==null) return abs.add(-1013).div(mbar_per_psi);
 	return abs.sub(ambient).div(mbar_per_psi);
@@ -72,11 +72,14 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    c = new Column(id, "g", a.div(9.80665));
 	} else if(id.equals("Calc WHP")) {
-	    final double hp_per_watt = 0.00134102209;
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    DoubleArray v = this.get("Calc Velocity").data;
-	    DoubleArray whp = a.mult(v).mult(this.env.mass).add(this.drag().smooth());	// in watts
+	    DoubleArray whp = a.mult(v).mult(this.env.mass).add(this.drag(v).smooth());	// in watts
 	    c = new Column(id, "HP", whp.mult(hp_per_watt));
+	} else if(id.equals("Calc Drag")) {
+	    DoubleArray v = this.get("Calc Velocity").data;
+	    DoubleArray drag = this.drag(v).smooth();	// in watts
+	    c = new Column(id, "HP", drag.mult(hp_per_watt));
 	} else if(id.equals("Calc HP")) {
 	    DoubleArray whp = this.get("Calc WHP").data;
 	    c = new Column(id, "HP", whp.div((1-this.env.driveline_loss)).add(this.env.static_loss));

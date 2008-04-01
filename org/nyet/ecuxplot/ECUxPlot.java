@@ -50,8 +50,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	"Calc WTQ"
     };
     private static final Comparable[] initialYkey2 = {
-	"BoostPressureDesired",
-	"BoostPressureActual"
+	"BoostPressureDesired (PSI)",
+	"BoostPressureActual (PSI)"
     };
 
     private void setupAxisMenus(String[] headers) {
