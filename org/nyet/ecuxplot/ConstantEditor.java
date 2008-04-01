@@ -39,7 +39,7 @@ public class ConstantEditor extends PreferencesEditor {
 	this.Cd = new JTextField(10);
 	pp.add(this.Cd);
 
-	pp.add(new JLabel("Frontal area (m^3):"));
+	pp.add(new JLabel("Frontal area (m^2):"));
 	this.FA = new JTextField(10);
 	pp.add(this.FA);
 
