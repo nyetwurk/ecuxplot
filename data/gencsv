@@ -3,4 +3,4 @@ source=$1
 dest=`basename $source .kp`.csv
 stem=`echo $source | cut -d - -f 1`
 cd ..
-./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp data/8D0907551G.kp -i data/$stem.bin data/$source > data/$dest
+./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp -r data/8D0907551G.kp -i data/$stem.bin data/$source > data/$dest
