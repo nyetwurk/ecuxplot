@@ -1,5 +1,7 @@
 package org.nyet.ecuxplot;
 
+import au.com.bytecode.opencsv.CSVReader;
+
 import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
 
@@ -10,6 +12,7 @@ public class ECUxDataset extends Dataset {
     private ECUxFilter filter;
     private final double hp_per_watt = 0.00134102209;
     private final double mbar_per_psi = 68.9475729;
+    private int ticks_per_sec = 1000;	// assume msec
 
     public ECUxDataset(String filename, Env env, ECUxFilter filter) throws Exception {
 	super(filename);
@@ -25,6 +28,31 @@ public class ECUxDataset extends Dataset {
     }
     public ECUxDataset(String filename) throws Exception {
 	this(filename, new Env(), new ECUxFilter());
+    }
+
+    public String[] ParseHeaders(CSVReader reader) throws Exception {
+	String [] h = reader.readNext();
+	if(h[0].matches("^.*day$")) {
+	    reader.readNext();	// ECU type
+	    reader.readNext();	// blank
+	    reader.readNext();	// group
+	    h = reader.readNext(); // headers
+	    String[] h2 = reader.readNext(); // headers
+	    String[] u = reader.readNext(); // units
+	    int i;
+	    for(i=0;i<h.length;i++) {
+		h[i]=h[i].trim();
+		h2[i]=h2[i].trim();
+		u[i]=u[i].trim();
+		if(h[i].length()>0 && h2[i].length()>0)  h[i]+=" ";
+		h[i]+=h2[i];
+		if(h[i].matches("^Engine Speed.*")) h[i]="RPM";
+		if(h[i].length()==0) h[i]=u[i];
+		// System.out.println(h[i] + " [" + u[i] + "]");
+	    }
+	    this.ticks_per_sec = 1;	// VAGCOM is in seconds
+	}
+	return h;
     }
 
     private DoubleArray drag (DoubleArray v) {
@@ -44,16 +72,24 @@ public class ECUxDataset extends Dataset {
     }
 
     public Column get(Comparable id) {
+	try {
+	    return _get(id);
+	} catch (NullPointerException e) {
+	    return null;
+	}
+    }
+
+    private Column _get(Comparable id) {
 	Column c=null;
 	if(id.equals("TIME")) {
 	    DoubleArray a = super.get("TIME").data;
-	    c = new Column("TIME", "s", a.div(1000));	// msec to seconds
+	    c = new Column("TIME", "s", a.div(this.ticks_per_sec));
 	} else if(id.equals("Calc Load")) {
 	    DoubleArray a = super.get("MassAirFlow").data.mult(3.6); // g/sec to kg/hr
 	    DoubleArray b = super.get("RPM").data;
 	    c = new Column(id, "%", a.div(b).div(.001072)); // KUMSRL
 	} else if(id.equals("FuelInjectorDutyCycle")) {
-	    DoubleArray a = super.get("FuelInjectorOnTime").data.div(60*1000); // msec to minutes
+	    DoubleArray a = super.get("FuelInjectorOnTime").data.div(60*this.ticks_per_sec);
 	    DoubleArray b = super.get("RPM").data.div(2); // half cycle
 	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
 	} else if(id.equals("Calc Velocity")) {

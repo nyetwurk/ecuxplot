@@ -51,7 +51,7 @@ public class Dataset {
 	    this.data = data;
 	}
 
-	public void add(String s) { 
+	public void add(String s) {
 	    try {
 		data.append(Double.valueOf(s));
 	    } catch (Exception e) {
@@ -95,13 +95,11 @@ public class Dataset {
 	}
     }
 
-    public ArrayList<Column> getColumns() {return this.columns;}
-
     public Dataset(String filename) throws Exception {
 	CSVReader reader = new CSVReader(new FileReader(filename));
 	this.rows = 0;
-	this.headers = reader.readNext();
 	this.columns = new ArrayList<Column>();
+	this.headers = ParseHeaders(reader);
 	int i;
 	for(i=0;i<this.headers.length;i++) {
 	    this.columns.add(new Column(this.headers[i]));
@@ -113,6 +111,12 @@ public class Dataset {
 	    }
 	    this.rows++;
 	}
+    }
+
+    public ArrayList<Column> getColumns() {return this.columns;}
+
+    public String[] ParseHeaders(CSVReader reader) throws Exception {
+	return reader.readNext();
     }
 
     public Column get(int id) {
@@ -132,6 +136,10 @@ public class Dataset {
 	    if(id.equals(c.id)) return c;
 	}
 	return null;
+    }
+
+    public boolean exists(Comparable id) {
+	return (this.get(id)!=null);
     }
 
     protected boolean dataValid(int i) { return true; }

@@ -200,12 +200,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    }
 	    plot.setDataset(i, newdataset);
 	}
-	String units = this.dataSet.units(this.xkey);
-	plot.getDomainAxis().setLabel(this.xkey.toString() + " ("+units+")");
+	if(this.dataSet.get(this.xkey)!=null) {
+	    String units = this.dataSet.units(this.xkey);
+	    plot.getDomainAxis().setLabel(this.xkey.toString() + " ("+units+")");
+	} else {
+	    plot.getDomainAxis().setLabel("");
+	}
 	WaitCursor.stopWaitCursor(this);
     }
 
     private void editChartY(Comparable ykey, int series, boolean add) {
+	if(add && !this.dataSet.exists(ykey)) return;
 	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(series);
 	if(add) ECUxChartFactory.addDataset(dataset, this.dataSet, this.xkey, ykey);
