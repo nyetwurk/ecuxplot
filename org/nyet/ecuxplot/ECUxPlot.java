@@ -42,6 +42,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private Env env;
     private FilterEditor fe;
     private ConstantEditor ce;
+    private PIDEditor pe;
     private JFileChooser fc;
 
     private static final Comparable[] initialXkey = { "RPM" };
@@ -145,6 +146,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("Configure filter...")) {
 	    if(this.fe == null) this.fe = new FilterEditor();
 	    this.fe.showDialog(this, "Filter", this.filter);
+	} else if(source.getText().equals("Configure PID...")) {
+	    if(this.pe == null) this.pe = new PIDEditor();
+	    this.pe.showDialog(this, "PID", this.env.pid);
 	}
     }
 

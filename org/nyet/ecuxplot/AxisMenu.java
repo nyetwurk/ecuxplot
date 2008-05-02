@@ -79,6 +79,8 @@ public class AxisMenu extends JMenu {
 		this.add("BoostPressureActual (PSI)", listener, bg);
 		this.add("Calc LDR error", listener, bg);
 		this.add("Calc LDR de/dt", listener, bg);
+		this.add("Calc LDR I e dt", listener, bg);
+		this.add("Calc LDR PID", listener, bg);
 	    }
 	} else if(id.matches("^Ignition.*")) {
 	    addToSubmenu("Ignition", item);

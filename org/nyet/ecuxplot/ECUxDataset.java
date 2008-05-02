@@ -136,12 +136,42 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc LDR error")) {
 	    DoubleArray set = super.get("BoostPressureDesired").data;
 	    DoubleArray out = super.get("BoostPressureActual").data;
-	    c = new Column(id, "100 mBar", set.sub(out).div(100));
+	    c = new Column(id, "100mBar", set.sub(out).div(100));
 	} else if(id.equals("Calc LDR de/dt")) {
 	    DoubleArray set = super.get("BoostPressureDesired").data;
 	    DoubleArray out = super.get("BoostPressureActual").data;
-	    DoubleArray t = super.get("TIME").data;
-	    c = new Column(id, "mBar/sec", set.sub(out).derivative(t,false));
+	    DoubleArray t = this.get("TIME").data;
+	    DoubleArray o = set.sub(out).derivative(t,true);
+	    c = new Column(id,"100mBar",o.mult(env.pid.time_constant).div(100));
+	} else if(id.equals("Calc LDR I e dt")) {
+	    DoubleArray set = super.get("BoostPressureDesired").data;
+	    DoubleArray out = super.get("BoostPressureActual").data;
+	    DoubleArray t = this.get("TIME").data;
+	    DoubleArray o = set.sub(out).integral(t,0,env.pid.I_limit/env.pid.I*100);
+	    c = new Column(id,"100Mbar",o.div(env.pid.time_constant).div(100));
+	} else if(id.equals("Calc LDR PID")) {
+	    final DoubleArray.TransferFunction fP =
+		new DoubleArray.TransferFunction() {
+		    public final double f(double x, double y) {
+			if(Math.abs(x)<env.pid.P_deadband/100) return 0;
+			return x*env.pid.P;
+		    }
+	    };
+	    final DoubleArray.TransferFunction fD =
+		new DoubleArray.TransferFunction() {
+		    public final double f(double x, double y) {
+			y=Math.abs(y);
+			if(y<3) return x*env.pid.D[0];
+			if(y<5) return x*env.pid.D[1];
+			if(y<7) return x*env.pid.D[2];
+			return x*env.pid.D[3];
+		    }
+	    };
+	    DoubleArray E = this.get("Calc LDR error").data;
+	    DoubleArray P = E.func(fP);
+	    DoubleArray I = this.get("Calc LDR I e dt").data.mult(env.pid.I);
+	    DoubleArray D = this.get("Calc LDR de/dt").data.func(fD,E);
+	    c = new Column(id, "%", P.add(I).add(D).max(0).min(95));
 	} else if(id.equals("IgnitionTimingAngleOverallDesired")) {
 	    DoubleArray averetard = null;
 	    int count=0;

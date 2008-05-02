@@ -8,4 +8,5 @@ public class Env {
     public double rolling_drag = 0.015;
     public double static_loss=0;
     public double driveline_loss=.25;
+    public PID pid = new PID();
 }

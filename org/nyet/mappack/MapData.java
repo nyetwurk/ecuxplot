@@ -6,27 +6,31 @@ import org.nyet.util.Unsigned;
 
 public class MapData {
     private Double[][] data;
-    private double maximum = Double.NEGATIVE_INFINITY;
-    private double minimum = Double.POSITIVE_INFINITY;
+    private long maximum = Long.MIN_VALUE;
+    private long minimum = Long.MAX_VALUE;
+    private Map map;
 
     public MapData(Map map, ByteBuffer b) {
+	this.map = map;
 	b.position(map.extent[0].v);
 	data = new Double[map.size.x][map.size.y];
 	for(int i=0;i<map.size.x;i++) {
 	    for(int j=0;j<map.size.y;j++) {
-		double out = Double.NaN;
+		long out;
 		switch(map.values.width()) {
 		    case 1: out=Unsigned.getUnsignedByte(b); break;
 		    case 2: out=Unsigned.getUnsignedShort(b); break;
 		    case 4: out=Unsigned.getUnsignedInt(b); break;
 		    default: data[i][j]=Double.NaN; continue;
 		}
+		if(maximum<out) maximum = out;
+		if(minimum>out) minimum = out;
 		data[i][j]=map.value.convert(out);
-		if(maximum<data[i][j]) maximum = data[i][j];
-		if(minimum>data[i][j]) minimum = data[i][j];
 	    }
 	}
     }
-    public double getMaximum() { return this.maximum; }
-    public double getMinimum() { return this.minimum; }
+    public double getMaximumValue() { return this.map.value.convert(this.maximum); }
+    public double getMinimumValue() { return this.map.value.convert(this.minimum); }
+    public long getMaximum() { return this.maximum; }
+    public long getMinimum() { return this.minimum; }
 }

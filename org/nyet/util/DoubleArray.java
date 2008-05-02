@@ -11,6 +11,10 @@ public class DoubleArray
     private double[] array;
     private int growthSize;
 
+    public interface TransferFunction {
+	public double f(double x, double y);
+    }
+
     public DoubleArray()
     {
         this( 1024 );
@@ -65,7 +69,8 @@ public class DoubleArray
     public double[] toArray(int start, int end)	// end is inclusive
     {
         double[] trimmedArray = new double[ end-start+1 ];
-        System.arraycopy( array, start, trimmedArray, 0, trimmedArray.length );
+	double[] out = this.array;
+	System.arraycopy( out, start, trimmedArray, 0, trimmedArray.length );
         return trimmedArray;
     }
 
@@ -78,107 +83,68 @@ public class DoubleArray
 	return i<this.sp?array[i]:0;
     }
 
-    public double[] _add(double d) {
+    public double[] _func(TransferFunction f, double d) {
         double[] out = new double[ sp ];
 	for(int i=0;i<this.sp;i++) {
-	    out[i]=this.array[i]+d;
+	    out[i]=f.f(this.array[i], d);
 	}
 	return out;
     }
-    public DoubleArray add(double d) {
-	return new DoubleArray(this._add(d));
+    public DoubleArray func(TransferFunction f) {
+	return new DoubleArray(this._func(f, Double.NaN));
+    }
+    public DoubleArray func(TransferFunction f, double x) {
+	return new DoubleArray(this._func(f, x));
     }
 
-    public double[] _add(double[] d) {
-	int len = this.sp>d.length?this.sp:d.length;
-        double[] out = new double[ len ];
-	for(int i=0;i<len;i++) {
-	    out[i]=this.get(i)+(i<d.length?d[i]:0);
-	}
-	return out;
-    }
-    public DoubleArray add(DoubleArray d) {
-	return new DoubleArray(this._add(d.toArray()));
-    }
-
-    public double[] _sub(double d) {
+    public double[] _func(TransferFunction f, double[] d) {
         double[] out = new double[ sp ];
 	for(int i=0;i<this.sp;i++) {
-	    out[i]=this.array[i]-d;
+	    out[i]=f.f(this.array[i], d[i]);
 	}
 	return out;
     }
-    public DoubleArray sub(double d) {
-	return new DoubleArray(this._sub(d));
+    public DoubleArray func(TransferFunction f, double[] x) {
+	return new DoubleArray(this._func(f, x));
+    }
+    public DoubleArray func(TransferFunction f, DoubleArray x) {
+	return new DoubleArray(this._func(f, x.toArray()));
     }
 
-    public double[] _sub(double[] d) {
-	int len = this.sp>d.length?this.sp:d.length;
-        double[] out = new double[ len ];
-	for(int i=0;i<len;i++) {
-	    out[i]=this.get(i)-(i<d.length?d[i]:0);
-	}
-	return out;
-    }
-    public DoubleArray sub(DoubleArray d) {
-	return new DoubleArray(this._sub(d.toArray()));
-    }
+    private static TransferFunction fAdd = new TransferFunction() {
+	public final double f(double x, double y) {
+	    return x+y;
+    }};
+    public DoubleArray add(double d) { return func(fAdd, d); }
+    public DoubleArray add(DoubleArray d) { return func(fAdd, d); }
 
-    public double[] _mult(double d) {
-        double[] out = new double[ sp ];
-	for(int i=0;i<this.sp;i++) {
-	    out[i]=this.array[i]*d;
-	}
-	return out;
-    }
-    public DoubleArray mult(double d) {
-	return new DoubleArray(this._mult(d));
-    }
+    private static TransferFunction fSub = new TransferFunction() {
+	public final double f(double x, double y) {
+	    return x-y;
+    }};
+    public DoubleArray sub(double d) { return func(fSub, d); }
+    public DoubleArray sub(DoubleArray d) { return func(fSub, d); }
 
-    public double[] _mult(double[] d) {
-	int len = sp>d.length?this.sp:d.length;
-        double[] out = new double[ len ];
-	for(int i=0;i<len;i++) {
-	    out[i]=this.get(i)*(i<d.length?d[i]:0);
-	}
-	return out;
-    }
-    public DoubleArray mult(DoubleArray d) {
-	return new DoubleArray(this._mult(d.toArray()));
-    }
+    private static TransferFunction fMult = new TransferFunction() {
+	public final double f(double x, double y) {
+	    return x*y;
+    }};
+    public DoubleArray mult(double d) { return func(fMult, d); }
+    public DoubleArray mult(DoubleArray d) { return func(fMult, d.toArray()); }
 
-    public double[] _div(double d) {
-        double[] out = new double[ sp ];
-	for(int i=0;i<this.sp;i++) {
-	    out[i]=this.array[i]/d;
-	}
-	return out;
-    }
-    public DoubleArray div(double d) {
-	return new DoubleArray(this._div(d));
-    }
+    private static TransferFunction fDiv = new TransferFunction() {
+	public final double f(double x, double y) {
+	    return x/y;
+    }};
+    public DoubleArray div(double d) { return func(fDiv, d); }
+    public DoubleArray div(DoubleArray d) { return func(fDiv, d); }
 
-    public double[] _div(double[] d) {
-        double[] out = new double[ sp ];
-	for(int i=0;i<this.sp;i++) {
-	    out[i]=this.get(i)/(i<d.length?d[i]:1);
-	}
-	return out;
-    }
-    public DoubleArray div(DoubleArray d) {
-	return new DoubleArray(this._div(d.toArray()));
-    }
-
-
-    public double[] _pow(double d) {
-        double[] out = new double[ sp ];
-	for(int i=0;i<this.sp;i++) {
-	    out[i]=Math.pow(this.array[i],d);
-	}
-	return out;
-    }
+    private static TransferFunction fPow = new TransferFunction() {
+	public final double f(double x, double y) {
+	    return Math.pow(x,y);
+    }};
     public DoubleArray pow(double d) {
-	return new DoubleArray(this._pow(d));
+	return new DoubleArray(this._func(fPow, d));
     }
 
     public double[] _min(double d) {
@@ -210,7 +176,6 @@ public class DoubleArray
             ", sp=" + sp);
         }
         for(int i=0;i<this.sp;i++) {
-            double dy, dx;
             int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
             out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
         }
@@ -226,6 +191,30 @@ public class DoubleArray
     }
     public DoubleArray derivative(DoubleArray d, boolean smooth) {
 	return new DoubleArray(this._derivative(d.toArray(), smooth?11:0));
+    }
+
+    public double[] _integral(double[] d, double min, double max) {
+        double[] out = new double[ sp ];
+        if(sp==1 || d.length<2 || d.length!=sp) {
+            System.out.println("sp: " + sp +", d.len: " + d.length +
+            ", sp=" + sp);
+        }
+        for(int i=0;i<this.sp;i++) {
+            int i0 = Math.max(i-1, 0);
+	    out[i] = out[i0]+this.get(i)*(d[i]-d[i0]);
+	    if(out[i]<min) out[i]=min;
+	    else if(out[i]>max) out[i]=max;
+        }
+	return out;
+    }
+    public DoubleArray integral(DoubleArray d) {
+	return new DoubleArray(this._integral(d.toArray(), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+    }
+    public DoubleArray integral(DoubleArray d, double min) {
+	return new DoubleArray(this._integral(d.toArray(), min, Double.POSITIVE_INFINITY));
+    }
+    public DoubleArray integral(DoubleArray d, double min, double max) {
+	return new DoubleArray(this._integral(d.toArray(), min, max));
     }
 
     public DoubleArray smooth() {

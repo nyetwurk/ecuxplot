@@ -227,7 +227,12 @@ public class Map {
     }
 
     public static final String CSVHeader() {
-	final String[] header = {"ID","Address","Name","Size","Organization","Description","Units","X Units","Y Units","Value min","Value max"};
+	final String[] header = {
+	    "ID","Address","Name","Size","Organization","Description",
+	    "Units","X Units","Y Units",
+	    "Scale","X Scale","Y Scale",
+	    "Value min","Value max","Value min*1", "Value max*1"
+	    };
 	final CSVRow out = new CSVRow(header);
 	return out.toString();
     }
@@ -254,10 +259,15 @@ public class Map {
 	row.add(this.value.units);
 	row.add(this.x_axis.units);
 	row.add(this.y_axis.units);
+	row.add(this.value.factor);
+	row.add(this.x_axis.factor);
+	row.add(this.y_axis.factor);
 	if(image!=null && image.limit()>0) {
 	    MapData mapdata = new MapData(this, image);
-	    row.add(mapdata.getMinimum());
-	    row.add(mapdata.getMaximum());
+	    row.add(mapdata.getMinimumValue());
+	    row.add(mapdata.getMaximumValue());
+	    row.add(String.format("0x%x", mapdata.getMinimum()));
+	    row.add(String.format("0x%x", mapdata.getMaximum()));
 	} else {
 	    row.add("");
 	    row.add("");

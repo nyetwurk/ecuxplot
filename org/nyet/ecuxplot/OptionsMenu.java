@@ -17,11 +17,15 @@ public final class OptionsMenu extends JMenu {
 	filter.addActionListener(listener);
 	this.add(filter);
 	this.add(new JSeparator());
-	JMenuItem constants = new JMenuItem("Edit constants...");
-	constants.addActionListener(listener);
-	this.add(constants);
-	JMenuItem cf = new JMenuItem("Configure filter...");
-	cf.addActionListener(listener);
-	this.add(cf);
+
+	JMenuItem jmi = new JMenuItem("Edit constants...");
+	jmi.addActionListener(listener);
+	this.add(jmi);
+	jmi = new JMenuItem("Configure filter...");
+	jmi.addActionListener(listener);
+	this.add(jmi);
+	jmi = new JMenuItem("Configure PID...");
+	jmi.addActionListener(listener);
+	this.add(jmi);
     }
 }
