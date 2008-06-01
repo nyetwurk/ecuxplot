@@ -139,9 +139,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    }
 	} else if(source.getText().equals("Scatter plot")) {
 	    this.scatter = source.isSelected();
-	    ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !this.scatter, this.scatter);
+	    if(this.chartPanel != null)
+		ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !this.scatter, this.scatter);
 	} else if(source.getText().equals("Filter data")) {
-	    this.dataSet.getFilter().enabled=source.isSelected();
+	    if(this.dataSet != null)
+		this.dataSet.getFilter().enabled=source.isSelected();
 	    rebuild();
 	} else if(source.getText().equals("Edit constants...")) {
 	    if(this.ce == null) this.ce = new ConstantEditor();
