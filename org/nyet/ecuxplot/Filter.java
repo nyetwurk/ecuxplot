@@ -1,6 +1,6 @@
 package org.nyet.ecuxplot;
 
-public class ECUxFilter {
+public class Filter {
     public boolean enabled = true;
     public boolean monotonicRPM = true;
     public int monotonicRPMfuzz = 100;

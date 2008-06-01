@@ -27,5 +27,8 @@ public final class OptionsMenu extends JMenu {
 	jmi = new JMenuItem("Configure PID...");
 	jmi.addActionListener(listener);
 	this.add(jmi);
+	jmi = new JMenuItem("Configure Fueling...");
+	jmi.addActionListener(listener);
+	this.add(jmi);
     }
 }

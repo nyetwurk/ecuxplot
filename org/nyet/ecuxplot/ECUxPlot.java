@@ -38,11 +38,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private AxisMenu yAxis2;
     private Comparable xkey;
     private boolean scatter=false;
-    private ECUxFilter filter;
-    private Env env;
+
+    private Filter filter;
     private FilterEditor fe;
+
+    private Env env;
     private ConstantEditor ce;
     private PIDEditor pe;
+    private FuelingEditor fle;
     private JFileChooser fc;
 
     private static final Comparable[] initialXkey = { "RPM" };
@@ -142,13 +145,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    rebuild();
 	} else if(source.getText().equals("Edit constants...")) {
 	    if(this.ce == null) this.ce = new ConstantEditor();
-	    this.ce.showDialog(this, "Constants", this.env);
+	    this.ce.showDialog(this, "Constants", this.env.c);
 	} else if(source.getText().equals("Configure filter...")) {
 	    if(this.fe == null) this.fe = new FilterEditor();
 	    this.fe.showDialog(this, "Filter", this.filter);
 	} else if(source.getText().equals("Configure PID...")) {
 	    if(this.pe == null) this.pe = new PIDEditor();
 	    this.pe.showDialog(this, "PID", this.env.pid);
+	} else if(source.getText().equals("Configure Fueling...")) {
+	    if(this.fle == null) this.fle = new FuelingEditor();
+	    this.fle.showDialog(this, "Fueling", this.env.f);
 	}
     }
 
@@ -246,7 +252,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	WindowUtilities.setNativeLookAndFeel();
 	this.xkey = this.initialXkey[0];
 	this.menuBar = new JMenuBar();
-	this.filter = new ECUxFilter();
+	this.filter = new Filter();
 	this.env = new Env();
 	java.net.URL imageURL = getClass().getResource("icons/ECUxPlot2-64.png");
 	if(imageURL==null) {

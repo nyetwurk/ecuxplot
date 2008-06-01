@@ -59,6 +59,7 @@ public class AxisMenu extends JMenu {
 	    this.add(item);
 	} else if(id.matches("MassAirFlow")) {
 	    this.add("Calc Load", listener, bg);
+	    this.add("Calc MAF", listener, bg);
 	    this.add(item);
 	// goes before .*Load.* to catch CalcLoad
 	} else if(id.matches("^Calc .*")) {
@@ -67,8 +68,14 @@ public class AxisMenu extends JMenu {
 
 	} else if(id.matches(".*Fuel.*")) {
 	    addToSubmenu("Fuel", item);
+	    if(id.matches("AirFuelRatioDesired")) {
+		this.add("AirFuelRatioDesired (AFR)", listener, bg);
+	    }
 	    if(id.matches("FuelInjectorOnTime")) {
 		this.add("FuelInjectorDutyCycle", listener, bg);
+		this.add("Calc Fuel", listener, bg);
+		this.add("Calc AFR", listener, bg);
+		this.add("Calc lambda", listener, bg);
 	    }
 	} else if(id.matches("^Boost.*")) {
 	    addToSubmenu("Boost", item);

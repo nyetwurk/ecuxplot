@@ -5,7 +5,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class ConstantEditor extends PreferencesEditor {
-    private Env env;
+    private Constant c;
 
     private JTextField mass;
     private JTextField rpm_per_mph;
@@ -14,12 +14,12 @@ public class ConstantEditor extends PreferencesEditor {
     private JTextField driveline_loss;
 
     protected void Process(ActionEvent event) {
-	if(this.env==null) return;
-	this.env.mass = Double.valueOf(this.mass.getText());
-	this.env.rpm_per_mph = Double.valueOf(this.rpm_per_mph.getText());
-	this.env.Cd = Double.valueOf(this.Cd.getText());
-	this.env.FA = Double.valueOf(this.FA.getText());
-	this.env.driveline_loss = Double.valueOf(this.driveline_loss.getText())/100;
+	if(this.c==null) return;
+	this.c.mass = Double.valueOf(this.mass.getText());
+	this.c.rpm_per_mph = Double.valueOf(this.rpm_per_mph.getText());
+	this.c.Cd = Double.valueOf(this.Cd.getText());
+	this.c.FA = Double.valueOf(this.FA.getText());
+	this.c.driveline_loss = Double.valueOf(this.driveline_loss.getText())/100;
 	super.Process(event);
     }
 
@@ -48,13 +48,13 @@ public class ConstantEditor extends PreferencesEditor {
 	pp.add(this.driveline_loss);
     }
 
-    public boolean showDialog(Component parent, String title, Env env) {
-	this.env = env;
-	this.mass.setText("" + env.mass);
-	this.rpm_per_mph.setText("" + env.rpm_per_mph);
-	this.Cd.setText("" + env.Cd);
-	this.FA.setText("" + env.FA);
-	this.driveline_loss.setText("" + env.driveline_loss*100);
+    public boolean showDialog(Component parent, String title, Constant c) {
+	this.c = c;
+	this.mass.setText("" + c.mass);
+	this.rpm_per_mph.setText("" + c.rpm_per_mph);
+	this.Cd.setText("" + c.Cd);
+	this.FA.setText("" + c.FA);
+	this.driveline_loss.setText("" + c.driveline_loss*100);
 	return super.showDialog(parent, title);
     }
 }

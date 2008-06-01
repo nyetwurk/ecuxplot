@@ -5,7 +5,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class FilterEditor extends PreferencesEditor {
-    private ECUxFilter filter;
+    private Filter filter;
 
     private JTextField gear;
     private JTextField minRPM;
@@ -48,7 +48,7 @@ public class FilterEditor extends PreferencesEditor {
 	pp.add(this.minPoints);
     }
 
-    public boolean showDialog(Component parent, String title, ECUxFilter filter) {
+    public boolean showDialog(Component parent, String title, Filter filter) {
 	this.filter = filter;
 	this.gear.setText("" + filter.gear);
 	this.minRPM.setText("" + filter.minRPM);
