@@ -70,6 +70,7 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("AirFuelRatioDesired")) {
 		this.add("AirFuelRatioDesired (AFR)", listener, bg);
+		this.add("Calc lambda error", listener, bg);
 	    }
 	    if(id.matches("FuelInjectorOnTime")) {
 		this.add("FuelInjectorDutyCycle", listener, bg);

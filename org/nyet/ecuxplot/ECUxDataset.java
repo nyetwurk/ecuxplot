@@ -109,6 +109,10 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc lambda")) {
 	    DoubleArray a = this.get("Calc AFR").data.div(14.7);
 	    c = new Column(id, "lambda", a);
+	} else if(id.equals("Calc lambda error")) {
+	    DoubleArray a = super.get("AirFuelRatioDesired").data;
+	    DoubleArray b = this.get("Calc lambda").data;
+	    c = new Column(id, "%", a.div(b).mult(-1).add(1).mult(100).max(-25).min(25));
 	} else if(id.equals("FuelInjectorDutyCycle")) {
 	    DoubleArray a = super.get("FuelInjectorOnTime").data.div(60*this.ticks_per_sec);
 	    DoubleArray b = super.get("RPM").data.div(2); // half cycle
