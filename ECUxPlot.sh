@@ -1,2 +1,3 @@
 #!/bin/sh
-java -jar ECUxPlot-`cat version.txt`.jar "$*"
+DIR=`dirname "$0"`
+java -jar $DIR/ECUxPlot-`cat $DIR/version.txt`.jar "$*"
