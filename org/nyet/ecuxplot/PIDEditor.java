@@ -33,29 +33,29 @@ public class PIDEditor extends PreferencesEditor {
 
     public PIDEditor () {
 	JPanel pp = this.getPrefsPanel();
-	pp.setLayout(new GridLayout(6,2,4,4));
 
-	pp.add(new JLabel("Time constant (s):"));
+	pp.add(new JLabel(" Time constant (s):"));
 	this.time_constant = new JTextField(10);
 	pp.add(this.time_constant);
 
-	pp.add(new JLabel("P deadband (mBar):"));
+	pp.add(new JLabel(" P deadband (mBar):"));
 	this.P_deadband = new JTextField(10);
 	pp.add(this.P_deadband);
 
-	pp.add(new JLabel("I limiter (%):"));
+	pp.add(new JLabel(" I limiter (%):"));
 	this.I_limit = new JTextField(10);
 	pp.add(this.I_limit);
 
-	pp.add(new JLabel("P (%/100mBar):"));
+	pp.add(new JLabel(" P (%/100mBar):"));
 	this.P = new JTextField(10);
 	pp.add(this.P);
-	pp.add(new JLabel("I (%/100mBar):"));
+	pp.add(new JLabel(" I (%/100mBar):"));
 	this.I = new JTextField(10);
 	pp.add(this.I);
-	pp.add(new JLabel("D (%/100mBar):"));
+	pp.add(new JLabel(" D (%/100mBar):"));
 
 	JPanel pd = new JPanel();
+	pd.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
 	pp.add(pd);
 
 	this.D0 = new JTextField(4);

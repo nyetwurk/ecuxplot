@@ -25,25 +25,24 @@ public class ConstantEditor extends PreferencesEditor {
 
     public ConstantEditor () {
 	JPanel pp = this.getPrefsPanel();
-	pp.setLayout(new GridLayout(5,2,4,4));
 
-	pp.add(new JLabel("Mass (kg):"));
+	pp.add(new JLabel(" Mass (kg):"));
 	this.mass = new JTextField(10);
 	pp.add(this.mass);
 
-	pp.add(new JLabel("RPM per mph:"));
+	pp.add(new JLabel(" RPM per mph:"));
 	this.rpm_per_mph = new JTextField(10);
 	pp.add(this.rpm_per_mph);
 
-	pp.add(new JLabel("Coefficient of drag:"));
+	pp.add(new JLabel(" Coefficient of drag:"));
 	this.Cd = new JTextField(10);
 	pp.add(this.Cd);
 
-	pp.add(new JLabel("Frontal area (m^2):"));
+	pp.add(new JLabel(" Frontal area (m^2):"));
 	this.FA = new JTextField(10);
 	pp.add(this.FA);
 
-	pp.add(new JLabel("Driveline loss (%):"));
+	pp.add(new JLabel(" Driveline loss (%):"));
 	this.driveline_loss = new JTextField(10);
 	pp.add(this.driveline_loss);
     }

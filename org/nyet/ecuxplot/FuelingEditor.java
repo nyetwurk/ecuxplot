@@ -21,17 +21,16 @@ public class FuelingEditor extends PreferencesEditor {
 
     public FuelingEditor () {
 	JPanel pp = this.getPrefsPanel();
-	pp.setLayout(new GridLayout(3,2,4,4));
 
-	pp.add(new JLabel("MAF diameter (mm):"));
+	pp.add(new JLabel(" MAF diameter (mm):"));
 	this.MAF = new JTextField(10);
 	pp.add(this.MAF);
 
-	pp.add(new JLabel("Injector size (cc/min):"));
+	pp.add(new JLabel(" Injector size (cc/min):"));
 	this.injector = new JTextField(10);
 	pp.add(this.injector);
 
-	pp.add(new JLabel("MAF offset (g/sec):"));
+	pp.add(new JLabel(" MAF offset (g/sec):"));
 	this.MAF_offset = new JTextField(10);
 	pp.add(this.MAF_offset);
     }

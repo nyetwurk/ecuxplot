@@ -19,13 +19,14 @@ public class PreferencesEditor extends JPanel {
     }
 
     public PreferencesEditor () {
-	this.setLayout(new BorderLayout(10,10));
+	this.setLayout(new BorderLayout());
 
 	this.prefsPanel = new JPanel();
+	this.prefsPanel.setLayout(new GridLayout(0,2));
 	this.add(this.prefsPanel, BorderLayout.CENTER);
 
 	JPanel panel = new JPanel();
-	panel.setLayout(new GridLayout(1,3,10,10));
+	panel.setLayout(new GridLayout(1,3));
 	jbtnOK = new JButton("OK");
 	jbtnOK.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent event) {

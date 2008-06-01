@@ -25,25 +25,24 @@ public class FilterEditor extends PreferencesEditor {
 
     public FilterEditor () {
 	JPanel pp = this.getPrefsPanel();
-	pp.setLayout(new GridLayout(5,2,4,4));
 
-	pp.add(new JLabel("Gear:"));
+	pp.add(new JLabel(" Gear:"));
 	this.gear = new JTextField(10);
 	pp.add(this.gear);
 
-	pp.add(new JLabel("Minimum RPM:"));
+	pp.add(new JLabel(" Minimum RPM:"));
 	this.minRPM = new JTextField(10);
 	pp.add(this.minRPM);
 
-	pp.add(new JLabel("Maximum RPM:"));
+	pp.add(new JLabel(" Maximum RPM:"));
 	this.maxRPM = new JTextField(10);
 	pp.add(this.maxRPM);
 
-	pp.add(new JLabel("Minimum Pedal:"));
+	pp.add(new JLabel(" Minimum Pedal:"));
 	this.minPedal = new JTextField(10);
 	pp.add(this.minPedal);
 
-	pp.add(new JLabel("Minimum Points:"));
+	pp.add(new JLabel(" Minimum Points:"));
 	this.minPoints = new JTextField(10);
 	pp.add(this.minPoints);
     }

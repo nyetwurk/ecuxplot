@@ -169,7 +169,7 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray out = super.get("BoostPressureActual").data;
 	    DoubleArray t = this.get("TIME").data;
 	    DoubleArray o = set.sub(out).integral(t,0,env.pid.I_limit/env.pid.I*100);
-	    c = new Column(id,"100Mbar",o.div(env.pid.time_constant).div(100));
+	    c = new Column(id,"100mBar",o.div(env.pid.time_constant).div(100));
 	} else if(id.equals("Calc LDR PID")) {
 	    final DoubleArray.TransferFunction fP =
 		new DoubleArray.TransferFunction() {
