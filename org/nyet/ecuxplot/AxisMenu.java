@@ -6,6 +6,7 @@ import javax.swing.JMenu;
 import javax.swing.JCheckBox;
 import javax.swing.JSeparator;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JComponent;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 
@@ -17,7 +18,7 @@ public class AxisMenu extends JMenu {
 
     private Hashtable<String, JMenu> subMenus = new Hashtable<String, JMenu>();
 
-    private void addToSubmenu(String id, AbstractButton item, boolean autoadd) {
+    private void addToSubmenu(String id, JComponent item, boolean autoadd) {
 	JMenu sub = this.subMenus.get(id);
 	if(sub==null) {
 	    sub=new JMenu(id + "...");
@@ -26,7 +27,7 @@ public class AxisMenu extends JMenu {
 	}
 	sub.add(item);
     }
-    private void addToSubmenu(String id, AbstractButton item) {
+    private void addToSubmenu(String id, JComponent item) {
 	addToSubmenu(id, item, true);	// autoadd to submenu
     }
 
@@ -57,10 +58,12 @@ public class AxisMenu extends JMenu {
 	    this.add("Calc TQ", listener, bg);
 	    this.add("Calc Drag", listener, bg);
 	    this.add(item);
+	    addToSubmenu("Calc", new JSeparator(), false);
 	} else if(id.matches("MassAirFlow")) {
 	    this.add("Calc Load", listener, bg);
 	    this.add("Calc MAF", listener, bg);
 	    this.add(item);
+	    addToSubmenu("Calc", new JSeparator(), false);
 	// goes before .*Load.* to catch CalcLoad
 	} else if(id.matches("^Calc .*")) {
 	    // calc is added last, do not autoadd to submenu
@@ -70,13 +73,14 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("AirFuelRatioDesired")) {
 		this.add("AirFuelRatioDesired (AFR)", listener, bg);
-		this.add("Calc lambda error", listener, bg);
 	    }
 	    if(id.matches("FuelInjectorOnTime")) {
 		this.add("FuelInjectorDutyCycle", listener, bg);
-		this.add("Calc Fuel", listener, bg);
+		this.add("Calc Fuel Mass", listener, bg);
 		this.add("Calc AFR", listener, bg);
 		this.add("Calc lambda", listener, bg);
+		this.add("Calc lambda error", listener, bg);
+		// addToSubmenu("Calc", new JSeparator(), false);
 	    }
 	} else if(id.matches("^Boost.*")) {
 	    addToSubmenu("Boost", item);
@@ -89,6 +93,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LDR de/dt", listener, bg);
 		this.add("Calc LDR I e dt", listener, bg);
 		this.add("Calc LDR PID", listener, bg);
+		addToSubmenu("Calc", new JSeparator(), false);
 	    }
 	} else if(id.matches("^Ignition.*")) {
 	    addToSubmenu("Ignition", item);

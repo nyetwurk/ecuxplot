@@ -93,7 +93,7 @@ public class ECUxDataset extends Dataset {
 	    double maf_scale = ((maf*maf)/(73*73));
 	    DoubleArray a = super.get("MassAirFlow").data.mult(maf_scale);	// g/sec
 	    c = new Column(id, "g/sec", a.add(this.env.f.MAF_offset));
-	} else if(id.equals("Calc Fuel")) {
+	} else if(id.equals("Calc Fuel Mass")) {
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
 	    final double gps = this.env.f.injector*gps_per_ccmin;
 	    final double cylinders = 6;
@@ -104,7 +104,7 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("Calc AFR")) {
 	    DoubleArray a = this.get("Calc MAF").data;
-	    DoubleArray b = this.get("Calc Fuel").data;
+	    DoubleArray b = this.get("Calc Fuel Mass").data;
 	    c = new Column(id, "AFR", a.div(b));
 	} else if(id.equals("Calc lambda")) {
 	    DoubleArray a = this.get("Calc AFR").data.div(14.7);
