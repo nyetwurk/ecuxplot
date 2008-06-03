@@ -268,13 +268,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	// System.out.println(source.getText() + ":" + parentId);
 	if(parentId.equals("X Axis")) {
-	    rebuild();
 	    this.prefs.put("xkey",source.getText());
+	    /* rebuild depends on the value of prefs */
+	    rebuild();
 	} else if(parentId.equals("Y Axis")) {
 	    editChartY(source.getText(),0,source.isSelected());
+	    /* putkeys depends on the stuff that edit chart does */
 	    putYkeys(0);
 	} else if(parentId.equals("Y Axis2")) {
 	    editChartY(source.getText(),1,source.isSelected());
+	    /* putkeys depends on the stuff that edit chart does */
 	    putYkeys(1);
 	}
 	updateLabelTitle();
