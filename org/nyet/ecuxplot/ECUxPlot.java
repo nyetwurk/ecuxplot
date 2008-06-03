@@ -172,18 +172,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("Filter data")) {
 	    this.filter.enabled(source.isSelected());
 	    rebuild();
-	} else if(source.getText().equals("Edit constants...")) {
-	    if(this.ce == null) this.ce = new ConstantsEditor(this.prefs);
-	    this.ce.showDialog(this, "Constants", this.env.c);
 	} else if(source.getText().equals("Configure filter...")) {
 	    if(this.fe == null) this.fe = new FilterEditor(this.prefs);
 	    this.fe.showDialog(this, "Filter", this.filter);
-	} else if(source.getText().equals("Configure PID...")) {
-	    if(this.pe == null) this.pe = new PIDEditor();
-	    this.pe.showDialog(this, "PID", this.env.pid);
-	} else if(source.getText().equals("Configure Fueling...")) {
+	} else if(source.getText().equals("Edit constants...")) {
+	    if(this.ce == null) this.ce = new ConstantsEditor(this.prefs);
+	    this.ce.showDialog(this, "Constants", this.env.c);
+	} else if(source.getText().equals("Edit fueling...")) {
 	    if(this.fle == null) this.fle = new FuelingEditor(this.prefs);
 	    this.fle.showDialog(this, "Fueling", this.env.f);
+	} else if(source.getText().equals("Edit PID...")) {
+	    if(this.pe == null) this.pe = new PIDEditor();
+	    this.pe.showDialog(this, "PID", this.env.pid);
 	}
     }
 

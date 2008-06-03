@@ -19,19 +19,23 @@ public final class OptionsMenu extends JMenu {
 	this.add(filter);
 	this.add(new JSeparator());
 
-	JMenuItem jmi = new JMenuItem("Edit constants...");
-	jmi.addActionListener(listener);
-	this.add(jmi);
-	jmi = new JMenuItem("Configure filter...");
-	jmi.addActionListener(listener);
-	this.add(jmi);
-	jmi = new JMenuItem("Configure Fueling...");
+	JMenuItem jmi = new JMenuItem("Configure filter...");
 	jmi.addActionListener(listener);
 	this.add(jmi);
 
 	this.add(new JSeparator());
 
-	jmi = new JMenuItem("Configure PID...");
+	jmi = new JMenuItem("Edit constants...");
+	jmi.addActionListener(listener);
+	this.add(jmi);
+
+	jmi = new JMenuItem("Edit fueling...");
+	jmi.addActionListener(listener);
+	this.add(jmi);
+
+	this.add(new JSeparator());
+
+	jmi = new JMenuItem("Edit PID...");
 	jmi.addActionListener(listener);
 	this.add(jmi);
     }
