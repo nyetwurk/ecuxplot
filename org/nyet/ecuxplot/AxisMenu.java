@@ -132,4 +132,8 @@ public class AxisMenu extends JMenu {
 	    this.add(calc);
 	}
     }
+    public AxisMenu (String text, String[] headers, SubActionListener listener,
+	boolean radioButton, Comparable initialChecked) {
+	this(text, headers, listener, radioButton, new Comparable [] {initialChecked});
+    }
 }

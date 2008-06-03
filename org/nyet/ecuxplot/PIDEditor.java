@@ -68,17 +68,20 @@ public class PIDEditor extends PreferencesEditor {
 	pd.add(this.D3);
     }
 
+    public void updateDialog() {
+	this.time_constant.setText("" + this.pid.time_constant);
+	this.P_deadband.setText("" + this.pid.P_deadband);
+	this.I_limit.setText("" + this.pid.I_limit);
+	this.P.setText("" + this.pid.P);
+	this.I.setText("" + this.pid.I);
+	this.D0.setText("" + this.pid.D[0]);
+	this.D1.setText("" + this.pid.D[1]);
+	this.D2.setText("" + this.pid.D[2]);
+	this.D3.setText("" + this.pid.D[3]);
+    }
+
     public boolean showDialog(Component parent, String title, PID pid) {
 	this.pid = pid;
-	this.time_constant.setText("" + pid.time_constant);
-	this.P_deadband.setText("" + pid.P_deadband);
-	this.I_limit.setText("" + pid.I_limit);
-	this.P.setText("" + pid.P);
-	this.I.setText("" + pid.I);
-	this.D0.setText("" + pid.D[0]);
-	this.D1.setText("" + pid.D[1]);
-	this.D2.setText("" + pid.D[2]);
-	this.D3.setText("" + pid.D[3]);
 	return super.showDialog(parent, title);
     }
 }

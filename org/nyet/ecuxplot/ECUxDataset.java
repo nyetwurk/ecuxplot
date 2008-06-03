@@ -23,12 +23,6 @@ public class ECUxDataset extends Dataset {
 	this.env = env;
 	this.filter = filter;
     }
-    public ECUxDataset(String filename, Env env) throws Exception {
-	this(filename, env, new Filter());
-    }
-    public ECUxDataset(String filename) throws Exception {
-	this(filename, new Env(), new Filter());
-    }
 
     public String[] ParseHeaders(CSVReader reader) throws Exception {
 	String [] h = reader.readNext();
@@ -59,8 +53,8 @@ public class ECUxDataset extends Dataset {
 
 	final double rho=1.293;	// kg/m^3 air, standard density
 
-	DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.c.Cd *this.env.c.FA);
-	DoubleArray rollingDrag = v.mult(this.env.c.rolling_drag * this.env.c.mass * 9.80665);
+	DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.c.Cd() *this.env.c.FA());
+	DoubleArray rollingDrag = v.mult(this.env.c.rolling_drag() * this.env.c.mass() * 9.80665);
 
 	return windDrag.add(rollingDrag);
     }
@@ -89,13 +83,13 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray b = super.get("RPM").data;
 	    c = new Column(id, "%", a.div(b).div(.001072)); // KUMSRL
 	} else if(id.equals("Calc MAF")) {
-	    double maf = this.env.f.MAF; // diameter in mm
+	    double maf = this.env.f.MAF(); // diameter in mm
 	    double maf_scale = ((maf*maf)/(73*73));
 	    DoubleArray a = super.get("MassAirFlow").data.mult(maf_scale);	// g/sec
-	    c = new Column(id, "g/sec", a.add(this.env.f.MAF_offset));
+	    c = new Column(id, "g/sec", a.add(this.env.f.MAF_offset()));
 	} else if(id.equals("Calc Fuel Mass")) {
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
-	    final double gps = this.env.f.injector*gps_per_ccmin;
+	    final double gps = this.env.f.injector()*gps_per_ccmin;
 	    final double cylinders = 6;
 	    DoubleArray a = this.get("FuelInjectorDutyCycle").data.mult(cylinders*gps/100);
 	    c = new Column(id, "g/sec", a);
@@ -120,7 +114,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc Velocity")) {
 	    final double mph_per_mps = 2.23693629;
 	    DoubleArray v = super.get("RPM").data;
-	    c = new Column(id, "m/s", v.div(this.env.c.rpm_per_mph).div(mph_per_mps));	// in m/s
+	    c = new Column(id, "m/s", v.div(this.env.c.rpm_per_mph()).div(mph_per_mps));	// in m/s
 	} else if(id.equals("Calc Acceleration (RPM/s)")) {
 	    DoubleArray y = super.get("RPM").data;
 	    DoubleArray x = this.get("TIME").data;
@@ -135,7 +129,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc WHP")) {
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    DoubleArray v = this.get("Calc Velocity").data;
-	    DoubleArray whp = a.mult(v).mult(this.env.c.mass).add(this.drag(v).smooth());	// in watts
+	    DoubleArray whp = a.mult(v).mult(this.env.c.mass()).add(this.drag(v).smooth());	// in watts
 	    c = new Column(id, "HP", whp.mult(hp_per_watt));
 	} else if(id.equals("Calc Drag")) {
 	    DoubleArray v = this.get("Calc Velocity").data;
@@ -143,7 +137,7 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "HP", drag.mult(hp_per_watt));
 	} else if(id.equals("Calc HP")) {
 	    DoubleArray whp = this.get("Calc WHP").data;
-	    c = new Column(id, "HP", whp.div((1-this.env.c.driveline_loss)).add(this.env.c.static_loss));
+	    c = new Column(id, "HP", whp.div((1-this.env.c.driveline_loss())).add(this.env.c.static_loss()));
 	} else if(id.equals("Calc WTQ")) {
 	    DoubleArray whp = this.get("Calc WHP").data;
 	    DoubleArray rpm = super.get("RPM").data;
@@ -222,19 +216,19 @@ public class ECUxDataset extends Dataset {
     }
 
     protected boolean dataValid(int i) {
-	if(!this.filter.enabled) return true;
-	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear) return false;
-	if(pedal!=null && pedal.data.get(i)<filter.minPedal) return false;
+	if(!this.filter.enabled()) return true;
+	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear()) return false;
+	if(pedal!=null && pedal.data.get(i)<filter.minPedal()) return false;
 	if(rpm!=null) {
-	    if(rpm.data.get(i)<filter.minRPM) return false;
-	    if(rpm.data.get(i)>filter.maxRPM) return false;
-	    if(i<1 || rpm.data.get(i-1) - rpm.data.get(i) > filter.monotonicRPMfuzz) return false;
+	    if(rpm.data.get(i)<filter.minRPM()) return false;
+	    if(rpm.data.get(i)>filter.maxRPM()) return false;
+	    if(i<1 || rpm.data.get(i-1) - rpm.data.get(i) > filter.monotonicRPMfuzz()) return false;
 	}
 	return true;
     }
 
     protected boolean rangeValid(Range r) {
-	return (r.size()>filter.minPoints);
+	return (r.size()>filter.minPoints());
     }
 
     public String getFilename() { return this.filename; }

@@ -1,5 +1,7 @@
 package org.nyet.ecuxplot;
 
+import java.util.prefs.Preferences;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -15,15 +17,17 @@ public class FilterEditor extends PreferencesEditor {
 
     protected void Process(ActionEvent event) {
 	if(this.filter==null) return;
-	this.filter.gear = Integer.valueOf(this.gear.getText());
-	this.filter.minRPM = Integer.valueOf(this.minRPM.getText());
-	this.filter.maxRPM = Integer.valueOf(this.maxRPM.getText());
-	this.filter.minPedal = Integer.valueOf(this.minPedal.getText());
-	this.filter.minPoints = Integer.valueOf(this.minPoints.getText());
+	this.filter.gear(Integer.valueOf(this.gear.getText()));
+	this.filter.minRPM(Integer.valueOf(this.minRPM.getText()));
+	this.filter.maxRPM(Integer.valueOf(this.maxRPM.getText()));
+	this.filter.minPedal(Integer.valueOf(this.minPedal.getText()));
+	this.filter.minPoints(Integer.valueOf(this.minPoints.getText()));
 	super.Process(event);
     }
 
-    public FilterEditor () {
+    public FilterEditor (Preferences prefs) {
+	super(prefs.node(Filter.PREFS_TAG));
+
 	JPanel pp = this.getPrefsPanel();
 
 	pp.add(new JLabel(" Gear:"));
@@ -47,13 +51,17 @@ public class FilterEditor extends PreferencesEditor {
 	pp.add(this.minPoints);
     }
 
+    public void updateDialog()
+    {
+	this.gear.setText("" + this.filter.gear());
+	this.minRPM.setText("" + this.filter.minRPM());
+	this.maxRPM.setText("" + this.filter.maxRPM());
+	this.minPedal.setText("" + this.filter.minPedal());
+	this.minPoints.setText("" + this.filter.minPoints());
+    }
+
     public boolean showDialog(Component parent, String title, Filter filter) {
 	this.filter = filter;
-	this.gear.setText("" + filter.gear);
-	this.minRPM.setText("" + filter.minRPM);
-	this.maxRPM.setText("" + filter.maxRPM);
-	this.minPedal.setText("" + filter.minPedal);
-	this.minPoints.setText("" + filter.minPoints);
 	return super.showDialog(parent, title);
     }
 }

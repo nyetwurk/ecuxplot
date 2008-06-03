@@ -1,5 +1,6 @@
 package org.nyet.ecuxplot;
 
+import java.util.prefs.Preferences;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -9,16 +10,28 @@ import java.beans.EventHandler;
 public class PreferencesEditor extends JPanel {
     private JDialog dialog;
     private JButton jbtnOK;
-    private JButton jbtnApply;
     private boolean ok;
     private ECUxPlot eplot;
 
     private JPanel prefsPanel;
+
+    private Preferences prefs;
+
     protected void Process(ActionEvent event) {
 	if(eplot!=null) eplot.rebuild();
     }
 
-    public PreferencesEditor () {
+    private void setDefaults() {
+	if(this.prefs!=null) {
+	    try { this.prefs.clear(); }
+	    catch (Exception e) { }
+	    if(eplot!=null) eplot.rebuild();
+	    updateDialog();
+	}
+    }
+
+    public PreferencesEditor (Preferences prefs) {
+	this.prefs = prefs;
 	this.setLayout(new BorderLayout());
 
 	this.prefsPanel = new JPanel();
@@ -26,39 +39,53 @@ public class PreferencesEditor extends JPanel {
 	this.add(this.prefsPanel, BorderLayout.CENTER);
 
 	JPanel panel = new JPanel();
-	panel.setLayout(new GridLayout(1,3));
-	jbtnOK = new JButton("OK");
-	jbtnOK.addActionListener(new ActionListener() {
+	panel.setLayout(new GridLayout(1,0));
+	this.jbtnOK = new JButton("OK");
+	this.jbtnOK.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent event) {
 		ok = true;
 		Process(event);
 		dialog.setVisible(false);
 	    }
 	});
-	panel.add(jbtnOK);
+	panel.add(this.jbtnOK);
 
-	jbtnApply = new JButton("Apply");
-	jbtnApply.addActionListener(new ActionListener() {
+	JButton jbtn = new JButton("Apply");
+	jbtn.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent event) {
 		ok = true;
 		Process(event);
 	    }
 	});
-	panel.add(jbtnApply);
+	panel.add(jbtn);
 
-	JButton jbtnCancel = new JButton("Cancel");
-	jbtnCancel.addActionListener(new ActionListener() {
+	if(prefs!=null) {
+	    jbtn = new JButton("Defaults");
+	    jbtn.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+		    setDefaults();
+		}
+	    });
+	    panel.add(jbtn);
+	}
+
+	jbtn = new JButton("Cancel");
+	jbtn.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent event) {
 		ok = false;
 		dialog.setVisible(false);
 	    }
 	});
-	panel.add(jbtnCancel);
+	panel.add(jbtn);
 
 	this.add(panel, BorderLayout.SOUTH);
     }
+    public PreferencesEditor () { this(null); }
+
+    public void updateDialog() { }
 
     public boolean showDialog(Component parent, String title) {
+	updateDialog();
 	this.ok = false;
 	Frame owner = null;
 	if(parent instanceof Frame) owner = (Frame)parent;

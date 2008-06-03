@@ -1,5 +1,7 @@
 package org.nyet.ecuxplot;
 
+import java.util.prefs.Preferences;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -13,13 +15,15 @@ public class FuelingEditor extends PreferencesEditor {
 
     protected void Process(ActionEvent event) {
 	if(this.fueling==null) return;
-	this.fueling.MAF = Double.valueOf(this.MAF.getText());
-	this.fueling.injector = Double.valueOf(this.injector.getText());
-	this.fueling.MAF_offset = Double.valueOf(this.MAF_offset.getText());
+	this.fueling.MAF(Double.valueOf(this.MAF.getText()));
+	this.fueling.injector(Double.valueOf(this.injector.getText()));
+	this.fueling.MAF_offset(Double.valueOf(this.MAF_offset.getText()));
 	super.Process(event);
     }
 
-    public FuelingEditor () {
+    public FuelingEditor (Preferences prefs) {
+        super(prefs.node(Fueling.PREFS_TAG));
+
 	JPanel pp = this.getPrefsPanel();
 
 	pp.add(new JLabel(" MAF diameter (mm):"));
@@ -35,11 +39,14 @@ public class FuelingEditor extends PreferencesEditor {
 	pp.add(this.MAF_offset);
     }
 
+    public void updateDialog() {
+	this.MAF.setText("" + this.fueling.MAF());
+	this.injector.setText("" + this.fueling.injector());
+	this.MAF_offset.setText("" + this.fueling.MAF_offset());
+    }
+
     public boolean showDialog(Component parent, String title, Fueling fueling) {
 	this.fueling = fueling;
-	this.MAF.setText("" + fueling.MAF);
-	this.injector.setText("" + fueling.injector);
-	this.MAF_offset.setText("" + fueling.MAF_offset);
 	return super.showDialog(parent, title);
     }
 }

@@ -109,6 +109,7 @@ public class ECUxChartFactory {
 	    d.addSeries(data.new Key(ykey.toString(),i), s);
 	}
     }
+
     public static void removeDataset(DefaultXYDataset d, Comparable ykey) {
 	if(ykey instanceof Dataset.Key) {
 	    ykey = ((Dataset.Key)ykey).getString();
@@ -123,5 +124,23 @@ public class ECUxChartFactory {
 		i--;
 	    }
 	}
+    }
+
+    public static String getDatasetYkeys(DefaultXYDataset d) {
+	String ret = "";
+	boolean first = true;
+	for(int i=0;i<d.getSeriesCount();i++) {
+	    Comparable key = d.getSeriesKey(i);
+	    String s;
+	    if(key instanceof Dataset.Key) s = ((Dataset.Key)key).getString();
+	    else s = key.toString();
+	    if(first) {
+		first = false;
+		ret += s;
+	    } else {
+		ret += "," + s;
+	    }
+	}
+	return ret;
     }
 }

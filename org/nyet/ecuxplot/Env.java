@@ -1,7 +1,14 @@
 package org.nyet.ecuxplot;
 
+import java.util.prefs.Preferences;
+
 public class Env {
-    public Constant c = new Constant();
-    public PID pid = new PID();
-    public Fueling f = new Fueling();
+    public Constants c;
+    public Fueling f;
+    public PID pid;
+    public Env (Preferences prefs) {
+	this.f = new Fueling(prefs);
+	this.c = new Constants(prefs);
+	this.pid = new PID(prefs);
+    }
 }
