@@ -1,6 +1,7 @@
 package org.nyet.ecuxplot;
 
 import java.util.Hashtable;
+import java.util.HashSet;
 
 import javax.swing.JMenu;
 import javax.swing.JCheckBox;
@@ -15,6 +16,7 @@ import org.nyet.util.SubActionListener;
 
 public class AxisMenu extends JMenu {
     private Comparable[] initialChecked;
+    private HashSet<String> members = new HashSet<String>();
 
     private Hashtable<String, JMenu> subMenus = new Hashtable<String, JMenu>();
 
@@ -111,6 +113,8 @@ public class AxisMenu extends JMenu {
 	} else {
 	    this.add(item);
 	}
+
+	this.members.add(id);
     }
 
     public AxisMenu (String text, String[] headers, SubActionListener listener,
@@ -122,7 +126,7 @@ public class AxisMenu extends JMenu {
 	if(radioButton) bg = new ButtonGroup();
 
 	for(int i=0;i<headers.length;i++) {
-	    if(headers[i].length()>0)
+	    if(headers[i].length()>0 && !this.members.contains(headers[i]))
 		this.add(headers[i], listener, bg);
 	}
 
