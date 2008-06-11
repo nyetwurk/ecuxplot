@@ -12,16 +12,19 @@ public class ECUxDataset extends Dataset {
     private Filter filter;
     private final double hp_per_watt = 0.00134102209;
     private final double mbar_per_psi = 68.9475729;
-    private int ticks_per_sec = 1000;	// assume msec
+    private int ticks_per_sec;
 
     public ECUxDataset(String filename, Env env, Filter filter) throws Exception {
 	super(filename);
-	this.rpm = get("RPM");
-	this.pedal = get("AcceleratorPedalPosition");
-	this.gear = get("Gear");
+
 	this.filename = filename;
 	this.env = env;
 	this.filter = filter;
+
+	this.rpm = get("RPM");
+	this.gear = get("Gear");
+	this.pedal = get("AcceleratorPedalPosition");
+	if(this.pedal == null) this.pedal = get("Throttle Valve Angle");
     }
 
     public String[] ParseHeaders(CSVReader reader) throws Exception {
@@ -45,6 +48,8 @@ public class ECUxDataset extends Dataset {
 		// System.out.println(h[i] + " [" + u[i] + "]");
 	    }
 	    this.ticks_per_sec = 1;	// VAGCOM is in seconds
+	} else {
+	    this.ticks_per_sec = 1000;
 	}
 	return h;
     }

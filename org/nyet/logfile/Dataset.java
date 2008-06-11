@@ -139,7 +139,10 @@ public class Dataset {
     }
 
     public boolean exists(Comparable id) {
-	return (this.get(id)!=null);
+	if (this.get(id) == null) return false;
+	if (this.get(id).data == null) return false;
+	if (this.get(id).data.size() == 0) return false;
+	return true;
     }
 
     protected boolean dataValid(int i) { return true; }
