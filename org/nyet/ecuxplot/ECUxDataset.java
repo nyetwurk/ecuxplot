@@ -6,7 +6,7 @@ import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
 
 public class ECUxDataset extends Dataset {
-    private Column rpm, pedal, gear;
+    private Column rpm, pedal, throttle, gear;
     private String filename;
     private Env env;
     private Filter filter;
@@ -22,9 +22,9 @@ public class ECUxDataset extends Dataset {
 	this.filter = filter;
 
 	this.rpm = get("RPM");
-	this.gear = get("Gear");
 	this.pedal = get("AcceleratorPedalPosition");
-	if(this.pedal == null) this.pedal = get("Throttle Valve Angle");
+	this.throttle = get("Throttle Valve Angle");
+	this.gear = get("Gear");
     }
 
     public String[] ParseHeaders(CSVReader reader) throws Exception {
@@ -224,6 +224,7 @@ public class ECUxDataset extends Dataset {
 	if(!this.filter.enabled()) return true;
 	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear()) return false;
 	if(pedal!=null && pedal.data.get(i)<filter.minPedal()) return false;
+	if(throttle!=null && throttle.data.get(i)<filter.minThrottle()) return false;
 	if(rpm!=null) {
 	    if(rpm.data.get(i)<filter.minRPM()) return false;
 	    if(rpm.data.get(i)>filter.maxRPM()) return false;
