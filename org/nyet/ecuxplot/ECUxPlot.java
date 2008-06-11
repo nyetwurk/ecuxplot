@@ -251,7 +251,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private void editChartY(Comparable ykey, int axis, boolean add) {
-	if(add && !this.dataSet.exists(ykey)) return;
+	if(add && !(this.dataSet.exists(ykey) && this.dataSet.exists(this.xkey())) )
+	    return;
 	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
 	if(add) ECUxChartFactory.addDataset(dataset, this.dataSet, this.xkey(), ykey);
