@@ -11,7 +11,7 @@ public class Filter {
     private static final int defaultMinRPM = 2500;
     private static final int defaultMaxRPM = 8000;
     private static final int defaultMinPedal = 95;
-    private static final int defaultMinThrottle = 40;
+    private static final int defaultMinThrottle = 50;
     private static final int defaultGear = 3;
     private static final int defaultMinPoints = 30;
 

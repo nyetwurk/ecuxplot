@@ -23,7 +23,9 @@ public class ECUxDataset extends Dataset {
 
 	this.rpm = get("RPM");
 	this.pedal = get("AcceleratorPedalPosition");
-	this.throttle = get("Throttle Valve Angle");
+	this.throttle = get("ThrottlePlateAngle");
+	if(this.throttle == null)
+	    this.throttle = get("Throttle Valve Angle");
 	this.gear = get("Gear");
     }
 
