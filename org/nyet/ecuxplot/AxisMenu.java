@@ -122,7 +122,8 @@ public class AxisMenu extends JMenu {
 	if(radioButton) bg = new ButtonGroup();
 
 	for(int i=0;i<headers.length;i++) {
-	    this.add(headers[i], listener, bg);
+	    if(headers[i].length()>0)
+		this.add(headers[i], listener, bg);
 	}
 
 	// put calc at bottom
