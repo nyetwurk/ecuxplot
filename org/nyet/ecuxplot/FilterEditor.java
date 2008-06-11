@@ -15,6 +15,7 @@ public class FilterEditor extends PreferencesEditor {
     private JTextField minPedal;
     private JTextField minThrottle;
     private JTextField minPoints;
+    private JTextField HPTQMAW;
 
     protected void Process(ActionEvent event) {
 	if(this.filter==null) return;
@@ -24,6 +25,7 @@ public class FilterEditor extends PreferencesEditor {
 	this.filter.minPedal(Integer.valueOf(this.minPedal.getText()));
 	this.filter.minThrottle(Integer.valueOf(this.minThrottle.getText()));
 	this.filter.minPoints(Integer.valueOf(this.minPoints.getText()));
+	this.filter.HPTQMAW(Integer.valueOf(this.HPTQMAW.getText()));
 	super.Process(event);
     }
 
@@ -55,6 +57,10 @@ public class FilterEditor extends PreferencesEditor {
 	pp.add(new JLabel(" Minimum Points:"));
 	this.minPoints = new JTextField(10);
 	pp.add(this.minPoints);
+
+	pp.add(new JLabel(" HW/TQ smoothing:"));
+	this.HPTQMAW = new JTextField(10);
+	pp.add(this.HPTQMAW);
     }
 
     public void updateDialog()
@@ -65,6 +71,7 @@ public class FilterEditor extends PreferencesEditor {
 	this.minPedal.setText("" + this.filter.minPedal());
 	this.minThrottle.setText("" + this.filter.minThrottle());
 	this.minPoints.setText("" + this.filter.minPoints());
+	this.HPTQMAW.setText("" + this.filter.HPTQMAW());
     }
 
     public boolean showDialog(Component parent, String title, Filter filter) {

@@ -116,14 +116,14 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "%", a.div(b).mult(-1).add(1).mult(100).max(-25).min(25));
 	} else if(id.equals("FuelInjectorDutyCycle")) {
 	    DoubleArray a = super.get("FuelInjectorOnTime").data.div(60*this.ticks_per_sec);
-	    DoubleArray b = super.get("RPM").data.div(2); // half cycle
+	    DoubleArray b = super.get("RPM").data.smooth().div(2); // half cycle
 	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
 	} else if(id.equals("Calc Velocity")) {
 	    final double mph_per_mps = 2.23693629;
-	    DoubleArray v = super.get("RPM").data;
+	    DoubleArray v = super.get("RPM").data.smooth();
 	    c = new Column(id, "m/s", v.div(this.env.c.rpm_per_mph()).div(mph_per_mps));	// in m/s
 	} else if(id.equals("Calc Acceleration (RPM/s)")) {
-	    DoubleArray y = super.get("RPM").data;
+	    DoubleArray y = super.get("RPM").data.smooth();
 	    DoubleArray x = this.get("TIME").data;
 	    c = new Column(id, "RPM/s", y.derivative(x,true).max(0));
 	} else if(id.equals("Calc Acceleration (m/s^2)")) {
@@ -133,11 +133,12 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc Acceleration (g)")) {
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    c = new Column(id, "g", a.div(9.80665));
+/*********************************************************************************/
 	} else if(id.equals("Calc WHP")) {
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    DoubleArray v = this.get("Calc Velocity").data;
 	    DoubleArray whp = a.mult(v).mult(this.env.c.mass()).add(this.drag(v).smooth());	// in watts
-	    c = new Column(id, "HP", whp.mult(hp_per_watt));
+	    c = new Column(id, "HP", whp.mult(hp_per_watt).movingAverage(this.filter.HPTQMAW()));
 	} else if(id.equals("Calc Drag")) {
 	    DoubleArray v = this.get("Calc Velocity").data;
 	    DoubleArray drag = this.drag(v).smooth();	// in watts
@@ -153,6 +154,7 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray hp = this.get("Calc HP").data;
 	    DoubleArray rpm = super.get("RPM").data;
 	    c = new Column(id, "ft-lb", hp.mult(5252).div(rpm).smooth());
+/*********************************************************************************/
 	} else if(id.equals("BoostPressureDesired (PSI)")) {
 	    DoubleArray abs = super.get("BoostPressureDesired").data;
 	    c = new Column(id, "PSI", this.toPSI(abs));

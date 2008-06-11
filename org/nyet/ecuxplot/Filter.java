@@ -14,6 +14,7 @@ public class Filter {
     private static final int defaultMinThrottle = 50;
     private static final int defaultGear = 3;
     private static final int defaultMinPoints = 30;
+    private static final int defaultHPTQMAW = 5;	// hp/torqe moving average window
 
     private Preferences prefs;
 
@@ -86,5 +87,12 @@ public class Filter {
     }
     public void minPoints(int val) {
 	this.prefs.putInt("minPoints", val);
+    }
+
+    public int HPTQMAW() {
+	return this.prefs.getInt("HPTQMAW", defaultHPTQMAW);
+    }
+    public void HPTQMAW(int val) {
+	this.prefs.putInt("HPTQMAW", val);
     }
 }
