@@ -14,7 +14,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JPopupMenu;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import org.nyet.util.WindowUtilities;
+
+import com.apple.eawt.*;
 
 import org.jfree.chart.JFreeChart;
 
@@ -25,6 +26,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
+import org.nyet.util.WindowUtilities;
 import org.nyet.util.WaitCursor;
 import org.nyet.util.GenericFileFilter;
 import org.nyet.util.SubActionListener;
@@ -289,7 +291,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	WindowUtilities.setNativeLookAndFeel();
 	this.menuBar = new JMenuBar();
 
-
 	this.prefs = Preferences.userNodeForPackage(ECUxPlot.class);
 
 	this.filter = new Filter(this.prefs);
@@ -323,6 +324,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() { public void run() {
 	    final ECUxPlot plot = new ECUxPlot("ECUxPlot", args);
+
+	    Application.getApplication().addApplicationListener(new ApplicationAdapter() {
+		public void handleOpenFile(ApplicationEvent evt) {
+		    String file = evt.getFilename();
+		    plot.loadFile(new File(file));
+		}
+	    });
+
 	    plot.pack();
 	    RefineryUtilities.centerFrameOnScreen(plot);
 	    plot.setVisible(true);

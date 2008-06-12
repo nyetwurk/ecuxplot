@@ -20,6 +20,8 @@
 	<string>6.0</string>
 	<key>CFBundleIconFile</key>
 	<string>ECUxPlot.icns</string>
+	<key>CFBundleDocumentTypes</key>
+	<string>CSV Document</string>
 	<key>Java</key>
 	<dict>
 		<key>MainClass</key>
