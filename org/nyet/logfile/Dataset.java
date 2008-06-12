@@ -9,7 +9,8 @@ import org.jfree.data.xy.XYDataset;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
-    public String[] headers;
+    private String[] headers;
+    private String[] units;
     private ArrayList<Column> columns;
     private int rows;
 
@@ -37,6 +38,15 @@ public class Dataset {
 	    this.id = id;
 	    this.units = Units.find(id);
 	    this.data = new DoubleArray(data);
+	}
+
+	public Column(Comparable id, String units) {
+	    this.id = id;
+	    if(units!=null && units.length()>0)
+		this.units = units;
+	    else
+		this.units = Units.find(id);
+	    this.data = new DoubleArray();
 	}
 
 	public Column(Comparable id, String units, double[] data) {
@@ -99,10 +109,10 @@ public class Dataset {
 	CSVReader reader = new CSVReader(new FileReader(filename));
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
-	this.headers = ParseHeaders(reader);
+	ParseHeaders(reader);
 	int i;
 	for(i=0;i<this.headers.length;i++) {
-	    this.columns.add(new Column(this.headers[i]));
+	    this.columns.add(new Column(this.headers[i], this.units[i]));
 	}
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
@@ -115,8 +125,8 @@ public class Dataset {
 
     public ArrayList<Column> getColumns() {return this.columns;}
 
-    public String[] ParseHeaders(CSVReader reader) throws Exception {
-	return reader.readNext();
+    public void ParseHeaders(CSVReader reader) throws Exception {
+	this.headers=reader.readNext();
     }
 
     public Column get(int id) {
@@ -172,4 +182,9 @@ public class Dataset {
 	Column c = this.get(id);
 	return c.data.toArray(r.start, r.end);
     }
+
+    public void setHeaders(String [] headers) {this.headers=headers;}
+    public String [] getHeaders() {return this.headers;}
+    public String getHeader(int i) {return this.headers[i];}
+    public void setUnits(String [] units) {this.units=units;}
 }

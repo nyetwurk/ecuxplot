@@ -29,7 +29,7 @@ public class ECUxDataset extends Dataset {
 	this.gear = get("Gear");
     }
 
-    public String[] ParseHeaders(CSVReader reader) throws Exception {
+    public void ParseHeaders(CSVReader reader) throws Exception {
 	String [] h = reader.readNext();
 	if(h[0].matches("^.*day$")) {
 	    reader.readNext();	// ECU type
@@ -50,10 +50,11 @@ public class ECUxDataset extends Dataset {
 		// System.out.println(h[i] + " [" + u[i] + "]");
 	    }
 	    this.ticks_per_sec = 1;	// VAGCOM is in seconds
+	    this.setUnits(u);
 	} else {
 	    this.ticks_per_sec = 1000;
 	}
-	return h;
+	this.setHeaders(h);
     }
 
     private DoubleArray drag (DoubleArray v) {

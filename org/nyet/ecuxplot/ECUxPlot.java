@@ -42,14 +42,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private AxisMenu xAxis;
     private AxisMenu yAxis;
     private AxisMenu yAxis2;
-   
+
     // Dialog boxes
     private JFileChooser fc;
     private FilterEditor fe;
     private ConstantsEditor ce;
     private PIDEditor pe;
     private FuelingEditor fle;
-    
+
     // Preferences
     private Preferences prefs=null;
 
@@ -115,8 +115,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    rebuild();
 	    addChartY(this.ykeys(0), 0);
 	    addChartY(this.ykeys(1), 1);
-	    setupAxisMenus(this.dataSet.headers);
-    	} catch (Exception e) {
+	    setupAxisMenus(this.dataSet.getHeaders());
+	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    return;
 	}
