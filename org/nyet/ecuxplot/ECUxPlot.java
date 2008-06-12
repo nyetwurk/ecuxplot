@@ -324,13 +324,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() { public void run() {
 	    final ECUxPlot plot = new ECUxPlot("ECUxPlot", args);
+	    Application app = Application.getApplication();
 
-	    Application.getApplication().addApplicationListener(new ApplicationAdapter() {
-		public void handleOpenFile(ApplicationEvent evt) {
-		    String file = evt.getFilename();
-		    plot.loadFile(new File(file));
-		}
-	    });
+	    if(app!=null) {
+		app.addApplicationListener(new ApplicationAdapter() {
+		    public void handleOpenFile(ApplicationEvent evt) {
+			String file = evt.getFilename();
+			plot.loadFile(new File(file));
+		    }
+		});
+	    }
 
 	    plot.pack();
 	    RefineryUtilities.centerFrameOnScreen(plot);
