@@ -47,11 +47,12 @@ JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar:applib.jar
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
 TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
 
+ZIPS=$(TARGET).zip $(TARGET).MacOS.zip
 all: $(TARGETS) .classpath version.txt
 jar: $(TARGET).jar
-zip: $(TARGET).zip $(TARGET).MacOS.zip
+zip: $(ZIPS)
 exe: ECUxPlot.exe
-scp: zip
+scp: $(ZIPS)
 	$(SCP) $^ nyet.org:public_html/cars/files/
 
 clean:
