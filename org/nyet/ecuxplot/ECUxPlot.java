@@ -118,6 +118,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    setupAxisMenus(this.dataSet.getHeaders());
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
+	    e.printStackTrace();
 	    return;
 	}
     }

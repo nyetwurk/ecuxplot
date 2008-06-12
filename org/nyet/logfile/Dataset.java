@@ -25,34 +25,13 @@ public class Dataset {
 
     public class Column {
 	private Comparable id;
-	public String units;
+	private String units;
 	public DoubleArray data;
-
-	public Column(Comparable id) {
-	    this.id = id;
-	    this.units = Units.find(id);
-	    this.data = new DoubleArray();
-	}
-
-	public Column(Comparable id, double[] data) {
-	    this.id = id;
-	    this.units = Units.find(id);
-	    this.data = new DoubleArray(data);
-	}
 
 	public Column(Comparable id, String units) {
 	    this.id = id;
-	    if(units!=null && units.length()>0)
-		this.units = units;
-	    else
-		this.units = Units.find(id);
-	    this.data = new DoubleArray();
-	}
-
-	public Column(Comparable id, String units, double[] data) {
-	    this.id = id;
 	    this.units = units;
-	    this.data = new DoubleArray(data);
+	    this.data = new DoubleArray();
 	}
 
 	public Column(Comparable id, String units, DoubleArray data) {
@@ -67,6 +46,8 @@ public class Dataset {
 	    } catch (Exception e) {
 	    }
 	}
+
+	public String getUnits() { return this.units; }
     }
 
     public class Key implements Comparable {
@@ -134,7 +115,7 @@ public class Dataset {
     }
 
     public String units(Comparable id) {
-	return this.get(id).units;
+	return this.get(id).getUnits();
     }
 
     public Column get(Comparable id) {

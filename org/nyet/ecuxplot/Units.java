@@ -1,4 +1,4 @@
-package org.nyet.logfile;
+package org.nyet.ecuxplot;
 
 public final class Units {
     private static final String[][] legend = {

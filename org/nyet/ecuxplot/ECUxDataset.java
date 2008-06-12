@@ -31,14 +31,15 @@ public class ECUxDataset extends Dataset {
 
     public void ParseHeaders(CSVReader reader) throws Exception {
 	String [] h = reader.readNext();
+	String [] u = new String[h.length];
+	int i;
 	if(h[0].matches("^.*day$")) {
 	    reader.readNext();	// ECU type
 	    reader.readNext();	// blank
 	    reader.readNext();	// group
 	    h = reader.readNext(); // headers
 	    String[] h2 = reader.readNext(); // headers
-	    String[] u = reader.readNext(); // units
-	    int i;
+	    u = reader.readNext(); // units
 	    for(i=0;i<h.length;i++) {
 		h[i]=h[i].trim();
 		h2[i]=h2[i].trim();
@@ -50,10 +51,14 @@ public class ECUxDataset extends Dataset {
 		// System.out.println(h[i] + " [" + u[i] + "]");
 	    }
 	    this.ticks_per_sec = 1;	// VAGCOM is in seconds
-	    this.setUnits(u);
 	} else {
 	    this.ticks_per_sec = 1000;
 	}
+	for(i=0;i<h.length;i++) {
+	    if(u[i]==null || u[i].length()==0)
+		u[i]=Units.find(h[i]);
+	}
+	this.setUnits(u);
 	this.setHeaders(h);
     }
 
