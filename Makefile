@@ -7,15 +7,14 @@ ifeq ($(UNAME),Cygwin)
 CLASSPATH = '$(shell cygpath -wsp .:$(JARS))'
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := launch4jc
-SCP := pscp
 INSTALL_DIR := '$(shell cygpath -u "C:\Program Files\ECUxPlot")'
 else
 CLASSPATH = .:$(JARS)
 PWD := $(shell pwd)/
 LAUNCH4J := /usr/local/launch4j/launch4j
-SCP := scp
 INSTALL_DIR := /usr/local/ecuxplot
 endif
+SCP := scp
 
 MP_SOURCES= HexValue.java Map.java Parser.java Parse.java \
 	    ParserException.java Project.java MapData.java
@@ -50,11 +49,10 @@ TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
 
 all: $(TARGETS) .classpath version.txt
 jar: $(TARGET).jar
-zip: $(TARGET).zip
+zip: $(TARGET).zip $(TARGET).MacOS.zip
 exe: ECUxPlot.exe
-app: ECUxPlot.app
-scp: $(TARGET).zip
-	$(SCP) $< nyet.org:public_html/cars/files/
+scp: zip
+	$(SCP) $^ nyet.org:public_html/cars/files/
 
 clean:
 	rm -f ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml version.txt .classpath

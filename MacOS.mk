@@ -21,3 +21,6 @@ ECUxPlot.app/Contents/MacOS/JavaApplicationStub: MacOS.data/JavaApplicationStub
 ECUxPlot.app/Contents/Resources/%.icns: MacOS.data/%.icns
 	@mkdir -p ECUxPlot.app/Contents/Resources
 	cp -f $< $@
+
+$(TARGET).MacOS.zip: ECUxPlot.app
+	zip -r $@ ECUxPlot.app
