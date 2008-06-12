@@ -1,10 +1,11 @@
-ECUxPlot.app:   ECUxPlot.app/Contents/Info.plist \
+.ECUxPlot.app.stamp ECUxPlot.app:   ECUxPlot.app/Contents/Info.plist \
 		ECUxPlot.app/Contents/PkgInfo \
 		ECUxPlot.app/Contents/MacOS/JavaApplicationStub \
 		ECUxPlot.app/Contents/Resources/ECUxPlot.icns \
 		$(JARFILES) $(TARGET).jar
 	@mkdir -p ECUxPlot.app/Contents/Resources/Java
 	cp -f $(JARFILES) $(TARGET).jar ECUxPlot.app/Contents/Resources/Java
+	touch .ECUxPlot.app.stamp
 
 ECUxPlot.app/Contents/Info.plist: MacOS.data/Info.plist.template Makefile
 	@mkdir -p ECUxPlot.app/Contents
@@ -22,5 +23,5 @@ ECUxPlot.app/Contents/Resources/%.icns: MacOS.data/%.icns
 	@mkdir -p ECUxPlot.app/Contents/Resources
 	cp -f $< $@
 
-$(TARGET).MacOS.zip: ECUxPlot.app
+$(TARGET).MacOS.zip: ECUxPlot.app .ECUxPlot.app.stamp
 	zip -r $@ ECUxPlot.app
