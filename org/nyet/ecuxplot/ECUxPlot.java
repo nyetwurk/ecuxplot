@@ -105,22 +105,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private void loadFile(File file) {
 	try {
 	    this.dataSet = new ECUxDataset(file.getAbsolutePath(), this.env, this.filter);
-	} catch (Exception e) {
+
+	    this.setTitle("ECUxPlot " + file.getName());
+
+	    final JFreeChart chart = ECUxChartFactory.create2AxisChart(this.scatter());
+	    this.chartPanel = new ECUxChartPanel(chart);
+
+	    setContentPane(this.chartPanel);
+	    rebuild();
+	    addChartY(this.ykeys(0), 0);
+	    addChartY(this.ykeys(1), 1);
+	    setupAxisMenus(this.dataSet.headers);
+    	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
-	    e.printStackTrace();
 	    return;
 	}
-
-	this.setTitle("ECUxPlot " + file.getName());
-
-	final JFreeChart chart = ECUxChartFactory.create2AxisChart(this.scatter());
-	this.chartPanel = new ECUxChartPanel(chart);
-
-	setContentPane(this.chartPanel);
-	rebuild();
-	addChartY(this.ykeys(0), 0);
-	addChartY(this.ykeys(1), 1);
-	setupAxisMenus(this.dataSet.headers);
     }
 
     public void actionPerformed(ActionEvent event) {
