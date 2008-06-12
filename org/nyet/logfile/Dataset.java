@@ -5,7 +5,6 @@ import java.lang.Math;
 import java.util.*;
 import au.com.bytecode.opencsv.*;
 
-import org.jfree.data.xy.XYDataset;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
