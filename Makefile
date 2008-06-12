@@ -39,24 +39,27 @@ MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
 
 EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
 
-
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
+JARFILES:=jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar applib.jar
 JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar:applib.jar
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
+TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
 
 all: $(TARGETS) .classpath version.txt
-jar: ECUxPlot-$(VERSION)r$(RELEASE).jar
-zip: ECUxPlot-$(VERSION)r$(RELEASE).zip
+jar: $(TARGET).jar
+zip: $(TARGET).zip
 exe: ECUxPlot.exe
-scp: ECUxPlot-$(VERSION)r$(RELEASE).zip
+app: ECUxPlot.app
+scp: $(TARGET).zip
 	$(SCP) $< nyet.org:public_html/cars/files/
 
 clean:
 	rm -f ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml version.txt .classpath
 	rm -f *.class
+	rm -rf ECUxPlot.app
 	find org -name \*.class | xargs rm
 	find vec_math -name \*.class | xargs rm
 
@@ -74,20 +77,8 @@ mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
-ECUxPlot.MF: Makefile
-	@echo "Manifest-Version: 1.0" > $@
-	@echo "Main-Class: org.nyet.ecuxplot.ECUxPlot" >> $@
-	@echo "Class-Path: $(subst :, ,$(JARS))" >> $@
-
-ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
-	@rm -f $@
-	jar cfm $@ ECUxPlot.MF `find org -name \*.class -o -name \*.png` `find vec_math -name \*.class`
-
-%.xml: %.xml.template Makefile
-	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
-ECUxPlot.exe: ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml ECUxPlot.ico version.txt
-	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
-
+include Windows.mk
+include MacOS.mk
 
 INSTALL_FILES = ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
 		$(subst :, ,$(JARS)) version.txt
