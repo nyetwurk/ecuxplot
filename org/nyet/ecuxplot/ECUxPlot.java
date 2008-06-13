@@ -79,6 +79,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	return k.split(",");
     }
 
+    private java.awt.Dimension windowSize() {
+	return new java.awt.Dimension(
+	    this.prefs.getInt("windowWidth", 800),
+	    this.prefs.getInt("windowHeight", 600));
+    }
+
+    private void putWindowSize(int w, int h) {
+	    this.prefs.putInt("windowWidth", w);
+	    this.prefs.putInt("windowHeight", h);
+    }
+
     private void putYkeys(int axis) {
 	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
@@ -126,7 +137,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public void actionPerformed(ActionEvent event) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(source.getText().equals("Quit")) {
-	    System.exit(0);
+	    exitApp();
 	} else if(source.getText().equals("Export Chart")) {
 	    if(this.chartPanel == null) {
 		JOptionPane.showMessageDialog(this, "Open a CSV first");
@@ -311,10 +322,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	setJMenuBar(menuBar);
 
-	setPreferredSize(new java.awt.Dimension(800,600));
+	setPreferredSize(this.windowSize());
 
 	if(args!=null && args.length>0 && args[0].length()>0)
 	    loadFile(new File(args[0]));
+    }
+
+    public void windowClosing(java.awt.event.WindowEvent we) {
+	exitApp();
+    }
+
+    private void exitApp() {
+	this.putWindowSize(this.getWidth(), this.getHeight());
+	System.exit(0);
     }
 
     public ECUxPlot(final String title) {
