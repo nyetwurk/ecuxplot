@@ -352,6 +352,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 			String file = evt.getFilename();
 			plot.loadFile(new File(file));
 		    }
+		    public void handleQuit(ApplicationEvent evt) {
+			plot.putWindowSize(plot.getWidth(), plot.getHeight());
+			evt.setHandled(true);
+		    }
 		});
 	    }
 
