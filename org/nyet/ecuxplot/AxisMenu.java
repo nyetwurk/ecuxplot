@@ -88,9 +88,11 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		this.add("BoostPressureDesired (PSI)", listener, bg);
+		this.add("Calc BoostDesired PR", listener, bg);
 	    }
 	    if(id.matches("BoostPressureActual")) {
 		this.add("BoostPressureActual (PSI)", listener, bg);
+		this.add("Calc BoostActual PR", listener, bg);
 		this.add("Calc LDR error", listener, bg);
 		this.add("Calc LDR de/dt", listener, bg);
 		this.add("Calc LDR I e dt", listener, bg);
