@@ -70,7 +70,6 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("^Calc .*")) {
 	    // calc is added last, do not autoadd to submenu
 	    addToSubmenu("Calc", item, false);
-
 	} else if(id.matches(".*Fuel.*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("AirFuelRatioDesired")) {
@@ -112,6 +111,9 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("OXS", item);
 	} else if(id.matches(".*Load.*")) {
 	    addToSubmenu("Load", item);
+	    if(id.matches("EngineLoadCorrectedSpecified")) {
+		this.add("Calc LoadSpecified correction", listener, bg);
+	    }
 	} else {
 	    this.add(item);
 	}
