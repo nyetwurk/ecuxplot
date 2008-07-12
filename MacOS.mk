@@ -15,13 +15,14 @@ ECUxPlot.app/Contents/PkgInfo: MacOS.data/PkgInfo
 	@mkdir -p ECUxPlot.app/Contents
 	cp -f $< $@
 
-ECUxPlot.app/Contents/MacOS/JavaApplicationStub: MacOS.data/JavaApplicationStub
+ECUxPlot.app/Contents/MacOS/JavaApplicationStub: Makefile # MacOS.data/JavaApplicationStub
 	@mkdir -p ECUxPlot.app/Contents/MacOS
-	cp -f $< $@
+	# cp -f $< $@
+	ln -sf "/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" $@
 
 ECUxPlot.app/Contents/Resources/%.icns: MacOS.data/%.icns
 	@mkdir -p ECUxPlot.app/Contents/Resources
 	cp -f $< $@
 
 $(TARGET).MacOS.zip: ECUxPlot.app .ECUxPlot.app.stamp
-	zip -r $@ ECUxPlot.app
+	zip -yr $@ ECUxPlot.app
