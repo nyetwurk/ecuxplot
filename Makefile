@@ -1,5 +1,5 @@
 VERSION := 0.9
-RELEASE := 0.5
+RELEASE := 0.6
 
 UNAME := $(shell uname -o)
 
@@ -46,13 +46,15 @@ JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar:applib.jar:AppleJa
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
 TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
+INSTALLER=ECUxPlot-installer-$(VERSION)r$(RELEASE).exe
 
 ZIPS=$(TARGET).zip $(TARGET).MacOS.zip
 all: $(TARGETS) .classpath version.txt
 jar: $(TARGET).jar
 zip: $(ZIPS)
 exe: ECUxPlot.exe
-scp: $(ZIPS)
+installer: $(INSTALLER)
+scp: $(ZIPS) $(INSTALLER)
 	$(SCP) $^ nyet.org:public_html/cars/files/
 
 clean:
@@ -89,6 +91,9 @@ ECUxPlot-$(VERSION)r$(RELEASE).zip: $(INSTALL_FILES)
 install: $(INSTALL_FILES)
 	mkdir -p $(INSTALL_DIR)
 	cp -avp $(INSTALL_FILES) $(INSTALL_DIR)/
+
+$(INSTALLER): $(INSTALL_FILES) ECUxPlot.nsi
+	makensis /DVERSION=$(VERSION)r$(RELEASE) ECUxPlot.nsi
 
 %.class: %.java
 	javac $(JFLAGS) $<
