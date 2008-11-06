@@ -111,6 +111,9 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("OXS", item);
 	} else if(id.matches(".*Load.*")) {
 	    addToSubmenu("Load", item);
+	    if(id.matches("EngineLoadDesired")) {
+		this.add("Calc SimBoostPressureDesired", listener, bg);
+	    }
 	    if(id.matches("EngineLoadCorrectedSpecified")) {
 		this.add("Calc LoadSpecified correction", listener, bg);
 	    }

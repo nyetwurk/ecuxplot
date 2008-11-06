@@ -169,6 +169,17 @@ public class DoubleArray
 	return new DoubleArray(this._max(d));
     }
 
+    public double[] _max(double[] d) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=Math.max(this.array[i],d[i]);
+	}
+	return out;
+    }
+    public DoubleArray max(DoubleArray d) {
+	return new DoubleArray(this._max(d.toArray()));
+    }
+
     public double[] _derivative(double[] d, int window) {
         double[] out = new double[ sp ];
         if(sp==1 || d.length<2 || d.length!=sp) {
