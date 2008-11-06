@@ -2,11 +2,14 @@
 ; -------------------------------
 ; Start
  
+  !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
+  Name "ECUxPlot"
+
   !define MUI_FILE "ECUxPlot"
+  ; passed from command line
   ; !define VERSION "0.9r0.4"
  
   CRCCheck On
-  !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
  
  
 ;--------------------------------
@@ -19,25 +22,30 @@
  
   !define MUI_ICON "${MUI_FILE}.ico"
   !define MUI_UNICON "${MUI_FILE}.ico"
-  ; !define MUI_SPECIALBITMAP "Bitmap.bmp"
  
  
 ;--------------------------------
 ;Folder selection page
  
   InstallDir "$PROGRAMFILES\${MUI_FILE}"
+  InstallDirRegKey HKCU "Software\${MUI_FILE}" ""
+  RequestExecutionLevel user
  
  
 ;--------------------------------
 ;Modern UI Configuration
  
-  !define MUI_WELCOMEPAGE  
-  !define MUI_LICENSEPAGE
-  !define MUI_DIRECTORYPAGE
   !define MUI_ABORTWARNING
-  !define MUI_UNINSTALLER
-  !define MUI_UNCONFIRMPAGE
-  !define MUI_FINISHPAGE  
+
+;--------------------------------
+;Pages
+  !insertmacro MUI_PAGE_LICENSE "gpl-3.0.txt"
+  ; !insertmacro MUI_PAGE_COMPONENTS
+  !insertmacro MUI_PAGE_DIRECTORY
+  !insertmacro MUI_PAGE_INSTFILES
+
+  !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_INSTFILES
  
  
 ;--------------------------------
@@ -55,7 +63,7 @@
 ;--------------------------------
 ;Data
  
-  LicenseData "gpl-3.0.txt"
+  ;LicenseData "gpl-3.0.txt"
  
  
 ;-------------------------------- 
@@ -83,7 +91,10 @@ Section "install" InstallationInfo
   CreateDirectory "$SMPROGRAMS\${MUI_FILE}"
   CreateShortCut "$SMPROGRAMS\${MUI_FILE}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\${MUI_FILE}\${MUI_FILE}.lnk" "$INSTDIR\${MUI_FILE}.exe" "" "$INSTDIR\${MUI_FILE}.exe" 0
- 
+
+;store installation folder
+  WriteRegStr HKCU "Software\${MUI_FILE}" "" $INSTDIR
+
 ;write uninstall information to the registry
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}" "DisplayName" "${MUI_FILE} version ${VERSION} (remove only)"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}" "UninstallString" "$INSTDIR\Uninstall.exe"
@@ -108,6 +119,8 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${MUI_FILE}\*.*"
   RmDir  "$SMPROGRAMS\${MUI_FILE}"
  
+  DeleteRegKey /ifempty  HKCU "Software\${MUI_FILE}"
+
 ;Delete Uninstaller And Unistall Registry Entries
   DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\${MUI_FILE}"
   DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}"  
