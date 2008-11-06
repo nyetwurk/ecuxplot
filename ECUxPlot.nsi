@@ -3,6 +3,7 @@
 ; Start
  
   !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
+  !include "fileassoc.nsh"
   Name "ECUxPlot"
 
   !define MUI_FILE "ECUxPlot"
@@ -92,6 +93,10 @@ Section "install" InstallationInfo
   CreateShortCut "$SMPROGRAMS\${MUI_FILE}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\${MUI_FILE}\${MUI_FILE}.lnk" "$INSTDIR\${MUI_FILE}.exe" "" "$INSTDIR\${MUI_FILE}.exe" 0
 
+;add association for csv
+  !insertmacro APP_ASSOCIATE_ADDVERB "Excel.CSV" "plot" "Plot with ${MUI_FILE}" \
+    "$INSTDIR\${MUI_FILE}.exe $\"%1$\""
+
 ;store installation folder
   WriteRegStr HKCU "Software\${MUI_FILE}" "" $INSTDIR
 
@@ -118,7 +123,11 @@ Section "Uninstall"
   Delete "$DESKTOP\${MUI_FILE}.lnk"
   Delete "$SMPROGRAMS\${MUI_FILE}\*.*"
   RmDir  "$SMPROGRAMS\${MUI_FILE}"
- 
+
+;Delete verb association
+  !insertmacro APP_ASSOCIATE_REMOVEVERB "Excel.CSV" "plot"
+
+;Delete installation folder record
   DeleteRegKey /ifempty  HKCU "Software\${MUI_FILE}"
 
 ;Delete Uninstaller And Unistall Registry Entries
