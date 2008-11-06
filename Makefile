@@ -8,11 +8,13 @@ CLASSPATH = '$(shell cygpath -wsp .:$(JARS))'
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := launch4jc
 INSTALL_DIR := '$(shell cygpath -u "C:\Program Files\ECUxPlot")'
+OPT_PRE := '/'
 else
 CLASSPATH = .:$(JARS)
 PWD := $(shell pwd)/
 LAUNCH4J := /usr/local/launch4j/launch4j
 INSTALL_DIR := /usr/local/ecuxplot
+OPT_PRE := '-'
 endif
 SCP := scp
 
@@ -93,7 +95,7 @@ install: $(INSTALL_FILES)
 	cp -avp $(INSTALL_FILES) $(INSTALL_DIR)/
 
 $(INSTALLER): $(INSTALL_FILES) ECUxPlot.nsi
-	makensis /DVERSION=$(VERSION)r$(RELEASE) ECUxPlot.nsi
+	makensis $(OPT_PRE)DVERSION=$(VERSION)r$(RELEASE) ECUxPlot.nsi
 
 %.class: %.java
 	javac $(JFLAGS) $<
