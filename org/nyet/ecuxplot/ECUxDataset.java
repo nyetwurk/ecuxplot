@@ -180,6 +180,14 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray ambient = super.get("BaroPressure").data;
 	    DoubleArray load = super.get("EngineLoadDesired").data;
 	    c = new Column(id, "mBar", load.mult(10).add(300).max(ambient));
+	} else if(id.equals("Calc Boost Spool Rate (RPM)")) {
+	    DoubleArray abs = super.get("BoostPressureActual").data;
+	    DoubleArray rpm = super.get("RPM").data.smooth();
+	    c = new Column(id, "mBar/RPM", abs.derivative(rpm));
+	} else if(id.equals("Calc Boost Spool Rate (time)")) {
+	    DoubleArray abs = super.get("BoostPressureActual").data;
+	    DoubleArray time = super.get("TIME").data.smooth();
+	    c = new Column(id, "mBar/sec", abs.derivative(time));
 	} else if(id.equals("Calc LDR error")) {
 	    DoubleArray set = super.get("BoostPressureDesired").data;
 	    DoubleArray out = super.get("BoostPressureActual").data;

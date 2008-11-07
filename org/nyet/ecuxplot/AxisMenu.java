@@ -92,6 +92,8 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("BoostPressureActual")) {
 		this.add("BoostPressureActual (PSI)", listener, bg);
 		this.add("Calc BoostActual PR", listener, bg);
+		this.add("Calc Boost Spool Rate (RPM)", listener, bg);
+		this.add("Calc Boost Spool Rate (time)", listener, bg);
 		this.add("Calc LDR error", listener, bg);
 		this.add("Calc LDR de/dt", listener, bg);
 		this.add("Calc LDR I e dt", listener, bg);
