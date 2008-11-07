@@ -16,7 +16,7 @@
 ;--------------------------------
 ;General
  
-  OutFile "${MUI_FILE}-installer-${VERSION}.exe"
+  OutFile "${MUI_FILE}-${VERSION}-setup.exe"
   ShowInstDetails "nevershow"
   ShowUninstDetails "nevershow"
   ;SetCompressor "bzip2"
@@ -70,7 +70,10 @@
 ;-------------------------------- 
 ;Installer Sections     
 Section "install" InstallationInfo
- 
+
+;Delete old files
+  Delete "$INSTDIR\*.*"    
+
 ;Add files
   SetOutPath "$INSTDIR"
  

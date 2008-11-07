@@ -48,7 +48,7 @@ JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar:applib.jar:AppleJa
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
 TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
-INSTALLER=ECUxPlot-installer-$(VERSION)r$(RELEASE).exe
+INSTALLER=ECUxPlot-$(VERSION)r$(RELEASE)-setup.exe
 
 ZIPS=$(TARGET).zip $(TARGET).MacOS.zip
 all: $(TARGETS) .classpath version.txt
