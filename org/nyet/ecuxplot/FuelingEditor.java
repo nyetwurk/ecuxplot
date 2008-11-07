@@ -12,12 +12,14 @@ public class FuelingEditor extends PreferencesEditor {
     private JTextField MAF;
     private JTextField injector;
     private JTextField MAF_offset;
+    private JTextField cylinders;
 
     protected void Process(ActionEvent event) {
 	if(this.fueling==null) return;
 	this.fueling.MAF(Double.valueOf(this.MAF.getText()));
 	this.fueling.injector(Double.valueOf(this.injector.getText()));
 	this.fueling.MAF_offset(Double.valueOf(this.MAF_offset.getText()));
+	this.fueling.cylinders(Integer.valueOf(this.cylinders.getText()));
 	super.Process(event);
     }
 
@@ -37,12 +39,17 @@ public class FuelingEditor extends PreferencesEditor {
 	pp.add(new JLabel(" MAF offset (g/sec):"));
 	this.MAF_offset = new JTextField(10);
 	pp.add(this.MAF_offset);
+
+	pp.add(new JLabel(" Cylinders:"));
+	this.cylinders = new JTextField(10);
+	pp.add(this.cylinders);
     }
 
     public void updateDialog() {
 	this.MAF.setText("" + this.fueling.MAF());
 	this.injector.setText("" + this.fueling.injector());
 	this.MAF_offset.setText("" + this.fueling.MAF_offset());
+	this.cylinders.setText("" + this.fueling.cylinders());
     }
 
     public boolean showDialog(Component parent, String title, Fueling fueling) {

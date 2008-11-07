@@ -103,7 +103,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc Fuel Mass")) {
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
 	    final double gps = this.env.f.injector()*gps_per_ccmin;
-	    final double cylinders = 6;
+	    final double cylinders = this.env.f.cylinders();
 	    DoubleArray a = this.get("FuelInjectorDutyCycle").data.mult(cylinders*gps/100);
 	    c = new Column(id, "g/sec", a);
 	} else if(id.equals("AirFuelRatioDesired (AFR)")) {
