@@ -96,6 +96,7 @@ install: $(INSTALL_FILES)
 
 $(INSTALLER): $(INSTALL_FILES) ECUxPlot.nsi
 	makensis $(OPT_PRE)DVERSION=$(VERSION)r$(RELEASE) ECUxPlot.nsi
+	chmod +x $(INSTALLER)
 
 %.class: %.java
 	javac $(JFLAGS) $<
