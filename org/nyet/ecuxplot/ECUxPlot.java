@@ -2,6 +2,8 @@ package org.nyet.ecuxplot;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.prefs.Preferences;
 
 import java.awt.Color;
@@ -30,11 +32,15 @@ import org.nyet.util.WindowUtilities;
 import org.nyet.util.WaitCursor;
 import org.nyet.util.GenericFileFilter;
 import org.nyet.util.SubActionListener;
+import org.nyet.util.Files;
 
 import org.nyet.logfile.Dataset;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
-    private ECUxDataset dataSet;
+    // each file loaded has an associated dataset
+    private HashMap<String, ECUxDataset> fileDatasets =
+	    new HashMap<String, ECUxDataset>();
+
     private ECUxChartPanel chartPanel;
 
     // Menus
@@ -113,20 +119,32 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.menuBar.add(yAxis2);
     }
 
-    private void loadFile(File file) {
+    private void loadFile(File file) { loadFile(file, false); }
+    private void loadFile(File file, Boolean replace) {
 	try {
-	    this.dataSet = new ECUxDataset(file.getAbsolutePath(), this.env, this.filter);
+	    ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
+		    this.env, this.filter);
 
-	    this.setTitle("ECUxPlot " + file.getName());
+	    // replacing, nuke all the currently loaded datasets
+	    if(replace)
+		this.fileDatasets = new HashMap<String, ECUxDataset>();
 
-	    final JFreeChart chart = ECUxChartFactory.create2AxisChart(this.scatter());
+	    this.fileDatasets.put(file.getName(), data);
+	    this.setTitle("ECUxPlot " + fileDatasets.keySet().toString());
+
+	    final JFreeChart chart =
+		ECUxChartFactory.create2AxisChart(this.scatter());
+
 	    this.chartPanel = new ECUxChartPanel(chart);
 
 	    setContentPane(this.chartPanel);
 	    rebuild();
 	    addChartY(this.ykeys(0), 0);
 	    addChartY(this.ykeys(1), 1);
-	    setupAxisMenus(this.dataSet.getHeaders());
+	    Iterator itc = this.fileDatasets.values().iterator();
+	    while(itc.hasNext()) {
+		setupAxisMenus(((ECUxDataset)itc.next()).getHeaders());
+	    }
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
@@ -143,15 +161,27 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		JOptionPane.showMessageDialog(this, "Open a CSV first");
 	    } else {
 		try {
-		    String [] a=this.dataSet.getFilename().split("\\.");
-		    String stem="";
-		    for(int i=0; i<a.length-1; i++) stem+=a[i];
+		    String stem=null;
+		    Iterator itc = this.fileDatasets.values().iterator();
+		    while(itc.hasNext()) {
+			String fname=((ECUxDataset)itc.next()).getFilename();
+			if(stem == null) {
+			    stem = Files.stem(fname);
+			} else {
+			    stem += "_vs_" + Files.stem(Files.filename(fname));
+			}
+		    }
 		    this.chartPanel.doSaveAs(stem);
 		} catch (Exception e) {
 		    JOptionPane.showMessageDialog(this, e);
 		    e.printStackTrace();
 		}
 	    }
+	} else if(source.getText().equals("Clear Chart")) {
+	    // nuke datasets
+	    this.fileDatasets = new HashMap<String, ECUxDataset>();
+	    this.setTitle("ECUxPlot");
+	    this.chartPanel.setChart(null);
 	} else if(source.getText().equals("Close Chart")) {
 	    this.dispose();
 	} else if(source.getText().equals("New Chart")) {
@@ -161,7 +191,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    where.translate(20,20);
 	    plot.setLocation(where);
 	    plot.setVisible(true);
-	} else if(source.getText().equals("Open File")) {
+	} else if(source.getText().equals("Open File") || 
+		  source.getText().equals("Add File") ) {
 	    if(fc==null) {
 		// current working dir
 		// String dir  = System.getProperty("user.dir"));
@@ -172,8 +203,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    }
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
+		Boolean replace =
+		    source.getText().equals("Open File")?true:false;
+
 		WaitCursor.startWaitCursor(this);
-		loadFile(fc.getSelectedFile());
+		loadFile(fc.getSelectedFile(), replace);
 		WaitCursor.stopWaitCursor(this);
 		this.prefs.put("chooserDir", fc.getCurrentDirectory().toString());
 	    }
@@ -200,26 +234,41 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
+    private String findUnits(Comparable key) {
+	Iterator itc = this.fileDatasets.values().iterator();
+	while(itc.hasNext()) {
+	    String units = ((ECUxDataset)itc.next()).units(key);
+	    // return the first one for now.
+	    if(units!=null) return units;
+	}
+	return "";
+    }
+
     private void updateLabelTitle() {
-	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
+	final org.jfree.chart.plot.XYPlot plot =
+	    this.chartPanel.getChart().getXYPlot();
 	String title = "";
 	for(int axis=0; axis<plot.getDatasetCount(); axis++) {
 	    final org.jfree.data.xy.XYDataset dataset = plot.getDataset(axis);
-	    String seriesTitle = "", sprev=null;
+	    String seriesTitle=null, sprev=null;
 	    String label="", lprev=null;
 	    for(int i=0; dataset!=null && i<dataset.getSeriesCount(); i++) {
 		Comparable key = dataset.getSeriesKey(i);
 		if(key==null) continue;
 		String s;
 
-		if(key instanceof Dataset.Key) s = ((Dataset.Key)key).getString();
-		else s = key.toString();
-
-		String l = this.dataSet.units(key);
+		if(key instanceof Dataset.Key)
+		    s = ((Dataset.Key)key).getString();
+		else
+		    s = key.toString();
+		
+		String l = findUnits(key);
 
 		if(sprev==null || !s.equals(sprev)) {
-		    if(!seriesTitle.equals("")) seriesTitle += ", ";
-		    seriesTitle += s;
+		    if(seriesTitle == null) 
+			seriesTitle = s;
+		    else
+			seriesTitle += ", " + s;
 		}
 		sprev=s;
 
@@ -230,7 +279,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		}
 		lprev=l;
 	    }
-	    if(!seriesTitle.equals("")) {
+	    if(seriesTitle != null && !seriesTitle.equals("")) {
 		if(!title.equals("")) title += " and ";
 		title += seriesTitle;
 	    }
@@ -243,33 +292,64 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     public void rebuild() {
 	if(this.chartPanel==null) return;
-	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
+
+	final org.jfree.chart.plot.XYPlot plot =
+	    this.chartPanel.getChart().getXYPlot();
+
 	WaitCursor.startWaitCursor(this);
 	for(int i=0;i<plot.getDatasetCount();i++) {
-	    org.jfree.data.xy.XYDataset dataset = plot.getDataset(i);
+	    org.jfree.data.xy.XYDataset pds = plot.getDataset(i);
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
-	    for(int j=0;j<dataset.getSeriesCount();j++) {
-		Dataset.Key ykey = (Dataset.Key)dataset.getSeriesKey(j);
-		ECUxChartFactory.addDataset(newdataset, this.dataSet, this.xkey(), ykey.getString());
+	    for(int j=0;j<pds.getSeriesCount();j++) {
+		Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(j);
+		Iterator itc = this.fileDatasets.values().iterator();
+		if(this.fileDatasets.size()==1) ykey.hideFilename();
+		while(itc.hasNext()) {
+		    ECUxDataset data = (ECUxDataset) itc.next();
+		    ECUxChartFactory.addDataset(newdataset, data, this.xkey(),
+			    ykey);
+		}
 	    }
 	    plot.setDataset(i, newdataset);
 	}
-	if(this.dataSet.get(this.xkey())!=null) {
-	    String units = this.dataSet.units(this.xkey());
-	    plot.getDomainAxis().setLabel(this.xkey().toString() + " ("+units+")");
-	} else {
-	    plot.getDomainAxis().setLabel("");
+
+	// find x axis label. just pick first one that has units we can use
+	String label = "";
+	Iterator itc = this.fileDatasets.values().iterator();
+	while(itc.hasNext()) {
+	    ECUxDataset data = (ECUxDataset) itc.next();
+	    if(data.get(this.xkey())!=null) {
+		String units = data.units(this.xkey());
+		if(units != null) {
+		    label = this.xkey().toString() + " ("+units+")";
+		    break;
+		}
+	    }
 	}
+
+	plot.getDomainAxis().setLabel(label);
 	WaitCursor.stopWaitCursor(this);
     }
 
     private void editChartY(Comparable ykey, int axis, boolean add) {
-	if(add && !(this.dataSet.exists(ykey) && this.dataSet.exists(this.xkey())) )
+	Iterator itc = this.fileDatasets.values().iterator();
+	while(itc.hasNext()) {
+	    editChartY((ECUxDataset)itc.next(), ykey, axis, add);
+	}
+    }
+
+    private void editChartY(ECUxDataset data, Comparable ykey, int axis, boolean add) {
+	if(add && !(data.exists(ykey)) )
 	    return;
 	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
-	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
-	if(add) ECUxChartFactory.addDataset(dataset, this.dataSet, this.xkey(), ykey);
-	else ECUxChartFactory.removeDataset(dataset, ykey);
+	DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
+	if(add) {
+		Dataset.Key key = data.new Key(data.getFilename(),
+				ykey.toString());
+		if(this.fileDatasets.size()==1) key.hideFilename();
+		ECUxChartFactory.addDataset(pds, data, this.xkey(), key);
+	}
+	else ECUxChartFactory.removeDataset(pds, ykey);
     }
 
     private void addChartY(Comparable[] ykey, int axis) {
@@ -297,6 +377,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	updateLabelTitle();
     }
 
+    // Constructor with args
     public ECUxPlot(final String title, String[] args) {
         super(title);
 	WindowUtilities.setNativeLookAndFeel();
@@ -337,6 +418,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	System.exit(0);
     }
 
+    // Constructor, args
     public ECUxPlot(final String title) {
 	this(title, null);
     }

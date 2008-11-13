@@ -95,26 +95,35 @@ public class ECUxChartFactory {
 	renderer.setSeriesPaint(subseries, paint);
     }
 
-    public static void addDataset(DefaultXYDataset d, ECUxDataset data, Comparable xkey, Comparable ykey) {
+    public static void addDataset(DefaultXYDataset d, ECUxDataset data,
+		    Comparable xkey, Dataset.Key ykey) {
 	ArrayList<Dataset.Range> ranges = data.getRanges();
 	if(ranges.size()==0) {
 	    // add empty data in case we turn off filter
 	    double[][] s = {{},{}};
-	    d.addSeries(data.new Key(ykey.toString(),0), s);
+	    Dataset.Key key = data.new Key(ykey);
+	    key.hideFilename();
+	    key.hideSeries();
+	    d.addSeries(key, s);
 	    return;
 	}
 	for(int i=0;i<ranges.size();i++) {
 	    Dataset.Range r=ranges.get(i);
-	    double[][] s = {data.getData(xkey, r), data.getData(ykey,r)};
-	    d.addSeries(data.new Key(ykey.toString(),i), s);
+	    double[][] s = {data.getData(xkey, r), data.getData(ykey, r)};
+	    Dataset.Key key = data.new Key(ykey, i);
+	    if(ranges.size()==1) key.hideSeries();
+	    d.addSeries(key, s);
 	}
     }
 
+    // remove ALL series that match the data column tag
     public static void removeDataset(DefaultXYDataset d, Comparable ykey) {
 	if(ykey instanceof Dataset.Key) {
+	    // pull out ONLY the data column tag, and ykey is now a String.
 	    ykey = ((Dataset.Key)ykey).getString();
 	}
-	// ykey might be a string, so we have to walk series ourselves
+	// ykey is now a string, so we have to walk series ourselves
+	// and call "equals" for String, which only compares the data tag
 	for(int i=0;i<d.getSeriesCount();i++) {
 	    Comparable k = d.getSeriesKey(i);
 	    if(k.equals(ykey)) {

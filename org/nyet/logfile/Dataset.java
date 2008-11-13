@@ -50,20 +50,72 @@ public class Dataset {
     }
 
     public class Key implements Comparable {
+	private String fn;
 	private String s;
 	private Integer series;
-	public Key (String s, int series) {
+	private BitSet flags;
+
+	public Key (String fn, String s, int series, BitSet flags) {
+	    this.fn=fn;
 	    this.s=s;
 	    this.series=new Integer(series);
+	    this.flags=flags;
 	}
-	public String toString() { return this.s + " " + (this.series+1); }
+
+	public Key (Key k) {
+	    this.fn=k.fn;
+	    this.s= new String(k.s);
+	    this.series=k.series;
+	    this.flags=k.flags;
+	}
+
+	public Key (Key k, int series) {
+	    this.fn=k.fn;
+	    this.s= new String(k.s);
+	    this.series=series;
+	    this.flags=k.flags;
+	}
+
+	public Key (String fn, String s, int series) {
+	    this(fn, s, series, new BitSet(2));
+	}
+
+	public Key (String fn, String s) {
+	    this(fn, s, 0, new BitSet(2));
+	}
+
+
+	public String toString() {
+	    String ret = null;
+	    if(!this.flags.get(0)) {
+		// don't skip fn
+		ret = org.nyet.util.Files.filenameStem(this.fn) + ":" + this.s;
+	    } else ret = this.s;
+
+	    if(!this.flags.get(1)) {
+		// don't skip series
+		return ret + " " + (this.series+1);
+	    }
+
+	    return ret;
+	}
+
+	public void hideFilename() { this.flags.set(0); }
+	public void showFilename() { this.flags.clear(0); }
+	public void hideSeries() { this.flags.set(1); }
+	public void showSeries() { this.flags.clear(1); }
+
+	public String getFilename() { return this.fn; }
 	public String getString() { return this.s; }
 	public Integer getSeries() { return this.series; }
+	public void setSeries(int s) { this.series=s; }
 
 	public int compareTo(Object o) {
 	    if(o instanceof Key) {
 		Key k = (Key)o;
-		int out = this.s.compareTo(k.s);
+		int out = this.fn.compareTo(k.fn);
+		if(out!=0) return out;
+		out = this.s.compareTo(k.s);
 		if(out!=0) return out;
 		return this.series.compareTo(k.series);
 	    }
@@ -75,9 +127,11 @@ public class Dataset {
 	public boolean equals(Object o) {
 	    if(o instanceof Key) {
 		Key k = (Key)o;
+		if(!this.fn.equals(k.fn)) return false;
 		if(!this.s.equals(k.s)) return false;
 		return this.series.equals(k.series);
 	    }
+	    // if passed a string, only check the "s" portion
 	    if(o instanceof String) {
 		return this.s.equals((String)o);
 	    }
@@ -156,6 +210,12 @@ public class Dataset {
 	    }
 	}
 	return out;
+    }
+
+    public double[] getData(Key id, Range r) {
+	// only match the string portion of the key
+	Column c = this.get(id.getString());
+	return c.data.toArray(r.start, r.end);
     }
 
     public double[] getData(Comparable id, Range r) {
