@@ -135,7 +135,9 @@ Section "Uninstall"
 
 ;Delete Uninstaller And Unistall Registry Entries
   DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\${MUI_FILE}"
-  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}"  
+  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}"
+  DeleteRegKey HKCU "Software\Javasoft\Prefs\org\nyet\${MUI_FILE}"
+  DeleteRegKey /ifempty HKCU "Software\Javasoft\Prefs\org\nyet"
  
 SectionEnd
  
