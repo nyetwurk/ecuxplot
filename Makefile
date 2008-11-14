@@ -114,5 +114,8 @@ $(INSTALLER): $(INSTALL_FILES) ECUxPlot.nsi
 	    ECUxPlot.nsi
 	chmod +x $(INSTALLER)
 
+tag: version.txt
+	svn-tag `cat version.txt`
+
 %.class: %.java
 	javac $(JFLAGS) $<
