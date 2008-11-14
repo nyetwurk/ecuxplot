@@ -46,8 +46,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     // Menus
     private JMenuBar menuBar;
     private AxisMenu xAxis;
-    private AxisMenu yAxis;
-    private AxisMenu yAxis2;
+    private AxisMenu yAxis[] = new AxisMenu[2];
 
     // Dialog boxes
     private JFileChooser fc;
@@ -106,18 +105,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private void setupAxisMenus(String[] headers) {
 
 	if(this.xAxis!=null) this.menuBar.remove(this.xAxis);
-	if(this.yAxis!=null) this.menuBar.remove(this.yAxis);
-	if(this.yAxis2!=null) this.menuBar.remove(this.yAxis2);
+	if(this.yAxis[0]!=null) this.menuBar.remove(this.yAxis[0]);
+	if(this.yAxis[1]!=null) this.menuBar.remove(this.yAxis[1]);
 
 	if(headers.length<=0) return;
 
 	this.xAxis = new AxisMenu("X Axis", headers, this, true, this.xkey());
-	this.yAxis = new AxisMenu("Y Axis", headers, this, false, this.ykeys(0));
-	this.yAxis2 = new AxisMenu("Y Axis2", headers, this, false, this.ykeys(1));
+	this.yAxis[0] = new AxisMenu("Y Axis", headers, this, false, this.ykeys(0));
+	this.yAxis[1] = new AxisMenu("Y Axis2", headers, this, false, this.ykeys(1));
 
 	this.menuBar.add(xAxis);
-	this.menuBar.add(yAxis);
-	this.menuBar.add(yAxis2);
+	this.menuBar.add(yAxis[0]);
+	this.menuBar.add(yAxis[1]);
     }
 
     private void loadFile(File file) { loadFile(file, false); }
@@ -179,6 +178,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		}
 	    }
 	} else if(source.getText().equals("Clear Chart")) {
+	    // nuke axis menus
+	    this.menuBar.remove(this.xAxis);
+	    this.menuBar.remove(this.yAxis[0]);
+	    this.menuBar.remove(this.yAxis[1]);
+	    this.xAxis = null;
+	    this.yAxis = new AxisMenu[2];
 	    // nuke datasets
 	    this.fileDatasets = new HashMap<String, ECUxDataset>();
 	    this.setTitle("ECUxPlot");
@@ -342,6 +347,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	final org.jfree.chart.plot.XYPlot plot =
 	    this.chartPanel.getChart().getXYPlot();
 	ECUxChartFactory.removeDataset((DefaultXYDataset)plot.getDataset(axis));
+    	this.yAxis[axis].uncheckAll();
     }
 
     private void editChartY(Comparable ykey, int axis, boolean add) {
@@ -357,12 +363,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
 	if(add) {
-		Dataset.Key key = data.new Key(data.getFilename(),
-				ykey.toString());
-		if(this.fileDatasets.size()==1) key.hideFilename();
-		ECUxChartFactory.addDataset(pds, data, this.xkey(), key);
+	    Dataset.Key key = data.new Key(data.getFilename(),
+		    ykey.toString());
+	    if(this.fileDatasets.size()==1) key.hideFilename();
+	    ECUxChartFactory.addDataset(pds, data, this.xkey(), key);
+	} else {
+	    ECUxChartFactory.removeDataset(pds, ykey);
 	}
-	else ECUxChartFactory.removeDataset(pds, ykey);
     }
 
     private void addChartY(Comparable[] ykey, int axis) {

@@ -1,7 +1,8 @@
 package org.nyet.ecuxplot;
 
 import java.util.Hashtable;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -17,7 +18,7 @@ import org.nyet.util.SubActionListener;
 
 public class AxisMenu extends JMenu {
     private Comparable[] initialChecked;
-    private HashSet<String> members = new HashSet<String>();
+    private HashMap<String, AbstractButton> members = new HashMap<String, AbstractButton>();
 
     private Hashtable<String, JMenu> subMenus = new Hashtable<String, JMenu>();
 
@@ -124,7 +125,7 @@ public class AxisMenu extends JMenu {
 	    this.add(item);
 	}
 
-	this.members.add(id);
+	this.members.put(id, item);
     }
 
     public AxisMenu (String text, String[] headers, SubActionListener listener,
@@ -136,7 +137,7 @@ public class AxisMenu extends JMenu {
 	if(radioButton) bg = new ButtonGroup();
 
 	for(int i=0;i<headers.length;i++) {
-	    if(headers[i].length()>0 && !this.members.contains(headers[i]))
+	    if(headers[i].length()>0 && !this.members.containsKey(headers[i]))
 		this.add(headers[i], listener, bg);
 	}
 
@@ -147,13 +148,23 @@ public class AxisMenu extends JMenu {
 	    this.add(calc);
 	}
 
-	this.add(new JSeparator());
-	JMenuItem item=new JMenuItem("Remove all");
-	this.add(item);
-	item.addActionListener(new MenuListener(listener,this.getText()));
+	if(bg==null) {
+	    this.add(new JSeparator());
+	    JMenuItem item=new JMenuItem("Remove all");
+	    this.add(item);
+	    item.addActionListener(new MenuListener(listener,this.getText()));
+	}
     }
     public AxisMenu (String text, String[] headers, SubActionListener listener,
 	boolean radioButton, Comparable initialChecked) {
 	this(text, headers, listener, radioButton, new Comparable [] {initialChecked});
+    }
+
+    public void uncheckAll() {
+	Iterator itc = this.members.values().iterator();
+	while(itc.hasNext()) {
+	    AbstractButton item = (AbstractButton) itc.next();
+	    item.setSelected(false);
+	}
     }
 }

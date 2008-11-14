@@ -98,9 +98,9 @@ public class ECUxChartFactory {
     public static void addDataset(DefaultXYDataset d, ECUxDataset data,
 		    Comparable xkey, Dataset.Key ykey) {
 	ArrayList<Dataset.Range> ranges = data.getRanges();
+	// add empty data in case we turn off filter, or we get some error
+	double[][] s = {{},{}};
 	if(ranges.size()==0) {
-	    // add empty data in case we turn off filter
-	    double[][] s = {{},{}};
 	    Dataset.Key key = data.new Key(ykey);
 	    key.hideFilename();
 	    key.hideSeries();
@@ -109,7 +109,11 @@ public class ECUxChartFactory {
 	}
 	for(int i=0;i<ranges.size();i++) {
 	    Dataset.Range r=ranges.get(i);
-	    double[][] s = {data.getData(xkey, r), data.getData(ykey, r)};
+	    try {
+		s[0] = data.getData(xkey, r);
+		s[1] = data.getData(ykey, r);
+	    } catch (Exception e){
+	    }
 	    Dataset.Key key = data.new Key(ykey, i);
 	    if(ranges.size()==1) key.hideSeries();
 	    d.addSeries(key, s);
