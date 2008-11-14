@@ -1,5 +1,8 @@
 package org.nyet.ecuxplot;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 import au.com.bytecode.opencsv.CSVReader;
 
 import org.nyet.logfile.Dataset;
@@ -7,7 +10,7 @@ import org.nyet.util.DoubleArray;
 import org.nyet.util.Files;
 
 public class ECUxDataset extends Dataset {
-    private Column rpm, pedal, throttle, gear;
+    private Column rpm, pedal, throttle, gear, boost;
     private String filename;
     private Env env;
     private Filter filter;
@@ -28,6 +31,8 @@ public class ECUxDataset extends Dataset {
 	if(this.throttle == null)
 	    this.throttle = get("Throttle Valve Angle");
 	this.gear = get("Gear");
+	// look for zeitronix boost for filtering
+	this.boost = get("Zeitronix Boost");
     }
 
     public void ParseHeaders(CSVReader reader) throws Exception {
@@ -52,7 +57,26 @@ public class ECUxDataset extends Dataset {
 		// System.out.println(h[i] + " [" + u[i] + "]");
 	    }
 	    this.ticks_per_sec = 1;	// VAGCOM is in seconds
+	} else if(h[0].matches("^Filename:.*") &&
+		Files.extension(h[0]).equals("zto")) {
+	    // Zeitronix .zto?
+	    reader.readNext();	// Date exported
+	    h = reader.readNext(); // headers
+	    u = new String[h.length];
+	    for(i=0;i<h.length;i++) {
+		h[i]=h[i].trim();
+		final Pattern unitsRegEx =
+		    Pattern.compile("([\\w\\s]+)\\(([\\w\\s].*)\\)");
+		Matcher matcher = unitsRegEx.matcher(h[i]);
+		if(matcher.find()) {
+		    h[i]=matcher.group(1);
+		    u[i]=matcher.group(2);
+		}
+		if(h[i].equals("Boost")) h[i]="Zeitronix Boost";
+	    }
+	    this.ticks_per_sec = 1;	// ARGH. time is really messed in z
 	} else {
+	    // ECUx
 	    this.ticks_per_sec = 1000;
 	}
 	for(i=0;i<h.length;i++) {
@@ -280,6 +304,7 @@ public class ECUxDataset extends Dataset {
 	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear()) return false;
 	if(pedal!=null && pedal.data.get(i)<filter.minPedal()) return false;
 	if(throttle!=null && throttle.data.get(i)<filter.minThrottle()) return false;
+	if(boost!=null && boost.data.get(i)<0) return false;
 	if(rpm!=null) {
 	    if(rpm.data.get(i)<filter.minRPM()) return false;
 	    if(rpm.data.get(i)>filter.maxRPM()) return false;

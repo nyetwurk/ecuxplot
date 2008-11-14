@@ -3,6 +3,7 @@ package org.nyet.ecuxplot;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.prefs.Preferences;
 
@@ -103,7 +104,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private void setupAxisMenus(String[] headers) {
-
 	if(this.xAxis!=null) this.menuBar.remove(this.xAxis);
 	if(this.yAxis[0]!=null) this.menuBar.remove(this.yAxis[0]);
 	if(this.yAxis[1]!=null) this.menuBar.remove(this.yAxis[1]);
@@ -141,10 +141,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    rebuild();
 	    addChartY(this.ykeys(0), 0);
 	    addChartY(this.ykeys(1), 1);
+
 	    Iterator itc = this.fileDatasets.values().iterator();
+	    HashSet<String> hset = new HashSet<String>();
 	    while(itc.hasNext()) {
-		setupAxisMenus(((ECUxDataset)itc.next()).getHeaders());
+		String h[] = ((ECUxDataset)itc.next()).getHeaders();
+		for(int i = 0; i<h.length; i++)
+		    hset.add(h[i]);
 	    }
+	    setupAxisMenus(hset.toArray(new String[0]));
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
@@ -250,9 +255,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private String findUnits(Comparable key) {
 	Iterator itc = this.fileDatasets.values().iterator();
 	while(itc.hasNext()) {
-	    String units = ((ECUxDataset)itc.next()).units(key);
-	    // return the first one for now.
-	    if(units!=null) return units;
+	    try {
+		String units = ((ECUxDataset)itc.next()).units(key);
+		// return the first one for now.
+		if(units!=null) return units;
+	    } catch (Exception e) {
+	    }
 	}
 	return "";
     }
