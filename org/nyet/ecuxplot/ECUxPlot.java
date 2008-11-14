@@ -55,6 +55,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private ConstantsEditor ce;
     private PIDEditor pe;
     private FuelingEditor fle;
+    private SAEEditor sae;
 
     // Preferences
     private Preferences prefs=null;
@@ -231,6 +232,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("Edit PID...")) {
 	    if(this.pe == null) this.pe = new PIDEditor();
 	    this.pe.showDialog(this, "PID", this.env.pid);
+	} else if(source.getText().equals("Apply SAE")) {
+	    this.env.sae.enabled(source.isSelected());
+	    rebuild();
+	    updateLabelTitle();
+	} else if(source.getText().equals("Edit SAE constants...")) {
+	    if(this.sae == null) this.sae = new SAEEditor(this.prefs);
+	    this.sae.showDialog(this, "SAE", this.env.sae);
 	}
     }
 

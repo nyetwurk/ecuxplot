@@ -124,7 +124,7 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray a = super.get("FuelInjectorOnTime").data.div(60*this.ticks_per_sec);
 	    DoubleArray b = super.get("RPM").data.smooth().div(2); // half cycle
 	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
-/*********************************************************************************/
+/*****************************************************************************/
 	} else if(id.equals("Calc Velocity")) {
 	    final double mph_per_mps = 2.23693629;
 	    DoubleArray v = super.get("RPM").data.smooth();
@@ -140,28 +140,44 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc Acceleration (g)")) {
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    c = new Column(id, "g", a.div(9.80665));
-/*********************************************************************************/
+/*****************************************************************************/
 	} else if(id.equals("Calc WHP")) {
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    DoubleArray v = this.get("Calc Velocity").data;
-	    DoubleArray whp = a.mult(v).mult(this.env.c.mass()).add(this.drag(v).smooth());	// in watts
-	    c = new Column(id, "HP", whp.mult(hp_per_watt).movingAverage(this.filter.HPTQMAW()));
-	} else if(id.equals("Calc Drag")) {
-	    DoubleArray v = this.get("Calc Velocity").data;
-	    DoubleArray drag = this.drag(v).smooth();	// in watts
-	    c = new Column(id, "HP", drag.mult(hp_per_watt));
+	    DoubleArray whp = a.mult(v).mult(this.env.c.mass()).add(this.drag(v));	// in watts
+	    DoubleArray value = whp.mult(hp_per_watt).smooth();
+	    String l = "HP";
+	    if(this.env.sae.enabled()) {
+		value = value.mult(this.env.sae.correction());
+		l += " (SAE)";
+	    }
+	    c = new Column(id, l, value.movingAverage(this.filter.HPTQMAW()));
 	} else if(id.equals("Calc HP")) {
 	    DoubleArray whp = this.get("Calc WHP").data;
-	    c = new Column(id, "HP", whp.div((1-this.env.c.driveline_loss())).add(this.env.c.static_loss()));
+	    DoubleArray value = whp.div((1-this.env.c.driveline_loss())).
+		    add(this.env.c.static_loss());
+	    String l = "HP";
+	    if(this.env.sae.enabled()) l += " (SAE)";
+	    c = new Column(id, l, value);
 	} else if(id.equals("Calc WTQ")) {
 	    DoubleArray whp = this.get("Calc WHP").data;
 	    DoubleArray rpm = super.get("RPM").data;
-	    c = new Column(id, "ft-lb", whp.mult(5252).div(rpm).smooth());
+	    DoubleArray value = whp.mult(5252).div(rpm);
+	    String l = "ft-lb";
+	    if(this.env.sae.enabled()) l += " (SAE)";
+	    c = new Column(id, l, value.smooth());
 	} else if(id.equals("Calc TQ")) {
 	    DoubleArray hp = this.get("Calc HP").data;
 	    DoubleArray rpm = super.get("RPM").data;
-	    c = new Column(id, "ft-lb", hp.mult(5252).div(rpm).smooth());
-/*********************************************************************************/
+	    DoubleArray value = hp.mult(5252).div(rpm);
+	    String l = "ft-lb";
+	    if(this.env.sae.enabled()) l += " (SAE)";
+	    c = new Column(id, l, value.smooth());
+	} else if(id.equals("Calc Drag")) {
+	    DoubleArray v = this.get("Calc Velocity").data;
+	    DoubleArray drag = this.drag(v);	// in watts
+	    c = new Column(id, "HP", drag.mult(hp_per_watt).smooth());
+/*****************************************************************************/
 	} else if(id.equals("BoostPressureDesired (PSI)")) {
 	    DoubleArray abs = super.get("BoostPressureDesired").data;
 	    c = new Column(id, "PSI", this.toPSI(abs));
@@ -227,7 +243,7 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray I = this.get("Calc LDR I e dt").data.mult(env.pid.I);
 	    DoubleArray D = this.get("Calc LDR de/dt").data.func(fD,E);
 	    c = new Column(id, "%", P.add(I).add(D).max(0).min(95));
-/*********************************************************************************/
+/*****************************************************************************/
 	} else if(id.equals("IgnitionTimingAngleOverallDesired")) {
 	    DoubleArray averetard = null;
 	    int count=0;
@@ -244,12 +260,12 @@ public class ECUxDataset extends Dataset {
 		out = out.add(averetard.div(count));
 	    }
 	    c = new Column(id, "degrees", out);
-/*********************************************************************************/
+/*****************************************************************************/
 	} else if(id.equals("Calc LoadSpecified correction")) {
 	    DoubleArray cs = super.get("EngineLoadCorrectedSpecified").data;
 	    DoubleArray s = super.get("EngineLoadSpecified").data;
 	    c = new Column(id, "K", cs.div(s));
-/*********************************************************************************/
+/*****************************************************************************/
 	}
 	if(c!=null) {
 	    this.getColumns().add(c);
