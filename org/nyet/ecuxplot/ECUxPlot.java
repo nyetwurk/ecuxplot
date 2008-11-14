@@ -426,8 +426,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	setPreferredSize(this.windowSize());
 
-	if(args!=null && args.length>0 && args[0].length()>0)
-	    loadFile(new File(args[0]));
+	for(int i=0; i<args.length; i++) {
+	    if(args[i].length()>0) loadFile(new File(args[i]));
+	}
     }
 
     public void windowClosing(java.awt.event.WindowEvent we) {
