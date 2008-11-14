@@ -91,8 +91,8 @@ mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
-include Windows.mk
-include MacOS.mk
+include scripts/Windows.mk
+include scripts/MacOS.mk
 
 INSTALL_FILES = ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
 		$(subst :, ,$(JARS)) version.txt

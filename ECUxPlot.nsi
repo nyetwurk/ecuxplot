@@ -3,7 +3,7 @@
 ; Start
  
   !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
-  !include "fileassoc.nsh"
+  !include "scripts\fileassoc.nsh"
   Name "ECUxPlot"
 
   !define MUI_FILE "ECUxPlot"
