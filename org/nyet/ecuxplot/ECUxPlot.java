@@ -331,6 +331,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	WaitCursor.stopWaitCursor(this);
     }
 
+    private void removeAll(int axis) {
+	final org.jfree.chart.plot.XYPlot plot =
+	    this.chartPanel.getChart().getXYPlot();
+	ECUxChartFactory.removeDataset((DefaultXYDataset)plot.getDataset(axis));
+    }
+
     private void editChartY(Comparable ykey, int axis, boolean add) {
 	Iterator itc = this.fileDatasets.values().iterator();
 	while(itc.hasNext()) {
@@ -366,11 +372,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    /* rebuild depends on the value of prefs */
 	    rebuild();
 	} else if(parentId.equals("Y Axis")) {
-	    editChartY(source.getText(),0,source.isSelected());
+	    if(source.getText().equals("Remove all")) {
+		removeAll(0);
+	    } else {
+		editChartY(source.getText(),0,source.isSelected());
+	    }
 	    /* putkeys depends on the stuff that edit chart does */
 	    putYkeys(0);
 	} else if(parentId.equals("Y Axis2")) {
-	    editChartY(source.getText(),1,source.isSelected());
+	    if(source.getText().equals("Remove all")) {
+		removeAll(1);
+	    } else {
+		editChartY(source.getText(),1,source.isSelected());
+	    }
 	    /* putkeys depends on the stuff that edit chart does */
 	    putYkeys(1);
 	}

@@ -116,6 +116,14 @@ public class ECUxChartFactory {
 	}
     }
 
+    // remove ALL series from the dataset
+    public static void removeDataset(DefaultXYDataset d) {
+	while(d.getSeriesCount()>0) {
+	    Comparable k = d.getSeriesKey(0);
+	    d.removeSeries(k);
+	}
+    }
+
     // remove ALL series that match the data column tag
     public static void removeDataset(DefaultXYDataset d, Comparable ykey) {
 	if(ykey instanceof Dataset.Key) {

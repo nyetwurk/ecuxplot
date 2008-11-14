@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.HashSet;
 
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JCheckBox;
 import javax.swing.JSeparator;
 import javax.swing.JRadioButtonMenuItem;
@@ -145,6 +146,11 @@ public class AxisMenu extends JMenu {
 	    this.add(new JSeparator());
 	    this.add(calc);
 	}
+
+	this.add(new JSeparator());
+	JMenuItem item=new JMenuItem("Remove all");
+	this.add(item);
+	item.addActionListener(new MenuListener(listener,this.getText()));
     }
     public AxisMenu (String text, String[] headers, SubActionListener listener,
 	boolean radioButton, Comparable initialChecked) {
