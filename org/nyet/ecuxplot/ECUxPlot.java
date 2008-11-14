@@ -310,13 +310,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
 	    for(int j=0;j<pds.getSeriesCount();j++) {
 		Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(j);
-		Iterator itc = this.fileDatasets.values().iterator();
 		if(this.fileDatasets.size()==1) ykey.hideFilename();
-		while(itc.hasNext()) {
-		    ECUxDataset data = (ECUxDataset) itc.next();
-		    ECUxChartFactory.addDataset(newdataset, data, this.xkey(),
-			    ykey);
-		}
+		else ykey.showFilename();
+
+		ECUxDataset data = this.fileDatasets.get(ykey.getFilename());
+		ECUxChartFactory.addDataset(newdataset, data,
+		    this.xkey(), ykey);
 	    }
 	    plot.setDataset(i, newdataset);
 	}

@@ -4,6 +4,7 @@ import au.com.bytecode.opencsv.CSVReader;
 
 import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
+import org.nyet.util.Files;
 
 public class ECUxDataset extends Dataset {
     private Column rpm, pedal, throttle, gear;
@@ -17,7 +18,7 @@ public class ECUxDataset extends Dataset {
     public ECUxDataset(String filename, Env env, Filter filter) throws Exception {
 	super(filename);
 
-	this.filename = filename;
+	this.filename = Files.filename(filename);
 	this.env = env;
 	this.filter = filter;
 
