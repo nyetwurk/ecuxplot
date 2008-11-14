@@ -1,6 +1,10 @@
 VERSION := 0.9
 RELEASE := 0.9
 
+JCOMMON_VER := 1.0.14
+JFREECHART_VER := 1.0.11
+OPENCSV_VER := 1.8
+
 UNAME := $(shell uname -o)
 
 ifeq ($(UNAME),Cygwin)
@@ -50,8 +54,8 @@ EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
-JARFILES:=jcommon-1.0.12.jar jfreechart-1.0.9.jar opencsv-1.8.jar applib.jar AppleJavaExtensions.jar
-JARS:=jcommon-1.0.12.jar:jfreechart-1.0.9.jar:opencsv-1.8.jar:applib.jar:AppleJavaExtensions.jar
+JARFILES:=jcommon-$(JCOMMON_VER).jar jfreechart-$(JFREECHART_VER).jar opencsv-$(OPENCSV_VER).jar applib.jar AppleJavaExtensions.jar
+JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:applib.jar:AppleJavaExtensions.jar
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
 TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
@@ -102,7 +106,12 @@ install: $(INSTALL_FILES)
 	cp -avp $(INSTALL_FILES) $(INSTALL_DIR)/
 
 $(INSTALLER): $(INSTALL_FILES) ECUxPlot.nsi
-	makensis $(OPT_PRE)DVERSION=$(VERSION)r$(RELEASE) ECUxPlot.nsi
+	makensis \
+	    $(OPT_PRE)DVERSION=$(VERSION)r$(RELEASE) \
+	    $(OPT_PRE)DJFREECHART_VER=$(JFREECHART_VER) \
+	    $(OPT_PRE)DJCOMMON_VER=$(JCOMMON_VER) \
+	    $(OPT_PRE)DOPENCSV_VER=$(OPENCSV_VER) \
+	    ECUxPlot.nsi
 	chmod +x $(INSTALLER)
 
 %.class: %.java
