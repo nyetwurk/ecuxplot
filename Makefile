@@ -62,7 +62,8 @@ TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
 INSTALLER=ECUxPlot-$(VERSION)r$(RELEASE)-setup.exe
 
 ZIPS=$(TARGET).zip $(TARGET).MacOS.zip
-all: $(TARGETS) .classpath version.txt
+all: $(TARGETS) .classpath version.txt jar exe
+
 jar: $(TARGET).jar
 zip: $(ZIPS)
 exe: ECUxPlot.exe

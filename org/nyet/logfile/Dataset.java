@@ -20,6 +20,9 @@ public class Dataset {
 	public Range(int s) { this(s,s); }
 	public Range() { this(0,0); }
 	public int size() { return this.end-this.start+1; }
+	public String toString() {
+	    return String.format("[%d:%d]", start, end);
+	}
     }
 
     public class Column {
@@ -205,7 +208,10 @@ public class Dataset {
 	    }
 	    if(r!=null && end) {
 		r.end=i;
-		if(rangeValid(r)) out.add(r);
+		if(rangeValid(r)) {
+		    // System.out.println("adding range " + r.toString());
+		    out.add(r);
+		}
 		r=null;
 	    }
 	}

@@ -74,6 +74,7 @@ public class ECUxDataset extends Dataset {
 		    u[i]=matcher.group(2);
 		}
 		if(h[i].equals("Boost")) h[i]="Zeitronix Boost";
+		if(u[i] != null && u[i].matches("^PSI/.*")) u[i]="PSI";
 	    }
 	    this.ticks_per_sec = 1;	// ARGH. time is really messed in z
 	} else {

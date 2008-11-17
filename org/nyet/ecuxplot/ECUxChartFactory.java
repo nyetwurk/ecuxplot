@@ -104,24 +104,27 @@ public class ECUxChartFactory {
 		    Comparable xkey, Dataset.Key ykey) {
 	ArrayList<Dataset.Range> ranges = data.getRanges();
 	// add empty data in case we turn off filter, or we get some error
-	double[][] s = {{},{}};
+	double[][] empty = {{},{}};
 	if(ranges.size()==0) {
 	    Dataset.Key key = data.new Key(ykey);
 	    key.hideFilename();
 	    key.hideSeries();
-	    d.addSeries(key, s);
+	    d.addSeries(key, empty);
 	    return;
 	}
 	for(int i=0;i<ranges.size();i++) {
-	    Dataset.Range r=ranges.get(i);
-	    try {
-		s[0] = data.getData(xkey, r);
-		s[1] = data.getData(ykey, r);
-	    } catch (Exception e){
-	    }
 	    Dataset.Key key = data.new Key(ykey, i);
 	    if(ranges.size()==1) key.hideSeries();
-	    d.addSeries(key, s);
+
+	    Dataset.Range r=ranges.get(i);
+	    try {
+		double [][] s = new double [][]{
+		    data.getData(xkey, r),
+		    data.getData(ykey, r)};
+		d.addSeries(key, s);
+	    } catch (Exception e){
+		d.addSeries(key, empty);
+	    }
 	}
     }
 
