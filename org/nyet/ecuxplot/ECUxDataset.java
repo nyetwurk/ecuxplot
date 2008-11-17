@@ -334,7 +334,12 @@ public class ECUxDataset extends Dataset {
     }
 
     protected boolean rangeValid(Range r) {
-	return (r.size()>filter.minPoints());
+	if(r.size()<filter.minPoints()) return false;
+	if(rpm!=null) {
+	    if(rpm.data.get(r.end)<rpm.data.get(r.start)+filter.minRPMRange())
+		return false;
+	}
+	return true;
     }
 
     public String getFilename() { return this.filename; }

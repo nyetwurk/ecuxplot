@@ -10,6 +10,7 @@ public class Filter {
     private static final int defaultMonotonicRPMfuzz = 100;
     private static final int defaultMinRPM = 2500;
     private static final int defaultMaxRPM = 8000;
+    private static final int defaultMinRPMRange = 3000;
     private static final int defaultMinPedal = 95;
     private static final int defaultMinThrottle = 50;
     private static final int defaultGear = 3;
@@ -61,6 +62,12 @@ public class Filter {
 	this.prefs.putInt("maxRPM", val);
     }
 
+    public int minRPMRange() {
+	return this.prefs.getInt("minRPMRange", defaultMinRPMRange);
+    }
+    public void minRPMRange(int val) {
+	this.prefs.putInt("minRPMRange", val);
+    }
     public int minPedal() {
 	return this.prefs.getInt("minPedal", defaultMinPedal);
     }
