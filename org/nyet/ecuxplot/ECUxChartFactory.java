@@ -30,7 +30,8 @@ public class ECUxChartFactory {
     public static JFreeChart create2AxisXYLineChart () {
 	final JFreeChart chart = ChartFactory.createXYLineChart(
 	    "", "", "",
-	    new DefaultXYDataset(), PlotOrientation.VERTICAL, true, true, false);
+	    new DefaultXYDataset(), PlotOrientation.VERTICAL,
+	    true, true, false);
 
 	final XYPlot plot = chart.getXYPlot();
 	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
@@ -43,7 +44,8 @@ public class ECUxChartFactory {
     public static JFreeChart create2AxisScatterPlot () {
 	final JFreeChart chart = ChartFactory.createScatterPlot(
 	    "", "", "",
-	    new DefaultXYDataset(), PlotOrientation.VERTICAL, true, true, false);
+	    new DefaultXYDataset(), PlotOrientation.VERTICAL,
+	    true, true, false);
 
 	final XYPlot plot = chart.getXYPlot();
 	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
@@ -66,7 +68,9 @@ public class ECUxChartFactory {
 
 	final XYPlot plot = chart.getXYPlot();
 	for(int i=0; i<plot.getDatasetCount(); i++) {
-	    final XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer(i);
+	    final XYLineAndShapeRenderer renderer =
+		(XYLineAndShapeRenderer)plot.getRenderer(i);
+
 	    renderer.setBaseLinesVisible(lines);
 	    renderer.setBaseShapesVisible(shapes);
 	    /* not needed, until we play with custom shapes/lines */
@@ -88,7 +92,8 @@ public class ECUxChartFactory {
 	renderer.setSeriesPaint(0, paint);
     }
 
-    public static void setSeriesPaint(JFreeChart chart, int series, int subseries, java.awt.Paint paint) {
+    public static void setSeriesPaint(JFreeChart chart, int series,
+	int subseries, java.awt.Paint paint) {
 
 	final XYPlot plot = chart.getXYPlot();
 	final XYItemRenderer renderer = plot.getRenderer(series);

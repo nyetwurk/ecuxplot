@@ -21,7 +21,9 @@ public class ConstantsEditor extends PreferencesEditor {
 	this.c.rpm_per_mph(Double.valueOf(this.rpm_per_mph.getText()));
 	this.c.Cd(Double.valueOf(this.Cd.getText()));
 	this.c.FA(Double.valueOf(this.FA.getText()));
-	this.c.driveline_loss(Double.valueOf(this.driveline_loss.getText())/100);
+	this.c.driveline_loss(Double.valueOf(
+	    this.driveline_loss.getText())/100);
+
 	super.Process(event);
     }
 

@@ -18,9 +18,11 @@ import org.nyet.util.SubActionListener;
 
 public class AxisMenu extends JMenu {
     private Comparable[] initialChecked;
-    private HashMap<String, AbstractButton> members = new HashMap<String, AbstractButton>();
+    private HashMap<String, AbstractButton> members =
+	new HashMap<String, AbstractButton>();
 
-    private Hashtable<String, JMenu> subMenus = new Hashtable<String, JMenu>();
+    private Hashtable<String, JMenu> subMenus =
+	new Hashtable<String, JMenu>();
 
     private void addToSubmenu(String id, JComponent item, boolean autoadd) {
 	JMenu sub = this.subMenus.get(id);
@@ -157,7 +159,8 @@ public class AxisMenu extends JMenu {
     }
     public AxisMenu (String text, String[] headers, SubActionListener listener,
 	boolean radioButton, Comparable initialChecked) {
-	this(text, headers, listener, radioButton, new Comparable [] {initialChecked});
+	this(text, headers, listener, radioButton,
+	    new Comparable [] {initialChecked});
     }
 
     public void uncheckAll() {

@@ -92,13 +92,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.prefs.getInt("windowHeight", 600));
     }
 
-    private void putWindowSize(int w, int h) {
-	    this.prefs.putInt("windowWidth", w);
-	    this.prefs.putInt("windowHeight", h);
+    private void putWindowSize() {
+	this.prefs.putInt("windowWidth", this.getWidth());
+	this.prefs.putInt("windowHeight", this.getHeight());
     }
 
     private void putYkeys(int axis) {
-	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
+	final org.jfree.chart.plot.XYPlot plot =
+	    this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
 	this.prefs.put("ykeys"+axis,ECUxChartFactory.getDatasetYkeys(dataset));
     }
@@ -111,11 +112,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	if(headers.length<=0) return;
 
 	this.xAxis = new AxisMenu("X Axis", headers, this, true, this.xkey());
-	this.yAxis[0] = new AxisMenu("Y Axis", headers, this, false, this.ykeys(0));
-	this.yAxis[1] = new AxisMenu("Y Axis2", headers, this, false, this.ykeys(1));
-
 	this.menuBar.add(xAxis);
+
+	this.yAxis[0] = new AxisMenu("Y Axis", headers, this, false,
+	    this.ykeys(0));
 	this.menuBar.add(yAxis[0]);
+
+	this.yAxis[1] = new AxisMenu("Y Axis2", headers, this, false,
+	    this.ykeys(1));
 	this.menuBar.add(yAxis[1]);
     }
 
@@ -208,7 +212,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		// current working dir
 		// String dir  = System.getProperty("user.dir"));
 		// home dir
-		String dir = this.prefs.get("chooserDir", System.getProperty("user.home"));
+		String dir = this.prefs.get("chooserDir",
+		    System.getProperty("user.home"));
 		fc = new JFileChooser(dir);
 		fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
 	    }
@@ -220,13 +225,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		WaitCursor.startWaitCursor(this);
 		loadFile(fc.getSelectedFile(), replace);
 		WaitCursor.stopWaitCursor(this);
-		this.prefs.put("chooserDir", fc.getCurrentDirectory().toString());
+		this.prefs.put("chooserDir",
+		    fc.getCurrentDirectory().toString());
 	    }
 	} else if(source.getText().equals("Scatter plot")) {
 	    boolean s = source.isSelected();
 	    this.prefs.putBoolean("scatter", s);
 	    if(this.chartPanel != null)
-		ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !s, s);
+		ECUxChartFactory.setChartStyle(this.chartPanel.getChart(),
+		    !s, s);
 	} else if(source.getText().equals("Filter data")) {
 	    this.filter.enabled(source.isSelected());
 	    rebuild();
@@ -365,10 +372,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    private void editChartY(ECUxDataset data, Comparable ykey, int axis, boolean add) {
+    private void editChartY(ECUxDataset data, Comparable ykey, int axis,
+	boolean add) {
 	if(add && !(data.exists(ykey)) )
 	    return;
-	final org.jfree.chart.plot.XYPlot plot = this.chartPanel.getChart().getXYPlot();
+	final org.jfree.chart.plot.XYPlot plot =
+	    this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
 	if(add) {
 	    Dataset.Key key = data.new Key(data.getFilename(),
@@ -424,7 +433,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.filter = new Filter(this.prefs);
 	this.env = new Env(this.prefs);
 
-	java.net.URL imageURL = getClass().getResource("icons/ECUxPlot2-64.png");
+	java.net.URL imageURL =
+	    getClass().getResource("icons/ECUxPlot2-64.png");
+
 	if(imageURL==null) {
 	    System.out.println("cant open icon");
 	    System.exit(0);
@@ -451,7 +462,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private void exitApp() {
-	this.putWindowSize(this.getWidth(), this.getHeight());
+	this.putWindowSize();
 	System.exit(0);
     }
 
@@ -461,26 +472,28 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     public static void main(final String[] args) {
-	javax.swing.SwingUtilities.invokeLater(new Runnable() { public void run() {
-	    final ECUxPlot plot = new ECUxPlot("ECUxPlot", args);
-	    Application app = Application.getApplication();
+	javax.swing.SwingUtilities.invokeLater(new Runnable() {
+	    public void run() {
+		final ECUxPlot plot = new ECUxPlot("ECUxPlot", args);
+		Application app = Application.getApplication();
 
-	    if(app!=null) {
-		app.addApplicationListener(new ApplicationAdapter() {
-		    public void handleOpenFile(ApplicationEvent evt) {
-			String file = evt.getFilename();
-			plot.loadFile(new File(file));
-		    }
-		    public void handleQuit(ApplicationEvent evt) {
-			plot.putWindowSize(plot.getWidth(), plot.getHeight());
-			evt.setHandled(true);
-		    }
-		});
+		if(app!=null) {
+		    app.addApplicationListener(new ApplicationAdapter() {
+			public void handleOpenFile(ApplicationEvent evt) {
+			    String file = evt.getFilename();
+			    plot.loadFile(new File(file));
+			}
+			public void handleQuit(ApplicationEvent evt) {
+			    plot.putWindowSize();
+			    evt.setHandled(true);
+			}
+		    });
+		}
+
+		plot.pack();
+		RefineryUtilities.centerFrameOnScreen(plot);
+		plot.setVisible(true);
 	    }
-
-	    plot.pack();
-	    RefineryUtilities.centerFrameOnScreen(plot);
-	    plot.setVisible(true);
-	} });
+	});
     }
 }

@@ -18,7 +18,8 @@ public class ECUxDataset extends Dataset {
     private final double mbar_per_psi = 68.9475729;
     private int ticks_per_sec;
 
-    public ECUxDataset(String filename, Env env, Filter filter) throws Exception {
+    public ECUxDataset(String filename, Env env, Filter filter)
+	throws Exception {
 	super(filename);
 
 	this.filename = Files.filename(filename);
@@ -91,8 +92,11 @@ public class ECUxDataset extends Dataset {
 
 	final double rho=1.293;	// kg/m^3 air, standard density
 
-	DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.c.Cd() *this.env.c.FA());
-	DoubleArray rollingDrag = v.mult(this.env.c.rolling_drag() * this.env.c.mass() * 9.80665);
+	DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.c.Cd() * 
+	    this.env.c.FA());
+
+	DoubleArray rollingDrag = v.mult(this.env.c.rolling_drag() *
+	    this.env.c.mass() * 9.80665);
 
 	return windDrag.add(rollingDrag);
     }
@@ -117,13 +121,17 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray a = super.get("TIME").data;
 	    c = new Column("TIME", "s", a.div(this.ticks_per_sec));
 	} else if(id.equals("Calc Load")) {
-	    DoubleArray a = super.get("MassAirFlow").data.mult(3.6); // g/sec to kg/hr
+	    // g/sec to kg/hr
+	    DoubleArray a = super.get("MassAirFlow").data.mult(3.6);
 	    DoubleArray b = super.get("RPM").data;
-	    c = new Column(id, "%", a.div(b).div(.001072)); // KUMSRL
+
+	    // KUMSRL
+	    c = new Column(id, "%", a.div(b).div(.001072));
 	} else if(id.equals("Calc MAF")) {
 	    double maf = this.env.f.MAF(); // diameter in mm
 	    double maf_scale = ((maf*maf)/(73*73));
-	    DoubleArray a = super.get("MassAirFlow").data.mult(maf_scale);	// g/sec
+	    // mass in g/sec
+	    DoubleArray a = super.get("MassAirFlow").data.mult(maf_scale);
 	    c = new Column(id, "g/sec", a.add(this.env.f.MAF_offset()));
 	} else if(id.equals("Calc Fuel Mass")) {
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
@@ -144,16 +152,21 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc lambda error")) {
 	    DoubleArray a = super.get("AirFuelRatioDesired").data;
 	    DoubleArray b = this.get("Calc lambda").data;
-	    c = new Column(id, "%", a.div(b).mult(-1).add(1).mult(100).max(-25).min(25));
+	    c = new Column(id, "%", a.div(b).mult(-1).add(1).mult(100).
+		max(-25).min(25));
+
 	} else if(id.equals("FuelInjectorDutyCycle")) {
-	    DoubleArray a = super.get("FuelInjectorOnTime").data.div(60*this.ticks_per_sec);
-	    DoubleArray b = super.get("RPM").data.smooth().div(2); // half cycle
+	    DoubleArray a = super.get("FuelInjectorOnTime").data.
+		div(60*this.ticks_per_sec);
+
+	    DoubleArray b = super.get("RPM").data.smooth().div(2); // 1/2 cycle
 	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
 /*****************************************************************************/
 	} else if(id.equals("Calc Velocity")) {
 	    final double mph_per_mps = 2.23693629;
 	    DoubleArray v = super.get("RPM").data.smooth();
-	    c = new Column(id, "m/s", v.div(this.env.c.rpm_per_mph()).div(mph_per_mps));	// in m/s
+	    c = new Column(id, "m/s", v.div(this.env.c.rpm_per_mph()).
+		div(mph_per_mps));
 	} else if(id.equals("Calc Acceleration (RPM/s)")) {
 	    DoubleArray y = super.get("RPM").data.smooth();
 	    DoubleArray x = this.get("TIME").data;
@@ -169,7 +182,9 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc WHP")) {
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    DoubleArray v = this.get("Calc Velocity").data;
-	    DoubleArray whp = a.mult(v).mult(this.env.c.mass()).add(this.drag(v));	// in watts
+	    DoubleArray whp = a.mult(v).mult(this.env.c.mass()).
+		add(this.drag(v));	// in watts
+
 	    DoubleArray value = whp.mult(hp_per_watt).smooth();
 	    String l = "HP";
 	    if(this.env.sae.enabled()) {
@@ -243,7 +258,8 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray set = super.get("BoostPressureDesired").data;
 	    DoubleArray out = super.get("BoostPressureActual").data;
 	    DoubleArray t = this.get("TIME").data;
-	    DoubleArray o = set.sub(out).integral(t,0,env.pid.I_limit/env.pid.I*100);
+	    DoubleArray o = set.sub(out).
+		integral(t,0,env.pid.I_limit/env.pid.I*100);
 	    c = new Column(id,"100mBar",o.div(env.pid.time_constant).div(100));
 	} else if(id.equals("Calc LDR PID")) {
 	    final DoubleArray.TransferFunction fP =
@@ -301,9 +317,12 @@ public class ECUxDataset extends Dataset {
 
     protected boolean dataValid(int i) {
 	if(!this.filter.enabled()) return true;
-	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear()) return false;
-	if(pedal!=null && pedal.data.get(i)<filter.minPedal()) return false;
-	if(throttle!=null && throttle.data.get(i)<filter.minThrottle()) return false;
+	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear())
+	    return false;
+	if(pedal!=null && pedal.data.get(i)<filter.minPedal())
+	    return false;
+	if(throttle!=null && throttle.data.get(i)<filter.minThrottle())
+	    return false;
 	if(boost!=null && boost.data.get(i)<0) return false;
 	if(rpm!=null) {
 	    if(rpm.data.get(i)<filter.minRPM()) return false;

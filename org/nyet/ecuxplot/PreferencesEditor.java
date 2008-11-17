@@ -87,11 +87,13 @@ public class PreferencesEditor extends JPanel {
     public boolean showDialog(Component parent, String title) {
 	updateDialog();
 	this.ok = false;
-	Frame owner = null;
+	Frame owner;
+
 	if(parent instanceof Frame) owner = (Frame)parent;
-	else owner = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parent);
-	if(this.dialog == null || this.dialog.getOwner() != owner)
-	{
+	else owner = (Frame)SwingUtilities.
+	    getAncestorOfClass(Frame.class, parent);
+
+	if(this.dialog == null || this.dialog.getOwner() != owner) {
 	    if(owner instanceof ECUxPlot) eplot = (ECUxPlot)owner;
 
 	    this.dialog = new JDialog(owner);

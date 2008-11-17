@@ -7,7 +7,9 @@ import ru.sscc.util.CalculatingException;
 
 public class DoubleArray
 {
-    private int sp = 0; // "stack pointer" to keep track of position in the array
+    // "stack pointer" to keep track of position in the array
+    private int sp = 0;
+
     private double[] array;
     private int growthSize;
 
@@ -249,7 +251,8 @@ public class DoubleArray
     public Spline spline(double[] mesh) { return this.spline(2, mesh); }
     public Spline spline(int order) {
 	try {
-	    return POddSplineCreator.createSpline(order, 0, 1, this.sp, this.toArray());
+	    return POddSplineCreator.createSpline(order, 0, 1, this.sp,
+		this.toArray());
 	} catch (CalculatingException e){
 	    System.out.println(e);
 	}

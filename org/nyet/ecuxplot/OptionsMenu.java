@@ -11,7 +11,8 @@ import javax.swing.JSeparator;
 public final class OptionsMenu extends JMenu {
     public OptionsMenu(String id, ActionListener listener, Preferences prefs) {
 	super(id);
-	JCheckBox scatter = new JCheckBox("Scatter plot", ECUxPlot.scatter(prefs));
+	JCheckBox scatter = new JCheckBox("Scatter plot",
+		ECUxPlot.scatter(prefs));
 	scatter.addActionListener(listener);
 	this.add(scatter);
 
