@@ -123,6 +123,8 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("EngineLoadCorrectedSpecified")) {
 		this.add("Calc LoadSpecified correction", listener, bg);
 	    }
+	} else if(id.matches("^Zeitronix.*")) {
+	    addToSubmenu("Zeitronix", item);
 	} else {
 	    this.add(item);
 	}
@@ -139,6 +141,7 @@ public class AxisMenu extends JMenu {
 	if(radioButton) bg = new ButtonGroup();
 
 	for(int i=0;i<headers.length;i++) {
+	    if(headers[i] == null) continue;
 	    if(headers[i].length()>0 && !this.members.containsKey(headers[i]))
 		this.add(headers[i], listener, bg);
 	}

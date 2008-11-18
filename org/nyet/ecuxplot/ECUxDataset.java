@@ -16,7 +16,7 @@ public class ECUxDataset extends Dataset {
     private Filter filter;
     private final double hp_per_watt = 0.00134102209;
     private final double mbar_per_psi = 68.9475729;
-    private int ticks_per_sec;
+    private double ticks_per_sec;
 
     public ECUxDataset(String filename, Env env, Filter filter)
 	throws Exception {
@@ -27,61 +27,122 @@ public class ECUxDataset extends Dataset {
 	this.filter = filter;
 
 	this.rpm = get("RPM");
-	this.pedal = get("AcceleratorPedalPosition");
-	this.throttle = get("ThrottlePlateAngle");
-	if(this.throttle == null)
-	    this.throttle = get("Throttle Valve Angle");
+	this.pedal = get(new String []
+		{"AcceleratorPedalPosition", "Zeitronix TPS"});
+	this.throttle = get(new String []
+		{"ThrottlePlateAngle", "Throttle Valve Angle"});
 	this.gear = get("Gear");
 	// look for zeitronix boost for filtering
 	this.boost = get("Zeitronix Boost");
     }
 
-    public void ParseHeaders(CSVReader reader) throws Exception {
-	String [] h = reader.readNext();
+    private static final int LOG_UNKNOWN = -2;
+    public static final int LOG_ERR = -1;
+    public static final int LOG_DETECT = 0;
+    public static final int LOG_ECUX = 1;
+    public static final int LOG_VCDS = 2;
+    public static final int LOG_ZEITRONIX = 3;
+    private int detect(String [] h) {
+	int ret = LOG_UNKNOWN;
+	h[0]=h[0].trim();
+	if(h[0].matches("^.*day$")) return LOG_VCDS;
+	if(h[0].matches("^Filename:.*") &&
+	    Files.extension(h[0]).equals("zto"))
+	    return LOG_ZEITRONIX;
+	if(h[0].matches("^TIME$")) return LOG_ECUX;
+	return LOG_UNKNOWN;
+    }
+
+    private String [] ParseUnits(String [] h) {
 	String [] u = new String[h.length];
-	int i;
-	if(h[0].matches("^.*day$")) {
-	    reader.readNext();	// ECU type
-	    reader.readNext();	// blank
-	    reader.readNext();	// group
-	    h = reader.readNext(); // headers
-	    String[] h2 = reader.readNext(); // headers
-	    u = reader.readNext(); // units
-	    for(i=0;i<h.length;i++) {
-		h[i]=h[i].trim();
-		h2[i]=h2[i].trim();
-		u[i]=u[i].trim();
-		if(h[i].length()>0 && h2[i].length()>0)  h[i]+=" ";
-		h[i]+=h2[i];
-		if(h[i].matches("^Engine Speed.*")) h[i]="RPM";
-		if(h[i].length()==0) h[i]=u[i];
-		// System.out.println(h[i] + " [" + u[i] + "]");
+	for(int i=0;i<h.length;i++) {
+	    h[i]=h[i].trim();
+	    final Pattern unitsRegEx =
+		Pattern.compile("([\\w\\s]+)\\(([\\w\\s].*)\\)");
+	    Matcher matcher = unitsRegEx.matcher(h[i]);
+	    if(matcher.find()) {
+		h[i]=matcher.group(1);
+		u[i]=matcher.group(2);
+		if(u[i].matches("^PSI/.*")) u[i]="PSI";
 	    }
-	    this.ticks_per_sec = 1;	// VAGCOM is in seconds
-	} else if(h[0].matches("^Filename:.*") &&
-		Files.extension(h[0]).equals("zto")) {
-	    // Zeitronix .zto?
-	    reader.readNext();	// Date exported
-	    h = reader.readNext(); // headers
-	    u = new String[h.length];
-	    for(i=0;i<h.length;i++) {
-		h[i]=h[i].trim();
-		final Pattern unitsRegEx =
-		    Pattern.compile("([\\w\\s]+)\\(([\\w\\s].*)\\)");
-		Matcher matcher = unitsRegEx.matcher(h[i]);
-		if(matcher.find()) {
-		    h[i]=matcher.group(1);
-		    u[i]=matcher.group(2);
-		}
-		if(h[i].equals("Boost")) h[i]="Zeitronix Boost";
-		if(u[i] != null && u[i].matches("^PSI/.*")) u[i]="PSI";
-	    }
-	    this.ticks_per_sec = 1;	// ARGH. time is really messed in z
-	} else {
-	    // ECUx
-	    this.ticks_per_sec = 1000;
 	}
-	for(i=0;i<h.length;i++) {
+	return u;
+    }
+    public void ParseHeaders(CSVReader reader) throws Exception {
+	ParseHeaders(reader, LOG_DETECT);
+    }
+    public void ParseHeaders(CSVReader reader, int log_req) throws Exception {
+	if (log_req<0) {
+	    System.out.println("invalid log_req " + log_req);
+	    return;
+	}
+
+	String [] h = reader.readNext();
+	String [] u = ParseUnits(h);
+
+	int log_detected = detect(h);
+
+	/*
+	  passed     detected
+	  DETECT       all ok
+	  not DETECT   DETECT and equals ok
+	*/
+	if(log_req != LOG_DETECT && log_detected != LOG_UNKNOWN) {
+            if(log_req != log_detected) {
+		System.out.println(log_req + "!=" + log_detected);
+		return;
+	    }
+	}
+
+	int log_use = (log_req==LOG_DETECT)?log_detected:log_req;
+
+	this.ticks_per_sec = 1;
+	switch(log_use) {
+	    case LOG_VCDS:
+		reader.readNext();	// ECU type
+		reader.readNext();	// blank
+		reader.readNext();	// group
+		h = reader.readNext(); // headers
+		String[] h2 = reader.readNext(); // headers
+		u = reader.readNext(); // units
+		for(int i=0;i<h.length;i++) {
+		    h[i]=h[i].trim();
+		    h2[i]=h2[i].trim();
+		    u[i]=u[i].trim();
+		    if(h[i].length()>0 && h2[i].length()>0)  h[i]+=" ";
+		    h[i]+=h2[i];
+		    if(h[i].matches("^Engine Speed.*")) h[i]="RPM";
+		    if(h[i].length()==0) h[i]=u[i];
+		    // System.out.println(h[i] + " [" + u[i] + "]");
+		}
+		break;
+	    case LOG_ZEITRONIX:
+		if (log_detected == LOG_ZEITRONIX) {
+		    // we detected zeitronix header, strip it
+		    reader.readNext();     // Date exported
+		    h = reader.readNext(); // headers
+		}
+		// otherwise, the user gave us a zeit log with no header,
+		// but asked us to treat it like a zeit log.
+
+		// reparse units
+		u = ParseUnits(h);
+		for(int i=0;i<h.length;i++) {
+		    if(h[i].equals("Boost")) h[i]="Zeitronix Boost";
+		    if(h[i].equals("TPS")) h[i]="Zeitronix TPS";
+		    if(h[i].equals("AFR")) h[i]="Zeitronix AFR";
+		    if(h[i].equals("Lambda")) h[i]="Zeitronix Lambda";
+		    // time is broken
+		    if(h[i].equals("Time")) h[i]=null;
+		}
+		break;
+	    case LOG_ECUX:
+		this.ticks_per_sec = 1000;
+		break;
+	    default:
+		break;
+	}
+	for(int i=0;i<h.length;i++) {
 	    if(u[i]==null || u[i].length()==0)
 		u[i]=Units.find(h[i]);
 	}
@@ -106,6 +167,19 @@ public class ECUxDataset extends Dataset {
 	DoubleArray ambient = this.get("BaroPressure").data;
 	if(ambient==null) return abs.add(-1013).div(mbar_per_psi);
 	return abs.sub(ambient).div(mbar_per_psi);
+    }
+
+    // given a list of id's, find the first that exists
+    public Column get(Comparable [] id) {
+	for (int i=0; i<id.length; i++ ) {
+	    Column ret = null;
+	    try {
+		ret=_get(id[i]);
+	    } catch (NullPointerException e) {
+	    }
+	    if(ret!=null) return ret;
+	}
+	return null;
     }
 
     public Column get(Comparable id) {
@@ -318,27 +392,61 @@ public class ECUxDataset extends Dataset {
 
     protected boolean dataValid(int i) {
 	if(!this.filter.enabled()) return true;
-	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear())
+	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear()) {
+	    this.lastFilterReason = "gear " + Math.round(gear.data.get(i)) +
+		    "!=" + filter.gear();
 	    return false;
-	if(pedal!=null && pedal.data.get(i)<filter.minPedal())
+	}
+	if(pedal!=null && pedal.data.get(i)<filter.minPedal()) {
+	    this.lastFilterReason = "pedal " + pedal.data.get(i) +
+		    "<" + filter.minPedal();
 	    return false;
-	if(throttle!=null && throttle.data.get(i)<filter.minThrottle())
+	}
+	if(throttle!=null && throttle.data.get(i)<filter.minThrottle()) {
+	    this.lastFilterReason = "throttle " + throttle.data.get(i) +
+		    "<" + filter.minThrottle();
 	    return false;
-	if(boost!=null && boost.data.get(i)<0) return false;
+	}
+	if(boost!=null && boost.data.get(i)<0) {
+	    this.lastFilterReason = "boost " + boost.data.get(i) +
+		    "<0";
+	    return false;
+	}
 	if(rpm!=null) {
-	    if(rpm.data.get(i)<filter.minRPM()) return false;
-	    if(rpm.data.get(i)>filter.maxRPM()) return false;
-	    if(i<1 || rpm.data.get(i-1) - rpm.data.get(i) > filter.monotonicRPMfuzz()) return false;
+	    if(rpm.data.get(i)<filter.minRPM()) {
+		this.lastFilterReason = "rpm " + rpm.data.get(i) +
+		    "<" + filter.minRPM();
+		return false;
+	    }
+	    if(rpm.data.get(i)>filter.maxRPM()) {
+		this.lastFilterReason = "rpm " + rpm.data.get(i) +
+		    ">" + filter.maxRPM();
+		return false;
+	    }
+	    if(rpm.data.size()>i+3 &&
+		rpm.data.get(i)-rpm.data.get(i+2)>filter.monotonicRPMfuzz()) {
+		this.lastFilterReason = "rpm delta " + 
+		    (rpm.data.get(i)-rpm.data.get(i+2)) + ">" +
+		    filter.monotonicRPMfuzz();
+		return false;
+	    }
 	}
 	return true;
     }
 
     protected boolean rangeValid(Range r) {
 	if(!this.filter.enabled()) return true;
-	if(r.size()<filter.minPoints()) return false;
+	if(r.size()<filter.minPoints()) {
+	    this.lastFilterReason = "points " + r.size() + "<" +
+		filter.minPoints();
+	    return false;
+	}
 	if(rpm!=null) {
-	    if(rpm.data.get(r.end)<rpm.data.get(r.start)+filter.minRPMRange())
+	    if(rpm.data.get(r.end)<rpm.data.get(r.start)+filter.minRPMRange()) {
+		this.lastFilterReason = "RPM Range " + rpm.data.get(r.end) +
+		    "<" + rpm.data.get(r.start) + "+" +filter.minRPMRange();
 		return false;
+	    }
 	}
 	return true;
     }

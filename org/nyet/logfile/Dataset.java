@@ -12,6 +12,7 @@ public class Dataset {
     private String[] units;
     private ArrayList<Column> columns;
     private int rows;
+    protected String lastFilterReason;
 
     public class Range {
 	public int start;
@@ -201,15 +202,23 @@ public class Dataset {
 	for(int i=0;i<this.rows; i++) {
 	    boolean end = false;
 	    if(dataValid(i)) {
-		if(r==null) r = new Range(i);
+		if(r==null) {
+		    r = new Range(i);
+		    this.lastFilterReason=null;
+		}
 		if(i==this.rows-1) end=true; // we hit end of data
 	    } else {
 		end = true;
 	    }
 	    if(r!=null && end) {
-		r.end=i;
+		r.end=i-1;
 		if(rangeValid(r)) {
-		    // System.out.println("adding range " + r.toString());
+		    /*
+		    if(this.lastFilterReason!=null) {
+			System.out.println(this.lastFilterReason +
+				": adding range " + r.toString());
+		    }
+		    */
 		    out.add(r);
 		}
 		r=null;
@@ -233,4 +242,5 @@ public class Dataset {
     public String [] getHeaders() {return this.headers;}
     public String getHeader(int i) {return this.headers[i];}
     public void setUnits(String [] units) {this.units=units;}
-}
+    public String getLastFilterReason() { return this.lastFilterReason; }
+} 

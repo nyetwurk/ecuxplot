@@ -2,6 +2,7 @@ package org.nyet.ecuxplot;
 
 public final class Units {
     public final static String find(Comparable id) {
+	if (id == null) return null;
 	final String[][] legend = {
 	    {"AcceleratorPedalPosition", "%"},
 	    {"AirFuelRatioDesired", "lambda"},
@@ -45,9 +46,15 @@ public final class Units {
 	    {"OXSVoltS1B1", "V"},
 	    {"OXSVoltS1B2", "V"},
 	    {"ThrottlePlateAngle", "%"},
+	    {"TPS", "%"},
+	    {"VehicleSpeed", "mph"},
+
 	    {"RPM", "1/min"},
 	    {"Time", "s"},
-	    {"VehicleSpeed", "mph"},
+
+	    {"Zeitronix TPS", "%"},
+	    {"Zeitronix AFR", "AFR"},
+	    {"Zettronix Lambda", "lambda"},
 	};
 
 	for(int i=0;i<legend.length;i++) {
