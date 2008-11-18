@@ -334,6 +334,7 @@ public class ECUxDataset extends Dataset {
     }
 
     protected boolean rangeValid(Range r) {
+	if(!this.filter.enabled()) return true;
 	if(r.size()<filter.minPoints()) return false;
 	if(rpm!=null) {
 	    if(rpm.data.get(r.end)<rpm.data.get(r.start)+filter.minRPMRange())
