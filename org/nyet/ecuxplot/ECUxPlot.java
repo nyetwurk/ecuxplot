@@ -256,14 +256,23 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    JPanel info = new JPanel();
 	    info.setLayout(new BorderLayout());
 	    info.add(new JLabel((new org.nyet.util.Version()).toString()),
-		BorderLayout.NORTH);
-	    JButton url = new JButton(
-    "<html><a href=\"http://nyet.org/cars/ECUxPlot\">ECUxPlot home page</a>"
-	    );
+		BorderLayout.EAST);
+
+	    JButton icon = new JButton(new ImageIcon(getClass().getResource(
+		"icons/ECUxPlot2-64.png")));
+	    icon.setBorderPainted(false);
+	    icon.setContentAreaFilled(false);
+	    icon.setDefaultCapable(false);
+	    info.add(icon, BorderLayout.CENTER);
+
+	    final String html =
+	    "<a href=\"http://nyet.org/cars/ECUxPlot\">ECUxPlot home page</a>";
+	    JButton url = new JButton("<html>" + html + "</html>");
 	    url.setActionCommand("Homepage");
 	    url.setBorderPainted(false);
+	    url.setContentAreaFilled(false);
 	    url.addActionListener(this);
-	    info.add(url, BorderLayout.CENTER);
+	    info.add(url, BorderLayout.SOUTH);
 	    JOptionPane.showMessageDialog(this, info,
 		    "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
 	} else if("Homepage".equals(event.getActionCommand())) {
