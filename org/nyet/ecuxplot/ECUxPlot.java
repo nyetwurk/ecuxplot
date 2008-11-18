@@ -9,14 +9,10 @@ import java.util.prefs.Preferences;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 
-import javax.swing.AbstractButton;
-import javax.swing.JPanel;
-import javax.swing.JMenuBar;
-import javax.swing.JPopupMenu;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import com.apple.eawt.*;
 
@@ -112,15 +108,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	if(headers.length<=0) return;
 
 	this.xAxis = new AxisMenu("X Axis", headers, this, true, this.xkey());
-	this.menuBar.add(xAxis);
+	this.menuBar.add(xAxis, 2);
 
 	this.yAxis[0] = new AxisMenu("Y Axis", headers, this, false,
 	    this.ykeys(0));
-	this.menuBar.add(yAxis[0]);
+	this.menuBar.add(yAxis[0], 3);
 
 	this.yAxis[1] = new AxisMenu("Y Axis2", headers, this, false,
 	    this.ykeys(1));
-	this.menuBar.add(yAxis[1]);
+	this.menuBar.add(yAxis[1], 4);
     }
 
     private void loadFile(File file) { loadFile(file, false); }
@@ -256,6 +252,36 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("Edit SAE constants...")) {
 	    if(this.sae == null) this.sae = new SAEEditor(this.prefs);
 	    this.sae.showDialog(this, "SAE", this.env.sae);
+	} else if(source.getText().equals("About...")) {
+	    JPanel info = new JPanel();
+	    info.setLayout(new BorderLayout());
+	    info.add(new JLabel((new org.nyet.util.Version()).toString()),
+		BorderLayout.NORTH);
+	    JButton url = new JButton(
+    "<html><a href=\"http://nyet.org/cars/ECUxPlot\">ECUxPlot home page</a>"
+	    );
+	    url.setActionCommand("Homepage");
+	    url.setBorderPainted(false);
+	    url.addActionListener(this);
+	    info.add(url, BorderLayout.CENTER);
+	    JOptionPane.showMessageDialog(this, info,
+		    "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
+	} else if("Homepage".equals(event.getActionCommand())) {
+	    boolean error = true;
+	    if (java.awt.Desktop.isDesktopSupported()) {
+		try {
+		    java.awt.Desktop.getDesktop().browse(
+			    new java.net.URI("http://nyet.org/cars/ECUxPlot"));
+		    error = false;
+		} catch (Exception e) {
+		}
+	    }
+	    if (error)
+		JOptionPane.showMessageDialog(this,
+	    "Can't launch browser. Please download the latest JRE from Sun.");
+	} else {
+	    System.out.println("unhandled getText=" + source.getText() +
+		   ", actionCommand=" + event.getActionCommand());
 	}
     }
 
@@ -443,12 +469,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
 
 	FileMenu filemenu = new FileMenu("File", this);
-	menuBar.add(filemenu);
+	this.menuBar.add(filemenu);
 
 	OptionsMenu optmenu = new OptionsMenu("Options", this, this.prefs);
-	menuBar.add(optmenu);
+	this.menuBar.add(optmenu);
 
-	setJMenuBar(menuBar);
+	this.menuBar.add(Box.createHorizontalGlue());
+	HelpMenu helpMenu = new HelpMenu("Help", this);
+	this.menuBar.add(helpMenu);
+
+	setJMenuBar(this.menuBar);
 
 	setPreferredSize(this.windowSize());
 

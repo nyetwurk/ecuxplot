@@ -1,0 +1,24 @@
+package org.nyet.util;
+
+import java.util.ArrayList;
+
+public class Version extends ArrayList<Object> {
+
+    public static final String ECUxPlot="VERSIONrRELEASE";
+    public static final String JFreeChart="JFREECHART_VER";
+    public static final String JCommon="JCOMMON_VER";
+    public static final String OpenCSV="OPENCSV_VER";
+
+    public Version () {
+	this.add("ECUxPlot " + Version.ECUxPlot);
+	this.add("JFreeChart " + Version.JFreeChart);
+	this.add("JCommon " + Version.JCommon);
+	this.add("OpenCSV " + Version.OpenCSV);
+	this.add("Java runtime "+ System.getProperty("java.version"));
+    }
+
+    public String toString() {
+	String s = org.nyet.util.Files.join("<br/>", this.toArray());
+	return "<html>"+s+"</html>";
+    }
+}
