@@ -36,7 +36,7 @@ UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
 EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java \
-	    ECUxChartPanel.java \
+	    ECUxChartPanel.java AboutPanel.java \
 	    HelpMenu.java AxisMenu.java FileMenu.java OptionsMenu.java \
 	    PreferencesEditor.java Env.java Units.java \
 	    Filter.java FilterEditor.java \

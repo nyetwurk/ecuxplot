@@ -9,7 +9,6 @@ import java.util.prefs.Preferences;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 
 import javax.swing.*;
@@ -253,44 +252,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    if(this.sae == null) this.sae = new SAEEditor(this.prefs);
 	    this.sae.showDialog(this, "SAE", this.env.sae);
 	} else if(source.getText().equals("About...")) {
-	    JPanel info = new JPanel();
-	    info.setLayout(new BorderLayout());
-	    info.add(new JLabel((new org.nyet.util.Version()).toString()),
-		BorderLayout.EAST);
-
-	    JButton icon = new JButton(new ImageIcon(getClass().getResource(
-		"icons/ECUxPlot2-64.png")));
-	    icon.setBorderPainted(false);
-	    icon.setContentAreaFilled(false);
-	    icon.setDefaultCapable(false);
-	    info.add(icon, BorderLayout.CENTER);
-
-	    final String html =
-	    "<a href=\"http://nyet.org/cars/ECUxPlot\">ECUxPlot home page</a>";
-	    JButton url = new JButton("<html>" + html + "</html>");
-	    url.setActionCommand("Homepage");
-	    url.setBorderPainted(false);
-	    url.setContentAreaFilled(false);
-	    url.addActionListener(this);
-	    info.add(url, BorderLayout.SOUTH);
-	    JOptionPane.showMessageDialog(this, info,
+	    JOptionPane.showMessageDialog(this, new AboutPanel(),
 		    "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
-	} else if("Homepage".equals(event.getActionCommand())) {
-	    boolean error = true;
-	    if (java.awt.Desktop.isDesktopSupported()) {
-		try {
-		    java.awt.Desktop.getDesktop().browse(
-			    new java.net.URI("http://nyet.org/cars/ECUxPlot"));
-		    error = false;
-		} catch (Exception e) {
-		}
-	    }
-	    if (error)
-		JOptionPane.showMessageDialog(this,
-	    "Can't launch browser. Please download the latest JRE from Sun.");
 	} else {
-	    System.out.println("unhandled getText=" + source.getText() +
-		   ", actionCommand=" + event.getActionCommand());
+	    JOptionPane.showMessageDialog(this,
+		"unhandled getText=" + source.getText() +
+	        ", actionCommand=" + event.getActionCommand());
 	}
     }
 

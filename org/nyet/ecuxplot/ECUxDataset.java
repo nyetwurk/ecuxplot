@@ -72,10 +72,8 @@ public class ECUxDataset extends Dataset {
 	ParseHeaders(reader, LOG_DETECT);
     }
     public void ParseHeaders(CSVReader reader, int log_req) throws Exception {
-	if (log_req<0) {
-	    System.out.println("invalid log_req " + log_req);
-	    return;
-	}
+	if (log_req<0)
+	    throw new Exception("invalid log_req " + log_req);
 
 	String [] h = reader.readNext();
 	String [] u = ParseUnits(h);
@@ -88,10 +86,8 @@ public class ECUxDataset extends Dataset {
 	  not DETECT   DETECT and equals ok
 	*/
 	if(log_req != LOG_DETECT && log_detected != LOG_UNKNOWN) {
-            if(log_req != log_detected) {
-		System.out.println(log_req + "!=" + log_detected);
-		return;
-	    }
+            if(log_req != log_detected)
+		throw new Exception(log_req + "!=" + log_detected);
 	}
 
 	int log_use = (log_req==LOG_DETECT)?log_detected:log_req;
