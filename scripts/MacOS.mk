@@ -16,7 +16,7 @@ build/ECUxPlot.app/Contents/PkgInfo: MacOS.data/PkgInfo
 	@mkdir -p build/ECUxPlot.app/Contents
 	cp -f $< $@
 
-build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: Makefile # MacOS.data/JavaApplicationStub
+build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: Makefile
 	@mkdir -p build/ECUxPlot.app/Contents/MacOS
 	ln -sf "/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" $@
 
