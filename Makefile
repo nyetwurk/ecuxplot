@@ -98,7 +98,7 @@ include scripts/Windows.mk
 include scripts/MacOS.mk
 
 INSTALL_FILES = ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
-		$(subst :, ,$(JARS)) version.txt
+		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt
 
 ECUxPlot-$(VERSION)r$(RELEASE).tar.gz: $(INSTALL_FILES)
 	@rm -f $@
