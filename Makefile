@@ -96,7 +96,8 @@ $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
 INSTALL_FILES:= ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
-		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt
+		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt \
+		gpl-3.0.txt
 
 GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 	sed -e 's/RELEASE/$(RELEASE)/g' | \
