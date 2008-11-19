@@ -3,9 +3,10 @@ build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
 		build/ECUxPlot.app/Contents/PkgInfo \
 		build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub \
 		build/ECUxPlot.app/Contents/Resources/ECUxPlot.icns \
-		$(JARFILES) $(TARGET).jar
+		$(INSTALL_FILES)
+	@rm -rf build/ECUxPlot.app/Contents/Resources/Java
 	@mkdir -p build/ECUxPlot.app/Contents/Resources/Java
-	cp -f $(JARFILES) $(TARGET).jar build/ECUxPlot.app/Contents/Resources/Java
+	cp -f $(INSTALL_FILES) build/ECUxPlot.app/Contents/Resources/Java
 	touch build/.ECUxPlot.app.stamp
 
 build/ECUxPlot.app/Contents/Info.plist: MacOS.data/Info.plist.template Makefile

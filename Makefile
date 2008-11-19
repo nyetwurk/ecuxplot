@@ -55,7 +55,6 @@ EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
-JARFILES:=jcommon-$(JCOMMON_VER).jar jfreechart-$(JFREECHART_VER).jar opencsv-$(OPENCSV_VER).jar applib.jar AppleJavaExtensions.jar
 JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:applib.jar:AppleJavaExtensions.jar
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked # -target 1.5
@@ -96,7 +95,7 @@ mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
-INSTALL_FILES:= ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
+INSTALL_FILES:= ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
 		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt
 
 GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
