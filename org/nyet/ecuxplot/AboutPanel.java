@@ -13,8 +13,8 @@ import javax.swing.ImageIcon;
 public class AboutPanel extends JPanel implements ActionListener {
     public AboutPanel() {
 	this.setLayout(new BorderLayout());
-	this.add(new JLabel((new org.nyet.util.Version()).toString()),
-	    BorderLayout.EAST);
+	String v = new org.nyet.util.Version().toString();
+	this.add(new JLabel(v), BorderLayout.EAST);
 
 	JButton icon = new JButton(new ImageIcon(getClass().getResource(
 	    "icons/ECUxPlot2-64.png")));

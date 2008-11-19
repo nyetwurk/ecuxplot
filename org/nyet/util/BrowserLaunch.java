@@ -12,7 +12,10 @@ public class BrowserLaunch {
     public static void openURL(String url) {
 	boolean error = true;
 	try {
-	    if (java.awt.Desktop.isDesktopSupported()) {
+	    Class<?> Desktop = Class.forName("java.awt.Desktop");
+	    Method isDesktopSupported =
+		Desktop.getDeclaredMethod("isDesktopSupported");
+	    if ((Boolean) isDesktopSupported.invoke(null)) {
 		java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
 		return;
 	    }
