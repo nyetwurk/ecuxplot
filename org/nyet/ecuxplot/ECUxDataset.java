@@ -188,7 +188,13 @@ public class ECUxDataset extends Dataset {
 
     private Column _get(Comparable id) {
 	Column c=null;
-	if(id.equals("TIME")) {
+	if(id.equals("Sample")) {
+	    double[] idx = new double[this.length()];
+	    for (int i=0;i<this.length();i++)
+		idx[i]=i;
+	    DoubleArray a = new DoubleArray(idx);
+	    c = new Column("Sample", "#", a);
+	} else if(id.equals("TIME")) {
 	    DoubleArray a = super.get("TIME").data;
 	    c = new Column("TIME", "s", a.div(this.ticks_per_sec));
 	} else if(id.equals("Calc Load")) {

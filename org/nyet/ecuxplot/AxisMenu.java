@@ -138,7 +138,10 @@ public class AxisMenu extends JMenu {
 	this.initialChecked=initialChecked;
 
 	ButtonGroup bg = null;
-	if(radioButton) bg = new ButtonGroup();
+	if(radioButton) {
+	    bg = new ButtonGroup();
+	    this.add("Sample", listener, bg);
+	}
 
 	for(int i=0;i<headers.length;i++) {
 	    if(headers[i] == null) continue;

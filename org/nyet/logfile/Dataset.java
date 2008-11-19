@@ -243,4 +243,5 @@ public class Dataset {
     public String getHeader(int i) {return this.headers[i];}
     public void setUnits(String [] units) {this.units=units;}
     public String getLastFilterReason() { return this.lastFilterReason; }
+    public int length() { return this.rows; }
 } 
