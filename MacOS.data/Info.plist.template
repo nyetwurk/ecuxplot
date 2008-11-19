@@ -27,15 +27,15 @@
 		<key>MainClass</key>
 		<string>org.nyet.ecuxplot.ECUxPlot</string>
 		<key>JVMVersion</key>
-		<string>1.6*</string>
+		<string>1.5+</string>
 		<key>ClassPath</key>
-			<array>
+		<array>
 			<string>$JAVAROOT/ECUxPlot-VERSIONrRELEASE.jar</string>
 			<string>$JAVAROOT/applib.jar</string>
 			<string>$JAVAROOT/jcommon-JCOMMON_VER.jar</string>
 			<string>$JAVAROOT/jfreechart-JFREECHART_VER.jar</string>
 			<string>$JAVAROOT/opencsv-OPENCSV_VER.jar</string>
-			</array>
+		</array>
 	</dict>
 </dict>
 </plist>
