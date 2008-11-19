@@ -62,20 +62,21 @@ JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked # -target 1.5
 TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
 INSTALLER=ECUxPlot-$(VERSION)r$(RELEASE)-setup.exe
 
-ZIPS=$(TARGET).zip $(TARGET).MacOS.zip
+ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
 all: $(TARGETS) .classpath version.txt jar exe
 
 jar: $(TARGET).jar
-zip: $(ZIPS)
+archives: $(ARCHIVES)
 exe: ECUxPlot.exe
 installer: $(INSTALLER)
-scp: $(ZIPS) $(INSTALLER)
+scp: $(ARCHIVES) $(INSTALLER)
 	$(SCP) $^ nyet.org:public_html/cars/files/
 
 clean:
-	rm -f ECUxPlot.exe ECUxPlot*.zip ECUxPlot.jar ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml version.txt .classpath
+	rm -rf build
+	rm -f ECUxPlot*.{exe,jar,xml,zip,tar.gz}
+	rm -f version.txt .classpath org/nyet/util/Version.java
 	rm -f *.class
-	rm -rf ECUxPlot.app
 	find org -name \*.class | xargs rm
 	find vec_math -name \*.class | xargs rm
 
@@ -99,22 +100,16 @@ include scripts/MacOS.mk
 INSTALL_FILES = ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
 		$(subst :, ,$(JARS)) version.txt
 
-ECUxPlot-$(VERSION)r$(RELEASE).zip: $(INSTALL_FILES)
+ECUxPlot-$(VERSION)r$(RELEASE).tar.gz: $(INSTALL_FILES)
 	@rm -f $@
-	zip $@ $(INSTALL_FILES)
+	@rm -rf build/ECUxPlot
+	@mkdir -p build/ECUxPlot
+	@cp -avpu $(INSTALL_FILES) build/ECUxPlot
+	(cd build; tar czvf ../$@ ECUxPlot)
 
 install: $(INSTALL_FILES)
 	mkdir -p $(INSTALL_DIR)
 	cp -avp $(INSTALL_FILES) $(INSTALL_DIR)/
-
-$(INSTALLER): $(INSTALL_FILES) ECUxPlot.nsi
-	makensis \
-	    $(OPT_PRE)DVERSION=$(VERSION)r$(RELEASE) \
-	    $(OPT_PRE)DJFREECHART_VER=$(JFREECHART_VER) \
-	    $(OPT_PRE)DJCOMMON_VER=$(JCOMMON_VER) \
-	    $(OPT_PRE)DOPENCSV_VER=$(OPENCSV_VER) \
-	    ECUxPlot.nsi
-	chmod +x $(INSTALLER)
 
 tag: version.txt
 	scripts/svn-tag `cat version.txt`
@@ -129,3 +124,5 @@ tag: version.txt
 
 %.class: %.java
 	javac $(JFLAGS) $<
+
+.PRECIOUS: org/nyet/util/Version.java
