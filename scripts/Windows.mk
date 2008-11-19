@@ -9,14 +9,15 @@ ECUxPlot-$(VERSION)r$(RELEASE).jar: ECUxPlot.MF $(EX_CLASSES)
 
 %.xml: %.xml.template Makefile
 	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
+
 ECUxPlot.exe: ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.xml ECUxPlot.ico version.txt
 	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
 
-$(INSTALLER): $(INSTALL_FILES) ECUxPlot.nsi
-	makensis \
+$(INSTALLER): $(INSTALL_FILES) scripts/ECUxPlot.nsi
+	makensis $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DVERSION=$(VERSION)r$(RELEASE) \
 	    $(OPT_PRE)DJFREECHART_VER=$(JFREECHART_VER) \
 	    $(OPT_PRE)DJCOMMON_VER=$(JCOMMON_VER) \
 	    $(OPT_PRE)DOPENCSV_VER=$(OPENCSV_VER) \
-	    ECUxPlot.nsi
-	chmod +x $(INSTALLER)
+	    scripts/ECUxPlot.nsi
+	@chmod +x $(INSTALLER)

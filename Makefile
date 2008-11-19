@@ -72,10 +72,12 @@ installer: $(INSTALLER)
 scp: $(ARCHIVES) $(INSTALLER)
 	$(SCP) $^ nyet.org:public_html/cars/files/
 
-clean:
+binclean:
+	rm -f ECUxPlot*.{exe,jar,zip,tar.gz}
+
+clean: binclean
 	rm -rf build
-	rm -f ECUxPlot*.{exe,jar,xml,zip,tar.gz}
-	rm -f version.txt .classpath org/nyet/util/Version.java
+	rm -f ECUxPlot.xml version.txt .classpath org/nyet/util/Version.java
 	rm -f *.class
 	find org -name \*.class | xargs rm
 	find vec_math -name \*.class | xargs rm
@@ -94,11 +96,11 @@ mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
+INSTALL_FILES:= ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
+		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt
+
 include scripts/Windows.mk
 include scripts/MacOS.mk
-
-INSTALL_FILES = ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
-		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt
 
 ECUxPlot-$(VERSION)r$(RELEASE).tar.gz: $(INSTALL_FILES)
 	@rm -f $@

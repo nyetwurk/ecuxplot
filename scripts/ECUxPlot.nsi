@@ -87,6 +87,7 @@ Section "install" InstallationInfo
   File "AppleJavaExtensions.jar"
   File "version.txt"
   File "gpl-3.0.txt"
+  File "README-Zeitronix.txt"
  
 ;create desktop shortcut
   CreateShortCut "$DESKTOP\${MUI_FILE}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""
