@@ -35,18 +35,8 @@ public class AboutPanel extends JPanel implements ActionListener {
 
     public void actionPerformed(ActionEvent event) {
 	if("Homepage".equals(event.getActionCommand())) {
-            boolean error = true;
-            if (java.awt.Desktop.isDesktopSupported()) {
-                try {
-                    java.awt.Desktop.getDesktop().browse(
-                            new java.net.URI("http://nyet.org/cars/ECUxPlot"));
-                    error = false;
-                } catch (Exception e) {
-                }
-            }
-            if (error)
-                JOptionPane.showMessageDialog(this,
-            "Can't launch browser. Please download the latest JRE from Sun.");
+	    final String url = "http://nyet.org/cars/ECUxPlot";
+	    org.nyet.util.BrowserLaunch.openURL(url);
 	}
     }
 }

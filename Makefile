@@ -31,7 +31,8 @@ UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 	    WaitCursor.java MMapFile.java \
 	    MenuListener.java SubActionListener.java \
 	    GenericFileFilter.java Unsigned.java DoubleArray.java \
-	    MovingAverageSmoothing.java Files.java Version.java
+	    MovingAverageSmoothing.java Files.java Version.java \
+	    BrowserLaunch.java
 
 VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
@@ -57,7 +58,7 @@ REFERENCE=data/4Z7907551R.kp
 
 JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:applib.jar:AppleJavaExtensions.jar
 
-JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked # -target 1.5
+JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
 TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
 INSTALLER=ECUxPlot-$(VERSION)r$(RELEASE)-setup.exe
 
