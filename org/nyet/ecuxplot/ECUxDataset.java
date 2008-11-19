@@ -200,9 +200,8 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "%", a.div(b).div(.001072));
 	} else if(id.equals("Calc MAF")) {
 	    double maf = this.env.f.MAF(); // diameter in mm
-	    double maf_scale = ((maf*maf)/(73*73));
 	    // mass in g/sec
-	    DoubleArray a = super.get("MassAirFlow").data.mult(maf_scale);
+	    DoubleArray a = super.get("MassAirFlow").data.mult(this.env.f.MAF_correction());
 	    c = new Column(id, "g/sec", a.add(this.env.f.MAF_offset()));
 	} else if(id.equals("Calc Fuel Mass")) {
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)

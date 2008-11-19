@@ -21,6 +21,11 @@ public class Fueling {
     public void MAF(double val) {
 	prefs.putDouble("MAF", val);
     }
+    public double MAF_correction() {
+	double maf = this.MAF();
+	return maf*maf/(73*73);
+    }
+
     public double injector() {
 	return prefs.getDouble("injector", defaultInjector);
     }

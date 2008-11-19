@@ -19,7 +19,6 @@ public class FilterEditor extends PreferencesEditor {
     private JTextField HPTQMAW;
 
     protected void Process(ActionEvent event) {
-	if(this.filter==null) return;
 	this.filter.gear(Integer.valueOf(this.gear.getText()));
 	this.filter.minRPM(Integer.valueOf(this.minRPM.getText()));
 	this.filter.maxRPM(Integer.valueOf(this.maxRPM.getText()));
@@ -31,9 +30,10 @@ public class FilterEditor extends PreferencesEditor {
 	super.Process(event);
     }
 
-    public FilterEditor (Preferences prefs) {
+    public FilterEditor (Preferences prefs, Filter filter) {
 	super(prefs.node(Filter.PREFS_TAG));
 
+	this.filter = filter;
 	JPanel pp = this.getPrefsPanel();
 
 	pp.add(new JLabel(" Gear:"));
@@ -79,10 +79,5 @@ public class FilterEditor extends PreferencesEditor {
 	this.minThrottle.setText("" + this.filter.minThrottle());
 	this.minPoints.setText("" + this.filter.minPoints());
 	this.HPTQMAW.setText("" + this.filter.HPTQMAW());
-    }
-
-    public boolean showDialog(Component parent, String title, Filter filter) {
-	this.filter = filter;
-	return super.showDialog(parent, title);
     }
 }

@@ -18,7 +18,6 @@ public class PIDEditor extends PreferencesEditor {
     private JTextField D3; // 700
 
     protected void Process(ActionEvent event) {
-	if(this.pid==null) return;
 	this.pid.time_constant = Double.valueOf(this.time_constant.getText());
 	this.pid.P_deadband = Double.valueOf(this.P_deadband.getText());
 	this.pid.I_limit = Double.valueOf(this.I_limit.getText());
@@ -31,9 +30,10 @@ public class PIDEditor extends PreferencesEditor {
 	super.Process(event);
     }
 
-    public PIDEditor () {
+    public PIDEditor (PID pid) {
 	JPanel pp = this.getPrefsPanel();
 
+	this.pid = pid;
 	pp.add(new JLabel(" Time constant (s):"));
 	this.time_constant = new JTextField(10);
 	pp.add(this.time_constant);
@@ -78,10 +78,5 @@ public class PIDEditor extends PreferencesEditor {
 	this.D1.setText("" + this.pid.D[1]);
 	this.D2.setText("" + this.pid.D[2]);
 	this.D3.setText("" + this.pid.D[3]);
-    }
-
-    public boolean showDialog(Component parent, String title, PID pid) {
-	this.pid = pid;
-	return super.showDialog(parent, title);
     }
 }

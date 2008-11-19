@@ -16,20 +16,19 @@ public class ConstantsEditor extends PreferencesEditor {
     private JTextField driveline_loss;
 
     protected void Process(ActionEvent event) {
-	if(this.c==null) return;
 	this.c.mass(Double.valueOf(this.mass.getText()));
 	this.c.rpm_per_mph(Double.valueOf(this.rpm_per_mph.getText()));
 	this.c.Cd(Double.valueOf(this.Cd.getText()));
 	this.c.FA(Double.valueOf(this.FA.getText()));
 	this.c.driveline_loss(Double.valueOf(
 	    this.driveline_loss.getText())/100);
-
 	super.Process(event);
     }
 
-    public ConstantsEditor (Preferences prefs) {
+    public ConstantsEditor (Preferences prefs, Constants c) {
 	super(prefs.node(Constants.PREFS_TAG));
 
+	this.c = c;
 	JPanel pp = this.getPrefsPanel();
 
 	pp.add(new JLabel(" Mass (kg):"));
@@ -59,10 +58,5 @@ public class ConstantsEditor extends PreferencesEditor {
 	this.Cd.setText("" + this.c.Cd());
 	this.FA.setText("" + this.c.FA());
 	this.driveline_loss.setText("" + this.c.driveline_loss()*100);
-    }
-
-    public boolean showDialog(Component parent, String title, Constants c) {
-	this.c = c;
-	return super.showDialog(parent, title);
     }
 }

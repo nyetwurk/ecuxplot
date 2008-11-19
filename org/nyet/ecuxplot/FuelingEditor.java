@@ -10,27 +10,33 @@ public class FuelingEditor extends PreferencesEditor {
     private Fueling fueling;
 
     private JTextField MAF;
+    private JLabel MAFCorrection;
     private JTextField injector;
     private JTextField MAF_offset;
     private JTextField cylinders;
 
     protected void Process(ActionEvent event) {
-	if(this.fueling==null) return;
 	this.fueling.MAF(Double.valueOf(this.MAF.getText()));
 	this.fueling.injector(Double.valueOf(this.injector.getText()));
 	this.fueling.MAF_offset(Double.valueOf(this.MAF_offset.getText()));
 	this.fueling.cylinders(Integer.valueOf(this.cylinders.getText()));
+	updateMAFCorrection();
 	super.Process(event);
     }
 
-    public FuelingEditor (Preferences prefs) {
+    public FuelingEditor (Preferences prefs, Fueling f) {
         super(prefs.node(Fueling.PREFS_TAG));
 
+	this.fueling = f;
 	JPanel pp = this.getPrefsPanel();
 
 	pp.add(new JLabel(" MAF diameter (mm):"));
 	this.MAF = new JTextField(10);
 	pp.add(this.MAF);
+
+	pp.add(new JLabel(" MAF correction (%):"));
+	this.MAFCorrection = new JLabel(getMAFCorrection());
+	pp.add(this.MAFCorrection);
 
 	pp.add(new JLabel(" Injector size (cc/min):"));
 	this.injector = new JTextField(10);
@@ -45,15 +51,19 @@ public class FuelingEditor extends PreferencesEditor {
 	pp.add(this.cylinders);
     }
 
+    private String getMAFCorrection() {
+	return String.format("%.1f",this.fueling.MAF_correction()*100);
+    }
+
+    private void updateMAFCorrection() {
+	this.MAFCorrection.setText(getMAFCorrection());
+    }
+
     public void updateDialog() {
 	this.MAF.setText("" + this.fueling.MAF());
 	this.injector.setText("" + this.fueling.injector());
 	this.MAF_offset.setText("" + this.fueling.MAF_offset());
 	this.cylinders.setText("" + this.fueling.cylinders());
-    }
-
-    public boolean showDialog(Component parent, String title, Fueling fueling) {
-	this.fueling = fueling;
-	return super.showDialog(parent, title);
+	updateMAFCorrection();
     }
 }

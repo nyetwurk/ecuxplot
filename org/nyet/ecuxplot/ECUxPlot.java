@@ -233,24 +233,27 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.filter.enabled(source.isSelected());
 	    rebuild();
 	} else if(source.getText().equals("Configure filter...")) {
-	    if(this.fe == null) this.fe = new FilterEditor(this.prefs);
-	    this.fe.showDialog(this, "Filter", this.filter);
+	    if(this.fe == null) this.fe =
+		new FilterEditor(this.prefs, this.filter);
+	    this.fe.showDialog(this, "Filter");
 	} else if(source.getText().equals("Edit constants...")) {
-	    if(this.ce == null) this.ce = new ConstantsEditor(this.prefs);
-	    this.ce.showDialog(this, "Constants", this.env.c);
+	    if(this.ce == null) this.ce =
+		new ConstantsEditor(this.prefs, this.env.c);
+	    this.ce.showDialog(this, "Constants");
 	} else if(source.getText().equals("Edit fueling...")) {
-	    if(this.fle == null) this.fle = new FuelingEditor(this.prefs);
-	    this.fle.showDialog(this, "Fueling", this.env.f);
+	    if(this.fle == null) this.fle =
+		new FuelingEditor(this.prefs, this.env.f);
+	    this.fle.showDialog(this, "Fueling");
 	} else if(source.getText().equals("Edit PID...")) {
-	    if(this.pe == null) this.pe = new PIDEditor();
-	    this.pe.showDialog(this, "PID", this.env.pid);
+	    if(this.pe == null) this.pe = new PIDEditor(this.env.pid);
+	    this.pe.showDialog(this, "PID");
 	} else if(source.getText().equals("Apply SAE")) {
 	    this.env.sae.enabled(source.isSelected());
 	    rebuild();
 	    updateLabelTitle();
 	} else if(source.getText().equals("Edit SAE constants...")) {
-	    if(this.sae == null) this.sae = new SAEEditor(this.prefs);
-	    this.sae.showDialog(this, "SAE", this.env.sae);
+	    if(this.sae == null) this.sae = new SAEEditor(this.prefs, this.env.sae);
+	    this.sae.showDialog(this, "SAE");
 	} else if(source.getText().equals("About...")) {
 	    JOptionPane.showMessageDialog(this, new AboutPanel(),
 		    "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);

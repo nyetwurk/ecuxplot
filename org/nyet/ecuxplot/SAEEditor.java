@@ -15,7 +15,6 @@ public class SAEEditor extends PreferencesEditor {
     private JLabel correction;
 
     protected void Process(ActionEvent event) {
-	if(this.s==null) return;
 	this.s.temperature(Double.valueOf(this.temperature.getText()));
 	this.s.altitude(Double.valueOf(this.altitude.getText()));
 	this.s.humidity(Double.valueOf(this.humidity.getText()));
@@ -23,9 +22,10 @@ public class SAEEditor extends PreferencesEditor {
 	super.Process(event);
     }
 
-    public SAEEditor (Preferences prefs) {
+    public SAEEditor (Preferences prefs, SAE s) {
 	super(prefs.node(SAE.PREFS_TAG));
 
+	this.s = s;
 	JPanel pp = this.getPrefsPanel();
 
 	pp.add(new JLabel(" Temperature (C):"));
@@ -41,12 +41,15 @@ public class SAEEditor extends PreferencesEditor {
 	pp.add(this.humidity);
 
 	pp.add(new JLabel(" SAE correction:"));
-	this.correction = new JLabel();
+	this.correction = new JLabel(getCorrection());
 	pp.add(this.correction);
     }
 
+    private String getCorrection() {
+	return String.format("%.3f",this.s.correction());
+    }
     private void updateCorrection() {
-	this.correction.setText(String.format("%.3f",this.s.correction()));
+	this.correction.setText(getCorrection());
     }
 
     public void updateDialog() {
@@ -54,10 +57,5 @@ public class SAEEditor extends PreferencesEditor {
 	this.altitude.setText("" + this.s.altitude());
 	this.humidity.setText("" + this.s.humidity());
 	updateCorrection();
-    }
-
-    public boolean showDialog(Component parent, String title, SAE s) {
-	this.s = s;
-	return super.showDialog(parent, title);
     }
 }
