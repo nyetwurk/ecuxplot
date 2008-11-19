@@ -10,7 +10,7 @@ build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
 
 build/ECUxPlot.app/Contents/Info.plist: MacOS.data/Info.plist.template Makefile
 	@mkdir -p build/ECUxPlot.app/Contents
-	sed -e 's/VERSION/$(VERSION)/g' < $< | sed -e 's/RELEASE/$(RELEASE)/g' > $@
+	cat $< | $(GEN) > $@
 
 build/ECUxPlot.app/Contents/PkgInfo: MacOS.data/PkgInfo
 	@mkdir -p build/ECUxPlot.app/Contents

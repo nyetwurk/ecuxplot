@@ -99,6 +99,12 @@ $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 INSTALL_FILES:= ECUxPlot.exe ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
 		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt
 
+GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
+	sed -e 's/RELEASE/$(RELEASE)/g' | \
+	sed -e 's/JFREECHART_VER/$(JFREECHART_VER)/g' | \
+	sed -e 's/JCOMMON_VER/$(JCOMMON_VER)/g' | \
+	sed -e 's/OPENCSV_VER/$(OPENCSV_VER)/g'
+
 include scripts/Windows.mk
 include scripts/MacOS.mk
 
@@ -117,12 +123,7 @@ tag: version.txt
 	scripts/svn-tag `cat version.txt`
 
 %.java: %.java.template Makefile
-	sed -e 's/VERSION/$(VERSION)/g' < $< | \
-	sed -e 's/RELEASE/$(RELEASE)/g' | \
-	sed -e 's/JFREECHART_VER/$(JFREECHART_VER)/g' | \
-	sed -e 's/JCOMMON_VER/$(JCOMMON_VER)/g' | \
-	sed -e 's/OPENCSV_VER/$(OPENCSV_VER)/g' \
-	> $@
+	cat $< | $(GEN) > $@
 
 %.class: %.java
 	javac $(JFLAGS) $<
