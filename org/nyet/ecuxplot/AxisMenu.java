@@ -1,6 +1,5 @@
 package org.nyet.ecuxplot;
 
-import java.util.Hashtable;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -21,8 +20,8 @@ public class AxisMenu extends JMenu {
     private HashMap<String, AbstractButton> members =
 	new HashMap<String, AbstractButton>();
 
-    private Hashtable<String, JMenu> subMenus =
-	new Hashtable<String, JMenu>();
+    private HashMap<String, JMenu> subMenus =
+	new HashMap<String, JMenu>();
 
     private void addToSubmenu(String id, JComponent item, boolean autoadd) {
 	JMenu sub = this.subMenus.get(id);
@@ -63,7 +62,11 @@ public class AxisMenu extends JMenu {
 	    this.add("Calc HP", listener, bg);
 	    this.add("Calc TQ", listener, bg);
 	    this.add("Calc Drag", listener, bg);
-	    this.add(item);
+
+	    // if X Axis menu, put RPM FIRST!
+	    if(bg!=null) this.add(item, 0);
+	    else this.add(item);
+
 	    addToSubmenu("Calc", new JSeparator(), false);
 	} else if(id.matches("MassAirFlow")) {
 	    this.add("Calc Load", listener, bg);
@@ -141,6 +144,7 @@ public class AxisMenu extends JMenu {
 	if(radioButton) {
 	    bg = new ButtonGroup();
 	    this.add("Sample", listener, bg);
+	    this.add(new JSeparator());
 	}
 
 	for(int i=0;i<headers.length;i++) {

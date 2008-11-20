@@ -3,7 +3,7 @@ package org.nyet.ecuxplot;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.Iterator;
 import java.util.prefs.Preferences;
 
@@ -141,8 +141,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    addChartY(this.ykeys(0), 0);
 	    addChartY(this.ykeys(1), 1);
 
+	    // merge headers using a TreeSet - only add new headers
+	    // note that TreeSet keeps us sorted!
 	    Iterator itc = this.fileDatasets.values().iterator();
-	    HashSet<String> hset = new HashSet<String>();
+	    TreeSet<String> hset = new TreeSet<String>();
 	    while(itc.hasNext()) {
 		String h[] = ((ECUxDataset)itc.next()).getHeaders();
 		for(int i = 0; i<h.length; i++)

@@ -131,8 +131,7 @@ public class ECUxChartFactory {
     // remove ALL series from the dataset
     public static void removeDataset(DefaultXYDataset d) {
 	while(d.getSeriesCount()>0) {
-	    Comparable k = d.getSeriesKey(0);
-	    d.removeSeries(k);
+	    d.removeSeries(d.getSeriesKey(0));
 	}
     }
 
@@ -145,12 +144,10 @@ public class ECUxChartFactory {
 	// ykey is now a string, so we have to walk series ourselves
 	// and call "equals" for String, which only compares the data tag
 	for(int i=0;i<d.getSeriesCount();i++) {
-	    Comparable k = d.getSeriesKey(i);
-	    if(k.equals(ykey)) {
-		d.removeSeries(k);
-		// stay here, we just removed this index, the next one in
-		// the list will appear at i again.
-		i--;
+	    // When we delete things, the next key falls into our
+	    // position, so stay there and clean.
+	    while(i<d.getSeriesCount() && d.getSeriesKey(i).equals(ykey)) {
+		d.removeSeries(d.getSeriesKey(i));
 	    }
 	}
     }
