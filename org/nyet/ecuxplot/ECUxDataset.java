@@ -4,6 +4,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import au.com.bytecode.opencsv.CSVReader;
+import flanagan.interpolation.CubicSpline;
 
 import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
@@ -450,6 +451,28 @@ public class ECUxDataset extends Dataset {
 	    }
 	}
 	return true;
+    }
+
+    public double[] calcFats(int RPMStart, int RPMEnd) {
+        java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
+	double[] out = new double[ranges.size()];
+        for(int i=0;i<ranges.size();i++) {
+            Dataset.Range r=ranges.get(i);
+            try {
+                double [] rpm = this.getData("RPM", r);
+                double [] time = this.getData("TIME", r);
+
+		if(rpm[0]-100<=RPMStart && rpm[rpm.length-1]+100>=RPMEnd) {
+		    CubicSpline spline = new CubicSpline(rpm, time);
+		    double et = spline.interpolate(RPMEnd) -
+			spline.interpolate(RPMStart);
+		    if(et>0) out[i]=et;
+		}
+            } catch (Exception e){
+		System.out.println(e);
+            }
+        }
+	return out;
     }
 
     public String getFilename() { return this.filename; }

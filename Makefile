@@ -56,7 +56,7 @@ EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
-JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:applib.jar:AppleJavaExtensions.jar
+JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:applib.jar:flanagan.jar:AppleJavaExtensions.jar
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
 TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
@@ -98,7 +98,7 @@ $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
 INSTALL_FILES:= ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
 		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt \
-		gpl-3.0.txt
+		gpl-3.0.txt flanagan-license.txt
 
 GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 	sed -e 's/RELEASE/$(RELEASE)/g' | \

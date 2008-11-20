@@ -84,9 +84,11 @@ Section "install" InstallationInfo
   File "jfreechart-${JFREECHART_VER}.jar"
   File "opencsv-${OPENCSV_VER}.jar"
   File "applib.jar"
+  File "flanagan.jar"
   File "AppleJavaExtensions.jar"
   File "version.txt"
   File "gpl-3.0.txt"
+  File "flanagan-license.txt"
   File "README-Zeitronix.txt"
  
 ;create desktop shortcut

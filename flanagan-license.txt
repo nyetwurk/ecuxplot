@@ -1,0 +1,20 @@
+Permission to use, copy and modify this software and its documentation for
+NON-COMMERCIAL purposes is granted, without fee, provided that an
+acknowledgement to the author, Dr Michael Thomas Flanagan at
+www.ee.ucl.ac.uk/~mflanaga, appears in all copies and associated documentation
+or publications.
+
+Redistributions of the source code, or parts of the source codes, must retain
+the copyright notice, this list of conditions and the following disclaimer (all
+at the top of each source code) and requires the written permission of Michael
+Thomas Flanagan
+
+Redistribution in binary form of all or parts of a class must reproduce the
+copyright notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution and
+requires the written permission of Michael Thomas Flanagan.
+
+Dr Michael Thomas Flanagan makes no representations about the suitability or
+fitness of the software for any or for a particular purpose. Dr Michael Thomas
+Flanagan shall not be liable for any damages suffered as a result of using,
+modifying or distributing this software or its derivatives.

@@ -32,6 +32,7 @@
 		<array>
 			<string>$JAVAROOT/ECUxPlot-VERSIONrRELEASE.jar</string>
 			<string>$JAVAROOT/applib.jar</string>
+			<string>$JAVAROOT/flanagan.jar</string>
 			<string>$JAVAROOT/jcommon-JCOMMON_VER.jar</string>
 			<string>$JAVAROOT/jfreechart-JFREECHART_VER.jar</string>
 			<string>$JAVAROOT/opencsv-OPENCSV_VER.jar</string>
