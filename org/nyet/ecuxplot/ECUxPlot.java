@@ -296,7 +296,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    s = ((Dataset.Key)key).getString();
 		else
 		    s = key.toString();
-		
+
 		String l = findUnits(key);
 
 		if(sprev==null || !s.equals(sprev)) {
@@ -369,7 +369,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	final org.jfree.chart.plot.XYPlot plot =
 	    this.chartPanel.getChart().getXYPlot();
 	ECUxChartFactory.removeDataset((DefaultXYDataset)plot.getDataset(axis));
-    	this.yAxis[axis].uncheckAll();
+	this.yAxis[axis].uncheckAll();
     }
 
     private void editChartY(Comparable ykey, int axis, boolean add) {
