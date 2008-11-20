@@ -20,7 +20,7 @@ public class ECUxDataset extends Dataset {
     private final double hp_per_watt = 0.00134102209;
     private final double mbar_per_psi = 68.9475729;
     private double ticks_per_sec;
-    private CubicSpline [] splines;
+    private CubicSpline [] splines;	// rpm vs time splines
 
     public ECUxDataset(String filename, Env env, Filter filter)
 	throws Exception {
@@ -475,23 +475,30 @@ public class ECUxDataset extends Dataset {
         }
     }
 
+    public double calcFATS(int run) { return calcFATS(run,4200,6500); }
+    public double calcFATS(int run, int RPMStart, int RPMEnd) {
+	    java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
+	    if(run<0 || run>=ranges.size()) return 0;
+	    if(splines[run]==null) return 0;
+            try {
+		Dataset.Range r=ranges.get(run);
+                double [] rpm = this.getData("RPM", r);
+                double [] time = this.getData("TIME", r);
+		if(rpm[0]-100<=RPMStart && rpm[rpm.length-1]+100>=RPMEnd) {
+		    double et = splines[run].interpolate(RPMEnd) -
+			splines[run].interpolate(RPMStart);
+		    if(et>0) return et;
+		}
+            } catch (Exception e) {}
+	    return 0;
+    }
+
     public double[] calcFATS() { return calcFATS(4200,6500); }
     public double[] calcFATS(int RPMStart, int RPMEnd) {
         java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
 	double [] out = new double[ranges.size()];
-        for(int i=0;i<ranges.size();i++) {
-	    if(splines[i]==null) continue;
-            try {
-		Dataset.Range r=ranges.get(i);
-                double [] rpm = this.getData("RPM", r);
-                double [] time = this.getData("TIME", r);
-		if(rpm[0]-100<=RPMStart && rpm[rpm.length-1]+100>=RPMEnd) {
-		    double et = splines[i].interpolate(RPMEnd) -
-			splines[i].interpolate(RPMStart);
-		    if(et>0) out[i]=et;
-		}
-            } catch (Exception e) {}
-	}
+        for(int i=0;i<ranges.size();i++)
+	    out[i]=calcFATS(i, RPMStart, RPMEnd);
 	return out;
     }
 
