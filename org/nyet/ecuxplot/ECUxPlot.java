@@ -148,7 +148,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    while(itc.hasNext()) {
 		String h[] = ((ECUxDataset)itc.next()).getHeaders();
 		for(int i = 0; i<h.length; i++)
-		    hset.add(h[i]);
+		    if(h[i]!=null) hset.add(h[i]);
 	    }
 	    setupAxisMenus(hset.toArray(new String[0]));
 	} catch (Exception e) {

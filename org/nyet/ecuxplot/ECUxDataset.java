@@ -3,6 +3,8 @@ package org.nyet.ecuxplot;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import javax.swing.JOptionPane;
+
 import au.com.bytecode.opencsv.CSVReader;
 import flanagan.interpolation.CubicSpline;
 
@@ -18,6 +20,7 @@ public class ECUxDataset extends Dataset {
     private final double hp_per_watt = 0.00134102209;
     private final double mbar_per_psi = 68.9475729;
     private double ticks_per_sec;
+    private CubicSpline [] splines;
 
     public ECUxDataset(String filename, Env env, Filter filter)
 	throws Exception {
@@ -35,6 +38,7 @@ public class ECUxDataset extends Dataset {
 	this.gear = get("Gear");
 	// look for zeitronix boost for filtering
 	this.boost = get("Zeitronix Boost");
+	makeSplines();
     }
 
     private static final int LOG_UNKNOWN = -2;
@@ -453,25 +457,41 @@ public class ECUxDataset extends Dataset {
 	return true;
     }
 
-    public double[] calcFats(int RPMStart, int RPMEnd) {
+    private void makeSplines() {
         java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
-	double[] out = new double[ranges.size()];
+	this.splines = new CubicSpline[ranges.size()];
         for(int i=0;i<ranges.size();i++) {
+	    splines[i] = null;
             Dataset.Range r=ranges.get(i);
             try {
                 double [] rpm = this.getData("RPM", r);
                 double [] time = this.getData("TIME", r);
+		if(time.length>0 && time.length==rpm.length)
+		    splines[i] = new CubicSpline(rpm, time);
+		else
+		    JOptionPane.showMessageDialog(null,
+			"length problem " + time.length + ":" + rpm.length);
+            } catch (Exception e) {}
+        }
+    }
 
+    public double[] calcFATS() { return calcFATS(4200,6500); }
+    public double[] calcFATS(int RPMStart, int RPMEnd) {
+        java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
+	double [] out = new double[ranges.size()];
+        for(int i=0;i<ranges.size();i++) {
+	    if(splines[i]==null) continue;
+            try {
+		Dataset.Range r=ranges.get(i);
+                double [] rpm = this.getData("RPM", r);
+                double [] time = this.getData("TIME", r);
 		if(rpm[0]-100<=RPMStart && rpm[rpm.length-1]+100>=RPMEnd) {
-		    CubicSpline spline = new CubicSpline(rpm, time);
-		    double et = spline.interpolate(RPMEnd) -
-			spline.interpolate(RPMStart);
+		    double et = splines[i].interpolate(RPMEnd) -
+			splines[i].interpolate(RPMStart);
 		    if(et>0) out[i]=et;
 		}
-            } catch (Exception e){
-		System.out.println(e);
-            }
-        }
+            } catch (Exception e) {}
+	}
 	return out;
     }
 
