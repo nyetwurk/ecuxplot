@@ -11,6 +11,7 @@ public class Dataset {
     private String[] headers;
     private String[] units;
     private ArrayList<Column> columns;
+    private ArrayList<Range> range_cache = new ArrayList<Range>();
     private int rows;
     protected String lastFilterReason;
 
@@ -159,6 +160,7 @@ public class Dataset {
 	    }
 	    this.rows++;
 	}
+	buildRanges();
     }
 
     public ArrayList<Column> getColumns() {return this.columns;}
@@ -197,8 +199,12 @@ public class Dataset {
     protected boolean rangeValid(Range r) { return true; }
 
     public ArrayList<Range> getRanges() {
+	return this.range_cache;
+    }
+
+    protected void buildRanges() {
+        this.range_cache = new ArrayList<Range>();
 	Range r = null;
-	ArrayList<Range> out = new ArrayList<Range>();
 	for(int i=0;i<this.rows; i++) {
 	    boolean end = false;
 	    if(dataValid(i)) {
@@ -219,12 +225,11 @@ public class Dataset {
 				": adding range " + r.toString());
 		    }
 		    */
-		    out.add(r);
+		    this.range_cache.add(r);
 		}
 		r=null;
 	    }
 	}
-	return out;
     }
 
     public double[] getData(Key id, Range r) {

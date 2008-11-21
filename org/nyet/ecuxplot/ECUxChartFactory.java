@@ -12,6 +12,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 
 import org.nyet.logfile.Dataset;
@@ -27,7 +28,7 @@ public class ECUxChartFactory {
 	plot.setRenderer(1, new XYLineAndShapeRenderer(lines, shapes));
     }
 
-    public static JFreeChart create2AxisXYLineChart () {
+    private static JFreeChart create2AxisXYLineChart () {
 	final JFreeChart chart = ChartFactory.createXYLineChart(
 	    "", "", "",
 	    new DefaultXYDataset(), PlotOrientation.VERTICAL,
@@ -41,7 +42,7 @@ public class ECUxChartFactory {
 	return chart;
     }
 
-    public static JFreeChart create2AxisScatterPlot () {
+    private static JFreeChart create2AxisScatterPlot () {
 	final JFreeChart chart = ChartFactory.createScatterPlot(
 	    "", "", "",
 	    new DefaultXYDataset(), PlotOrientation.VERTICAL,
@@ -56,11 +57,14 @@ public class ECUxChartFactory {
     }
 
     public static JFreeChart create2AxisChart (boolean scatter) {
+	JFreeChart chart;
 	if(scatter) {
-	    return ECUxChartFactory.create2AxisScatterPlot();
+	    chart = ECUxChartFactory.create2AxisScatterPlot();
 	} else {
-	    return ECUxChartFactory.create2AxisXYLineChart();
+	    chart = ECUxChartFactory.create2AxisXYLineChart();
 	}
+
+	return chart;
     }
 
     public static void setChartStyle(JFreeChart chart, boolean lines,
@@ -73,14 +77,6 @@ public class ECUxChartFactory {
 
 	    renderer.setBaseLinesVisible(lines);
 	    renderer.setBaseShapesVisible(shapes);
-	    /* not needed, until we play with custom shapes/lines */
-	    /*
-	    XYDataset dataset = plot.getDataset(i);
-	    for(int j=0; j<dataset.getSeriesCount(); j++) {
-		renderer.setSeriesLinesVisible(j, lines);
-		renderer.setSeriesShapesVisible(j, shapes);
-	    }
-	    */
 	}
     }
 
@@ -168,5 +164,13 @@ public class ECUxChartFactory {
 	    }
 	}
 	return ret;
+    }
+
+    public static JFreeChart createFATSChart (DefaultCategoryDataset dataset) {
+	return ChartFactory.createBarChart3D (
+	    "FATS", "", "",
+	    dataset,
+	    PlotOrientation.VERTICAL,
+	    true, true, false);
     }
 }

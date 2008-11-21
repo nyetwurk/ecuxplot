@@ -38,6 +38,7 @@ VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
 EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java \
 	    ECUxChartPanel.java AboutPanel.java \
+	    FATSChartFrame.java FATSDataset.java \
 	    HelpMenu.java AxisMenu.java FileMenu.java OptionsMenu.java \
 	    PreferencesEditor.java Env.java Units.java \
 	    Filter.java FilterEditor.java \

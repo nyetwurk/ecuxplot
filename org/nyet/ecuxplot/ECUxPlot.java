@@ -38,6 +38,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    new HashMap<String, ECUxDataset>();
 
     private ECUxChartPanel chartPanel;
+    private FATSChartFrame fatsFrame;
 
     // Menus
     private JMenuBar menuBar;
@@ -125,8 +126,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    this.env, this.filter);
 
 	    // replacing, nuke all the currently loaded datasets
-	    if(replace)
+	    if(replace) {
 		this.fileDatasets = new HashMap<String, ECUxDataset>();
+		if(this.fatsFrame!=null);
+		    this.fatsFrame.clearDataset();
+	    }
 
 	    this.fileDatasets.put(file.getName(), data);
 	    this.setTitle("ECUxPlot " + fileDatasets.keySet().toString());
@@ -155,6 +159,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
 	    return;
+	}
+    }
+
+    public void loadFile(String [] files) {
+	for(int i=0; files!=null && i<files.length; i++) {
+	    if(files[i].length()>0) loadFile(new File(files[i]));
 	}
     }
 
@@ -319,14 +329,54 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		title += seriesTitle;
 	    }
 	    plot.getRangeAxis(axis).setLabel(label);
-	    /* hide axis if this axis has no series */
+	    // hide axis if this axis has no series
 	    plot.getRangeAxis(axis).setVisible(dataset.getSeriesCount()>0);
 	}
 	this.chartPanel.getChart().setTitle(title);
     }
 
+    private String pickXAxisLabel() {
+	// find x axis label. just pick first one that has units we can use
+	String label = "";
+	Iterator itc = this.fileDatasets.values().iterator();
+	while(itc.hasNext()) {
+	    ECUxDataset data = (ECUxDataset) itc.next();
+	    if(data.get(this.xkey())!=null) {
+		String units = data.units(this.xkey());
+		if(units != null) {
+		    label = this.xkey().toString() + " ("+units+")";
+		    break;
+		}
+	    }
+	}
+	return label;
+    }
+
     public void rebuild() {
 	if(this.chartPanel==null) return;
+
+	Iterator itc = this.fileDatasets.values().iterator();
+	while(itc.hasNext()) {
+	    ECUxDataset data = (ECUxDataset) itc.next();
+	    data.buildRanges();
+	}
+	if(this.fatsFrame==null) {
+	    FATSChartFrame frame =
+		FATSChartFrame.createFATSChartFrame(this.fileDatasets,
+			this);
+	    frame.pack();
+
+	    java.net.URL imageURL =
+		getClass().getResource("icons/ECUxPlot2-64.png");
+	    frame.setIconImage(new
+		    javax.swing.ImageIcon(imageURL).getImage());
+
+	    frame.setVisible(true);
+
+	    this.fatsFrame = frame;
+	} else {
+	    this.fatsFrame.setDatasets(this.fileDatasets);
+	}
 
 	final org.jfree.chart.plot.XYPlot plot =
 	    this.chartPanel.getChart().getXYPlot();
@@ -347,21 +397,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    plot.setDataset(i, newdataset);
 	}
 
-	// find x axis label. just pick first one that has units we can use
-	String label = "";
-	Iterator itc = this.fileDatasets.values().iterator();
-	while(itc.hasNext()) {
-	    ECUxDataset data = (ECUxDataset) itc.next();
-	    if(data.get(this.xkey())!=null) {
-		String units = data.units(this.xkey());
-		if(units != null) {
-		    label = this.xkey().toString() + " ("+units+")";
-		    break;
-		}
-	    }
-	}
+	plot.getDomainAxis().setLabel(pickXAxisLabel());
 
-	plot.getDomainAxis().setLabel(label);
 	WaitCursor.stopWaitCursor(this);
     }
 
@@ -407,7 +444,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	// System.out.println(source.getText() + ":" + parentId);
 	if(parentId.equals("X Axis")) {
 	    this.prefs.put("xkey",source.getText());
-	    /* rebuild depends on the value of prefs */
+	    // rebuild depends on the value of prefs
 	    rebuild();
 	} else if(parentId.equals("Y Axis")) {
 	    if(source.getText().equals("Remove all")) {
@@ -415,7 +452,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    } else {
 		editChartY(source.getText(),0,source.isSelected());
 	    }
-	    /* putkeys depends on the stuff that edit chart does */
+	    // putkeys depends on the stuff that edit chart does
 	    putYkeys(0);
 	} else if(parentId.equals("Y Axis2")) {
 	    if(source.getText().equals("Remove all")) {
@@ -423,14 +460,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    } else {
 		editChartY(source.getText(),1,source.isSelected());
 	    }
-	    /* putkeys depends on the stuff that edit chart does */
+	    // putkeys depends on the stuff that edit chart does
 	    putYkeys(1);
 	}
 	updateLabelTitle();
     }
 
     // Constructor with args
-    public ECUxPlot(final String title, String[] args) {
+    public ECUxPlot(final String title) {
         super(title);
 	WindowUtilities.setNativeLookAndFeel();
 	this.menuBar = new JMenuBar();
@@ -443,10 +480,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	java.net.URL imageURL =
 	    getClass().getResource("icons/ECUxPlot2-64.png");
 
-	if(imageURL==null) {
-	    System.out.println("cant open icon");
-	    System.exit(0);
-	}
 	this.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
 
 	FileMenu filemenu = new FileMenu("File", this);
@@ -462,10 +495,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	setJMenuBar(this.menuBar);
 
 	setPreferredSize(this.windowSize());
-
-	for(int i=0; i<args.length; i++) {
-	    if(args[i].length()>0) loadFile(new File(args[i]));
-	}
     }
 
     public void windowClosing(java.awt.event.WindowEvent we) {
@@ -474,18 +503,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     private void exitApp() {
 	this.putWindowSize();
+	if(this.fatsFrame!=null) this.fatsFrame.dispose();
 	System.exit(0);
-    }
-
-    // Constructor, args
-    public ECUxPlot(final String title) {
-	this(title, null);
     }
 
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
 	    public void run() {
-		final ECUxPlot plot = new ECUxPlot("ECUxPlot", args);
+		final ECUxPlot plot = new ECUxPlot("ECUxPlot");
 		Application app = Application.getApplication();
 
 		if(app!=null) {
@@ -504,7 +529,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		plot.pack();
 		RefineryUtilities.centerFrameOnScreen(plot);
 		plot.setVisible(true);
+		plot.loadFile(args);
 	    }
 	});
     }
+
+    public Preferences getPreferences() { return this.prefs; }
 }

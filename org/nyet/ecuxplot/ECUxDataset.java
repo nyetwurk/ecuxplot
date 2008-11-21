@@ -38,7 +38,7 @@ public class ECUxDataset extends Dataset {
 	this.gear = get("Gear");
 	// look for zeitronix boost for filtering
 	this.boost = get("Zeitronix Boost");
-	makeSplines();
+	buildRanges(); // regenerate ranges, splines
     }
 
     private static final int LOG_UNKNOWN = -2;
@@ -397,6 +397,7 @@ public class ECUxDataset extends Dataset {
     }
 
     protected boolean dataValid(int i) {
+	if(this.filter==null) return true;
 	if(!this.filter.enabled()) return true;
 	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear()) {
 	    this.lastFilterReason = "gear " + Math.round(gear.data.get(i)) +
@@ -441,6 +442,7 @@ public class ECUxDataset extends Dataset {
     }
 
     protected boolean rangeValid(Range r) {
+	if(this.filter==null) return true;
 	if(!this.filter.enabled()) return true;
 	if(r.size()<filter.minPoints()) {
 	    this.lastFilterReason = "points " + r.size() + "<" +
@@ -457,7 +459,8 @@ public class ECUxDataset extends Dataset {
 	return true;
     }
 
-    private void makeSplines() {
+    public void buildRanges() {
+	super.buildRanges();
         java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
 	this.splines = new CubicSpline[ranges.size()];
         for(int i=0;i<ranges.size();i++) {
@@ -475,36 +478,48 @@ public class ECUxDataset extends Dataset {
         }
     }
 
-    public double calcFATS(int run) { return calcFATS(run,4200,6500); }
-    public double calcFATS(int run, int RPMStart, int RPMEnd) {
+    public double calcFATS(int run) throws Exception {
+	return calcFATS(run,4200,6500);
+    }
+    public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
 	    java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
-	    if(run<0 || run>=ranges.size()) return 0;
-	    if(splines[run]==null) return 0;
-            try {
-		Dataset.Range r=ranges.get(run);
-                double [] rpm = this.getData("RPM", r);
-                double [] time = this.getData("TIME", r);
-		if(rpm[0]-100<=RPMStart && rpm[rpm.length-1]+100>=RPMEnd) {
-		    double et = splines[run].interpolate(RPMEnd) -
-			splines[run].interpolate(RPMStart);
-		    if(et>0) return et;
-		}
-            } catch (Exception e) {}
-	    return 0;
+	    if(run<0 || run>=ranges.size())
+		throw new Exception("no run found");
+
+	    if(splines[run]==null)
+		throw new Exception("run interpolation failed");
+
+	    Dataset.Range r=ranges.get(run);
+	    double [] rpm = this.getData("RPM", r);
+	    double [] time = this.getData("TIME", r);
+	    if(rpm[0]-100>RPMStart || rpm[rpm.length-1]+100<RPMEnd)
+		throw new Exception("run " + rpm[0] + "-" + rpm[rpm.length-1] +
+			" not long enough");
+
+	    double et = splines[run].interpolate(RPMEnd) -
+		splines[run].interpolate(RPMStart);
+	    if(et<=0)
+		throw new Exception("don't cross the streams");
+
+	    return et;
     }
 
     public double[] calcFATS() { return calcFATS(4200,6500); }
     public double[] calcFATS(int RPMStart, int RPMEnd) {
         java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
 	double [] out = new double[ranges.size()];
-        for(int i=0;i<ranges.size();i++)
-	    out[i]=calcFATS(i, RPMStart, RPMEnd);
+        for(int i=0;i<ranges.size();i++) {
+	    try {
+		out[i]=calcFATS(i, RPMStart, RPMEnd);
+	    } catch (Exception e) {
+	    }
+	}
 	return out;
     }
 
     public String getFilename() { return this.filename; }
     public Filter getFilter() { return this.filter; }
-    public void setFilter(Filter f) { this.filter=f; }
+    // public void setFilter(Filter f) { this.filter=f; }
     public Env getEnv() { return this.env; }
-    public void setEnv(Env e) { this.env=e; }
+    //public void setEnv(Env e) { this.env=e; }
 }
