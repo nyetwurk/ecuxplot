@@ -2,6 +2,8 @@ package org.nyet.ecuxplot;
 
 import java.util.HashMap;
 import java.awt.Point;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -39,9 +41,21 @@ public class FATSChartFrame extends ChartFrame {
 	this.setContentPane(new ECUxChartPanel(chart));
 	this.setPreferredSize(windowSize());
 
+	restoreLocation();
+    }
+
+    private void restoreLocation() {
+	final Toolkit tk = Toolkit.getDefaultToolkit();
+	final Dimension d = tk.getScreenSize();
+	final Dimension s = windowSize();
+	final Point pl = plotFrame.getLocation();
+
 	Point l = windowLocation();
-	Point pl = plotFrame.getLocation();
 	l.translate(pl.x, pl.y);
+	if(l.x<0) l.x=0;
+	if(l.y<0) l.y=0;
+	if(l.x+s.width > d.width-s.width) l.x=d.width-s.width;
+	if(l.y+s.height > d.height-s.width) l.y=d.height-s.height;
 	super.setLocation(l);
     }
 
@@ -78,14 +92,14 @@ public class FATSChartFrame extends ChartFrame {
     private java.awt.Point windowLocation() {
 	return new java.awt.Point(
 	    this.plotFrame.getPreferences().getInt("FATSWindowX",
-		plotFrame.getWidth()),
+		this.plotFrame.getWidth()),
 	    this.plotFrame.getPreferences().getInt("FATSWindowY", 0));
     }
 
     private void putWindowLocation() {
 	Point l = this.getLocation();
-	Point plot = plotFrame.getLocation();
-	l.translate(-plot.x, -plot.y);
+	Point pl = plotFrame.getLocation();
+	l.translate(-pl.x, -pl.y);
 	this.plotFrame.getPreferences().putInt("FATSWindowX", l.x);
 	this.plotFrame.getPreferences().putInt("FATSWindowY", l.y);
     }
