@@ -155,6 +155,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    if(h[i]!=null) hset.add(h[i]);
 	    }
 	    setupAxisMenus(hset.toArray(new String[0]));
+	    // if somebody hid the fats frame, lets unhide it
+	    // for them.
+	    if(this.fatsFrame!=null && !this.fatsFrame.isShowing())
+		    this.fatsFrame.setVisible(this.filter.enabled());
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
