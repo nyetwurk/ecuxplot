@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Version extends ArrayList<Object> {
 
-    public static final String ECUxPlot="VERSIONrRELEASE";
+    public static final String ECUxPlot="ECUXPLOT_VER";
     public static final String JFreeChart="JFREECHART_VER";
     public static final String JCommon="JCOMMON_VER";
     public static final String OpenCSV="OPENCSV_VER";

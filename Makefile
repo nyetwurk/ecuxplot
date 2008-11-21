@@ -1,5 +1,7 @@
 VERSION := 0.9
 RELEASE := 1.6
+RC := -rc1
+ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 
 JCOMMON_VER := 1.0.14
 JFREECHART_VER := 1.0.11
@@ -60,8 +62,8 @@ REFERENCE=data/4Z7907551R.kp
 JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:applib.jar:flanagan.jar:AppleJavaExtensions.jar
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
-TARGET=ECUxPlot-$(VERSION)r$(RELEASE)
-INSTALLER=ECUxPlot-$(VERSION)r$(RELEASE)-setup.exe
+TARGET=ECUxPlot-$(ECUXPLOT_VER)
+INSTALLER=ECUxPlot-$(ECUXPLOT_VER)-setup.exe
 
 ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
 all: $(TARGETS) .classpath version.txt jar exe
@@ -91,18 +93,19 @@ clean: binclean
 
 version.txt: Makefile
 	@rm -f version.txt
-	echo $(VERSION)r$(RELEASE) > $@
+	echo $(ECUXPLOT_VER) > $@
 
 mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
-INSTALL_FILES:= ECUxPlot-$(VERSION)r$(RELEASE).jar ECUxPlot.sh \
+INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.sh \
 		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt \
 		gpl-3.0.txt flanagan-license.txt
 
 GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 	sed -e 's/RELEASE/$(RELEASE)/g' | \
+	sed -e 's/ECUXPLOT_VER/$(ECUXPLOT_VER)/g' | \
 	sed -e 's/JFREECHART_VER/$(JFREECHART_VER)/g' | \
 	sed -e 's/JCOMMON_VER/$(JCOMMON_VER)/g' | \
 	sed -e 's/OPENCSV_VER/$(OPENCSV_VER)/g'
@@ -110,7 +113,7 @@ GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 include scripts/Windows.mk
 include scripts/MacOS.mk
 
-ECUxPlot-$(VERSION)r$(RELEASE).tar.gz: $(INSTALL_FILES)
+ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES)
 	@rm -f $@
 	@rm -rf build/ECUxPlot
 	@mkdir -p build/ECUxPlot
@@ -121,8 +124,8 @@ install: $(INSTALL_FILES)
 	mkdir -p $(INSTALL_DIR)
 	cp -avp $(INSTALL_FILES) $(INSTALL_DIR)/
 
-tag: version.txt
-	scripts/svn-tag `cat version.txt`
+tag:
+	scripts/svn-tag $(ECUXPLOT_VER)
 
 %.java: %.java.template Makefile
 	cat $< | $(GEN) > $@
