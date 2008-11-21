@@ -59,6 +59,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private Env env;
     private Filter filter;
 
+    private boolean exitOnClose = true;
+
     public static boolean scatter(Preferences prefs) {
 	return prefs.getBoolean("scatter", false);
     }
@@ -211,13 +213,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("Close Chart")) {
 	    this.dispose();
 	} else if(source.getText().equals("New Chart")) {
-	    final ECUxPlot plot = new ECUxPlot("ECUxPlot");
+	    // do not exit if this child plot is closed
+	    final ECUxPlot plot = new ECUxPlot("ECUxPlot", false);
 	    plot.pack();
 	    Point where = this.getLocation();
 	    where.translate(20,20);
 	    plot.setLocation(where);
 	    plot.setVisible(true);
-	} else if(source.getText().equals("Open File") || 
+	} else if(source.getText().equals("Open File") ||
 		  source.getText().equals("Add File") ) {
 	    if(fc==null) {
 		// current working dir
@@ -471,8 +474,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     // Constructor with args
-    public ECUxPlot(final String title) {
+    public ECUxPlot(final String title, boolean exitOnClose) {
         super(title);
+	this.exitOnClose=exitOnClose;
 	WindowUtilities.setNativeLookAndFeel();
 	this.menuBar = new JMenuBar();
 
@@ -502,7 +506,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     public void windowClosing(java.awt.event.WindowEvent we) {
-	exitApp();
+	if(exitOnClose) exitApp();
     }
 
     private void exitApp() {
@@ -514,7 +518,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
 	    public void run() {
-		final ECUxPlot plot = new ECUxPlot("ECUxPlot");
+		// exit on close
+		final ECUxPlot plot = new ECUxPlot("ECUxPlot", true);
 		Application app = Application.getApplication();
 
 		if(app!=null) {
