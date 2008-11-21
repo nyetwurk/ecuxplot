@@ -478,9 +478,6 @@ public class ECUxDataset extends Dataset {
         }
     }
 
-    public double calcFATS(int run) throws Exception {
-	return calcFATS(run,4200,6500);
-    }
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
 	    java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
 	    if(run<0 || run>=ranges.size())
@@ -504,7 +501,6 @@ public class ECUxDataset extends Dataset {
 	    return et;
     }
 
-    public double[] calcFATS() { return calcFATS(4200,6500); }
     public double[] calcFATS(int RPMStart, int RPMEnd) {
         java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
 	double [] out = new double[ranges.size()];

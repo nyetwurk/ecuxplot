@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.BorderLayout;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -24,11 +28,12 @@ public class FATSChartFrame extends ChartFrame {
 
     public FATSChartFrame (JFreeChart chart, FATSDataset dataset,
 	    ECUxPlot plotFrame) {
-	super("FATS", chart);
+	super("FATS Time", chart);
 	this.dataset=dataset;
 	this.plotFrame=plotFrame;
 
 	CategoryPlot plot = chart.getCategoryPlot();
+	plot.getRangeAxis().setLabel("seconds");
 	BarRenderer renderer = (BarRenderer)plot.getRenderer();
 
 	renderer.setBaseItemLabelGenerator(
@@ -38,9 +43,16 @@ public class FATSChartFrame extends ChartFrame {
 	);
 	renderer.setBaseItemLabelsVisible(true);
 
+	/*
+	JPanel panel = new JPanel();
+	panel.setLayout(new BorderLayout());
+	panel.add(new ECUxChartPanel(chart), BorderLayout.CENTER);
+	panel.add(new JLabel("hello world"), BorderLayout.SOUTH);
+	this.setContentPane(panel);
+	*/
+
 	this.setContentPane(new ECUxChartPanel(chart));
 	this.setPreferredSize(windowSize());
-
 	restoreLocation();
     }
 

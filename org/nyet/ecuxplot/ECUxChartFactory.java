@@ -166,9 +166,9 @@ public class ECUxChartFactory {
 	return ret;
     }
 
-    public static JFreeChart createFATSChart (DefaultCategoryDataset dataset) {
+    public static JFreeChart createFATSChart (FATSDataset dataset) {
 	return ChartFactory.createBarChart3D (
-	    "FATS", "", "",
+	    dataset.getTitle(), "", "",
 	    dataset,
 	    PlotOrientation.VERTICAL,
 	    true, true, false);
