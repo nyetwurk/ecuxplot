@@ -128,7 +128,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    // replacing, nuke all the currently loaded datasets
 	    if(replace) {
 		this.fileDatasets = new HashMap<String, ECUxDataset>();
-		if(this.fatsFrame!=null);
+		if(this.fatsFrame!=null)
 		    this.fatsFrame.clearDataset();
 	    }
 
