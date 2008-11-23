@@ -11,15 +11,15 @@ public class BrowserLaunch {
 
     public static void openURL(String url) {
 	try {
-	    Class<?> Desktop = Class.forName("java.awt.Desktop");
-	    Method isDesktopSupported =
+	    final Class<?> Desktop = Class.forName("java.awt.Desktop");
+	    final Method isDesktopSupported =
 		Desktop.getDeclaredMethod("isDesktopSupported");
 	    if ((Boolean) isDesktopSupported.invoke(null)) {
-		Method getDesktop =
+		final Method getDesktop =
 		    Desktop.getDeclaredMethod("getDesktop");
-		Method browse =
+		final Method browse =
 		    Desktop.getDeclaredMethod("browse", java.net.URI.class);
-		Object desktop = getDesktop.invoke(null);
+		final Object desktop = getDesktop.invoke(null);
 		browse.invoke(desktop, (new java.net.URI(url)));
 		return;
 	    }
@@ -29,18 +29,19 @@ public class BrowserLaunch {
     }
 
     private static void fallback(String url) {
-        String osName = System.getProperty("os.name");
+        final String osName = System.getProperty("os.name");
         try {
 	    if (osName.startsWith("Mac OS")) {
-		Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
-		Method openURL = fileMgr.getDeclaredMethod("openURL",
+		final Class<?> fileMgr =
+		    Class.forName("com.apple.eio.FileManager");
+		final Method openURL = fileMgr.getDeclaredMethod("openURL",
 		    new Class[] {String.class});
 		openURL.invoke(null, new Object[] {url});
 	    } else if (osName.startsWith("Windows"))
 		Runtime.getRuntime().exec(
 		    "rundll32 url.dll,FileProtocolHandler " + url);
 	    else { //assume Unix or Linux
-		String[] browsers = {
+		final String[] browsers = {
 		    "firefox", "iceweasel", "opera", "konqueror", "epiphany",
 		    "mozilla", "netscape" };
 		String browser = null;
