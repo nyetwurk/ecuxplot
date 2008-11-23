@@ -8,6 +8,9 @@ JFREECHART_VER := 1.0.11
 OPENCSV_VER := 1.8
 
 UNAME := $(shell uname -o)
+JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1 \2/')
+JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
+JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
 ifeq ($(UNAME),Cygwin)
 CLASSPATH = '$(shell cygpath -wsp .:$(JARS))'
@@ -105,6 +108,8 @@ INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.sh \
 
 GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 	sed -e 's/RELEASE/$(RELEASE)/g' | \
+	sed -e 's/JAVAC_MAJOR_VER/$(JAVAC_MAJOR_VER)/g' | \
+	sed -e 's/JAVAC_MINOR_VER/$(JAVAC_MINOR_VER)/g' | \
 	sed -e 's/ECUXPLOT_VER/$(ECUXPLOT_VER)/g' | \
 	sed -e 's/JFREECHART_VER/$(JFREECHART_VER)/g' | \
 	sed -e 's/JCOMMON_VER/$(JCOMMON_VER)/g' | \

@@ -16,7 +16,12 @@ public class BrowserLaunch {
 	    Method isDesktopSupported =
 		Desktop.getDeclaredMethod("isDesktopSupported");
 	    if ((Boolean) isDesktopSupported.invoke(null)) {
-		java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
+		Method getDesktop =
+		    Desktop.getDeclaredMethod("getDesktop");
+		Method browse =
+		    Desktop.getDeclaredMethod("browse", java.net.URI.class);
+		Object desktop = getDesktop.invoke(null);
+		browse.invoke(desktop, (new java.net.URI(url)));
 		return;
 	    }
 	} catch (Exception e) {
