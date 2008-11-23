@@ -10,7 +10,6 @@ public class BrowserLaunch {
 	"Error attempting to launch web browser";
 
     public static void openURL(String url) {
-	boolean error = true;
 	try {
 	    Class<?> Desktop = Class.forName("java.awt.Desktop");
 	    Method isDesktopSupported =
