@@ -14,16 +14,17 @@ build/ECUxPlot.app/Contents/Info.plist: MacOS.data/Info.plist.template Makefile
 	cat $< | $(GEN) > $@
 
 build/ECUxPlot.app/Contents/PkgInfo: MacOS.data/PkgInfo
-	@mkdir -p build/ECUxPlot.app/Contents
-	cp -f $< $@
+	install -D $< $@
 
-build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: Makefile
-	@mkdir -p build/ECUxPlot.app/Contents/MacOS
-	ln -sf "/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" $@
+#build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: scripts/MacOS.bk
+	#@mkdir -p build/ECUxPlot.app/Contents/MacOS
+	#ln -sf "/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" $@
+
+build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: MacOS.data/JavaApplicationStub
+	install -D $< $@
 
 build/ECUxPlot.app/Contents/Resources/%.icns: MacOS.data/%.icns
-	@mkdir -p build/ECUxPlot.app/Contents/Resources
-	cp -f $< $@
+	install -D $< $@
 
 $(TARGET).MacOS.tar.gz: build/ECUxPlot.app build/.ECUxPlot.app.stamp
 	(cd build; tar czvf ../$@ ECUxPlot.app)

@@ -122,7 +122,7 @@ ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES)
 	@rm -f $@
 	@rm -rf build/ECUxPlot
 	@mkdir -p build/ECUxPlot
-	@cp -avpu $(INSTALL_FILES) build/ECUxPlot
+	install $(INSTALL_FILES) build/ECUxPlot
 	(cd build; tar czvf ../$@ ECUxPlot)
 
 install: $(INSTALL_FILES)
