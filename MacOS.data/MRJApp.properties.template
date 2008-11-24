@@ -1,2 +1,2 @@
-com.apple.mrj.application.main=org.nyet.ecuxplot.ECUxPlot
-com.apple.mrj.application.classpath=$JAVAROOT/ECUxPlot-ECUXPLOT_VER.jar:$JAVAROOT/applib.jar:$JAVAROOT/flanagan.jar:$JAVAROOT/jcommon-JCOMMON_VER.jar:$JAVAROOT/jfreechart-JFREECHART_VER.jar:$JAVAROOT/opencsv-OPENCSV_VER.jar
+com.apple.mrj.application.main = org.nyet.ecuxplot.ECUxPlot
+com.apple.mrj.application.classpath = $JAVAROOT/ECUxPlot-ECUXPLOT_VER.jar:$JAVAROOT/applib.jar:$JAVAROOT/flanagan.jar:$JAVAROOT/jcommon-JCOMMON_VER.jar:$JAVAROOT/jfreechart-JFREECHART_VER.jar:$JAVAROOT/opencsv-OPENCSV_VER.jar
