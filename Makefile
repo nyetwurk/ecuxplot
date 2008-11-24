@@ -7,12 +7,12 @@ JCOMMON_VER := 1.0.14
 JFREECHART_VER := 1.0.11
 OPENCSV_VER := 1.8
 
-UNAME := $(shell uname -o)
+UNAME := $(shell uname -s)
 JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1 \2/')
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
-ifeq ($(UNAME),Cygwin)
+ifeq ($(findstring CYGWIN,$(UNAME)),CYGGWIN)
 CLASSPATH = '$(shell cygpath -wsp .:$(JARS))'
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := launch4jc
