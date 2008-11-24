@@ -9,54 +9,35 @@ import javax.swing.*;
 public class ConstantsEditor extends PreferencesEditor {
     private Constants c;
 
-    private JTextField mass;
-    private JTextField rpm_per_mph;
-    private JTextField Cd;
-    private JTextField FA;
-    private JTextField driveline_loss;
+    public JTextField mass;
+    public JTextField rpm_per_mph;
+    public JTextField Cd;
+    public JTextField FA;
+    public JTextField driveline_loss;
+
+    private static final String[][] pairs = {
+	{"Mass (kg)", "mass"},
+	{"RPM (kg)", "rpm_per_mph"},
+	{"Coefficient of drag", "Cd"},
+	{"<html>Frontal area (m<sup>2</sup>)</html>", "FA"},
+	{"Driveline loss (%)", "driveline_loss"},
+    };
 
     protected void Process(ActionEvent event) {
-	this.c.mass(Double.valueOf(this.mass.getText()));
-	this.c.rpm_per_mph(Double.valueOf(this.rpm_per_mph.getText()));
-	this.c.Cd(Double.valueOf(this.Cd.getText()));
-	this.c.FA(Double.valueOf(this.FA.getText()));
-	this.c.driveline_loss(Double.valueOf(
-	    this.driveline_loss.getText())/100);
+	processPairs(this.c, pairs, Double.class);
+	// override using string method
+	this.c.driveline_loss_string(this.driveline_loss.getText());
 	super.Process(event);
     }
 
     public ConstantsEditor (Preferences prefs, Constants c) {
-	super(prefs.node(Constants.PREFS_TAG));
-
+	super(prefs.node(Constants.PREFS_TAG), pairs);
 	this.c = c;
-	JPanel pp = this.getPrefsPanel();
-
-	pp.add(new JLabel(" Mass (kg):"));
-	this.mass = new JTextField(10);
-	pp.add(this.mass);
-
-	pp.add(new JLabel(" RPM per mph:"));
-	this.rpm_per_mph = new JTextField(10);
-	pp.add(this.rpm_per_mph);
-
-	pp.add(new JLabel(" Coefficient of drag:"));
-	this.Cd = new JTextField(10);
-	pp.add(this.Cd);
-
-	pp.add(new JLabel(" Frontal area (m^2):"));
-	this.FA = new JTextField(10);
-	pp.add(this.FA);
-
-	pp.add(new JLabel(" Driveline loss (%):"));
-	this.driveline_loss = new JTextField(10);
-	pp.add(this.driveline_loss);
     }
 
     public void updateDialog() {
-	this.mass.setText("" + this.c.mass());
-	this.rpm_per_mph.setText("" + this.c.rpm_per_mph());
-	this.Cd.setText("" + this.c.Cd());
-	this.FA.setText("" + this.c.FA());
-	this.driveline_loss.setText("" + this.c.driveline_loss()*100);
+	updateDialog(this.c, pairs);
+	// override using string method
+	this.driveline_loss.setText(this.c.driveline_loss_string());
     }
 }

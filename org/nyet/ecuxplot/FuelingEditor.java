@@ -9,46 +9,33 @@ import javax.swing.*;
 public class FuelingEditor extends PreferencesEditor {
     private Fueling fueling;
 
-    private JTextField MAF;
-    private JLabel MAFCorrection;
-    private JTextField injector;
-    private JTextField MAF_offset;
-    private JTextField cylinders;
+    public JTextField MAF;
+    public JLabel MAFCorrection;
+    public JTextField injector;
+    public JTextField MAF_offset;
+    public JTextField cylinders;
 
     protected void Process(ActionEvent event) {
 	this.fueling.MAF(Double.valueOf(this.MAF.getText()));
+	updateMAFCorrection();
 	this.fueling.injector(Double.valueOf(this.injector.getText()));
 	this.fueling.MAF_offset(Double.valueOf(this.MAF_offset.getText()));
 	this.fueling.cylinders(Integer.valueOf(this.cylinders.getText()));
-	updateMAFCorrection();
 	super.Process(event);
     }
 
+    private static final String [][] pairs = {
+	{ "MAF diameter (mm)", "MAF" },
+	{ "MAF correction (%)", "MAFCorrection" },
+	{ "Injector size (cc/min)", "injector" },
+	{ "MAF offset (g/sec)", "MAF_offset" },
+	{ "Cylinders",  "cylinders" }
+    };
+    private static final int [] fieldSizes = { 6, 0, 6, 6, 6 };
+
     public FuelingEditor (Preferences prefs, Fueling f) {
-        super(prefs.node(Fueling.PREFS_TAG));
-
-	this.fueling = f;
-	JPanel pp = this.getPrefsPanel();
-
-	pp.add(new JLabel(" MAF diameter (mm):"));
-	this.MAF = new JTextField(10);
-	pp.add(this.MAF);
-
-	pp.add(new JLabel(" MAF correction (%):"));
-	this.MAFCorrection = new JLabel(getMAFCorrection());
-	pp.add(this.MAFCorrection);
-
-	pp.add(new JLabel(" Injector size (cc/min):"));
-	this.injector = new JTextField(10);
-	pp.add(this.injector);
-
-	pp.add(new JLabel(" MAF offset (g/sec):"));
-	this.MAF_offset = new JTextField(10);
-	pp.add(this.MAF_offset);
-
-	pp.add(new JLabel(" Cylinders:"));
-	this.cylinders = new JTextField(10);
-	pp.add(this.cylinders);
+        super(prefs.node(Fueling.PREFS_TAG), pairs, fieldSizes);
+	this.fueling=f;
     }
 
     private String getMAFCorrection() {
@@ -61,9 +48,9 @@ public class FuelingEditor extends PreferencesEditor {
 
     public void updateDialog() {
 	this.MAF.setText("" + this.fueling.MAF());
+	updateMAFCorrection();
 	this.injector.setText("" + this.fueling.injector());
 	this.MAF_offset.setText("" + this.fueling.MAF_offset());
 	this.cylinders.setText("" + this.fueling.cylinders());
-	updateMAFCorrection();
     }
 }

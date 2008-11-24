@@ -9,10 +9,10 @@ import javax.swing.*;
 public class SAEEditor extends PreferencesEditor {
     private SAE s;
 
-    private JTextField temperature;
-    private JTextField altitude;
-    private JTextField humidity;
-    private JLabel correction;
+    public JTextField temperature;
+    public JTextField altitude;
+    public JTextField humidity;
+    public JLabel correction;
 
     protected void Process(ActionEvent event) {
 	this.s.temperature(Double.valueOf(this.temperature.getText()));
@@ -22,27 +22,17 @@ public class SAEEditor extends PreferencesEditor {
 	super.Process(event);
     }
 
+    private static String [][] pairs = {
+	{ "Temperature (C)", "temperature" },
+	{ "Altitude (m)", "altitude" },
+	{ "Humidity (%)", "humidity" },
+	{ "SAE correction", "correction" }
+    };
+    private static int [] fieldSizes = {4,5,3,0};
+
     public SAEEditor (Preferences prefs, SAE s) {
-	super(prefs.node(SAE.PREFS_TAG));
-
+	super(prefs.node(SAE.PREFS_TAG), pairs, fieldSizes);
 	this.s = s;
-	JPanel pp = this.getPrefsPanel();
-
-	pp.add(new JLabel(" Temperature (C):"));
-	this.temperature = new JTextField(10);
-	pp.add(this.temperature);
-
-	pp.add(new JLabel(" Altitude (m):"));
-	this.altitude = new JTextField(10);
-	pp.add(this.altitude);
-
-	pp.add(new JLabel(" Humidity (%):"));
-	this.humidity = new JTextField(10);
-	pp.add(this.humidity);
-
-	pp.add(new JLabel(" SAE correction:"));
-	this.correction = new JLabel(getCorrection());
-	pp.add(this.correction);
     }
 
     private String getCorrection() {

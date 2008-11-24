@@ -31,28 +31,31 @@ public class PIDEditor extends PreferencesEditor {
     }
 
     public PIDEditor (PID pid) {
+	this.pid = pid;
+
 	JPanel pp = this.getPrefsPanel();
 
-	this.pid = pid;
-	pp.add(new JLabel(" Time constant (s):"));
+	pp.add(new JLabel(" Time constant (s)", JLabel.TRAILING));
 	this.time_constant = new JTextField(10);
 	pp.add(this.time_constant);
 
-	pp.add(new JLabel(" P deadband (mBar):"));
+	pp.add(new JLabel(" P deadband (mBar)", JLabel.TRAILING));
 	this.P_deadband = new JTextField(10);
 	pp.add(this.P_deadband);
 
-	pp.add(new JLabel(" I limiter (%):"));
+	pp.add(new JLabel(" I limiter (%)", JLabel.TRAILING));
 	this.I_limit = new JTextField(10);
 	pp.add(this.I_limit);
 
-	pp.add(new JLabel(" P (%/100mBar):"));
+	pp.add(new JLabel(" P (%/100mBar)", JLabel.TRAILING));
 	this.P = new JTextField(10);
 	pp.add(this.P);
-	pp.add(new JLabel(" I (%/100mBar):"));
+
+	pp.add(new JLabel(" I (%/100mBar)", JLabel.TRAILING));
 	this.I = new JTextField(10);
 	pp.add(this.I);
-	pp.add(new JLabel(" D (%/100mBar):"));
+
+	pp.add(new JLabel(" D (%/100mBar)", JLabel.TRAILING));
 
 	JPanel pd = new JPanel();
 	pd.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
@@ -66,6 +69,9 @@ public class PIDEditor extends PreferencesEditor {
 	pd.add(this.D2);
 	this.D3 = new JTextField(4);
 	pd.add(this.D3);
+
+	org.nyet.util.SpringUtilities.makeCompactGrid(pp,
+		6, 2, 6, 6, 6, 6);
     }
 
     public void updateDialog() {
