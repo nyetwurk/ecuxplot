@@ -113,6 +113,7 @@ public class ECUxDataset extends Dataset {
 		    u[i]=u[i].trim();
 		    if(h2[i].equals(u[i])) h2[i]="";
 		    if(h[i].length()>0 && h2[i].length()>0)  h[i]+=" ";
+		    h[i]+=h2[i];
 		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
 		    if(h[i].matches("^Throttle [Aa]ngle.*")) h[i]="Throttle Angle";
 		    if(h[i].length()==0) h[i]=u[i];
