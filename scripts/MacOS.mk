@@ -1,5 +1,6 @@
 build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
 		build/ECUxPlot.app/Contents/Info.plist \
+		build/ECUxPlot.app/Contents/MRJApp.properties \
 		build/ECUxPlot.app/Contents/PkgInfo \
 		build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub \
 		build/ECUxPlot.app/Contents/Resources/ECUxPlot.icns \
@@ -10,7 +11,7 @@ build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
 	install ECUxPlot.sh build/ECUxPlot.app/Contents/Resources/Java
 	touch build/.ECUxPlot.app.stamp
 
-build/ECUxPlot.app/Contents/Info.plist: MacOS.data/Info.plist.template Makefile
+build/ECUxPlot.app/Contents/%: MacOS.data/%.template Makefile
 	@mkdir -p build/ECUxPlot.app/Contents
 	cat $< | $(GEN) > $@
 
