@@ -12,7 +12,7 @@ JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
-ifeq ($(findstring CYGWIN,$(UNAME)),CYGGWIN)
+ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
 CLASSPATH = '$(shell cygpath -wsp .:$(JARS))'
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := launch4jc
