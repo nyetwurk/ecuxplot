@@ -130,6 +130,7 @@ install: $(INSTALL_FILES)
 	mkdir -p $(INSTALL_DIR)
 	install -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
 	install ECUxPlot.sh $(INSTALL_DIR)
+	ln -sf ../ecuxplot/ECUxPlot.sh /usr/local/bin/ecuxplot
 
 tag:
 	scripts/svn-tag $(ECUXPLOT_VER)
