@@ -34,7 +34,7 @@ public class ECUxDataset extends Dataset {
 	this.pedal = get(new String []
 		{"AcceleratorPedalPosition", "Zeitronix TPS"});
 	this.throttle = get(new String []
-		{"ThrottlePlateAngle", "Throttle Valve Angle"});
+		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle"});
 	this.gear = get("Gear");
 	// look for zeitronix boost for filtering
 	this.boost = get("Zeitronix Boost");
@@ -47,6 +47,7 @@ public class ECUxDataset extends Dataset {
     public static final int LOG_ECUX = 1;
     public static final int LOG_VCDS = 2;
     public static final int LOG_ZEITRONIX = 3;
+    public int logType;
     private int detect(String [] h) {
 	int ret = LOG_UNKNOWN;
 	h[0]=h[0].trim();
@@ -110,9 +111,10 @@ public class ECUxDataset extends Dataset {
 		    h[i]=h[i].trim();
 		    h2[i]=h2[i].trim();
 		    u[i]=u[i].trim();
+		    if(h2[i].equals(u[i])) h2[i]="";
 		    if(h[i].length()>0 && h2[i].length()>0)  h[i]+=" ";
-		    h[i]+=h2[i];
-		    if(h[i].matches("^Engine Speed.*")) h[i]="RPM";
+		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
+		    if(h[i].matches("^Throttle [Aa]ngle.*")) h[i]="Throttle Angle";
 		    if(h[i].length()==0) h[i]=u[i];
 		    // System.out.println(h[i] + " [" + u[i] + "]");
 		}
@@ -149,6 +151,7 @@ public class ECUxDataset extends Dataset {
 	}
 	this.setUnits(u);
 	this.setHeaders(h);
+	this.logType=log_use;
     }
 
     private DoubleArray drag (DoubleArray v) {

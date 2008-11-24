@@ -14,7 +14,7 @@ public class Filter {
     private static final int defaultMinPedal = 95;
     private static final int defaultMinThrottle = 50;
     private static final int defaultGear = 3;
-    private static final int defaultMinPoints = 30;
+    private static final int defaultMinPoints = 15;
     private static final int defaultHPTQMAW = 5; // hp/tq moving average window
 
     private Preferences prefs;
