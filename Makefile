@@ -102,7 +102,7 @@ mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
-INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.sh \
+INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar \
 		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt \
 		gpl-3.0.txt flanagan-license.txt
 
@@ -118,16 +118,18 @@ GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 include scripts/Windows.mk
 include scripts/MacOS.mk
 
-ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES)
+ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES) ECUxPlot.sh
 	@rm -f $@
 	@rm -rf build/ECUxPlot
 	@mkdir -p build/ECUxPlot
-	install $(INSTALL_FILES) build/ECUxPlot
+	install -m 644 $(INSTALL_FILES) build/ECUxPlot
+	install ECUxPlot.sh build/ECUxPlot
 	(cd build; tar czvf ../$@ ECUxPlot)
 
 install: $(INSTALL_FILES)
 	mkdir -p $(INSTALL_DIR)
-	cp -avp $(INSTALL_FILES) $(INSTALL_DIR)/
+	install -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
+	install ECUxPlot.sh $(INSTALL_DIR)
 
 tag:
 	scripts/svn-tag $(ECUXPLOT_VER)

@@ -13,7 +13,7 @@ ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
 ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.xml ECUxPlot.ico version.txt
 	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
 
-$(INSTALLER): ECUxPlot.exe $(INSTALL_FILES) scripts/ECUxPlot.nsi
+$(INSTALLER): ECUxPlot.exe $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	makensis $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DVERSION=$(ECUXPLOT_VER) \
 	    $(OPT_PRE)DJFREECHART_VER=$(JFREECHART_VER) \
