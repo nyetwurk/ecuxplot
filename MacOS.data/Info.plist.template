@@ -37,6 +37,7 @@
 			<string>$JAVAROOT/jfreechart-JFREECHART_VER.jar</string>
 			<string>$JAVAROOT/opencsv-OPENCSV_VER.jar</string>
 		</array>
+		<key>StartOnMainThread</key><true/>
 	</dict>
 </dict>
 </plist>

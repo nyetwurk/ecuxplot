@@ -1,8 +1,8 @@
 build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
 		build/ECUxPlot.app/Contents/Info.plist \
-		build/ECUxPlot.app/Contents/MRJApp.properties \
 		build/ECUxPlot.app/Contents/PkgInfo \
 		build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub \
+		build/ECUxPlot.app/Contents/Resources/MRJApp.properties \
 		build/ECUxPlot.app/Contents/Resources/ECUxPlot.icns \
 		$(INSTALL_FILES)
 	@rm -rf build/ECUxPlot.app/Contents/Resources/Java
@@ -12,16 +12,16 @@ build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
 	touch build/.ECUxPlot.app.stamp
 
 build/ECUxPlot.app/Contents/%: MacOS.data/%.template Makefile
-	@mkdir -p build/ECUxPlot.app/Contents
+	@mkdir -p `dirname $@`
 	cat $< | $(GEN) > $@
 
 build/ECUxPlot.app/Contents/PkgInfo: MacOS.data/PkgInfo
 	@mkdir -p build/ECUxPlot.app/Contents
 	install -m 644 $< $@
 
-#build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: scripts/MacOS.bk
-	#@mkdir -p build/ECUxPlot.app/Contents/MacOS
-	#ln -sf "/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" $@
+#build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: scripts/MacOS.mk
+#	@mkdir -p build/ECUxPlot.app/Contents/MacOS
+#	ln -sf "/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" $@
 
 build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: MacOS.data/JavaApplicationStub
 	@mkdir -p build/ECUxPlot.app/Contents/MacOS
