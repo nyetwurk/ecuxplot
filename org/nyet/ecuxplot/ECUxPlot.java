@@ -538,7 +538,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		plot.pack();
 		RefineryUtilities.centerFrameOnScreen(plot);
 		plot.setVisible(true);
-		plot.loadFile(args);
+		if(args!=null && args.length>0) plot.loadFile(args);
 	    }
 	});
     }
