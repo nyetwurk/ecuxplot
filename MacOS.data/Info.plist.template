@@ -21,7 +21,18 @@
 	<key>CFBundleIconFile</key>
 	<string>ECUxPlot.icns</string>
 	<key>CFBundleDocumentTypes</key>
-	<string>CSV Document</string>
+	<array>
+	<dict>
+	    <key>CFBundleTypeExtensions</key>
+	    <array>
+		<string>csv</string>
+	    </array>
+	    <key>CFBundleTypeName</key>
+	    <string>ECUxPlot Log File</string>
+	    <key>CFBundleTypeRole</key>
+	    <string>Viewer</string>
+	</dict>
+	</array>
 	<key>Java</key>
 	<dict>
 		<key>MainClass</key>
@@ -37,7 +48,6 @@
 			<string>$JAVAROOT/jfreechart-JFREECHART_VER.jar</string>
 			<string>$JAVAROOT/opencsv-OPENCSV_VER.jar</string>
 		</array>
-		<key>StartOnMainThread</key><true/>
 	</dict>
 </dict>
 </plist>
