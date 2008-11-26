@@ -303,15 +303,24 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray drag = this.drag(v);	// in watts
 	    c = new Column(id, "HP", drag.mult(hp_per_watt).smooth());
 /*****************************************************************************/
+/*
+	} else if(id.equals("RPM (MA)")) {
+	    DoubleArray rpm = super.get("RPM").data;
+	    c = new Column(id, "RPM", rpm.movingAverage(this.filter.ZeitMAW()));
+*/
+/*****************************************************************************/
 	} else if(id.equals("BoostPressureDesired (PSI)")) {
 	    DoubleArray abs = super.get("BoostPressureDesired").data;
 	    c = new Column(id, "PSI", this.toPSI(abs));
 	} else if(id.equals("BoostPressureActual (PSI)")) {
 	    DoubleArray abs = super.get("BoostPressureActual").data;
 	    c = new Column(id, "PSI", this.toPSI(abs));
-	} else if(id.equals("Zeitronix Boost (mBar)")) {
-	    DoubleArray abs = this.get("Zeitronix Boost").data;
-	    c = new Column(id, "mBar", abs.mult(mbar_per_psi).add(1013));
+	} else if(id.equals("Zeitronix Boost (PSI)")) {
+	    DoubleArray boost = super.get("Zeitronix Boost").data;
+	    c = new Column(id, "PSI", boost.movingAverage(this.filter.ZeitMAW()));
+	} else if(id.equals("Zeitronix Boost")) {
+	    DoubleArray boost = this.get("Zeitronix Boost (PSI)").data;
+	    c = new Column(id, "mBar", boost.mult(mbar_per_psi).add(1013));
 	} else if(id.equals("Calc BoostDesired PR")) {
 	    DoubleArray act = super.get("BoostPressureDesired").data;
 	    DoubleArray ambient = super.get("BaroPressure").data;
@@ -325,15 +334,16 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray load = super.get("EngineLoadDesired").data;
 	    c = new Column(id, "mBar", load.mult(10).add(300).max(ambient));
 	} else if(id.equals("Calc Boost Spool Rate (RPM)")) {
-	    DoubleArray abs = super.get("BoostPressureActual").data;
+	    DoubleArray abs = super.get("BoostPressureActual").data.smooth();
 	    DoubleArray rpm = super.get("RPM").data.smooth();
-	    c = new Column(id, "mBar/RPM", abs.derivative(rpm));
-	} else if(id.equals("Calc Zeit Boost Spool Rate (RPM)")) {
-	    DoubleArray abs = this.get("Zeitronix Boost (mBar)").data;
-	    DoubleArray rpm = this.get("RPM").data.smooth();
-	    c = new Column(id, "mBar/RPM", abs.derivative(rpm));
+	    c = new Column(id, "mBar/RPM", abs.derivative(rpm).max(-5));
+	} else if(id.equals("Calc Boost Spool Rate Zeit (RPM)")) {
+	    DoubleArray boost = this.get("Zeitronix Boost").data.smooth();
+	    DoubleArray rpm =
+		this.get("RPM").data.movingAverage(this.filter.ZeitMAW()).smooth();
+	    c = new Column(id, "mBar/RPM", boost.derivative(rpm).max(-5));
 	} else if(id.equals("Calc Boost Spool Rate (time)")) {
-	    DoubleArray abs = this.get("BoostPressureActual (PSI)").data;
+	    DoubleArray abs = this.get("BoostPressureActual (PSI)").data.smooth();
 	    DoubleArray time = this.get("TIME").data.smooth();
 	    c = new Column(id, "PSI/sec", abs.derivative(time));
 	} else if(id.equals("Calc LDR error")) {

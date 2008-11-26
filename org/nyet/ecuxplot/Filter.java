@@ -16,6 +16,7 @@ public class Filter {
     private static final int defaultGear = 3;
     private static final int defaultMinPoints = 15;
     private static final int defaultHPTQMAW = 5; // hp/tq moving average window
+    private static final int defaultZeitMAW = 30; // zeitronix MAW
 
     private Preferences prefs;
 
@@ -101,5 +102,12 @@ public class Filter {
     }
     public void HPTQMAW(Integer val) {
 	this.prefs.putInt("HPTQMAW", val);
+    }
+
+    public int ZeitMAW() {
+	return this.prefs.getInt("ZeitMAW", defaultZeitMAW);
+    }
+    public void ZeitMAW(Integer val) {
+	this.prefs.putInt("ZeitMAW", val);
     }
 }

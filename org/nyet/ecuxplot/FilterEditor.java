@@ -17,6 +17,7 @@ public class FilterEditor extends PreferencesEditor {
     public JTextField minThrottle;
     public JTextField minPoints;
     public JTextField HPTQMAW;
+    public JTextField ZeitMAW;
 
     protected void Process(ActionEvent event) {
 	processPairs(this.filter, pairs, Integer.class);
@@ -32,6 +33,7 @@ public class FilterEditor extends PreferencesEditor {
 	{"Minimum Throttle", "minThrottle"},
 	{"Minimum Points", "minPoints"},
 	{"HW/TQ smoothing", "HPTQMAW"},
+	{"Zeitronix smoothing", "ZeitMAW"},
     };
 
     public FilterEditor (Preferences prefs, Filter filter) {
