@@ -101,6 +101,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc BoostActual PR", listener, bg);
 		this.add("Calc Boost Spool Rate (RPM)", listener, bg);
 		this.add("Calc Boost Spool Rate (time)", listener, bg);
+		this.add("Calc Zeit Boost Spool Rate (RPM)", listener, bg);
 		this.add("Calc LDR error", listener, bg);
 		this.add("Calc LDR de/dt", listener, bg);
 		this.add("Calc LDR I e dt", listener, bg);
@@ -127,6 +128,10 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LoadSpecified correction", listener, bg);
 	    }
 	} else if(id.matches("^Zeitronix.*")) {
+	    if(id.matches("^Zeitronix Boost")) {
+		this.add("Zeitronix Boost (mBar)", listener, bg);
+		this.add("Calc Zeit Boost Spool Rate (RPM)", listener, bg);
+	    }
 	    addToSubmenu("Zeitronix", item);
 	} else {
 	    this.add(item);
