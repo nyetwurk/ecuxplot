@@ -1,6 +1,6 @@
 VERSION := 0.9
 RELEASE := 1.8
-RC := -rc2
+RC := -rc3
 ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 
 JCOMMON_VER := 1.0.14
