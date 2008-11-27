@@ -147,9 +147,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    // note that TreeSet keeps us sorted!
 	    TreeSet<String> hset = new TreeSet<String>();
 	    for(ECUxDataset d : this.fileDatasets.values()) {
-		String h[] = d.getHeaders();
-		for(int i = 0; i<h.length; i++)
-		    if(h[i]!=null) hset.add(h[i]);
+		for(String s : d.getHeaders())
+		    if(s!=null) hset.add(s);
 	    }
 	    setupAxisMenus(hset.toArray(new String[0]));
 	    // if somebody hid the fats frame, lets unhide it
@@ -164,8 +163,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     public void loadFile(String [] files) {
-	for(int i=0; files!=null && i<files.length; i++) {
-	    if(files[i].length()>0) loadFile(new File(files[i]));
+	for(String s : files) {
+	    if(s.length()>0) loadFile(new File(s));
 	}
     }
 
@@ -427,8 +426,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private void addChartY(Comparable[] ykey, int axis) {
-	for(int i=0; i<ykey.length; i++)
-	    editChartY(ykey[i], axis, true);
+	for(Comparable k : ykey)
+	    editChartY(k, axis, true);
 	updateLabelTitle();
     }
 

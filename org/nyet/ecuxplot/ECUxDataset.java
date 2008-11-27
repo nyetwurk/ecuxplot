@@ -176,10 +176,9 @@ public class ECUxDataset extends Dataset {
 
     // given a list of id's, find the first that exists
     public Column get(Comparable [] id) {
-	for (int i=0; i<id.length; i++ ) {
+	for (Comparable k : id) {
 	    Column ret = null;
-	    try {
-		ret=_get(id[i]);
+	    try { ret=_get(k);
 	    } catch (NullPointerException e) {
 	    }
 	    if(ret!=null) return ret;
