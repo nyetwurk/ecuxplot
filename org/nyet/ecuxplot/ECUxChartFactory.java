@@ -35,8 +35,6 @@ public class ECUxChartFactory {
 	    true, true, false);
 
 	final XYPlot plot = chart.getXYPlot();
-	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
-
 	addAxis(plot, "", new DefaultXYDataset(), 1, true, false);
 
 	return chart;
@@ -49,8 +47,6 @@ public class ECUxChartFactory {
 	    true, true, false);
 
 	final XYPlot plot = chart.getXYPlot();
-	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
-
 	addAxis(plot, "", new DefaultXYDataset(), 1, false, true);
 
 	return chart;
@@ -63,6 +59,11 @@ public class ECUxChartFactory {
 	} else {
 	    chart = ECUxChartFactory.create2AxisXYLineChart();
 	}
+
+	final XYPlot plot = chart.getXYPlot();
+	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
+	plot.getRangeAxis(1).setLabelFont(
+		plot.getRangeAxis(0).getLabelFont());
 
 	return chart;
     }
@@ -80,20 +81,65 @@ public class ECUxChartFactory {
 	}
     }
 
-    public static void setSeriesPaint(JFreeChart chart, int series,
+    // set both axis and all series the same paint
+    public static void setPaint(JFreeChart chart,
+	java.awt.Paint paint) {
+	setAxisPaint(chart, 0, paint);
+	setAxisPaint(chart, 1, paint);
+    }
+
+    // set all series in an axis the same paint
+    public static void setAxisPaint(JFreeChart chart, int axis,
 	java.awt.Paint paint) {
 
 	final XYPlot plot = chart.getXYPlot();
-	final XYItemRenderer renderer = plot.getRenderer(series);
-	renderer.setSeriesPaint(0, paint);
+	final XYItemRenderer renderer = plot.getRenderer(axis);
+	// renderer.setBasePaint(paint);
+	for(int i=0; i<plot.getDataset(axis).getSeriesCount(); i++)
+	    renderer.setSeriesPaint(i, paint);
     }
 
+    // set both axis for a given series the same paint
     public static void setSeriesPaint(JFreeChart chart, int series,
-	int subseries, java.awt.Paint paint) {
+	    java.awt.Paint paint) {
+	setSeriesPaint(chart, 0, series, paint);
+	setSeriesPaint(chart, 1, series, paint);
+    }
+    public static void setSeriesPaint(JFreeChart chart, int axis,
+	    int series, java.awt.Paint paint) {
 
 	final XYPlot plot = chart.getXYPlot();
-	final XYItemRenderer renderer = plot.getRenderer(series);
-	renderer.setSeriesPaint(subseries, paint);
+	final XYItemRenderer renderer = plot.getRenderer(axis);
+	renderer.setSeriesPaint(series, paint);
+    }
+
+    // set both axis and all series the same stroke
+    public static void setStroke(JFreeChart chart,
+	    java.awt.Stroke stroke) {
+	setSeriesStroke(chart, 0, stroke);
+	setSeriesStroke(chart, 1, stroke);
+    }
+
+    // set all series on an axis the same stroke
+    public static void setAxisStroke(JFreeChart chart, int axis,
+	    java.awt.Stroke stroke) {
+	final XYPlot plot = chart.getXYPlot();
+	final XYItemRenderer renderer = plot.getRenderer(axis);
+	// renderer.setBaseStroke(stroke);
+	for(int i=0; i<plot.getDataset(axis).getSeriesCount(); i++)
+	    renderer.setSeriesStroke(i, stroke);
+    }
+
+    // set both axis for a given series the same stroke
+    public static void setSeriesStroke(JFreeChart chart, int series,
+	    java.awt.Stroke stroke) {
+	setSeriesStroke(chart, 0, series, stroke);
+	setSeriesStroke(chart, 1, series, stroke);
+    }
+    public static void setSeriesStroke(JFreeChart chart, int axis,
+	int series, java.awt.Stroke stroke) {
+	final XYPlot plot = chart.getXYPlot();
+	plot.getRenderer(axis).setSeriesStroke(series, stroke);
     }
 
     public static void addDataset(DefaultXYDataset d, ECUxDataset data,

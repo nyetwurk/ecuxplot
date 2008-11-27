@@ -2,9 +2,8 @@ package org.nyet.ecuxplot;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Iterator;
+
+import java.util.*;
 import java.util.prefs.Preferences;
 
 import java.awt.Color;
@@ -296,47 +295,37 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private void updateLabelTitle() {
 	final org.jfree.chart.plot.XYPlot plot =
 	    this.chartPanel.getChart().getXYPlot();
-	String title = "";
+	ArrayList<String> title = new ArrayList<String>();
 	for(int axis=0; axis<plot.getDatasetCount(); axis++) {
+	    ArrayList<String> seriesTitle = new ArrayList<String>();
+	    ArrayList<String> label= new ArrayList<String>();
 	    final org.jfree.data.xy.XYDataset dataset = plot.getDataset(axis);
-	    String seriesTitle=null, sprev=null;
-	    String label="", lprev=null;
-	    for(int i=0; dataset!=null && i<dataset.getSeriesCount(); i++) {
-		Comparable key = dataset.getSeriesKey(i);
-		if(key==null) continue;
-		String s;
+	    if(dataset!=null) {
+		for(int series=0; series<dataset.getSeriesCount(); series++) {
+		    Comparable key = dataset.getSeriesKey(series);
+		    if(key==null) continue;
+		    String s;
 
-		if(key instanceof Dataset.Key)
-		    s = ((Dataset.Key)key).getString();
-		else
-		    s = key.toString();
-
-		String l = findUnits(key);
-
-		if(sprev==null || !s.equals(sprev)) {
-		    if(seriesTitle == null) 
-			seriesTitle = s;
+		    if(key instanceof Dataset.Key)
+			s = ((Dataset.Key)key).getString();
 		    else
-			seriesTitle += ", " + s;
-		}
-		sprev=s;
+			s = key.toString();
+		    if(!seriesTitle.contains(s)) seriesTitle.add(s);
 
-		if(l==null) continue;
-		if(lprev==null || !l.equals(lprev)) {
-		    if(!label.equals("")) label += ", ";
-		    label += l;
+		    String l = findUnits(key);
+		    if(l==null) continue;
+		    if(!label.contains(l)) label.add(l);
 		}
-		lprev=l;
 	    }
-	    if(seriesTitle != null && !seriesTitle.equals("")) {
-		if(!title.equals("")) title += " and ";
-		title += seriesTitle;
-	    }
-	    plot.getRangeAxis(axis).setLabel(label);
+
+	    if(seriesTitle.size()>0)
+		title.add(Strings.join(", ", seriesTitle));
+
+	    plot.getRangeAxis(axis).setLabel(Strings.join(",",label));
 	    // hide axis if this axis has no series
 	    plot.getRangeAxis(axis).setVisible(dataset.getSeriesCount()>0);
 	}
-	this.chartPanel.getChart().setTitle(title);
+	this.chartPanel.getChart().setTitle(Strings.join(" and ", title));
     }
 
     private String pickXAxisLabel() {
@@ -356,6 +345,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    }
 	}
 	return label;
+    }
+
+    private void addDataset(int axis, DefaultXYDataset dataset,
+	    Dataset.Key ykey) {
+	ECUxDataset data = this.fileDatasets.get(ykey.getFilename());
+	ECUxChartFactory.addDataset(dataset, data,
+	    this.xkey(), ykey);
+	ECUxChartFactory.setAxisStroke(this.chartPanel.getChart(), axis,
+		new java.awt.BasicStroke(2));
     }
 
     public void rebuild() {
@@ -388,19 +386,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.chartPanel.getChart().getXYPlot();
 
 	WaitCursor.startWaitCursor(this);
-	for(int i=0;i<plot.getDatasetCount();i++) {
-	    org.jfree.data.xy.XYDataset pds = plot.getDataset(i);
+	for(int axis=0;axis<plot.getDatasetCount();axis++) {
+	    org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
-	    for(int j=0;j<pds.getSeriesCount();j++) {
-		Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(j);
+	    for(int series=0;series<pds.getSeriesCount();series++) {
+		Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
 		if(this.fileDatasets.size()==1) ykey.hideFilename();
 		else ykey.showFilename();
-
-		ECUxDataset data = this.fileDatasets.get(ykey.getFilename());
-		ECUxChartFactory.addDataset(newdataset, data,
-		    this.xkey(), ykey);
+		addDataset(axis, newdataset, ykey);
 	    }
-	    plot.setDataset(i, newdataset);
+	    plot.setDataset(axis, newdataset);
 	}
 
 	plot.getDomainAxis().setLabel(pickXAxisLabel());
@@ -434,7 +429,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    Dataset.Key key = data.new Key(data.getFilename(),
 		    ykey.toString());
 	    if(this.fileDatasets.size()==1) key.hideFilename();
-	    ECUxChartFactory.addDataset(pds, data, this.xkey(), key);
+	    addDataset(axis, pds, key);
 	} else {
 	    ECUxChartFactory.removeDataset(pds, ykey);
 	}

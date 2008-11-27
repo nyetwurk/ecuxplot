@@ -1,6 +1,11 @@
 package org.nyet.util;
 
+import java.util.ArrayList;
+
 public class Strings {
+	public static String join(String sep, ArrayList a) {
+	    return join(sep, a.toArray(), a.size());
+	}
 	public static String join(String sep, Object [] a) {
 	    return join(sep, a, a.length);
 	}
