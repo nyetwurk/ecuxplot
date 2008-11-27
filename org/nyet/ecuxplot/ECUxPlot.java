@@ -457,6 +457,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	if(p!=null) loadPreset(p);
     }
     private void loadPreset(Preset p) {
+	if(this.chartPanel==null) return;
 	removeAllY();
 	this.prefs.put("xkey", p.xkey.toString());
 	rebuild();
