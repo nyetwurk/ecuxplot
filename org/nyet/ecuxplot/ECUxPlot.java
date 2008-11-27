@@ -151,10 +151,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    if(s!=null) hset.add(s);
 	    }
 	    setupAxisMenus(hset.toArray(new String[0]));
-	    // if somebody hid the fats frame, lets unhide it
-	    // for them.
-	    if(this.fatsFrame!=null && !this.fatsFrame.isShowing())
-		    this.fatsFrame.setVisible(this.filter.enabled());
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
@@ -162,10 +158,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    public void loadFile(String [] files) {
+    public void loadFile(ArrayList<String> files) {
 	for(String s : files) {
 	    if(s.length()>0) loadFile(new File(s));
 	}
+    }
+
+    public void setMyVisible(Boolean b) {
+	if(this.fatsFrame!=null) {
+	   if(!this.filter.enabled()) b=false;
+	   if(b!=this.fatsFrame.isShowing())
+		this.fatsFrame.setVisible(b);
+	}
+	super.setVisible(b);
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -212,7 +217,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    Point where = this.getLocation();
 	    where.translate(20,20);
 	    plot.setLocation(where);
-	    plot.setVisible(true);
+	    plot.setMyVisible(true);
 	} else if(source.getText().equals("Open File") ||
 		  source.getText().equals("Add File") ) {
 	    if(fc==null) {
@@ -231,6 +236,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 		WaitCursor.startWaitCursor(this);
 		loadFile(fc.getSelectedFile(), replace);
+		// if somebody hid the fats frame, lets unhide it for them.
+		setMyVisible(true);
 		WaitCursor.stopWaitCursor(this);
 		this.prefs.put("chooserDir",
 		    fc.getCurrentDirectory().toString());
@@ -366,9 +373,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		getClass().getResource("icons/ECUxPlot2-64.png");
 	    frame.setIconImage(new
 		    javax.swing.ImageIcon(imageURL).getImage());
-
-	    frame.setVisible(true);
-
 	    this.fatsFrame = frame;
 	} else {
 	    this.fatsFrame.setDatasets(this.fileDatasets);
@@ -547,8 +551,42 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 		plot.pack();
 		RefineryUtilities.centerFrameOnScreen(plot);
-		plot.setVisible(true);
-		if(args!=null && args.length>0) plot.loadFile(args);
+
+		ArrayList<String> files = new ArrayList<String>();
+		String preset = null;
+		String output = null;
+		for(int i=0; i<args.length; i++) {
+		    if(args[i].charAt(0) == '-') {
+		        if(i<args.length-1) {
+			    if(args[i].equals("-p"))
+				preset = args[i+1];
+			    else if(args[i].equals("-o"))
+				output = args[i+1];
+			    i++;
+			}
+			if(args[i].equals("-l")) {
+			    System.out.println("\"" + 
+			       Strings.join("\" \"",
+				   plot.getPresets().keySet().toArray()) +
+			       "\""
+			    );
+			    System.exit(0);
+			}
+		    } else files.add(args[i]);
+		}
+		plot.loadFile(files);
+		if(preset!=null)
+		    plot.loadPreset(preset);
+		if(output!=null) {
+		    try {
+			plot.pack();
+			plot.chartPanel.saveChartAsPNG(output);
+			System.exit(0);
+		    } catch (Exception e) {
+			e.printStackTrace();
+		    }
+		}
+		plot.setMyVisible(true);
 	    }
 	});
     }
