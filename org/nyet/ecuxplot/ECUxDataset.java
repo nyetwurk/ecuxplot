@@ -214,15 +214,16 @@ public class ECUxDataset extends Dataset {
 	    // KUMSRL
 	    c = new Column(id, "%", a.div(b).div(.001072));
 	} else if(id.equals("Calc MAF")) {
-	    double maf = this.env.f.MAF(); // diameter in mm
 	    // mass in g/sec
-	    DoubleArray a = super.get("MassAirFlow").data.mult(this.env.f.MAF_correction());
-	    c = new Column(id, "g/sec", a.add(this.env.f.MAF_offset()));
+	    DoubleArray a = super.get("MassAirFlow").data.
+		mult(this.env.f.MAF_correction()).add(this.env.f.MAF_offset());
+	    c = new Column(id, "g/sec", a);
 	} else if(id.equals("Calc Turbo Flow")) {
-	    double maf = this.env.f.MAF(); // diameter in mm
-	    // mass in g/sec
-	    DoubleArray a = super.get("MassAirFlow").data.mult(this.env.f.MAF_correction());
-	    c = new Column(id, "m^3/sec", a.add(this.env.f.MAF_offset()).div(1225*this.env.f.turbos()));
+	    DoubleArray a = this.get("Calc MAF").data;
+	    c = new Column(id, "m^3/sec", a.div(1225*this.env.f.turbos()));
+	} else if(id.equals("Calc Turbo Flow (lb/min)")) {
+	    DoubleArray a = this.get("Calc MAF").data;
+	    c = new Column(id, "lb/min", a.div(7.55*this.env.f.turbos()));
 	} else if(id.equals("Calc Fuel Mass")) {
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
 	    final double gps = this.env.f.injector()*gps_per_ccmin;
