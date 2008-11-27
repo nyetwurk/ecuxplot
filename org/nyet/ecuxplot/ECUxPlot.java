@@ -351,7 +351,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    if(data.get(this.xkey())!=null) {
 		String units = data.units(this.xkey());
 		if(units != null) {
-		    label = this.xkey().toString() + " ("+units+")";
+		    label = this.xkey().toString();
+		    if(label.indexOf(units)==-1)
+			label += " ("+units+")";
 		    break;
 		}
 	    }

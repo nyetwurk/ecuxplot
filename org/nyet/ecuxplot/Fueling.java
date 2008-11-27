@@ -9,6 +9,7 @@ public class Fueling {
     private static final double defaultInjector = 320;	// in cc/min
     private static final double defaultMAF_offset = 6;
     private static final int defaultCylinders = 6;
+    private static final int defaultTurbos = 2;
     private Preferences prefs;
 
     public Fueling(Preferences prefs) {
@@ -43,5 +44,11 @@ public class Fueling {
     }
     public void cylinders(int val) {
 	prefs.putInt("cylinders", val);
+    }
+    public int turbos() {
+	return prefs.getInt("turbos", defaultTurbos);
+    }
+    public void turbos(int val) {
+	prefs.putInt("turbos", val);
     }
 }

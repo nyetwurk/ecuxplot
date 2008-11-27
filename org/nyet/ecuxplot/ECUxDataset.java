@@ -218,6 +218,11 @@ public class ECUxDataset extends Dataset {
 	    // mass in g/sec
 	    DoubleArray a = super.get("MassAirFlow").data.mult(this.env.f.MAF_correction());
 	    c = new Column(id, "g/sec", a.add(this.env.f.MAF_offset()));
+	} else if(id.equals("Calc Turbo Flow")) {
+	    double maf = this.env.f.MAF(); // diameter in mm
+	    // mass in g/sec
+	    DoubleArray a = super.get("MassAirFlow").data.mult(this.env.f.MAF_correction());
+	    c = new Column(id, "m^3/sec", a.add(this.env.f.MAF_offset()).div(1225*this.env.f.turbos()));
 	} else if(id.equals("Calc Fuel Mass")) {
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
 	    final double gps = this.env.f.injector()*gps_per_ccmin;

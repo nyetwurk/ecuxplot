@@ -71,6 +71,7 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("MassAirFlow")) {
 	    this.add("Calc Load", listener, bg);
 	    this.add("Calc MAF", listener, bg);
+	    this.add("Calc Turbo Flow", listener, bg);
 	    this.add(item);
 	    addToSubmenu("Calc", new JSeparator(), false);
 	// goes before .*Load.* to catch CalcLoad

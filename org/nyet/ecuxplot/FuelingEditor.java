@@ -14,6 +14,7 @@ public class FuelingEditor extends PreferencesEditor {
     public JTextField injector;
     public JTextField MAF_offset;
     public JTextField cylinders;
+    public JTextField turbos;
 
     protected void Process(ActionEvent event) {
 	this.fueling.MAF(Double.valueOf(this.MAF.getText()));
@@ -21,6 +22,7 @@ public class FuelingEditor extends PreferencesEditor {
 	this.fueling.injector(Double.valueOf(this.injector.getText()));
 	this.fueling.MAF_offset(Double.valueOf(this.MAF_offset.getText()));
 	this.fueling.cylinders(Integer.valueOf(this.cylinders.getText()));
+	this.fueling.turbos(Integer.valueOf(this.turbos.getText()));
 	super.Process(event);
     }
 
@@ -29,9 +31,10 @@ public class FuelingEditor extends PreferencesEditor {
 	{ "MAF correction (%)", "MAFCorrection" },
 	{ "Injector size (cc/min)", "injector" },
 	{ "MAF offset (g/sec)", "MAF_offset" },
-	{ "Cylinders",  "cylinders" }
+	{ "Cylinders",  "cylinders" },
+	{ "Turbos",  "turbos" }
     };
-    private static final int [] fieldSizes = { 6, 0, 6, 6, 6 };
+    private static final int [] fieldSizes = { 6, 0, 6, 6, 6, 6 };
 
     public FuelingEditor (Preferences prefs, Fueling f) {
         super(prefs.node(Fueling.PREFS_TAG), pairs, fieldSizes);
@@ -52,5 +55,6 @@ public class FuelingEditor extends PreferencesEditor {
 	this.injector.setText("" + this.fueling.injector());
 	this.MAF_offset.setText("" + this.fueling.MAF_offset());
 	this.cylinders.setText("" + this.fueling.cylinders());
+	this.turbos.setText("" + this.fueling.turbos());
     }
 }
