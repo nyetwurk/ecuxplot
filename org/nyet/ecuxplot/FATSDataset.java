@@ -1,6 +1,6 @@
 package org.nyet.ecuxplot;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Iterator;
 
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -10,9 +10,9 @@ import org.nyet.util.Files;
 public class FATSDataset extends DefaultCategoryDataset {
     private int start = 4200;
     private int end = 6500;
-    private HashMap<String, ECUxDataset> fileDatasets;
+    private TreeMap<String, ECUxDataset> fileDatasets;
 
-    public FATSDataset(HashMap<String, ECUxDataset> fileDatasets) {
+    public FATSDataset(TreeMap<String, ECUxDataset> fileDatasets) {
 	this.fileDatasets=fileDatasets;
 	rebuild();
     }

@@ -186,4 +186,15 @@ public class AxisMenu extends JMenu {
 	    item.setSelected(false);
 	}
     }
+
+    public void setSelected(String key) {
+	AbstractButton item = this.members.get(key);
+	if(item!=null) item.setSelected(true);
+    }
+
+    public void setSelected(String[] keys) {
+	for(int i=0; i<keys.length; i++) {
+	    this.setSelected(keys[i]);
+	}
+    }
 }

@@ -1,6 +1,6 @@
 package org.nyet.ecuxplot;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -20,7 +20,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     private JTextField end;
 
     public static FATSChartFrame createFATSChartFrame(
-	    HashMap<String, ECUxDataset> fileDatasets, ECUxPlot plotFrame) {
+	    TreeMap<String, ECUxDataset> fileDatasets, ECUxPlot plotFrame) {
 	FATSDataset dataset = new FATSDataset(fileDatasets);
 	final JFreeChart chart =
 	    ECUxChartFactory.createFATSChart(dataset);
@@ -97,7 +97,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	super.setLocation(l);
     }
 
-    public void setDatasets(HashMap<String, ECUxDataset> fileDatasets) {
+    public void setDatasets(TreeMap<String, ECUxDataset> fileDatasets) {
 	this.dataset.clear();
 	java.util.Iterator itc = fileDatasets.values().iterator();
 	while(itc.hasNext()) {

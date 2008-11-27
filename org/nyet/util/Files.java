@@ -1,21 +1,9 @@
 package org.nyet.util;
 
 public class Files {
-	public static String join(String sep, Object [] a) {
-	    return join(sep, a, a.length);
-	}
-
-	public static String join(String sep, Object [] a, int count) {
-	    String out = "";
-	    for (int i=0; i<count; i++) {
-		out += ((i==0)?"":sep) + a[i].toString();
-	    }
-	    return out;
-	}
-
 	public static String dirname(String s) {
 	    String [] a = s.split("\\"+java.io.File.separator);
-	    return join(java.io.File.separator, a, a.length-1);
+	    return Strings.join(java.io.File.separator, a, a.length-1);
 	}
 
 	public static String filename(String s) {
@@ -25,7 +13,7 @@ public class Files {
 
 	public static String stem(String s) {
 	    String [] a = s.split("\\.");
-	    return join(".", a, a.length-1);
+	    return Strings.join(".", a, a.length-1);
 	}
 
 	public static String filenameStem(String s) {
@@ -41,7 +29,7 @@ public class Files {
 	    String [] a = args;
 	    if(args.length == 0) {
 		a = new String [] {
-			join(java.io.File.separator,
+			Strings.join(java.io.File.separator,
 			    new String[] {"a","b","c","d.foo"})
 		    };
 	    }

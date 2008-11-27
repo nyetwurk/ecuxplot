@@ -2,7 +2,7 @@ package org.nyet.ecuxplot;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Iterator;
 import java.util.prefs.Preferences;
@@ -24,18 +24,16 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
-import org.nyet.util.WindowUtilities;
-import org.nyet.util.WaitCursor;
-import org.nyet.util.GenericFileFilter;
-import org.nyet.util.SubActionListener;
-import org.nyet.util.Files;
+import org.nyet.util.*;
 
 import org.nyet.logfile.Dataset;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     // each file loaded has an associated dataset
-    private HashMap<String, ECUxDataset> fileDatasets =
-	    new HashMap<String, ECUxDataset>();
+    private TreeMap<String, ECUxDataset> fileDatasets =
+	    new TreeMap<String, ECUxDataset>();
+
+    private ECUxPresets presets = new ECUxPresets();
 
     private ECUxChartPanel chartPanel;
     private FATSChartFrame fatsFrame;
@@ -70,15 +68,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private Comparable xkey() {
-	final String defaultXkey = "RPM";
-	return this.prefs.get("xkey", defaultXkey);
+	final Comparable defaultXkey = this.presets.get("Power").xkey;
+	return this.prefs.get("xkey", defaultXkey.toString());
     }
 
     private Comparable[] ykeys(int index) {
-	final String[] defaultYkeys = {
-	    "Calc WHP,Calc WTQ",
-	    "BoostPressureDesired (PSI),BoostPressureActual (PSI)"
-	};
+	final Comparable[] ykeys = this.presets.get("Power").ykeys;
+	final Comparable[] ykeys2 = this.presets.get("Power").ykeys2;
+	final String[] defaultYkeys = { Strings.join(",", ykeys), Strings.join(",", ykeys2) };
 
 	String k=this.prefs.get("ykeys"+index, defaultYkeys[index]);
 	return k.split(",");
@@ -129,7 +126,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	    // replacing, nuke all the currently loaded datasets
 	    if(replace) {
-		this.fileDatasets = new HashMap<String, ECUxDataset>();
+		this.fileDatasets = new TreeMap<String, ECUxDataset>();
 		if(this.fatsFrame!=null)
 		    this.fatsFrame.clearDataset();
 	    }
@@ -207,7 +204,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.xAxis = null;
 	    this.yAxis = new AxisMenu[2];
 	    // nuke datasets
-	    this.fileDatasets = new HashMap<String, ECUxDataset>();
+	    this.fileDatasets = new TreeMap<String, ECUxDataset>();
 	    this.setTitle("ECUxPlot");
 	    this.chartPanel.setChart(null);
 	} else if(source.getText().equals("Close Chart")) {
@@ -411,7 +408,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	WaitCursor.stopWaitCursor(this);
     }
 
-    private void removeAll(int axis) {
+    private void removeAllY() { this.removeAllY(0); this.removeAllY(1); }
+    private void removeAllY(int axis) {
 	final org.jfree.chart.plot.XYPlot plot =
 	    this.chartPanel.getChart().getXYPlot();
 	ECUxChartFactory.removeDataset((DefaultXYDataset)plot.getDataset(axis));
@@ -448,6 +446,29 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	updateLabelTitle();
     }
 
+    public void savePreset(Comparable name) {
+	final Preset p = new Preset(name, this.xkey(),
+	    this.ykeys(0), this.ykeys(1), this.scatter());
+	this.presets.put(name, p);
+    }
+
+    public void loadPreset(Comparable name) {
+	final Preset p = this.presets.get(name);
+	if(p!=null) loadPreset(p);
+    }
+    private void loadPreset(Preset p) {
+	removeAllY();
+	this.prefs.put("xkey", p.xkey.toString());
+	rebuild();
+	addChartY(p.ykeys, 0);
+	putYkeys(0);
+	addChartY(p.ykeys2, 1);
+	putYkeys(1);
+	final boolean s = p.scatter;
+	this.prefs.putBoolean("scatter", s);
+	ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !s, s);
+    }
+
     public void actionPerformed(ActionEvent event, Comparable parentId) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	// System.out.println(source.getText() + ":" + parentId);
@@ -457,7 +478,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    rebuild();
 	} else if(parentId.equals("Y Axis")) {
 	    if(source.getText().equals("Remove all")) {
-		removeAll(0);
+		removeAllY(0);
 	    } else {
 		editChartY(source.getText(),0,source.isSelected());
 	    }
@@ -465,7 +486,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    putYkeys(0);
 	} else if(parentId.equals("Y Axis2")) {
 	    if(source.getText().equals("Remove all")) {
-		removeAll(1);
+		removeAllY(1);
 	    } else {
 		editChartY(source.getText(),1,source.isSelected());
 	    }
@@ -478,6 +499,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     // Constructor with args
     public ECUxPlot(final String title, boolean exitOnClose) {
         super(title);
+
 	this.exitOnClose=exitOnClose;
 	WindowUtilities.setNativeLookAndFeel();
 	this.menuBar = new JMenuBar();
@@ -495,7 +517,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	FileMenu filemenu = new FileMenu("File", this);
 	this.menuBar.add(filemenu);
 
-	OptionsMenu optmenu = new OptionsMenu("Options", this, this.prefs);
+	OptionsMenu optmenu = new OptionsMenu("Options", this);
 	this.menuBar.add(optmenu);
 
 	this.menuBar.add(Box.createHorizontalGlue());
@@ -546,4 +568,5 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     public Preferences getPreferences() { return this.prefs; }
+    public TreeMap<Comparable, Preset> getPresets() { return this.presets; }
 }

@@ -20,7 +20,7 @@ public class Version extends ArrayList<Object> {
     }
 
     public String toString() {
-	String s = org.nyet.util.Files.join("<br>", this.toArray());
+	String s = Strings.join("<br>", this.toArray());
 	return "<html>"+s+"</html>";
     }
 }
