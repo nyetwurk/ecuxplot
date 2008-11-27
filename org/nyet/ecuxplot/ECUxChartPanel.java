@@ -11,6 +11,7 @@ import org.jfree.ui.ExtensionFileFilter;
 
 public class ECUxChartPanel extends ChartPanel {
     public ECUxChartPanel(JFreeChart chart) { super(chart); }
+
     public void doSaveAs(String fname) throws IOException {
 	JFileChooser fileChooser = new JFileChooser();
 	fileChooser.setSelectedFile(new File(fname + ".png"));
@@ -26,11 +27,12 @@ public class ECUxChartPanel extends ChartPanel {
 		   filename = filename + ".png";
 	       }
 	   }
-	   saveChartAsPNG(filename);
+	   saveChartAsPNG(new File(filename));
 	}
     }
-    public void saveChartAsPNG(String filename) throws IOException {
-	   ChartUtilities.saveChartAsPNG(new File(filename), this.getChart(),
-		   this.getWidth(), this.getHeight());
+
+    public void saveChartAsPNG(File f) throws IOException {
+	   ChartUtilities.saveChartAsPNG(f, this.getChart(), this.getWidth(),
+		   this.getHeight());
     }
 }

@@ -2,6 +2,7 @@ package org.nyet.ecuxplot;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -57,6 +58,41 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private Filter filter;
 
     private boolean exitOnClose = true;
+
+    // Constructor
+    public ECUxPlot(final String title, boolean exitOnClose) { this(title, null, exitOnClose); }
+    public ECUxPlot(final String title, java.awt.Dimension size, boolean exitOnClose) {
+        super(title);
+
+	this.exitOnClose=exitOnClose;
+	WindowUtilities.setNativeLookAndFeel();
+	this.menuBar = new JMenuBar();
+
+	this.prefs = Preferences.userNodeForPackage(ECUxPlot.class);
+
+	this.filter = new Filter(this.prefs);
+	this.env = new Env(this.prefs);
+
+	java.net.URL imageURL =
+	    getClass().getResource("icons/ECUxPlot2-64.png");
+
+	this.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
+
+	FileMenu filemenu = new FileMenu("File", this);
+	this.menuBar.add(filemenu);
+
+	OptionsMenu optmenu = new OptionsMenu("Options", this);
+	this.menuBar.add(optmenu);
+
+	this.menuBar.add(Box.createHorizontalGlue());
+	HelpMenu helpMenu = new HelpMenu("Help", this);
+	this.menuBar.add(helpMenu);
+
+	setJMenuBar(this.menuBar);
+
+	setPreferredSize(size!=null?size:this.windowSize());
+    }
+
 
     public static boolean scatter(Preferences prefs) {
 	return prefs.getBoolean("scatter", false);
@@ -158,7 +194,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    public void loadFile(ArrayList<String> files) {
+    public void loadFiles(ArrayList<String> files) {
 	for(String s : files) {
 	    if(s.length()>0) loadFile(new File(s));
 	}
@@ -486,39 +522,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	updateLabelTitle();
     }
 
-    // Constructor with args
-    public ECUxPlot(final String title, boolean exitOnClose) {
-        super(title);
-
-	this.exitOnClose=exitOnClose;
-	WindowUtilities.setNativeLookAndFeel();
-	this.menuBar = new JMenuBar();
-
-	this.prefs = Preferences.userNodeForPackage(ECUxPlot.class);
-
-	this.filter = new Filter(this.prefs);
-	this.env = new Env(this.prefs);
-
-	java.net.URL imageURL =
-	    getClass().getResource("icons/ECUxPlot2-64.png");
-
-	this.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
-
-	FileMenu filemenu = new FileMenu("File", this);
-	this.menuBar.add(filemenu);
-
-	OptionsMenu optmenu = new OptionsMenu("Options", this);
-	this.menuBar.add(optmenu);
-
-	this.menuBar.add(Box.createHorizontalGlue());
-	HelpMenu helpMenu = new HelpMenu("Help", this);
-	this.menuBar.add(helpMenu);
-
-	setJMenuBar(this.menuBar);
-
-	setPreferredSize(this.windowSize());
-    }
-
     public void windowClosing(java.awt.event.WindowEvent we) {
 	if(exitOnClose) exitApp();
     }
@@ -529,17 +532,62 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	System.exit(0);
     }
 
+    private static class Options {
+	public String preset = null;
+	public File output = null;
+	public java.awt.Dimension size = null;
+	public ArrayList<String> files = new ArrayList<String>();
+
+	public Options(String[] args) {
+	    int width = -1, height = -1;
+	    for(int i=0; i<args.length; i++) {
+		if(args[i].charAt(0) == '-') {
+		    if(i<args.length-1) {
+			if(args[i].equals("-p"))
+			    this.preset = args[i+1];
+			else if(args[i].equals("-o"))
+			    this.output = new File(args[i+1]);
+			else if(args[i].equals("-w"))
+			    width = Integer.valueOf(args[i+1]);
+			else if(args[i].equals("-h"))
+			    height = Integer.valueOf(args[i+1]);
+			i++;
+		    }
+		    if(args[i].equals("-l")) {
+			final ECUxPresets p = new ECUxPresets();
+			System.out.println("\"" + 
+			   Strings.join("\" \"", p.keySet().toArray()) +
+			   "\""
+			);
+			System.exit(0);
+		    }
+		    if(args[i].equals("-h")) {
+			final ECUxPresets p = new ECUxPresets();
+			System.out.println("usage: ECUxPlot [-p Preset] [-o OutputFile] [-w width] [-h height] [LogFiles ... ]");
+			System.out.println("       ECUxPlot -l (list presets)");
+			System.out.println("       ECUxPlot -? (show usage)");
+			System.exit(0);
+		    }
+		} else this.files.add(args[i]);
+	    }
+	    if(width>0 && height>0)
+		this.size = new java.awt.Dimension(width, height);
+	}
+    }
+
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
 	    public void run() {
+		final Options o = new Options(args);
+
 		// exit on close
-		final ECUxPlot plot = new ECUxPlot("ECUxPlot", true);
-		Application app = Application.getApplication();
+		final ECUxPlot plot = new ECUxPlot("ECUxPlot", o.size, true);
+		final Application app = Application.getApplication();
 
 		if(app!=null) {
 		    app.addApplicationListener(new ApplicationAdapter() {
 			public void handleOpenFile(ApplicationEvent evt) {
-			    String file = evt.getFilename();
+			    final String file = evt.getFilename();
 			    plot.loadFile(new File(file));
 			}
 			public void handleQuit(ApplicationEvent evt) {
@@ -551,41 +599,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 		plot.pack();
 		RefineryUtilities.centerFrameOnScreen(plot);
+		plot.loadFiles(o.files);
 
-		ArrayList<String> files = new ArrayList<String>();
-		String preset = null;
-		String output = null;
-		for(int i=0; i<args.length; i++) {
-		    if(args[i].charAt(0) == '-') {
-		        if(i<args.length-1) {
-			    if(args[i].equals("-p"))
-				preset = args[i+1];
-			    else if(args[i].equals("-o"))
-				output = args[i+1];
-			    i++;
-			}
-			if(args[i].equals("-l")) {
-			    System.out.println("\"" + 
-			       Strings.join("\" \"",
-				   plot.getPresets().keySet().toArray()) +
-			       "\""
-			    );
-			    System.exit(0);
-			}
-		    } else files.add(args[i]);
-		}
-		plot.loadFile(files);
-		if(preset!=null)
-		    plot.loadPreset(preset);
-		if(output!=null) {
+		if(o.preset!=null)
+		    plot.loadPreset(o.preset);
+
+		if(o.output!=null) {
 		    try {
 			plot.pack();
-			plot.chartPanel.saveChartAsPNG(output);
+			plot.chartPanel.saveChartAsPNG(o.output);
 			System.exit(0);
-		    } catch (Exception e) {
+		    } catch (IOException e) {
 			e.printStackTrace();
 		    }
 		}
+
 		plot.setMyVisible(true);
 	    }
 	});
