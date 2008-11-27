@@ -1,15 +1,10 @@
 package org.nyet.logfile;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class CSVRow extends ArrayList<String> {
     public String toString() {
-	String out = "";
-	Iterator i = iterator();
-	while(i.hasNext())
-	    out += "\"" + i.next().toString() + "\"" + ",";
-	return out;
+	return "\"" + org.nyet.util.Strings.join("\",\"", this) + "\"";
     }
 
     public CSVRow() { super(); }

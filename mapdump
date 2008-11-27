@@ -3,4 +3,4 @@ export LANG=en_US.iso885915
 if [ -r `dirname $0`/.classpath ]; then
     source `dirname $0`/.classpath
 fi
-java mapdump "$*"
+java mapdump "$@"

@@ -145,10 +145,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	    // merge headers using a TreeSet - only add new headers
 	    // note that TreeSet keeps us sorted!
-	    Iterator itc = this.fileDatasets.values().iterator();
 	    TreeSet<String> hset = new TreeSet<String>();
-	    while(itc.hasNext()) {
-		String h[] = ((ECUxDataset)itc.next()).getHeaders();
+	    for(ECUxDataset d : this.fileDatasets.values()) {
+		String h[] = d.getHeaders();
 		for(int i = 0; i<h.length; i++)
 		    if(h[i]!=null) hset.add(h[i]);
 	    }
@@ -180,9 +179,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    } else {
 		try {
 		    String stem=null;
-		    Iterator itc = this.fileDatasets.values().iterator();
-		    while(itc.hasNext()) {
-			String fname=((ECUxDataset)itc.next()).getFilename();
+		    for(ECUxDataset d : this.fileDatasets.values()) {
+			String fname=d.getFilename();
 			if(stem == null) {
 			    stem = Files.stem(fname);
 			} else {
@@ -280,10 +278,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private String findUnits(Comparable key) {
-	Iterator itc = this.fileDatasets.values().iterator();
-	while(itc.hasNext()) {
+	for(ECUxDataset d : this.fileDatasets.values()) {
 	    try {
-		String units = ((ECUxDataset)itc.next()).units(key);
+		String units = d.units(key);
 		// return the first one for now.
 		if(units!=null) return units;
 	    } catch (Exception e) {
@@ -331,9 +328,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private String pickXAxisLabel() {
 	// find x axis label. just pick first one that has units we can use
 	String label = "";
-	Iterator itc = this.fileDatasets.values().iterator();
-	while(itc.hasNext()) {
-	    ECUxDataset data = (ECUxDataset) itc.next();
+	for (ECUxDataset data : this.fileDatasets.values()) {
 	    if(data.get(this.xkey())!=null) {
 		String units = data.units(this.xkey());
 		if(units != null) {
@@ -359,11 +354,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public void rebuild() {
 	if(this.chartPanel==null) return;
 
-	Iterator itc = this.fileDatasets.values().iterator();
-	while(itc.hasNext()) {
-	    ECUxDataset data = (ECUxDataset) itc.next();
+	for(ECUxDataset data : this.fileDatasets.values())
 	    data.buildRanges();
-	}
+
 	if(this.fatsFrame==null) {
 	    FATSChartFrame frame =
 		FATSChartFrame.createFATSChartFrame(this.fileDatasets,
@@ -412,10 +405,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private void editChartY(Comparable ykey, int axis, boolean add) {
-	Iterator itc = this.fileDatasets.values().iterator();
-	while(itc.hasNext()) {
-	    editChartY((ECUxDataset)itc.next(), ykey, axis, add);
-	}
+	for(ECUxDataset data : this.fileDatasets.values())
+	    editChartY(data, ykey, axis, add);
     }
 
     private void editChartY(ECUxDataset data, Comparable ykey, int axis,

@@ -178,13 +178,9 @@ public class Dataset {
     }
 
     public Column get(Comparable id) {
-	Iterator itc = this.columns.iterator();
-	Column c = null;
-	while(itc.hasNext()) {
-	    c = (Column) itc.next();
-	    // order is important!
+	for(Column c : this.columns)
 	    if(id.equals(c.id)) return c;
-	}
+
 	return null;
     }
 

@@ -99,11 +99,8 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 
     public void setDatasets(TreeMap<String, ECUxDataset> fileDatasets) {
 	this.dataset.clear();
-	java.util.Iterator itc = fileDatasets.values().iterator();
-	while(itc.hasNext()) {
-	    ECUxDataset data = (ECUxDataset) itc.next();
+	for(ECUxDataset data : fileDatasets.values())
 	    setDataset(data);
-	}
     }
 
     public void setDataset(ECUxDataset data) {

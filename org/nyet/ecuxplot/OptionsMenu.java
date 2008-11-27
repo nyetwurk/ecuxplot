@@ -1,7 +1,6 @@
 package org.nyet.ecuxplot;
 
 import java.util.TreeMap;
-import java.util.Iterator;
 import java.util.prefs.Preferences;
 
 import java.awt.event.ActionListener;
@@ -69,9 +68,7 @@ public final class OptionsMenu extends JMenu implements ActionListener {
     private void updatePresets() {
 	TreeMap<Comparable, Preset> presets = this.plotFrame.getPresets();
 	if(presets!=null) {
-	    Iterator itc = presets.values().iterator();
-	    while(itc.hasNext()) {
-		Preset p = (Preset)itc.next();
+	    for(Preset p : presets.values()) {
 		JMenuItem jmi = new JMenuItem(p.getName().toString());
 		jmi.addActionListener(this);
 		if(!p.getName().equals("Undo"))

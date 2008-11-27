@@ -1,7 +1,6 @@
 package org.nyet.ecuxplot;
 
 import java.util.TreeMap;
-import java.util.Iterator;
 
 import org.jfree.data.category.DefaultCategoryDataset;
 
@@ -18,11 +17,8 @@ public class FATSDataset extends DefaultCategoryDataset {
     }
 
     private void rebuild() {
-	Iterator itc = this.fileDatasets.values().iterator();
-	while(itc.hasNext()) {
-	    ECUxDataset data = (ECUxDataset) itc.next();
+	for(ECUxDataset data : this.fileDatasets.values())
 	    setValue(data);
-	}
     }
 
     // set one (calls super)

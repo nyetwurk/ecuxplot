@@ -1,7 +1,6 @@
 package org.nyet.ecuxplot;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -180,11 +179,8 @@ public class AxisMenu extends JMenu {
     }
 
     public void uncheckAll() {
-	Iterator itc = this.members.values().iterator();
-	while(itc.hasNext()) {
-	    AbstractButton item = (AbstractButton) itc.next();
+	for(AbstractButton item : this.members.values())
 	    item.setSelected(false);
-	}
     }
 
     public void setSelected(String key) {
