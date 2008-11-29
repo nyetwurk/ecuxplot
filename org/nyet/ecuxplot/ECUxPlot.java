@@ -583,10 +583,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    }
 		    if(args[i].equals("-l")) {
 			final ECUxPresets p = new ECUxPresets();
-			System.out.println("\"" + 
-			   Strings.join("\" \"", p.keySet().toArray()) +
-			   "\""
-			);
+			for(String s : p.keySet().toArray(new String[0]))
+			    System.out.println(s);
 			System.exit(0);
 		    }
 		    if(args[i].equals("-h")) {
