@@ -149,7 +149,6 @@ public class ECUxChartFactory {
 	double[][] empty = {{},{}};
 	if(ranges.size()==0) {
 	    Dataset.Key key = data.new Key(ykey);
-	    key.hideFilename();
 	    key.hideSeries();
 	    d.addSeries(key, empty);
 	    return;
@@ -157,6 +156,7 @@ public class ECUxChartFactory {
 	for(int i=0;i<ranges.size();i++) {
 	    Dataset.Key key = data.new Key(ykey, i);
 	    if(ranges.size()==1) key.hideSeries();
+	    else key.showSeries();
 
 	    Dataset.Range r=ranges.get(i);
 	    try {
@@ -194,22 +194,16 @@ public class ECUxChartFactory {
 	}
     }
 
-    public static String getDatasetYkeys(DefaultXYDataset d) {
-	String ret = "";
-	boolean first = true;
+    public static String [] getDatasetYkeys(DefaultXYDataset d) {
+	ArrayList<String> ret = new ArrayList<String>();
 	for(int i=0;i<d.getSeriesCount();i++) {
 	    Comparable key = d.getSeriesKey(i);
-	    String s;
-	    if(key instanceof Dataset.Key) s = ((Dataset.Key)key).getString();
-	    else s = key.toString();
-	    if(first) {
-		first = false;
-		ret += s;
-	    } else {
-		ret += "," + s;
-	    }
+	    if(key instanceof Dataset.Key)
+		ret.add(((Dataset.Key)key).getString());
+	    else
+		ret.add(key.toString());
 	}
-	return ret;
+	return ret.toArray(new String[0]);
     }
 
     public static JFreeChart createFATSChart (FATSDataset dataset) {

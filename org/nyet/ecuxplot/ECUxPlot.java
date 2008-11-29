@@ -16,6 +16,7 @@ import javax.swing.*;
 import com.apple.eawt.*;
 
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.XYPlot;
 
 import org.jfree.data.time.Month;
 import org.jfree.data.xy.DefaultXYDataset;
@@ -122,24 +123,56 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.prefs.getInt("windowHeight", 600));
     }
 
-    private void putWindowSize() {
+    private void prefsPutWindowSize() {
 	this.prefs.putInt("windowWidth", this.getWidth());
 	this.prefs.putInt("windowHeight", this.getHeight());
     }
 
-    private void putYkeys(int axis) {
-	final org.jfree.chart.plot.XYPlot plot =
-	    this.chartPanel.getChart().getXYPlot();
+    private void prefsPutXkey(Comparable xkey) {
+	this.prefs.put("xkey", xkey.toString());
+    }
+    private void prefsPutYkeys(int axis, Comparable [] ykeys) {
+	this.prefs.put("ykeys"+axis,Strings.join(",",ykeys));
+    }
+    private void prefsPutYkeys(int axis) {
+	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
-	this.prefs.put("ykeys"+axis,ECUxChartFactory.getDatasetYkeys(dataset));
+	this.prefsPutYkeys(axis, ECUxChartFactory.getDatasetYkeys(dataset));
     }
 
-    private void setupAxisMenus(String[] headers) {
+    private void addChartYFromPrefs() {
+    	this.addChartYFromPrefs(0);
+    	this.addChartYFromPrefs(1);
+	updatePlotTitle();
+    }
+    private void addChartYFromPrefs(int axis) {
+	this.addChartY(this.ykeys(axis), axis);
+    }
+
+    private void fileDatasetsChanged() {
+	// set title
+	this.setTitle("ECUxPlot " + fileDatasets.keySet().toString());
+
+	// xaxis label depends on units found in files
+	updateXAxisLabel();
+
+	// Add all the data we just finished loading fom the files
+	addChartYFromPrefs();
+
+	// merge headers using a TreeSet - only add new headers
+	// note that TreeSet keeps us sorted!
+	TreeSet<String> hset = new TreeSet<String>();
+	for(ECUxDataset d : this.fileDatasets.values()) {
+	    for(String s : d.getHeaders())
+		if(s!=null) hset.add(s);
+	}
+	String [] headers = hset.toArray(new String[0]);
+	if(headers.length<=0) return;
+
+	// rebuild the axis menus
 	if(this.xAxis!=null) this.menuBar.remove(this.xAxis);
 	if(this.yAxis[0]!=null) this.menuBar.remove(this.yAxis[0]);
 	if(this.yAxis[1]!=null) this.menuBar.remove(this.yAxis[1]);
-
-	if(headers.length<=0) return;
 
 	this.xAxis = new AxisMenu("X Axis", headers, this, true, this.xkey());
 	this.menuBar.add(xAxis, 2);
@@ -155,6 +188,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     private void loadFile(File file) { loadFile(file, false); }
     private void loadFile(File file, Boolean replace) {
+	_loadFile(file, replace);
+	fileDatasetsChanged();
+    }
+    private void _loadFile(File file, Boolean replace) {
 	try {
 	    ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
 		    this.env, this.filter);
@@ -166,27 +203,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    this.fatsFrame.clearDataset();
 	    }
 
-	    this.fileDatasets.put(file.getName(), data);
-	    this.setTitle("ECUxPlot " + fileDatasets.keySet().toString());
-
-	    final JFreeChart chart =
-		ECUxChartFactory.create2AxisChart(this.scatter());
-
-	    this.chartPanel = new ECUxChartPanel(chart);
-
-	    setContentPane(this.chartPanel);
-	    rebuild();
-	    addChartY(this.ykeys(0), 0);
-	    addChartY(this.ykeys(1), 1);
-
-	    // merge headers using a TreeSet - only add new headers
-	    // note that TreeSet keeps us sorted!
-	    TreeSet<String> hset = new TreeSet<String>();
-	    for(ECUxDataset d : this.fileDatasets.values()) {
-		for(String s : d.getHeaders())
-		    if(s!=null) hset.add(s);
+	    if(this.chartPanel == null) {
+		final JFreeChart chart =
+		    ECUxChartFactory.create2AxisChart(this.scatter());
+		this.chartPanel = new ECUxChartPanel(chart);
+		setContentPane(this.chartPanel);
 	    }
-	    setupAxisMenus(hset.toArray(new String[0]));
+
+	    this.fileDatasets.put(file.getName(), data);
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
@@ -196,8 +220,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     public void loadFiles(ArrayList<String> files) {
 	for(String s : files) {
-	    if(s.length()>0) loadFile(new File(s));
+	    if(s.length()>0) _loadFile(new File(s), false);
 	}
+	fileDatasetsChanged();
     }
 
     public void setMyVisible(Boolean b) {
@@ -305,7 +330,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("Apply SAE")) {
 	    this.env.sae.enabled(source.isSelected());
 	    rebuild();
-	    updateLabelTitle();
+	    updatePlotTitle();
 	} else if(source.getText().equals("Edit SAE constants...")) {
 	    if(this.sae == null) this.sae = new SAEEditor(this.prefs, this.env.sae);
 	    this.sae.showDialog(this, "SAE");
@@ -331,9 +356,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	return "";
     }
 
-    private void updateLabelTitle() {
-	final org.jfree.chart.plot.XYPlot plot =
-	    this.chartPanel.getChart().getXYPlot();
+    private void updatePlotTitle() {
+	if(this.chartPanel!=null)
+	    updatePlotTitle(this.chartPanel.getChart().getXYPlot());
+    }
+    private void updatePlotTitle(XYPlot plot) {
 	ArrayList<String> title = new ArrayList<String>();
 	for(int axis=0; axis<plot.getDatasetCount(); axis++) {
 	    ArrayList<String> seriesTitle = new ArrayList<String>();
@@ -367,7 +394,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.chartPanel.getChart().setTitle(Strings.join(" and ", title));
     }
 
-    private String pickXAxisLabel() {
+    private void updateXAxisLabel() {
+	if(this.chartPanel!=null)
+	    updateXAxisLabel(this.chartPanel.getChart().getXYPlot());
+    }
+    private void updateXAxisLabel(XYPlot plot) {
 	// find x axis label. just pick first one that has units we can use
 	String label = "";
 	for (ECUxDataset data : this.fileDatasets.values()) {
@@ -381,7 +412,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		}
 	    }
 	}
-	return label;
+	plot.getDomainAxis().setLabel(label);
     }
 
     private void addDataset(int axis, DefaultXYDataset dataset,
@@ -390,7 +421,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	ECUxChartFactory.addDataset(dataset, data,
 	    this.xkey(), ykey);
 	ECUxChartFactory.setAxisStroke(this.chartPanel.getChart(), axis,
-		new java.awt.BasicStroke(2));
+		new java.awt.BasicStroke(1.5f));
     }
 
     public void rebuild() {
@@ -414,8 +445,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.fatsFrame.setDatasets(this.fileDatasets);
 	}
 
-	final org.jfree.chart.plot.XYPlot plot =
-	    this.chartPanel.getChart().getXYPlot();
+	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 
 	WaitCursor.startWaitCursor(this);
 	for(int axis=0;axis<plot.getDatasetCount();axis++) {
@@ -429,16 +459,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    }
 	    plot.setDataset(axis, newdataset);
 	}
-
-	plot.getDomainAxis().setLabel(pickXAxisLabel());
+	updateXAxisLabel(plot);
 
 	WaitCursor.stopWaitCursor(this);
     }
 
     private void removeAllY() { this.removeAllY(0); this.removeAllY(1); }
     private void removeAllY(int axis) {
-	final org.jfree.chart.plot.XYPlot plot =
-	    this.chartPanel.getChart().getXYPlot();
+	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	ECUxChartFactory.removeDataset((DefaultXYDataset)plot.getDataset(axis));
 	this.yAxis[axis].uncheckAll();
     }
@@ -452,8 +480,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	boolean add) {
 	if(add && !(data.exists(ykey)) )
 	    return;
-	final org.jfree.chart.plot.XYPlot plot =
-	    this.chartPanel.getChart().getXYPlot();
+	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
 	if(add) {
 	    Dataset.Key key = data.new Key(data.getFilename(),
@@ -468,7 +495,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private void addChartY(Comparable[] ykey, int axis) {
 	for(Comparable k : ykey)
 	    editChartY(k, axis, true);
-	updateLabelTitle();
     }
 
     public void savePreset(Comparable name) {
@@ -483,43 +509,45 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
     private void loadPreset(Preset p) {
 	if(this.chartPanel==null) return;
+
+	// get rid of everything
 	removeAllY();
-	this.prefs.put("xkey", p.xkey.toString());
-	rebuild();
-	addChartY(p.ykeys, 0);
-	putYkeys(0);
-	addChartY(p.ykeys2, 1);
-	putYkeys(1);
+
+	prefsPutXkey(p.xkey);
+	// updateXAxisLabel depends on xkey prefs
+	updateXAxisLabel();
+
+	prefsPutYkeys(0,p.ykeys);
+	prefsPutYkeys(1,p.ykeys2);
+
+	// addChart depends on the xkey,ykeys put in prefs
+	addChartYFromPrefs();
+
+	// set up scatter depending on preset
 	final boolean s = p.scatter;
-	this.prefs.putBoolean("scatter", s);
 	ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !s, s);
+	this.prefs.putBoolean("scatter", s);
     }
 
     public void actionPerformed(ActionEvent event, Comparable parentId) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	// System.out.println(source.getText() + ":" + parentId);
 	if(parentId.equals("X Axis")) {
-	    this.prefs.put("xkey",source.getText());
+	    prefsPutXkey(source.getText());
 	    // rebuild depends on the value of prefs
 	    rebuild();
 	} else if(parentId.equals("Y Axis")) {
-	    if(source.getText().equals("Remove all")) {
-		removeAllY(0);
-	    } else {
-		editChartY(source.getText(),0,source.isSelected());
-	    }
-	    // putkeys depends on the stuff that edit chart does
-	    putYkeys(0);
+	    if(source.getText().equals("Remove all")) removeAllY(0);
+	    else editChartY(source.getText(),0,source.isSelected());
+	    // prefsPutYkeys depends on the stuff that edit chart does
+	    prefsPutYkeys(0);
 	} else if(parentId.equals("Y Axis2")) {
-	    if(source.getText().equals("Remove all")) {
-		removeAllY(1);
-	    } else {
-		editChartY(source.getText(),1,source.isSelected());
-	    }
+	    if(source.getText().equals("Remove all")) removeAllY(1);
+	    else editChartY(source.getText(),1,source.isSelected());
 	    // putkeys depends on the stuff that edit chart does
-	    putYkeys(1);
+	    prefsPutYkeys(1);
 	}
-	updateLabelTitle();
+	updatePlotTitle();
     }
 
     public void windowClosing(java.awt.event.WindowEvent we) {
@@ -527,7 +555,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private void exitApp() {
-	this.putWindowSize();
+	this.prefsPutWindowSize();
 	if(this.fatsFrame!=null) this.fatsFrame.dispose();
 	System.exit(0);
     }
@@ -591,7 +619,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 			    plot.loadFile(new File(file));
 			}
 			public void handleQuit(ApplicationEvent evt) {
-			    plot.putWindowSize();
+			    plot.prefsPutWindowSize();
 			    evt.setHandled(true);
 			}
 		    });

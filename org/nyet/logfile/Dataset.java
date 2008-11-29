@@ -8,6 +8,7 @@ import au.com.bytecode.opencsv.*;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
+    private String filename;
     private String[] headers;
     private String[] units;
     private ArrayList<Column> columns;
@@ -91,16 +92,15 @@ public class Dataset {
 
 
 	public String toString() {
-	    String ret = null;
-	    if(!this.flags.get(0)) {
-		// don't skip fn
-		ret = org.nyet.util.Files.filenameStem(this.fn) + ":" + this.s;
-	    } else ret = this.s;
+	    String ret = this.s;
 
-	    if(!this.flags.get(1)) {
-		// don't skip series
-		return ret + " " + (this.series+1);
-	    }
+	    // don't skip file name, add to beginning
+	    if(!this.flags.get(0))
+		ret = org.nyet.util.Files.filenameStem(this.fn) + ":" + ret;
+
+	    // don't skip series #, add to end
+	    if(!this.flags.get(1))
+		ret += " " + (this.series+1);
 
 	    return ret;
 	}
@@ -145,9 +145,10 @@ public class Dataset {
     }
 
     public Dataset(String filename) throws Exception {
-	CSVReader reader = new CSVReader(new FileReader(filename));
+	this.filename = org.nyet.util.Files.filename(filename);
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
+	CSVReader reader = new CSVReader(new FileReader(filename));
 	ParseHeaders(reader);
 	int i;
 	for(i=0;i<this.headers.length;i++) {
@@ -238,7 +239,7 @@ public class Dataset {
 	Column c = this.get(id);
 	return c.data.toArray(r.start, r.end);
     }
-
+    public String getFilename() { return this.filename; }
     public void setHeaders(String [] headers) {this.headers=headers;}
     public String [] getHeaders() {return this.headers;}
     public String getHeader(int i) {return this.headers[i];}

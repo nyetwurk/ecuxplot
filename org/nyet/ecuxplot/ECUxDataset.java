@@ -14,7 +14,6 @@ import org.nyet.util.Files;
 
 public class ECUxDataset extends Dataset {
     private Column rpm, pedal, throttle, gear, boost;
-    private String filename;
     private Env env;
     private Filter filter;
     private final double hp_per_watt = 0.00134102209;
@@ -23,10 +22,9 @@ public class ECUxDataset extends Dataset {
     private CubicSpline [] splines;	// rpm vs time splines
 
     public ECUxDataset(String filename, Env env, Filter filter)
-	throws Exception {
+	    throws Exception {
 	super(filename);
 
-	this.filename = Files.filename(filename);
 	this.env = env;
 	this.filter = filter;
 
@@ -79,9 +77,13 @@ public class ECUxDataset extends Dataset {
     }
     public void ParseHeaders(CSVReader reader, int log_req) throws Exception {
 	if (log_req<0)
-	    throw new Exception("invalid log_req " + log_req);
+	    throw new Exception(this.getFilename() + ": invalid log_req" + log_req);
 
 	String [] h = reader.readNext();
+
+	if (h==null)
+	    throw new Exception(this.getFilename() + ": read failed");
+
 	String [] u = ParseUnits(h);
 
 	int log_detected = detect(h);
@@ -539,7 +541,6 @@ public class ECUxDataset extends Dataset {
 	return out;
     }
 
-    public String getFilename() { return this.filename; }
     public Filter getFilter() { return this.filter; }
     // public void setFilter(Filter f) { this.filter=f; }
     public Env getEnv() { return this.env; }
