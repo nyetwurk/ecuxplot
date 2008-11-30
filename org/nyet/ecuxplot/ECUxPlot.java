@@ -363,7 +363,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	ArrayList<String> units = new ArrayList<String>();
 	for(ECUxDataset d : this.fileDatasets.values()) {
 	    String u = d.units(key);
-	    if(u!=null && u.length()>0) units.add(u);
+	    if(u==null || u.length()==0) continue;
+	    if(!units.contains(u)) units.add(u);
 	}
 	return Strings.join(",", units);
     }
