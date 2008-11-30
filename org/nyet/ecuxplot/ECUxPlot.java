@@ -151,7 +151,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     private void fileDatasetsChanged() {
 	// set title
-	this.setTitle("ECUxPlot " + fileDatasets.keySet().toString());
+	this.setTitle("ECUxPlot " + Strings.join(", ", fileDatasets.keySet()));
 
 	// xaxis label depends on units found in files
 	updateXAxisLabel();
