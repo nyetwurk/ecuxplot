@@ -131,6 +131,7 @@ ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES) ECUxPlot.sh
 
 install: $(INSTALL_FILES)
 	mkdir -p $(INSTALL_DIR)
+	rm -f $(INSTALL_DIR)/ECUxPlot*.jar
 	install -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
 	install ECUxPlot.sh $(INSTALL_DIR)
 	ln -sf ../ecuxplot/ECUxPlot.sh /usr/local/bin/ecuxplot
