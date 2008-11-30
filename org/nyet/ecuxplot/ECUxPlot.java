@@ -184,12 +184,34 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.yAxis[1] = new AxisMenu("Y Axis2", headers, this, false,
 	    this.ykeys(1));
 	this.menuBar.add(yAxis[1], 4);
+
+	// hide/unhide filenames in the legend
+	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
+	for(int axis=0;axis<plot.getDatasetCount();axis++) {
+	    org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
+	    for(int series=0;series<pds.getSeriesCount();series++) {
+		Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
+		if(this.fileDatasets.size()==1) ykey.hideFilename();
+		else ykey.showFilename();
+	    }
+	}
+    }
+
+    public void loadFiles(ArrayList<String> files) {
+	WaitCursor.startWaitCursor(this);
+	for(String s : files) {
+	    if(s.length()>0) _loadFile(new File(s), false);
+	}
+	fileDatasetsChanged();
+	WaitCursor.stopWaitCursor(this);
     }
 
     private void loadFile(File file) { loadFile(file, false); }
     private void loadFile(File file, Boolean replace) {
+	WaitCursor.startWaitCursor(this);
 	_loadFile(file, replace);
 	fileDatasetsChanged();
+	WaitCursor.stopWaitCursor(this);
     }
     private void _loadFile(File file, Boolean replace) {
 	try {
@@ -216,13 +238,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    e.printStackTrace();
 	    return;
 	}
-    }
-
-    public void loadFiles(ArrayList<String> files) {
-	for(String s : files) {
-	    if(s.length()>0) _loadFile(new File(s), false);
-	}
-	fileDatasetsChanged();
     }
 
     public void setMyVisible(Boolean b) {
@@ -428,6 +443,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     public void rebuild() {
 	if(this.chartPanel==null) return;
 
+	WaitCursor.startWaitCursor(this);
+
 	for(ECUxDataset data : this.fileDatasets.values())
 	    data.buildRanges();
 
@@ -447,15 +464,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
 
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
-
-	WaitCursor.startWaitCursor(this);
 	for(int axis=0;axis<plot.getDatasetCount();axis++) {
 	    org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
 	    for(int series=0;series<pds.getSeriesCount();series++) {
 		Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
-		if(this.fileDatasets.size()==1) ykey.hideFilename();
-		else ykey.showFilename();
 		addDataset(axis, newdataset, ykey);
 	    }
 	    plot.setDataset(axis, newdataset);
