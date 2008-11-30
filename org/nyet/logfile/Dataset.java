@@ -9,8 +9,6 @@ import org.nyet.util.DoubleArray;
 
 public class Dataset {
     private String filename;
-    private String[] headers;
-    private String[] units;
     private ArrayList<Column> columns;
     private ArrayList<Range> range_cache = new ArrayList<Range>();
     private int rows;
@@ -52,6 +50,10 @@ public class Dataset {
 	    }
 	}
 
+	public String getId() {
+	    if(this.id==null) return null;
+	    return this.id.toString();
+	}
 	public String getUnits() { return this.units; }
     }
 
@@ -117,7 +119,7 @@ public class Dataset {
 
 	public int compareTo(Object o) {
 	    if(o instanceof Key) {
-		Key k = (Key)o;
+		final Key k = (Key)o;
 		int out = this.fn.compareTo(k.fn);
 		if(out!=0) return out;
 		out = this.s.compareTo(k.s);
@@ -130,8 +132,9 @@ public class Dataset {
 	    throw new ClassCastException("Not a Key or a String!");
 	}
 	public boolean equals(Object o) {
+	    if(o==null) return false;
 	    if(o instanceof Key) {
-		Key k = (Key)o;
+		final Key k = (Key)o;
 		if(!this.fn.equals(k.fn)) return false;
 		if(!this.s.equals(k.s)) return false;
 		return this.series.equals(k.series);
@@ -140,7 +143,7 @@ public class Dataset {
 	    if(o instanceof String) {
 		return this.s.equals((String)o);
 	    }
-	    throw new ClassCastException("Not a Key or a String!");
+	    throw new ClassCastException(o + ": Not a Key or a String!");
 	}
     }
 
@@ -148,15 +151,14 @@ public class Dataset {
 	this.filename = org.nyet.util.Files.filename(filename);
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
-	CSVReader reader = new CSVReader(new FileReader(filename));
-	ParseHeaders(reader);
-	int i;
-	for(i=0;i<this.headers.length;i++) {
-	    this.columns.add(new Column(this.headers[i], this.units[i]));
-	}
+	final CSVReader reader = new CSVReader(new FileReader(filename));
+	final String [][] headers = ParseHeaders(reader);
+	for(int i=0;i<headers[0].length;i++)
+	    this.columns.add(new Column(headers[0][i], headers[1][i]));
+
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
-	    for(i=0;i<nextLine.length;i++) {
+	    for(int i=0;i<nextLine.length;i++) {
 		this.columns.get(i).add(nextLine[i]);
 	    }
 	    this.rows++;
@@ -166,8 +168,10 @@ public class Dataset {
 
     public ArrayList<Column> getColumns() {return this.columns;}
 
-    public void ParseHeaders(CSVReader reader) throws Exception {
-	this.headers=reader.readNext();
+    public String [][] ParseHeaders(CSVReader reader) throws Exception {
+	final String [] ids = reader.readNext();
+	final String [] units = new String[ids.length];
+	return (new String[][]{ids,units});
     }
 
     public Column get(int id) {
@@ -175,13 +179,14 @@ public class Dataset {
     }
 
     public String units(Comparable id) {
-	return this.get(id).getUnits();
+	final Column c = this.get(id);
+	if(c==null) return null;
+	return c.getUnits();
     }
 
     public Column get(Comparable id) {
 	for(Column c : this.columns)
 	    if(id.equals(c.id)) return c;
-
 	return null;
     }
 
@@ -231,19 +236,33 @@ public class Dataset {
 
     public double[] getData(Key id, Range r) {
 	// only match the string portion of the key
-	Column c = this.get(id.getString());
+	final Column c = this.get(id.getString());
+	if (c==null) return null;
 	return c.data.toArray(r.start, r.end);
     }
 
     public double[] getData(Comparable id, Range r) {
-	Column c = this.get(id);
+	final Column c = this.get(id);
+	if (c==null) return null;
 	return c.data.toArray(r.start, r.end);
     }
+
     public String getFilename() { return this.filename; }
-    public void setHeaders(String [] headers) {this.headers=headers;}
-    public String [] getHeaders() {return this.headers;}
-    public String getHeader(int i) {return this.headers[i];}
-    public void setUnits(String [] units) {this.units=units;}
+
+    public String [] getIds() {
+	final String [] ids = new String [this.columns.size()];
+	for(int i=0; i<ids.length; i++)
+	    ids[i]=this.columns.get(i).getId();
+	return ids;
+    }
+
+    public String [] getUnits() {
+	final String [] u = new String [this.columns.size()];
+	for(int i=0; i<u.length; i++)
+	    u[i]=this.columns.get(i).getUnits();
+	return u;
+    }
+
     public String getLastFilterReason() { return this.lastFilterReason; }
     public int length() { return this.rows; }
 }

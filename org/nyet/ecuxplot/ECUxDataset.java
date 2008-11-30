@@ -72,13 +72,13 @@ public class ECUxDataset extends Dataset {
 	}
 	return u;
     }
-    public void ParseHeaders(CSVReader reader) throws Exception {
-	ParseHeaders(reader, LOG_DETECT);
+    public String [][] ParseHeaders(CSVReader reader) throws Exception {
+	return ParseHeaders(reader, LOG_DETECT);
     }
-    public void ParseHeaders(CSVReader reader, int log_req) throws Exception {
+    public String [][] ParseHeaders(CSVReader reader, int log_req)
+	    throws Exception {
 	if (log_req<0)
 	    throw new Exception(this.getFilename() + ": invalid log_req" + log_req);
-
 	String [] h = reader.readNext();
 
 	if (h==null)
@@ -152,9 +152,8 @@ public class ECUxDataset extends Dataset {
 	    if(u[i]==null || u[i].length()==0)
 		u[i]=Units.find(h[i]);
 	}
-	this.setUnits(u);
-	this.setHeaders(h);
 	this.logType=log_use;
+	return (new String[][] {h,u});
     }
 
     private DoubleArray drag (DoubleArray v) {

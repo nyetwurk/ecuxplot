@@ -143,7 +143,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private void addChartYFromPrefs() {
     	this.addChartYFromPrefs(0);
     	this.addChartYFromPrefs(1);
-	updatePlotTitle();
+	updatePlotTitleAndYAxisLabels();
     }
     private void addChartYFromPrefs(int axis) {
 	this.addChartY(this.ykeys(axis), axis);
@@ -163,7 +163,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	// note that TreeSet keeps us sorted!
 	TreeSet<String> hset = new TreeSet<String>();
 	for(ECUxDataset d : this.fileDatasets.values()) {
-	    for(String s : d.getHeaders())
+	    for(String s : d.getIds())
 		if(s!=null) hset.add(s);
 	}
 	String [] headers = hset.toArray(new String[0]);
@@ -330,7 +330,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("Apply SAE")) {
 	    this.env.sae.enabled(source.isSelected());
 	    rebuild();
-	    updatePlotTitle();
+	    updatePlotTitleAndYAxisLabels();
 	} else if(source.getText().equals("Edit SAE constants...")) {
 	    if(this.sae == null) this.sae = new SAEEditor(this.prefs, this.env.sae);
 	    this.sae.showDialog(this, "SAE");
@@ -345,22 +345,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private String findUnits(Comparable key) {
+	ArrayList<String> units = new ArrayList<String>();
 	for(ECUxDataset d : this.fileDatasets.values()) {
-	    try {
-		String units = d.units(key);
-		// return the first one for now.
-		if(units!=null) return units;
-	    } catch (Exception e) {
-	    }
+	    String u = d.units(key);
+	    if(u!=null && u.length()>0) units.add(u);
 	}
-	return "";
+	return Strings.join(",", units);
     }
 
-    private void updatePlotTitle() {
+    private void updatePlotTitleAndYAxisLabels() {
 	if(this.chartPanel!=null)
-	    updatePlotTitle(this.chartPanel.getChart().getXYPlot());
+	    updatePlotTitleAndYAxisLabels(
+		    this.chartPanel.getChart().getXYPlot());
     }
-    private void updatePlotTitle(XYPlot plot) {
+    private void updatePlotTitleAndYAxisLabels(XYPlot plot) {
 	ArrayList<String> title = new ArrayList<String>();
 	for(int axis=0; axis<plot.getDatasetCount(); axis++) {
 	    ArrayList<String> seriesTitle = new ArrayList<String>();
@@ -376,10 +374,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 			s = ((Dataset.Key)key).getString();
 		    else
 			s = key.toString();
+
+		    // construct title array
 		    if(!seriesTitle.contains(s)) seriesTitle.add(s);
 
+		    // construct y axis label array
 		    String l = findUnits(key);
-		    if(l==null) continue;
+		    if(l==null || l.length()==0) continue;
 		    if(!label.contains(l)) label.add(l);
 		}
 	    }
@@ -547,7 +548,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    // putkeys depends on the stuff that edit chart does
 	    prefsPutYkeys(1);
 	}
-	updatePlotTitle();
+	updatePlotTitleAndYAxisLabels();
     }
 
     public void windowClosing(java.awt.event.WindowEvent we) {
@@ -589,7 +590,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    }
 		    if(args[i].equals("-h")) {
 			final ECUxPresets p = new ECUxPresets();
-			System.out.println("usage: ECUxPlot [-p Preset] [-o OutputFile] [-w width] [-h height] [LogFiles ... ]");
+			System.out.println(
+			    "usage: ECUxPlot [-p Preset] [-o OutputFile] " +
+			    "[-w width] [-h height] [LogFiles ... ]");
 			System.out.println("       ECUxPlot -l (list presets)");
 			System.out.println("       ECUxPlot -? (show usage)");
 			System.exit(0);

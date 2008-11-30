@@ -13,7 +13,8 @@ public class Strings {
 	public static String join(String sep, Object [] a, int count) {
 	    String out = "";
 	    for (int i=0; i<count; i++) {
-		out += ((i==0)?"":sep) + a[i].toString();
+		if(a[i].toString().length()>0)
+		    out += ((out.length()==0)?"":sep) + a[i].toString();
 	    }
 	    return out;
 	}
