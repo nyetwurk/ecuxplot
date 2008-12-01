@@ -23,14 +23,14 @@ public class FATSDataset extends DefaultCategoryDataset {
 
     // set one (calls super)
     public void setValue(ECUxDataset data, int series, double value) {
-	String xkey = Files.stem(data.getFilename());
+	String xkey = Files.stem(data.getFileId());
 	String ykey = "Run " + (series+1);
 	// System.out.println("adding " + xkey + "," + ykey + "=" + value);
 	super.setValue(value, xkey, ykey);
     }
     // remove one (calls super)
     public void removeValue(ECUxDataset data, int series) {
-	String xkey = Files.stem(data.getFilename());
+	String xkey = Files.stem(data.getFileId());
 	String ykey = "Run " + (series+1);
 	// System.out.println("removing " + xkey + "," + ykey);
 	super.removeValue(xkey, ykey);
@@ -38,7 +38,7 @@ public class FATSDataset extends DefaultCategoryDataset {
 
     // helpers
     public void setValue(ECUxDataset data) {
-	try { removeRow(Files.stem(data.getFilename()));
+	try { removeRow(Files.stem(data.getFileId()));
 	} catch (Exception e) {}
 	for(int i=0;i<data.getRanges().size();i++)
 	    setValue(data, i);

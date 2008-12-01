@@ -260,7 +260,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		try {
 		    String stem=null;
 		    for(ECUxDataset d : this.fileDatasets.values()) {
-			String fname=d.getFilename();
+			String fname=d.getFileId();
 			if(stem == null) {
 			    stem = Files.stem(fname);
 			} else {
@@ -498,7 +498,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
 	if(add) {
-	    Dataset.Key key = data.new Key(data.getFilename(),
+	    Dataset.Key key = data.new Key(data.getFileId(),
 		    ykey.toString());
 	    if(this.fileDatasets.size()==1) key.hideFilename();
 	    addDataset(axis, pds, key);

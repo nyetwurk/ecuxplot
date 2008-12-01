@@ -78,11 +78,11 @@ public class ECUxDataset extends Dataset {
     public String [][] ParseHeaders(CSVReader reader, int log_req)
 	    throws Exception {
 	if (log_req<0)
-	    throw new Exception(this.getFilename() + ": invalid log_req" + log_req);
+	    throw new Exception(this.getFileId() + ": invalid log_req" + log_req);
 	String [] h = reader.readNext();
 
 	if (h==null)
-	    throw new Exception(this.getFilename() + ": read failed");
+	    throw new Exception(this.getFileId() + ": read failed");
 
 	String [] u = ParseUnits(h);
 

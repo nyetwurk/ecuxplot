@@ -8,7 +8,7 @@ import au.com.bytecode.opencsv.*;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
-    private String filename;
+    private String fileId;
     private ArrayList<Column> columns;
     private ArrayList<Range> range_cache = new ArrayList<Range>();
     private int rows;
@@ -148,7 +148,7 @@ public class Dataset {
     }
 
     public Dataset(String filename) throws Exception {
-	this.filename = org.nyet.util.Files.filename(filename);
+	this.fileId = org.nyet.util.Files.filename(filename);
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
 	final CSVReader reader = new CSVReader(new FileReader(filename));
@@ -247,7 +247,7 @@ public class Dataset {
 	return c.data.toArray(r.start, r.end);
     }
 
-    public String getFilename() { return this.filename; }
+    public String getFileId() { return this.fileId; }
 
     public String [] getIds() {
 	final String [] ids = new String [this.columns.size()];
