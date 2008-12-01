@@ -8,6 +8,8 @@ import au.com.bytecode.opencsv.*;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
+    private String [] ids;
+    private String [] units;
     private String fileId;
     private ArrayList<Column> columns;
     private ArrayList<Range> range_cache = new ArrayList<Range>();
@@ -32,11 +34,8 @@ public class Dataset {
 	public DoubleArray data;
 
 	public Column(Comparable id, String units) {
-	    this.id = id;
-	    this.units = units;
-	    this.data = new DoubleArray();
+	    this(id, units, new DoubleArray());
 	}
-
 	public Column(Comparable id, String units, DoubleArray data) {
 	    this.id = id;
 	    this.units = units;
@@ -152,9 +151,9 @@ public class Dataset {
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
 	final CSVReader reader = new CSVReader(new FileReader(filename));
-	final String [][] headers = ParseHeaders(reader);
-	for(int i=0;i<headers[0].length;i++)
-	    this.columns.add(new Column(headers[0][i], headers[1][i]));
+	ParseHeaders(reader);
+	for(int i=0;i<this.ids.length;i++)
+	    this.columns.add(new Column(this.ids[i], this.units[i]));
 
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
@@ -168,10 +167,9 @@ public class Dataset {
 
     public ArrayList<Column> getColumns() {return this.columns;}
 
-    public String [][] ParseHeaders(CSVReader reader) throws Exception {
-	final String [] ids = reader.readNext();
-	final String [] units = new String[ids.length];
-	return (new String[][]{ids,units});
+    public void ParseHeaders(CSVReader reader) throws Exception {
+	this.ids = reader.readNext();
+	this.units = new String[ids.length];
     }
 
     public Column get(int id) {
@@ -249,19 +247,10 @@ public class Dataset {
 
     public String getFileId() { return this.fileId; }
 
-    public String [] getIds() {
-	final String [] ids = new String [this.columns.size()];
-	for(int i=0; i<ids.length; i++)
-	    ids[i]=this.columns.get(i).getId();
-	return ids;
-    }
-
-    public String [] getUnits() {
-	final String [] u = new String [this.columns.size()];
-	for(int i=0; i<u.length; i++)
-	    u[i]=this.columns.get(i).getUnits();
-	return u;
-    }
+    public String [] getIds() { return this.ids; }
+    public void setIds(String [] ids) { this.ids=ids; }
+    public String [] getUnits() { return this.units; }
+    public void setUnits(String [] units) { this.units=units; }
 
     public String getLastFilterReason() { return this.lastFilterReason; }
     public int length() { return this.rows; }

@@ -141,8 +141,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private void addChartYFromPrefs() {
-    	this.addChartYFromPrefs(0);
-    	this.addChartYFromPrefs(1);
+	this.addChartYFromPrefs(0);
+	this.addChartYFromPrefs(1);
 	updatePlotTitleAndYAxisLabels();
     }
     private void addChartYFromPrefs(int axis) {
