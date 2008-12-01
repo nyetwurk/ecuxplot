@@ -275,15 +275,28 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    }
 	} else if(source.getText().equals("Clear Chart")) {
 	    // nuke axis menus
-	    this.menuBar.remove(this.xAxis);
-	    this.menuBar.remove(this.yAxis[0]);
-	    this.menuBar.remove(this.yAxis[1]);
+	    if(this.menuBar!=null) {
+		if(this.xAxis!=null)
+		    this.menuBar.remove(this.xAxis);
+		if(this.yAxis!=null) {
+		    if(this.yAxis[0]!=null)
+			this.menuBar.remove(this.yAxis[0]);
+		    if(this.yAxis[1]!=null)
+			this.menuBar.remove(this.yAxis[1]);
+		}
+	    }
 	    this.xAxis = null;
 	    this.yAxis = new AxisMenu[2];
 	    // nuke datasets
 	    this.fileDatasets = new TreeMap<String, ECUxDataset>();
 	    this.setTitle("ECUxPlot");
-	    this.chartPanel.setChart(null);
+	    if(this.chartPanel!=null) {
+		this.chartPanel.setChart(null);
+		this.chartPanel.removeAll();
+		this.chartPanel=null;
+	    }
+	    if(this.fatsFrame!=null)
+		this.fatsFrame.clearDataset();
 	} else if(source.getText().equals("Close Chart")) {
 	    this.dispose();
 	} else if(source.getText().equals("New Chart")) {
