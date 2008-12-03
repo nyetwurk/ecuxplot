@@ -92,6 +92,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	setJMenuBar(this.menuBar);
 
 	setPreferredSize(size!=null?size:this.windowSize());
+
+	FATSChartFrame frame =
+	    FATSChartFrame.createFATSChartFrame(this.fileDatasets, this);
+	frame.pack();
+
+	imageURL = getClass().getResource("icons/ECUxPlot2-64.png");
+	frame.setIconImage(new
+		javax.swing.ImageIcon(imageURL).getImage());
+	this.fatsFrame = frame;
     }
 
 
@@ -195,6 +204,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		else ykey.showFilename();
 	    }
 	}
+
+	this.fatsFrame.setDatasets(this.fileDatasets);
     }
 
     public void loadFiles(ArrayList<String> files) {
@@ -215,15 +226,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
     private void _loadFile(File file, Boolean replace) {
 	try {
-	    ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
-		    this.env, this.filter);
-
 	    // replacing, nuke all the currently loaded datasets
-	    if(replace) {
-		this.fileDatasets = new TreeMap<String, ECUxDataset>();
-		if(this.fatsFrame!=null)
-		    this.fatsFrame.clearDataset();
-	    }
+	    if(replace) this.nuke();
 
 	    if(this.chartPanel == null) {
 		final JFreeChart chart =
@@ -231,6 +235,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		this.chartPanel = new ECUxChartPanel(chart);
 		setContentPane(this.chartPanel);
 	    }
+
+	    ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
+		    this.env, this.filter);
 
 	    this.fileDatasets.put(file.getName(), data);
 	} catch (Exception e) {
@@ -241,12 +248,22 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     public void setMyVisible(Boolean b) {
-	if(this.fatsFrame!=null) {
-	   if(!this.filter.enabled()) b=false;
-	   if(b!=this.fatsFrame.isShowing())
-		this.fatsFrame.setVisible(b);
-	}
+	if(!this.filter.enabled()) b=false;
+	if(b!=this.fatsFrame.isShowing())
+	    this.fatsFrame.setVisible(b);
 	super.setVisible(b);
+    }
+
+    // nuke datasets
+    private void nuke() {
+	this.fileDatasets = new TreeMap<String, ECUxDataset>();
+	this.setTitle("ECUxPlot");
+	if(this.chartPanel!=null) {
+	    this.chartPanel.setChart(null);
+	    this.chartPanel.removeAll();
+	    this.chartPanel=null;
+	}
+	this.fatsFrame.clearDataset();
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -287,16 +304,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    }
 	    this.xAxis = null;
 	    this.yAxis = new AxisMenu[2];
-	    // nuke datasets
-	    this.fileDatasets = new TreeMap<String, ECUxDataset>();
-	    this.setTitle("ECUxPlot");
-	    if(this.chartPanel!=null) {
-		this.chartPanel.setChart(null);
-		this.chartPanel.removeAll();
-		this.chartPanel=null;
-	    }
-	    if(this.fatsFrame!=null)
-		this.fatsFrame.clearDataset();
+	    this.nuke();
 	} else if(source.getText().equals("Close Chart")) {
 	    this.dispose();
 	} else if(source.getText().equals("New Chart")) {
@@ -462,20 +470,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	for(ECUxDataset data : this.fileDatasets.values())
 	    data.buildRanges();
 
-	if(this.fatsFrame==null) {
-	    FATSChartFrame frame =
-		FATSChartFrame.createFATSChartFrame(this.fileDatasets,
-			this);
-	    frame.pack();
-
-	    java.net.URL imageURL =
-		getClass().getResource("icons/ECUxPlot2-64.png");
-	    frame.setIconImage(new
-		    javax.swing.ImageIcon(imageURL).getImage());
-	    this.fatsFrame = frame;
-	} else {
-	    this.fatsFrame.setDatasets(this.fileDatasets);
-	}
+	this.fatsFrame.setDatasets(this.fileDatasets);
 
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	for(int axis=0;axis<plot.getDatasetCount();axis++) {
@@ -584,7 +579,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     private void exitApp() {
 	this.prefsPutWindowSize();
-	if(this.fatsFrame!=null) this.fatsFrame.dispose();
+	this.fatsFrame.dispose();
 	System.exit(0);
     }
 
