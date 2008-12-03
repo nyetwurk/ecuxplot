@@ -92,17 +92,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	setJMenuBar(this.menuBar);
 
 	setPreferredSize(size!=null?size:this.windowSize());
-
-	FATSChartFrame frame =
-	    FATSChartFrame.createFATSChartFrame(this.fileDatasets, this);
-	frame.pack();
-
-	imageURL = getClass().getResource("icons/ECUxPlot2-64.png");
-	frame.setIconImage(new
-		javax.swing.ImageIcon(imageURL).getImage());
-	this.fatsFrame = frame;
     }
-
 
     public static boolean scatter(Preferences prefs) {
 	return prefs.getBoolean("scatter", false);
@@ -205,7 +195,23 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    }
 	}
 
-	this.fatsFrame.setDatasets(this.fileDatasets);
+	/* we can't do this on construct, because fatsFrame does its own
+	   restoreLocation() based on our location, and if we do it during
+	   our constructor, our location is 0,0
+	 */
+	if(this.fatsFrame==null) {
+	    this.fatsFrame =
+		FATSChartFrame.createFATSChartFrame(this.fileDatasets, this);
+	    this.fatsFrame.pack();
+
+	    java.net.URL imageURL =
+		getClass().getResource("icons/ECUxPlot2-64.png");
+
+	    this.fatsFrame.setIconImage(new
+		    javax.swing.ImageIcon(imageURL).getImage());
+	} else {
+	    this.fatsFrame.setDatasets(this.fileDatasets);
+	}
     }
 
     public void loadFiles(ArrayList<String> files) {
@@ -249,6 +255,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     public void setMyVisible(Boolean b) {
 	super.setVisible(b);
+	if(this.fatsFrame==null) return;
 	if(!this.filter.enabled()) b=false;
 	if(b!=this.fatsFrame.isShowing())
 	    this.fatsFrame.setVisible(b);
@@ -263,7 +270,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.chartPanel.removeAll();
 	    this.chartPanel=null;
 	}
-	this.fatsFrame.clearDataset();
+	if(this.fatsFrame!=null)
+	    this.fatsFrame.clearDataset();
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -470,7 +478,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	for(ECUxDataset data : this.fileDatasets.values())
 	    data.buildRanges();
 
-	this.fatsFrame.setDatasets(this.fileDatasets);
+	if(this.fatsFrame!=null)
+	    this.fatsFrame.setDatasets(this.fileDatasets);
 
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	for(int axis=0;axis<plot.getDatasetCount();axis++) {
@@ -580,7 +589,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
     private void exitApp() {
 	this.prefsPutWindowSize();
-	this.fatsFrame.dispose();
+	if(this.fatsFrame!=null)
+	    this.fatsFrame.dispose();
 	System.exit(0);
     }
 

@@ -78,17 +78,17 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	panel.add(rpmPanel, BorderLayout.PAGE_END);
 
 	this.setContentPane(panel);
-	this.setPreferredSize(windowSize());
+	this.setPreferredSize(this.windowSize());
 	restoreLocation();
     }
 
     private void restoreLocation() {
 	final Toolkit tk = Toolkit.getDefaultToolkit();
 	final Dimension d = tk.getScreenSize();
-	final Dimension s = windowSize();
+	final Dimension s = this.windowSize();
 	final Point pl = plotFrame.getLocation();
 
-	Point l = windowLocation();
+	Point l = this.windowLocation();
 	l.translate(pl.x, pl.y);
 	if(l.x<0) l.x=0;
 	if(l.y<0) l.y=0;
