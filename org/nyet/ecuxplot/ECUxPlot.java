@@ -248,10 +248,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     public void setMyVisible(Boolean b) {
+	super.setVisible(b);
 	if(!this.filter.enabled()) b=false;
 	if(b!=this.fatsFrame.isShowing())
 	    this.fatsFrame.setVisible(b);
-	super.setVisible(b);
     }
 
     // nuke datasets
@@ -485,6 +485,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	updateXAxisLabel(plot);
 
 	WaitCursor.stopWaitCursor(this);
+	this.setMyVisible(true);
     }
 
     private void removeAllY() { this.removeAllY(0); this.removeAllY(1); }
