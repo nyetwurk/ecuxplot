@@ -214,6 +214,13 @@ public class ECUxDataset extends Dataset {
 
 	    // KUMSRL
 	    c = new Column(id, "%", a.div(b).div(.001072));
+	} else if(id.equals("Calc Load Corrected")) {
+	    // g/sec to kg/hr
+	    DoubleArray a = this.get("Calc MAF").data.mult(3.6);
+	    DoubleArray b = super.get("RPM").data;
+
+	    // KUMSRL
+	    c = new Column(id, "%", a.div(b).div(.001072));
 	} else if(id.equals("Calc MAF")) {
 	    // mass in g/sec
 	    DoubleArray a = super.get("MassAirFlow").data.
