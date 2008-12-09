@@ -50,9 +50,11 @@ public class ECUxDataset extends Dataset {
 	int ret = LOG_UNKNOWN;
 	h[0]=h[0].trim();
 	if(h[0].matches("^.*day$")) return LOG_VCDS;
-	if(h[0].matches("^Filename:.*") &&
-	    Files.extension(h[0]).equals("zto"))
+	if(h[0].matches("^Filename:.*")) {
+	    if(Files.extension(h[0]).equals("zto") ||
+		h[0].matches(".*<unnamed file>$"))
 	    return LOG_ZEITRONIX;
+	}
 	if(h[0].matches("^TIME$")) return LOG_ECUX;
 	return LOG_UNKNOWN;
     }
