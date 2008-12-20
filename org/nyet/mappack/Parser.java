@@ -88,7 +88,7 @@ public class Parser extends MMapFile {
 	parseHeader(buf);
 
 	projects = new ArrayList<Project>();
-	projects.add(new Project(buf));
+	projects.add(new Project(fname, buf));
     }
 
     public String toString() {

@@ -3,7 +3,10 @@ package org.nyet.mappack;
 import java.util.*;
 import java.nio.ByteBuffer;
 
+import org.nyet.util.Files;
+
 public class Project {
+    public String stem;
     public String name;
     private HexValue[] header = new HexValue[4];
     public String version;
@@ -11,7 +14,8 @@ public class Project {
     public int numMaps;
     private byte header1a;
     public ArrayList<Map> maps;
-    public Project(ByteBuffer b) throws ParserException {
+    public Project(String filename, ByteBuffer b) throws ParserException {
+	this.stem = Files.stem(filename);
 	this.name = Parse.string(b);
 	Parse.buffer(b, this.header);	// unk
 	this.version = Parse.string(b);
@@ -40,8 +44,14 @@ public class Project {
     public String toString(int format, ByteBuffer imagebuf) {
 	if(format == Map.FORMAT_XDF) {
 	    String out = "%%HEADER%%\n";
-	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1000, "FileVers", this.version);
-	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1005, "DefTitle", this.name);
+	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1000, "FileVers",
+		    this.version);
+	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1005, "DefTitle",
+		    this.stem);
+	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1006, "Desc",
+		    this.name);
+	    out += String.format(Map.XDF_LBL+"0x%X\n",1007, "DescSize",
+		    this.name.length()+1);
 	    if(imagebuf!=null && imagebuf.limit()>0)
 		out += String.format(Map.XDF_LBL+"0x%X\n",1030, "BinSize", imagebuf.limit());
 	    out += String.format(Map.XDF_LBL+"%d\n",1034, "BaseOffset", 0);

@@ -45,14 +45,14 @@ public class Map {
 	public ValueType(ByteBuffer b) {
 	    super(b);
 	    String[] l= {
-		"??",
-		"8 Bit",
-		"16 Bit (HiLo)",
-		"16 Bit (LoHi)",
-		"32 Bit (HiLoHilo)",
-		"32 Bit (LoHiLoHi)",
-		"32 BitFloat (HiloHiLo)",
-		"32 BitFloat (LoHiLoHi)"
+		"??",				// 0
+		"8 Bit",			// 1
+		"16 Bit (HiLo)",		// 2
+		"16 Bit (LoHi)",		// 3
+		"32 Bit (HiLoHilo)",		// 4
+		"32 Bit (LoHiLoHi)",		// 5
+		"32 BitFloat (HiloHiLo)",	// 6
+		"32 BitFloat (LoHiLoHi)"	// 7
 	    };
 	    legend = l;
 	    switch(this.enm) {
@@ -319,7 +319,7 @@ public class Map {
 	if(desc.length()>0) {
 	    out += String.format(XDF_LBL+"\"%s\"\n",off+10,"Desc",desc);
 	    out += String.format(XDF_LBL+"0x%X\n",off+11,"DescSize",
-		    desc.length());
+		    desc.length()+1);
 	}
 
 	if(this.value.units.length()>0) {
@@ -331,9 +331,12 @@ public class Map {
 			this.value.units);
 	}
 
-	if(this.valueType.width()>1)
+	if(this.valueType.width()>1) {
+	    int flags = ((this.valueType.enm & 1)<<1) | 1;
 	    out += String.format(XDF_LBL+"0x%X\n",off+50,"SizeInBits",
 		    this.valueType.width()*8);
+	    out += String.format(XDF_LBL+"0x%X\n",off+150,"Flags", flags);
+	}
 
 	out += String.format(XDF_LBL+"0x%X\n",off+100,"Address",
 		this.extent[0].v);
@@ -342,15 +345,15 @@ public class Map {
 	    out += String.format(XDF_LBL+"%f * X", off+200,
 		    table?"ZEq":"Equation", this.value.factor);
 	    if(this.value.offset!=0)
-		out += String.format(" %+f",this.value.offset);
+		out += String.format("+ %f",this.value.offset);
 	    out+=",TH|0|0|0|0|\n";
 	}
 
 	if(table) {
 	    out += String.format(XDF_LBL+"0x%X\n", off+300, "Rows",
-		this.size.x);
-	    out += String.format(XDF_LBL+"0x%X\n", off+305, "Cols",
 		this.size.y);
+	    out += String.format(XDF_LBL+"0x%X\n", off+305, "Cols",
+		this.size.x);
 	    out += String.format(XDF_LBL+"\"%s\"\n", off+320, "XUnits",
 		this.x_axis.units);
 	    out += String.format(XDF_LBL+"\"%s\"\n", off+325, "YUnits",
@@ -372,7 +375,7 @@ public class Map {
 			image);
 		out += String.format(XDF_LBL+"%s\n", off+350, "XLabels",
 			xaxis.toString());
-		out += String.format(XDF_LBL+"0x%X\n", off+350,
+		out += String.format(XDF_LBL+"0x%X\n", off+352,
 		    "XLabelType", x_axis.prec==0?2:1);
 		if(!oneD) {
 		    MapData yaxis = new MapData(new Map(this.y_axis,
