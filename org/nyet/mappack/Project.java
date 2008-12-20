@@ -12,20 +12,20 @@ public class Project {
     private byte header1a;
     public ArrayList<Map> maps;
     public Project(ByteBuffer b) throws ParserException {
-	name = Parse.string(b);
-	Parse.buffer(b, header);	// unk
-	version = Parse.string(b);
-	Parse.buffer(b, header1);	// unk
-	numMaps = b.getInt();
-	header1a = b.get();
-	maps = new ArrayList<Map>();
+	this.name = Parse.string(b);
+	Parse.buffer(b, this.header);	// unk
+	this.version = Parse.string(b);
+	Parse.buffer(b, this.header1);	// unk
+	this.numMaps = b.getInt();
+	this.header1a = b.get();
+	this.maps = new ArrayList<Map>();
 	for(int i=0;i<numMaps;i++) {
 	    try {
-		maps.add(new Map(b));
+		this.maps.add(new Map(b));
 	    } catch (ParserException e) {
 		throw new ParserException(e.b,
 		    String.format("error parsing map %d/%d: %s",
-			(i+1), numMaps, e.toString()),
+			(i+1), this.numMaps, e.toString()),
 		    e.o);
 	    }
 	}
@@ -36,6 +36,21 @@ public class Project {
 	out += " h1: " + Arrays.toString(header1) + "\n";
 	out += "h1a: " + header1a + " (byte)\n";
 	return out;
+    }
+    public String toString(int format, ByteBuffer imagebuf) {
+	if(format == Map.FORMAT_XDF) {
+	    String out = "%%HEADER%%\n";
+	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1000, "FileVers", this.version);
+	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1005, "DefTitle", this.name);
+	    if(imagebuf!=null && imagebuf.limit()>0)
+		out += String.format(Map.XDF_LBL+"0x%X\n",1030, "BinSize", imagebuf.limit());
+	    out += String.format(Map.XDF_LBL+"%d\n",1034, "BaseOffset", 0);
+	    out += String.format(Map.XDF_LBL+"0x%X\n",1300, "GenFlags", 0);
+	    out += String.format(Map.XDF_LBL+"0x%X\n",1325, "ModeFlags", 0);
+	    return out + "%%END%%\n\n";
+	} else {
+	    return "";
+	}
     }
 
     public ArrayList<Map> find(Map map) {

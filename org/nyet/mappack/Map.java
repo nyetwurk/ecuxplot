@@ -7,16 +7,17 @@ import org.nyet.logfile.CSVRow;
 
 public class Map {
     private class Enm implements Comparable {
-	protected int value;
+	protected int enm;
 	public String[] legend;
-	public Enm(ByteBuffer b) { value=b.getInt(); }
+	public Enm(ByteBuffer b) { enm=b.getInt(); }
+	public Enm(int enm) { this.enm=enm; }
 	public String toString() {
-	    if(value<0 || value>legend.length-1)
-		return String.format("(len %d) %x", legend.length, value);
-	    return legend[value];
+	    if(enm<0 || enm>legend.length-1)
+		return String.format("(len %d) %x", legend.length, enm);
+	    return legend[enm];
 	}
 	public int compareTo(Object o) {
-	    return (new Integer(value).compareTo(((Enm)o).value));
+	    return (new Integer(enm).compareTo(((Enm)o).enm));
 	}
     }
 
@@ -24,12 +25,12 @@ public class Map {
 	public Organization(ByteBuffer b) {
 	    super(b);
 	    String[] l= {
-		"??",
-		"??",
-		"Single value",
-		"Onedimensional",
-		"Twodimensional",
-		"2d Inverse"
+		"??",			// 0
+		"??",			// 1
+		"Single value",		// 2
+		"Onedimensional",	// 3
+		"Twodimensional",	// 4
+		"2d Inverse"		// 5
 	    };
 	    legend = l;
 	}
@@ -37,6 +38,10 @@ public class Map {
 
     public class ValueType extends Enm {
 	private int width;
+	public ValueType(int width, int enm) {
+	    super(enm);
+	    this.width = width;
+	}
 	public ValueType(ByteBuffer b) {
 	    super(b);
 	    String[] l= {
@@ -50,7 +55,7 @@ public class Map {
 		"32 BitFloat (LoHiLoHi)"
 	    };
 	    legend = l;
-	    switch(this.value) {
+	    switch(this.enm) {
 		case 1: width=1; break;
 		case 2:
 		case 3: width=2; break;
@@ -110,7 +115,7 @@ public class Map {
     private class Axis extends Value {
 	public DataSource datasource;
 	public HexValue addr;
-	public ValueType values;
+	public ValueType valueType;
 	private int[] header1 = new int[2];	// unk
 	private short header1a;
 	public byte prec;
@@ -124,7 +129,7 @@ public class Map {
 	    super(b);
 	    datasource = new DataSource(b);
 	    addr = new HexValue(b);
-	    values = new ValueType(b);
+	    valueType = new ValueType(b);
 	    Parse.buffer(b, header1);	// unk
 	    header1a = b.getShort();	// unk
 	    prec = b.get();
@@ -139,7 +144,7 @@ public class Map {
 	public String toString() {
 	    String out = super.toString() + "\n";
 	    out += "\t   ds: " + datasource + "\n";
-	    out += "\t addr: " + addr + " " + values + "\n";
+	    out += "\t addr: " + addr + " " + valueType + "\n";
 	    out += "\t   h1: " + Arrays.toString(header1) + "\n";
 	    out += "\t  h1a: " + header1a + " (short)\n";
 	    out += "\t prec: " + prec + " (byte)\n";
@@ -156,7 +161,7 @@ public class Map {
     public String name;
     public Organization organization;
     private int header;			//unk
-    public ValueType values;
+    public ValueType valueType;
     private int[] headera = new int[3];	// unk
     public String id;
     private int header1;		// unk
@@ -192,7 +197,7 @@ public class Map {
 	name = Parse.string(b);
 	organization = new Organization(b);
 	header = b.getInt();
-	values = new ValueType(b);
+	valueType = new ValueType(b);
 	Parse.buffer(b, headera);	// unk
 	id = Parse.string(b);
 	header1 = b.getInt();		// unk
@@ -226,6 +231,15 @@ public class Map {
 	// System.out.println(this);
     }
 
+    // generate a 1d map for an axis
+    public Map(Axis axis, int size) {
+	this.extent[0] = axis.addr;
+	this.size = new Dimension(1, size);
+	this.valueType = axis.valueType;
+	this.value = axis;
+	this.precision = axis.prec;
+    }
+
     public static final String CSVHeader() {
 	final String[] header = {
 	    "ID","Address","Name","Size","Organization","Description",
@@ -248,13 +262,25 @@ public class Map {
 	return (id.equals(this.id.split("[? ]")[0]));
     }
 
-    public String toCSV(ByteBuffer image) throws Exception {
+
+    public static final int FORMAT_CSV = 0;
+    public static final int FORMAT_XDF = 1;
+    public static final String XDF_LBL = "\t%06d %-17s=";
+    public String toString(int format, ByteBuffer image) throws Exception {
+	switch(format) {
+	    case FORMAT_CSV: return toStringCSV(image);
+	    case FORMAT_XDF: return toStringXDF(image);
+	}
+	return "";
+    }
+
+    private String toStringCSV(ByteBuffer image) throws Exception {
 	CSVRow row = new CSVRow();
 	row.add(this.id);
 	row.add(this.extent[0]);
 	row.add(this.name);
 	row.add(this.size);
-	row.add(this.values);
+	row.add(this.valueType);
 	row.add(this.value.description);
 	row.add(this.value.units);
 	row.add(this.x_axis.units);
@@ -274,10 +300,110 @@ public class Map {
 	}
 	return row.toString();
     }
-    public String toCSV() throws Exception { return toCSV((ByteBuffer)null); }
+    private String toStringXDF(ByteBuffer image) throws Exception {
+	String out;
+	boolean table = false;
+	boolean oneD = false;
+	int off = 20000;
+	switch (this.organization.enm) {
+	    case 2: out = "%%CONSTANT%%\n"; break;
+	    case 3: oneD = true; // fallthrough
+	    case 4:
+	    case 5: out = "%%TABLE%%\n"; table = true; break;
+	    default: return "";
+	}
+	if(table) off = 40000;
+	out += String.format(XDF_LBL+"\"%s\"\n",off+5,"Title",this.id);
+	String desc = this.name; // this.value.description;
+
+	if(desc.length()>0) {
+	    out += String.format(XDF_LBL+"\"%s\"\n",off+10,"Desc",desc);
+	    out += String.format(XDF_LBL+"0x%X\n",off+11,"DescSize",
+		    desc.length());
+	}
+
+	if(this.value.units.length()>0) {
+	    if(table)
+		out += String.format(XDF_LBL+"\"%s\"\n",off+330,"ZUnits",
+			this.value.units);
+	    else
+		out += String.format(XDF_LBL+"\"%s\"\n",off+20,"Units",
+			this.value.units);
+	}
+
+	if(this.valueType.width()>1)
+	    out += String.format(XDF_LBL+"0x%X\n",off+50,"SizeInBits",
+		    this.valueType.width()*8);
+
+	out += String.format(XDF_LBL+"0x%X\n",off+100,"Address",
+		this.extent[0].v);
+
+	if(this.value.factor != 1 || this.value.offset != 0) {
+	    out += String.format(XDF_LBL+"%f * X", off+200,
+		    table?"ZEq":"Equation", this.value.factor);
+	    if(this.value.offset!=0)
+		out += String.format(" %+f",this.value.offset);
+	    out+=",TH|0|0|0|0|\n";
+	}
+
+	if(table) {
+	    out += String.format(XDF_LBL+"0x%X\n", off+300, "Rows",
+		this.size.x);
+	    out += String.format(XDF_LBL+"0x%X\n", off+305, "Cols",
+		this.size.y);
+	    out += String.format(XDF_LBL+"\"%s\"\n", off+320, "XUnits",
+		this.x_axis.units);
+	    out += String.format(XDF_LBL+"\"%s\"\n", off+325, "YUnits",
+		this.y_axis.units);
+	    out += String.format(XDF_LBL+"X,%s\n", off+354, "XEq",
+		"TH|0|0|0|0|");
+	    if(!oneD) {
+		out += String.format(XDF_LBL+"X,%s\n", off+364, "YEq",
+		    "TH|0|0|0|0|");
+	    }
+
+	}
+
+	if(image!=null && image.limit()>0) {
+	    MapData mapdata = new MapData(this, image);
+	    if(table) {
+		// LabelType 0x1 = float, 0x2 = integer, 0x4 = string
+		MapData xaxis = new MapData(new Map(this.x_axis, this.size.x),
+			image);
+		out += String.format(XDF_LBL+"%s\n", off+350, "XLabels",
+			xaxis.toString());
+		out += String.format(XDF_LBL+"0x%X\n", off+350,
+		    "XLabelType", x_axis.prec==0?2:1);
+		if(!oneD) {
+		    MapData yaxis = new MapData(new Map(this.y_axis,
+				this.size.y), image);
+		    out += String.format(XDF_LBL+"%s\n", off+360, "YLabels",
+			    yaxis.toString());
+		    out += String.format(XDF_LBL+"0x%X\n", off+362,
+			"YLabelType", y_axis.prec==0?2:1);
+		}
+	    }
+	    /*
+	    out += String.format(XDF_LBL+"%f\n", off+230, "RangeLow",
+		mapdata.getMinimumValue());
+	    out += String.format(XDF_LBL+"%f\n", off+240, "RangeHigh",
+		mapdata.getMaximumValue());
+	    */
+	}
+
+	if(oneD) {
+	    // LabelType 0x1 = float, 0x2 = integer, 0x4 = string
+	    out += String.format(XDF_LBL+"%s\n", off+360, "YLabels",
+		this.y_axis.units);
+	    out += String.format(XDF_LBL+"0x%X\n", off+362,
+		"YLabelType", 4);
+	}
+
+	return out + "%%END%%\n";
+    }
 
     public String toString() {
-	String out = "  map: " + name + " [" + id + "] " + values + "\n";
+	String out = "  map: " + name + " [" + id + "] " + valueType + "\n";
 	out += "  org: " + organization + "\n";
 	out += "    h: " + header + "\n";
 	out += "   ha: " + Arrays.toString(headera) + "\n";

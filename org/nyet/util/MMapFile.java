@@ -8,6 +8,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class MMapFile {
+    public final long length;
     private MappedByteBuffer buf;
 
     public MMapFile(String fname, ByteOrder order) throws Exception {
@@ -19,6 +20,7 @@ public class MMapFile {
 	if(this.buf == null) throw new Exception("constructor failed");
 
 	this.buf.order(order);
+	this.length = file.length();
     }
 
     public ByteBuffer getByteBuffer() throws Exception {

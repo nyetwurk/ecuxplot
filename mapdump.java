@@ -12,6 +12,7 @@ public class mapdump {
 	String filename = null;
 	ArrayList<String> reference = new ArrayList<String>();
 	String image = null;
+	int format = Map.FORMAT_CSV;
 	public Options(String[] args) throws Exception {
 	    if(args.length<1) {
 		throw new Exception("bad syntax");
@@ -22,14 +23,16 @@ public class mapdump {
 		    i++;
 		    if(i>=args.length)
 			throw new Exception("-r requires argument");
-		    reference.add(args[i]);
+		    this.reference.add(args[i]);
 		} else if(args[i].equals("-i")) {
 		    i++;
 		    if(i>=args.length)
 			throw new Exception("-i requires argument");
-		    image=args[i];
+		    this.image=args[i];
+		} else if(args[i].equals("-x")) {
+		    this.format = Map.FORMAT_XDF;
 		} else {
-		    filename=args[i];
+		    this.filename=args[i];
 		}
 	    }
 	}
@@ -53,18 +56,17 @@ public class mapdump {
 	    imagebuf = mmap.getByteBuffer();
 	}
 	// System.out.print(mp);
-	Iterator itp = mp.projects.iterator();
-	System.out.print(Map.CSVHeader()+refsHeader);
-	System.out.println();
-	while(itp.hasNext()) {
-	    Project p = (Project) itp.next();
-	    Iterator itm = p.maps.iterator();
-	    while(itm.hasNext()) {
-		Map m = (Map) itm.next();
-		System.out.print(m.toCSV(imagebuf));
-		Iterator itr = refs.iterator();
-		while(itr.hasNext()) {
-		    Parser pa = (Parser) itr.next();
+	if(opts.format == Map.FORMAT_CSV) {
+	    System.out.print(Map.CSVHeader()+refsHeader);
+	    System.out.println();
+	} else {
+	    System.out.print("XDF\n1.110000\n\n");
+	}
+	for(Project p: mp.projects) {
+	    System.out.print(p.toString(opts.format, imagebuf));
+	    for(Map m: p.maps) {
+		System.out.print(m.toString(opts.format, imagebuf));
+		for(Parser pa: refs) {
 		    ArrayList<Map> matches = pa.find(m);
 		    if(matches.size()>0) {
 			Map r = matches.get(0);
