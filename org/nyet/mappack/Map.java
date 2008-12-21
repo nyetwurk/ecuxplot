@@ -3,7 +3,10 @@ package org.nyet.mappack;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.nio.ByteBuffer;
+
+import org.nyet.util.Strings;
 import org.nyet.logfile.CSVRow;
+
 
 public class Map {
     private class Enm implements Comparable {
@@ -24,7 +27,7 @@ public class Map {
     private class Organization extends Enm {
 	public Organization(ByteBuffer b) {
 	    super(b);
-	    String[] l= {
+	    final String[] l= {
 		"??",			// 0
 		"??",			// 1
 		"Single value",		// 2
@@ -33,6 +36,12 @@ public class Map {
 		"2d Inverse"		// 5
 	    };
 	    legend = l;
+	}
+	public boolean isTable() {
+	    return this.enm>2 && this.enm<6;
+	}
+	public boolean is1D() {
+	    return this.enm == 3;
 	}
     }
 
@@ -44,14 +53,14 @@ public class Map {
 	}
 	public ValueType(ByteBuffer b) {
 	    super(b);
-	    String[] l= {
+	    final String[] l= {
 		"??",				// 0
 		"8 Bit",			// 1
 		"16 Bit (HiLo)",		// 2
 		"16 Bit (LoHi)",		// 3
 		"32 Bit (HiLoHilo)",		// 4
 		"32 Bit (LoHiLoHi)",		// 5
-		"32 BitFloat (HiloHiLo)",	// 6
+		"32 BitFloat (HiLoHiLo)",	// 6
 		"32 BitFloat (LoHiLoHi)"	// 7
 	    };
 	    legend = l;
@@ -66,20 +75,29 @@ public class Map {
 		default: width=0;
 	    }
 	}
+	public boolean isLE() {
+	    return (this.enm>1 && (this.enm & 1)==1);
+	}
 	public int width() { return this.width; }
     }
 
     private class DataSource extends Enm {
 	public DataSource(ByteBuffer b) {
 	    super(b);
-	    String[] l = {
-		"1,2,3",
-		"Eprom",
-		"Eprom, add",
-		"Eprom, subtract",
-		"Free editable"
+	    final String[] l = {
+		"1,2,3",		// 0
+		"Eprom",		// 1
+		"Eprom, add",		// 2
+		"Eprom, subtract",	// 3
+		"Free editable"		// 4
 	    };
 	    legend = l;
+	}
+	public boolean isEeprom() {
+	    return this.enm>0 && this.enm<4;
+	}
+	public boolean isOrdinal() {
+	    return this.enm == 0;
 	}
     }
 
@@ -110,15 +128,28 @@ public class Map {
 	    offset = b.getDouble();
 	}
 	public double convert(double in) { return in*factor+offset; }
+
+	public String eqXDF (int off, String tag) {
+	    String out="";
+	    if(this.factor != 1 || this.offset != 0) {
+		out += String.format(XDF_LBL+"%f * X", off, tag, this.factor);
+		if(this.offset!=0)
+		    out += String.format("+ %f",this.offset);
+		out+=",TH|0|0|0|0|\n";
+	    }
+	    return out;
+	}
     }
 
     private class Axis extends Value {
 	public DataSource datasource;
-	public HexValue addr;
+	public HexValue addr = null;
 	public ValueType valueType;
+	public boolean reciprocal = false;	// todo (find)
+	public boolean sign = false;		// todo (find)
 	private int[] header1 = new int[2];	// unk
 	private short header1a;
-	public byte prec;
+	public byte precision;
 	private int header2;
 	private int count;
 	private int[] header3;
@@ -129,10 +160,13 @@ public class Map {
 	    super(b);
 	    datasource = new DataSource(b);
 	    addr = new HexValue(b);
+	    if(!datasource.isEeprom()) addr = null;
 	    valueType = new ValueType(b);
 	    Parse.buffer(b, header1);	// unk
 	    header1a = b.getShort();	// unk
-	    prec = b.get();
+	    //reciprocal = b.get()==1;	// todo (find)
+	    //sign = b.get()==1;	// todo (find)
+	    precision = b.get();
 	    header2 = b.getInt();		// unk
 	    count = b.getInt();		// unk
 	    header3 = new int[count/4];
@@ -147,7 +181,7 @@ public class Map {
 	    out += "\t addr: " + addr + " " + valueType + "\n";
 	    out += "\t   h1: " + Arrays.toString(header1) + "\n";
 	    out += "\t  h1a: " + header1a + " (short)\n";
-	    out += "\t prec: " + prec + " (byte)\n";
+	    out += "\t prec: " + precision + " (byte)\n";
 	    out += "\t   h2: " + header2 + "\n";
 	    out += "\tcount: " + count + "\n";
 	    out += "\t   h3: " + Arrays.toString(header3) + "\n";
@@ -237,7 +271,7 @@ public class Map {
 	this.size = new Dimension(1, size);
 	this.valueType = axis.valueType;
 	this.value = axis;
-	this.precision = axis.prec;
+	this.precision = axis.precision;
     }
 
     public static final String CSVHeader() {
@@ -300,21 +334,28 @@ public class Map {
 	}
 	return row.toString();
     }
+
+    private static String ordinalArray(int len) {
+	Integer out[] = new Integer[len];
+	for(int i=0;i<len;i++) out[i]=i+1;
+	return Strings.join(",", out);
+    }
+
     private String toStringXDF(ByteBuffer image) throws Exception {
-	String out;
-	boolean table = false;
-	boolean oneD = false;
-	int off = 20000;
-	switch (this.organization.enm) {
-	    case 2: out = "%%CONSTANT%%\n"; break;
-	    case 3: oneD = true; // fallthrough
-	    case 4:
-	    case 5: out = "%%TABLE%%\n"; table = true; break;
-	    default: return "";
+	boolean table = this.organization.isTable();
+	boolean oneD = this.organization.is1D() || this.size.y<=1;
+	String out = table?"%%TABLE%%\n":"%%CONSTANT%%\n";
+	int off = table?40000:20000;
+	String title = "";
+	String desc = "";
+	if(this.id.length()>0) {
+	    title = this.id;
+	    desc = this.name;
+	} else {
+	    title = this.name;
 	}
-	if(table) off = 40000;
-	out += String.format(XDF_LBL+"\"%s\"\n",off+5,"Title",this.id);
-	String desc = this.name; // this.value.description;
+
+	out += String.format(XDF_LBL+"\"%s\"\n",off+5,"Title",title);
 
 	if(desc.length()>0) {
 	    out += String.format(XDF_LBL+"\"%s\"\n",off+10,"Desc",desc);
@@ -332,58 +373,103 @@ public class Map {
 	}
 
 	if(this.valueType.width()>1) {
-	    int flags = ((this.valueType.enm & 1)<<1) | 1;
 	    out += String.format(XDF_LBL+"0x%X\n",off+50,"SizeInBits",
 		    this.valueType.width()*8);
-	    out += String.format(XDF_LBL+"0x%X\n",off+150,"Flags", flags);
 	}
+
+	int flags = this.sign?1:0;
+	if (this.valueType.isLE()) flags |= 2;
 
 	out += String.format(XDF_LBL+"0x%X\n",off+100,"Address",
 		this.extent[0].v);
 
-	if(this.value.factor != 1 || this.value.offset != 0) {
-	    out += String.format(XDF_LBL+"%f * X", off+200,
-		    table?"ZEq":"Equation", this.value.factor);
-	    if(this.value.offset!=0)
-		out += String.format("+ %f",this.value.offset);
-	    out+=",TH|0|0|0|0|\n";
-	}
+	out += this.value.eqXDF(off+200, table?"ZEq":"Equation");
 
 	if(table) {
-	    out += String.format(XDF_LBL+"0x%X\n", off+300, "Rows",
-		this.size.y);
+	    // X (columns)
+	    if (this.x_axis.sign) flags |= 0x40;
+	    if (this.x_axis.valueType.isLE()) flags |= 0x100;
+
+	    // 300s
 	    out += String.format(XDF_LBL+"0x%X\n", off+305, "Cols",
 		this.size.x);
 	    out += String.format(XDF_LBL+"\"%s\"\n", off+320, "XUnits",
 		this.x_axis.units);
-	    out += String.format(XDF_LBL+"\"%s\"\n", off+325, "YUnits",
-		this.y_axis.units);
-	    out += String.format(XDF_LBL+"X,%s\n", off+354, "XEq",
-		"TH|0|0|0|0|");
-	    if(!oneD) {
-		out += String.format(XDF_LBL+"X,%s\n", off+364, "YEq",
-		    "TH|0|0|0|0|");
+	    out += String.format(XDF_LBL+"0x%X\n", off+352,
+		"XLabelType", x_axis.precision==0?2:1);
+
+	    if(this.x_axis.datasource.isOrdinal() && this.size.x>1) {
+		out += String.format(XDF_LBL+"%s\n", off+350, "XLabels",
+			ordinalArray(this.size.x));
+		out += String.format(XDF_LBL+"0x%X\n", off+352, "XLabelType", 2);
+	    } else if(this.x_axis.addr!=null) {
+		out += this.x_axis.eqXDF(off+354, "XEq");
+		// 500s
+		out += String.format(XDF_LBL+"0x%X\n", off+505, "XLabelSource", 1);
+		// 600s
+		out += String.format(XDF_LBL+"0x%X\n", off+600, "XAddress",
+		    this.x_axis.addr.v);
+		out += String.format(XDF_LBL+"%d\n", off+610, "XDataSize",
+		    this.x_axis.valueType.width());
+		out += String.format(XDF_LBL+"%d\n", off+620, "XAddrStep",
+		    this.x_axis.valueType.width());
+		if(x_axis.precision!=2) {
+		    out += String.format(XDF_LBL+"0x%X\n", off+650,
+			"XOutputDig", x_axis.precision);
+		}
 	    }
 
-	}
+	    // Y (rows)
+	    if (this.y_axis.sign) flags |= 0x80;
+	    if (this.y_axis.valueType.isLE()) flags |= 0x200;
 
-	if(image!=null && image.limit()>0) {
+	    // 300s
+	    out += String.format(XDF_LBL+"0x%X\n", off+300, "Rows",
+		this.size.y);
+	    out += String.format(XDF_LBL+"\"%s\"\n", off+325, "YUnits",
+		this.y_axis.units);
+	    // LabelType 0x1 = float, 0x2 = integer, 0x4 = string
+	    out += String.format(XDF_LBL+"0x%X\n", off+362,
+		"YLabelType", y_axis.precision==0?2:1);
+
+	    if(this.y_axis.datasource.isOrdinal() && this.size.y>1 ) {
+		out += String.format(XDF_LBL+"%s\n", off+360, "YLabels",
+			ordinalArray(this.size.y));
+		out += String.format(XDF_LBL+"0x%X\n", off+362, "YLabelType", 2);
+	    } else if(this.y_axis.addr!=null) {
+		out += this.y_axis.eqXDF(off+364, "YEq");
+		// 500s
+		out += String.format(XDF_LBL+"0x%X\n", off+515, "YLabelSource", 1);
+		// 700s
+		out += String.format(XDF_LBL+"0x%X\n", off+700, "YAddress",
+		    this.y_axis.addr.v);
+		out += String.format(XDF_LBL+"%d\n", off+710, "YDataSize",
+		    this.y_axis.valueType.width());
+		out += String.format(XDF_LBL+"%d\n", off+720, "YAddrStep",
+		    this.y_axis.valueType.width());
+		if(y_axis.precision!=2) {
+		    out += String.format(XDF_LBL+"0x%X\n", off+750,
+			"YOutputDig", x_axis.precision);
+		}
+	    }
+	}
+	out += String.format(XDF_LBL+"0x%X\n",off+150,"Flags", flags);
+
+	if(false && image!=null && image.limit()>0) {
 	    MapData mapdata = new MapData(this, image);
-	    if(table) {
-		// LabelType 0x1 = float, 0x2 = integer, 0x4 = string
+	    if(table && this.x_axis.addr!=null) {
 		MapData xaxis = new MapData(new Map(this.x_axis, this.size.x),
 			image);
 		out += String.format(XDF_LBL+"%s\n", off+350, "XLabels",
 			xaxis.toString());
+		// LabelType 0x1 = float, 0x2 = integer, 0x4 = string
 		out += String.format(XDF_LBL+"0x%X\n", off+352,
-		    "XLabelType", x_axis.prec==0?2:1);
-		if(!oneD) {
+		    "XLabelType", x_axis.precision==0?2:1);
+		if(!oneD && this.y_axis.addr!=null) {
 		    MapData yaxis = new MapData(new Map(this.y_axis,
 				this.size.y), image);
 		    out += String.format(XDF_LBL+"%s\n", off+360, "YLabels",
 			    yaxis.toString());
-		    out += String.format(XDF_LBL+"0x%X\n", off+362,
-			"YLabelType", y_axis.prec==0?2:1);
 		}
 	    }
 	    /*
