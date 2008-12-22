@@ -195,7 +195,7 @@ public class Map {
 	    return out;
 	}
     }
-
+    private byte header0;
     public String name;
     public Organization organization;
     private int header;			//unk
@@ -229,9 +229,10 @@ public class Map {
     private byte header9c;		// unk
     private HexValue[] header10 = new HexValue[6];// unk
     private HexValue[] header11 = new HexValue[2];// unk
-    public byte[] term2 = new byte[4];
+    public byte[] term2 = new byte[3];
 
     public Map(ByteBuffer b) throws ParserException {
+	header0 = b.get();		// unk
 	name = Parse.string(b);
 	organization = new Organization(b);
 	header = b.getInt();
@@ -498,7 +499,8 @@ public class Map {
     }
 
     public String toString() {
-	String out = "  map: " + name + " [" + id + "] " + valueType + "\n";
+	String out = "   h0: " + header0 + "\n";
+	out += "  map: " + name + " [" + id + "] " + valueType + "\n";
 	out += "  org: " + organization + "\n";
 	out += "    h: " + header + "\n";
 	out += "   ha: " + Arrays.toString(headera) + "\n";

@@ -12,16 +12,19 @@ public class Project {
     public String version;
     private HexValue[] header1 = new HexValue[5];
     public int numMaps;
-    private byte header1a;
     public ArrayList<Map> maps;
+    private HexValue[] header2 = new HexValue[3];
+    public int numFolders;
+    private byte[] remaining;
     public Project(String filename, ByteBuffer b) throws ParserException {
 	this.stem = Files.stem(filename);
 	this.name = Parse.string(b);
 	Parse.buffer(b, this.header);	// unk
 	this.version = Parse.string(b);
 	Parse.buffer(b, this.header1);	// unk
+
+	// Maps
 	this.numMaps = b.getInt();
-	this.header1a = b.get();
 	this.maps = new ArrayList<Map>();
 	for(int i=0;i<numMaps;i++) {
 	    try {
@@ -33,12 +36,22 @@ public class Project {
 		    e.o);
 	    }
 	}
+
+	Parse.buffer(b, this.header2);	// unk
+
+	// Folders
+	this.numFolders = b.getInt();
+
+	// Trailing junk
+	this.remaining = new byte[b.remaining()];
+	Parse.buffer(b, this.remaining);	// unk
     }
     public String toString () {
 	String out ="project: '" + name + "': (" + version + ") - " + numMaps + " maps\n";
 	out += "  h: " + Arrays.toString(header) + "\n";
 	out += " h1: " + Arrays.toString(header1) + "\n";
-	out += "h1a: " + header1a + " (byte)\n";
+	out += " h2: " + Arrays.toString(header2) + "\n";
+	out += "rem: " + Arrays.toString(remaining) + "\n";
 	return out;
     }
     public String toString(int format, ByteBuffer imagebuf) {
