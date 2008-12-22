@@ -65,32 +65,22 @@ public class Project {
 
     public ArrayList<Map> find(Map map) {
 	ArrayList<Map> matches = new ArrayList<Map>();
-	Iterator itm = maps.iterator();
-	while(itm.hasNext()) {
-	    Map m = (Map) itm.next();
+	for(Map m: this.maps)
 	    if(m.equals(map)) matches.add(m);
-	}
 	return matches;
     }
 
     public ArrayList<Map> find(String id) {
 	ArrayList<Map> matches = new ArrayList<Map>();
-	Iterator itm = maps.iterator();
-	while(itm.hasNext()) {
-	    Map m = (Map) itm.next();
+	for(Map m: this.maps)
 	    if(m.equals(id)) matches.add(m);
-	}
 	return matches;
     }
 
     public ArrayList<Map> find(HexValue v) {
 	ArrayList<Map> matches = new ArrayList<Map>();
-	Iterator itm = maps.iterator();
-	while(itm.hasNext()) {
-	    Map m = (Map) itm.next();
+	for(Map m: this.maps)
 	    if(m.extent[0].equals(v));
-	}
 	return matches;
     }
 }
-

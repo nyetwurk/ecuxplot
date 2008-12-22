@@ -26,6 +26,11 @@ public class Parse {
 	}
     }
 
+    public static final ByteBuffer buffer(ByteBuffer b, byte[] dst) {
+	b.get(dst, 0, dst.length);
+	return b;
+    }
+
     public static final ByteBuffer buffer(ByteBuffer b, short[] dst) {
 	b.asShortBuffer().get(dst);
 	b.position(b.position()+dst.length*2);

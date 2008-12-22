@@ -97,42 +97,29 @@ public class Parser extends MMapFile {
 	out += "version: " + version + "\n";
 	out += "projects: " + projects.size() + "\n";
 
-	Iterator itp = projects.iterator();
-	while(itp.hasNext()) {
-	    Project p = (Project) itp.next();
-	    out += p;
-	}
-
+	for (Project p: projects)
+	    out += p.toString();
 	return out;
     }
 
     public ArrayList<Map> find(Map map) {
 	ArrayList<Map> matches = new ArrayList<Map>();
-	Iterator itp = projects.iterator();
-	while(itp.hasNext()) {
-	    Project p = (Project) itp.next();
+	for (Project p: projects)
 	    matches.addAll(p.find(map));
-	}
 	return matches;
     }
 
     public ArrayList<Map> find(String id) {
 	ArrayList<Map> matches = new ArrayList<Map>();
-	Iterator itp = projects.iterator();
-	while(itp.hasNext()) {
-	    Project p = (Project) itp.next();
+	for (Project p: projects)
 	    matches.addAll(p.find(id));
-	}
 	return matches;
     }
 
     public ArrayList<Map> find(HexValue v) {
 	ArrayList<Map> matches = new ArrayList<Map>();
-	Iterator itp = projects.iterator();
-	while(itp.hasNext()) {
-	    Project p = (Project) itp.next();
+	for (Project p: projects)
 	    matches.addAll(p.find(v));
-	}
 	return matches;
     }
 

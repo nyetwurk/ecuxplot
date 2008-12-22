@@ -1,7 +1,6 @@
 package org.nyet.mappack;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.nio.ByteBuffer;
 
 import org.nyet.util.Strings;
@@ -145,12 +144,12 @@ public class Map {
 	public DataSource datasource;
 	public HexValue addr = null;
 	public ValueType valueType;
+	private int[] header1 = new int[2];	// unk
+	private byte header1a;
 	public boolean reciprocal = false;	// todo (find)
 	public boolean sign = false;		// todo (find)
-	private int[] header1 = new int[2];	// unk
-	private short header1a;
 	public byte precision;
-	private int header2;
+	private byte[] header2 = new byte[3];
 	private int count;
 	private int[] header3;
 	private int header4;
@@ -159,15 +158,16 @@ public class Map {
 	public Axis(ByteBuffer b) throws ParserException {
 	    super(b);
 	    datasource = new DataSource(b);
+	    // always read addr, so we advance pointer regardless of datasource
 	    addr = new HexValue(b);
 	    if(!datasource.isEeprom()) addr = null;
 	    valueType = new ValueType(b);
 	    Parse.buffer(b, header1);	// unk
-	    header1a = b.getShort();	// unk
-	    //reciprocal = b.get()==1;	// todo (find)
-	    //sign = b.get()==1;	// todo (find)
+	    header1a = b.get();		// unk
+	    reciprocal = b.get()==1;
 	    precision = b.get();
-	    header2 = b.getInt();		// unk
+	    Parse.buffer(b, header2);	// unk
+	    sign = b.get()==1;
 	    count = b.getInt();		// unk
 	    header3 = new int[count/4];
 	    Parse.buffer(b, header3);	// unk
@@ -181,8 +181,12 @@ public class Map {
 	    out += "\t addr: " + addr + " " + valueType + "\n";
 	    out += "\t   h1: " + Arrays.toString(header1) + "\n";
 	    out += "\t  h1a: " + header1a + " (short)\n";
+	    out += "\tflags: ";
+	    if(reciprocal) out += "R";
+	    if(sign) out += "S";
+	    out += "\n";
 	    out += "\t prec: " + precision + " (byte)\n";
-	    out += "\t   h2: " + header2 + "\n";
+	    out += "\t   h2: " + Arrays.toString(header2) + "\n";
 	    out += "\tcount: " + count + "\n";
 	    out += "\t   h3: " + Arrays.toString(header3) + "\n";
 	    out += "\t   h4: " + header4 + "\n";
@@ -297,11 +301,13 @@ public class Map {
     }
 
 
-    public static final int FORMAT_CSV = 0;
-    public static final int FORMAT_XDF = 1;
+    public static final int FORMAT_DUMP = 0;
+    public static final int FORMAT_CSV = 1;
+    public static final int FORMAT_XDF = 2;
     public static final String XDF_LBL = "\t%06d %-17s=";
     public String toString(int format, ByteBuffer image) throws Exception {
 	switch(format) {
+	    case FORMAT_DUMP: return toString();
 	    case FORMAT_CSV: return toStringCSV(image);
 	    case FORMAT_XDF: return toStringXDF(image);
 	}

@@ -2,7 +2,6 @@ import java.nio.channels.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.nyet.mappack.*;
 import org.nyet.util.*;
@@ -29,6 +28,8 @@ public class mapdump {
 		    if(i>=args.length)
 			throw new Exception("-i requires argument");
 		    this.image=args[i];
+		} else if(args[i].equals("-d")) {
+		    this.format = Map.FORMAT_DUMP;
 		} else if(args[i].equals("-x")) {
 		    this.format = Map.FORMAT_XDF;
 		} else {
@@ -44,10 +45,8 @@ public class mapdump {
 	Parser mp = new Parser(opts.filename);
 	ArrayList<Parser> refs = new ArrayList<Parser>();
 	ByteBuffer imagebuf=null;
-	Iterator i = opts.reference.iterator();
 	String refsHeader="";
-	while(i.hasNext()) {
-	    String s = (String)i.next();
+	for(String s: opts.reference) {
 	    refs.add(new Parser(s));
 	    refsHeader+="\"" + s + "\",";
 	}
