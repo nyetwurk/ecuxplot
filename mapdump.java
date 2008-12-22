@@ -66,15 +66,23 @@ public class mapdump {
 	}
 	for(Project p: mp.projects) {
 	    System.out.print(p.toString(opts.format, imagebuf));
+	    /*
+	    for(Folder f: p.folders) {
+		System.out.print(f.toString(opts.format));
+		System.out.println();
+	    }
+	    */
 	    for(Map m: p.maps) {
 		System.out.print(m.toString(opts.format, imagebuf));
-		for(Parser pa: refs) {
-		    ArrayList<Map> matches = pa.find(m);
-		    if(matches.size()>0) {
-			Map r = matches.get(0);
-			System.out.print("\"" + r.name + "\",");
-		    } else {
-			System.out.print("\"\",");
+		if(opts.format == Map.FORMAT_CSV) {
+		    for(Parser pa: refs) {
+			ArrayList<Map> matches = pa.find(m);
+			if(matches.size()>0) {
+			    Map r = matches.get(0);
+			    System.out.print("\"" + r.name + "\",");
+			} else {
+			    System.out.print("\"\",");
+			}
 		    }
 		}
 		System.out.println();

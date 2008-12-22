@@ -15,6 +15,7 @@ public class Project {
     public ArrayList<Map> maps;
     private HexValue[] header2 = new HexValue[3];
     public int numFolders;
+    public Folder[] folders;
     private byte[] remaining;
     public Project(String filename, ByteBuffer b) throws ParserException {
 	this.stem = Files.stem(filename);
@@ -41,17 +42,30 @@ public class Project {
 
 	// Folders
 	this.numFolders = b.getInt();
+	this.folders = new Folder[numFolders];
+	for(int i=0;i<numFolders;i++) {
+	    try {
+		Folder f = new Folder(b);
+		if(f.id>=0 && f.id<numFolders)
+		    this.folders[f.id]=f;
+	    } catch (ParserException e) {
+		throw new ParserException(e.b,
+		    String.format("error parsing folder %d/%d: %s",
+			(i+1), this.numMaps, e.toString()),
+		    e.o);
+	    }
+	}
 
 	// Trailing junk
-	this.remaining = new byte[b.remaining()];
-	Parse.buffer(b, this.remaining);	// unk
+	//this.remaining = new byte[b.remaining()];
+	//Parse.buffer(b, this.remaining);	// unk
     }
     public String toString () {
 	String out ="project: '" + name + "': (" + version + ") - " + numMaps + " maps\n";
 	out += "  h: " + Arrays.toString(header) + "\n";
 	out += " h1: " + Arrays.toString(header1) + "\n";
 	out += " h2: " + Arrays.toString(header2) + "\n";
-	out += "rem: " + Arrays.toString(remaining) + "\n";
+	// out += "rem: " + Arrays.toString(remaining) + "\n";
 	return out;
     }
     public String toString(int format, ByteBuffer imagebuf) {
@@ -66,11 +80,14 @@ public class Project {
 			this.name);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1007, "DescSize",
 			this.name.length()+1);
+		out += String.format(Map.XDF_LBL+"\"%s\"\n",1010, "Author", "mesim translator");
 		if(imagebuf!=null && imagebuf.limit()>0)
 		    out += String.format(Map.XDF_LBL+"0x%X\n",1030, "BinSize", imagebuf.limit());
 		out += String.format(Map.XDF_LBL+"%d\n",1034, "BaseOffset", 0);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1300, "GenFlags", 0);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1325, "ModeFlags", 0);
+		for(Folder f: this.folders)
+		    out += String.format(Map.XDF_LBL+"\"%s\"\n", 2000+f.id, "Category"+f.id, f.name);
 		return out + "%%END%%\n\n";
 	    case Map.FORMAT_DUMP:
 		return toString();

@@ -30,7 +30,8 @@ endif
 SCP := scp
 
 MP_SOURCES= HexValue.java Map.java Parser.java Parse.java \
-	    ParserException.java Project.java MapData.java
+	    ParserException.java Project.java MapData.java \
+	    Folder.java
 
 LF_SOURCES= Dataset.java CSVFileFilter.java CSVRow.java
 

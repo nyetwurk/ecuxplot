@@ -200,7 +200,8 @@ public class Map {
     public Organization organization;
     private int header;			//unk
     public ValueType valueType;
-    private int[] headera = new int[3];	// unk
+    private int[] headera = new int[2];	// unk
+    public int folderId;
     public String id;
     private int header1;		// unk
     private byte header1a;		// unk
@@ -238,6 +239,7 @@ public class Map {
 	header = b.getInt();
 	valueType = new ValueType(b);
 	Parse.buffer(b, headera);	// unk
+	folderId = b.getInt();
 	id = Parse.string(b);
 	header1 = b.getInt();		// unk
 	header1a = b.get();		// unk
@@ -306,7 +308,8 @@ public class Map {
     public static final int FORMAT_CSV = 1;
     public static final int FORMAT_XDF = 2;
     public static final String XDF_LBL = "\t%06d %-17s=";
-    public String toString(int format, ByteBuffer image) throws Exception {
+    public String toString(int format, ByteBuffer image)
+	throws Exception {
 	switch(format) {
 	    case FORMAT_DUMP: return toString();
 	    case FORMAT_CSV: return toStringCSV(image);
@@ -352,6 +355,7 @@ public class Map {
 	boolean table = this.organization.isTable();
 	boolean oneD = this.organization.is1D() || this.size.y<=1;
 	String out = table?"%%TABLE%%\n":"%%CONSTANT%%\n";
+	out += String.format(XDF_LBL+"0x%X\n",100,"Cat0ID",this.folderId+1);
 	int off = table?40000:20000;
 	String title = "";
 	String desc = "";
@@ -504,6 +508,7 @@ public class Map {
 	out += "  org: " + organization + "\n";
 	out += "    h: " + header + "\n";
 	out += "   ha: " + Arrays.toString(headera) + "\n";
+	out += "fdrId: " + folderId + "\n";
 	out += "   h1: " + header1 + "\n";
 	out += "  h1a: " + header1a + " (byte)\n";
 	out += "range: " + range[0] + "-" + range[2]+ "\n";
