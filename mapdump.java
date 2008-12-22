@@ -54,12 +54,15 @@ public class mapdump {
 	    MMapFile mmap = new MMapFile(opts.image, ByteOrder.LITTLE_ENDIAN);
 	    imagebuf = mmap.getByteBuffer();
 	}
-	// System.out.print(mp);
-	if(opts.format == Map.FORMAT_CSV) {
-	    System.out.print(Map.CSVHeader()+refsHeader);
-	    System.out.println();
-	} else {
-	    System.out.print("XDF\n1.110000\n\n");
+	switch(opts.format) {
+	    case Map.FORMAT_CSV:
+		System.out.print(Map.CSVHeader()+refsHeader);
+		System.out.println();
+		break;
+	    case Map.FORMAT_XDF:
+		System.out.print("XDF\n1.110000\n\n");
+		break;
+	    default: break;
 	}
 	for(Project p: mp.projects) {
 	    System.out.print(p.toString(opts.format, imagebuf));
