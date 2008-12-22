@@ -360,7 +360,7 @@ public class Map {
 	String title = "";
 	String desc = "";
 	if(this.id.length()>0) {
-	    title = this.id;
+	    title = this.id.split(" ")[0];	// HACK: drop the junk
 	    desc = this.name;
 	} else {
 	    title = this.name;
