@@ -42,24 +42,27 @@ public class Project {
 	return out;
     }
     public String toString(int format, ByteBuffer imagebuf) {
-	if(format == Map.FORMAT_XDF) {
-	    String out = "%%HEADER%%\n";
-	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1000, "FileVers",
-		    this.version);
-	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1005, "DefTitle",
-		    this.stem);
-	    out += String.format(Map.XDF_LBL+"\"%s\"\n",1006, "Desc",
-		    this.name);
-	    out += String.format(Map.XDF_LBL+"0x%X\n",1007, "DescSize",
-		    this.name.length()+1);
-	    if(imagebuf!=null && imagebuf.limit()>0)
-		out += String.format(Map.XDF_LBL+"0x%X\n",1030, "BinSize", imagebuf.limit());
-	    out += String.format(Map.XDF_LBL+"%d\n",1034, "BaseOffset", 0);
-	    out += String.format(Map.XDF_LBL+"0x%X\n",1300, "GenFlags", 0);
-	    out += String.format(Map.XDF_LBL+"0x%X\n",1325, "ModeFlags", 0);
-	    return out + "%%END%%\n\n";
-	} else {
-	    return "";
+	switch(format) {
+	    case Map.FORMAT_XDF:
+		String out = "%%HEADER%%\n";
+		out += String.format(Map.XDF_LBL+"\"%s\"\n",1000, "FileVers",
+			this.version);
+		out += String.format(Map.XDF_LBL+"\"%s\"\n",1005, "DefTitle",
+			this.stem);
+		out += String.format(Map.XDF_LBL+"\"%s\"\n",1006, "Desc",
+			this.name);
+		out += String.format(Map.XDF_LBL+"0x%X\n",1007, "DescSize",
+			this.name.length()+1);
+		if(imagebuf!=null && imagebuf.limit()>0)
+		    out += String.format(Map.XDF_LBL+"0x%X\n",1030, "BinSize", imagebuf.limit());
+		out += String.format(Map.XDF_LBL+"%d\n",1034, "BaseOffset", 0);
+		out += String.format(Map.XDF_LBL+"0x%X\n",1300, "GenFlags", 0);
+		out += String.format(Map.XDF_LBL+"0x%X\n",1325, "ModeFlags", 0);
+		return out + "%%END%%\n\n";
+	    case Map.FORMAT_DUMP:
+		return toString();
+	    default:
+		return "";
 	}
     }
 
