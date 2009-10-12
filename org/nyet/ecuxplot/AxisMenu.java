@@ -134,6 +134,10 @@ public class AxisMenu extends JMenu {
 		this.add("Calc Boost Spool Rate Zeit (RPM)", listener, bg);
 	    }
 	    addToSubmenu("Zeitronix", item);
+	} else if(id.matches("Engine torque")) {
+	    this.add(item);
+	    this.add("Engine torque (ft-lb)", listener, bg);
+	    this.add("Engine HP", listener, bg);
 	} else {
 	    this.add(item);
 	}

@@ -203,8 +203,8 @@ public class DoubleArray
     public DoubleArray derivative(DoubleArray d) {
 	return new DoubleArray(this._derivative(d.toArray(), 0));
     }
-    public DoubleArray derivative(DoubleArray d, boolean smooth) {
-	return new DoubleArray(this._derivative(d.toArray(), smooth?11:0));
+    public DoubleArray derivative(DoubleArray d, int window) {
+	return new DoubleArray(this._derivative(d.toArray(), window));
     }
 
     public double[] _integral(double[] d, double min, double max) {
