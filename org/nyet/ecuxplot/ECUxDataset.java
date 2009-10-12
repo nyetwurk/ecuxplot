@@ -299,11 +299,11 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc Acceleration (RPM/s)")) {
 	    DoubleArray y = super.get("RPM").data.smooth();
 	    DoubleArray x = this.get("TIME").data;
-	    c = new Column(id, "RPM/s", y.derivative(x,true).max(0));
+	    c = new Column(id, "RPM/s", y.derivative(x).max(0));
 	} else if(id.equals("Calc Acceleration (m/s^2)")) {
 	    DoubleArray y = this.get("Calc Velocity").data;
 	    DoubleArray x = this.get("TIME").data;
-	    c = new Column(id, "m/s^2", y.derivative(x,true).max(0));
+	    c = new Column(id, "m/s^2", y.derivative(x).max(0));
 	} else if(id.equals("Calc Acceleration (g)")) {
 	    DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
 	    c = new Column(id, "g", a.div(9.80665));

@@ -191,8 +191,9 @@ public class DoubleArray
         for(int i=0;i<this.sp;i++) {
             int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
             out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
+            // System.out.println(i +" ["+ i0 + ", " + i1 + "]:" + this.get(i1) + "," + this.get(i0) + "/" + d[i1] +","+d[i0]);
         }
-	if(window>0) {
+	if(window>0 && window<this.sp/2) {
 	    MovingAverageSmoothing s = new MovingAverageSmoothing(window);
 	    return s.smoothAll(out);
 	} else {
@@ -231,6 +232,8 @@ public class DoubleArray
     }
 
     public DoubleArray smooth() {
+	if(this.sp<4) return new DoubleArray(this.toArray());
+	if(this.sp<10) return movingAverage(this.sp/4);
 	SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
 	return new DoubleArray(s.smoothAll(this.toArray()));
     }
