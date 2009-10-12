@@ -30,12 +30,18 @@ public class ECUxDataset extends Dataset {
 
 	this.rpm = get("RPM");
 	this.pedal = get(new String []
-		{"AcceleratorPedalPosition", "Zeitronix TPS"});
+		{"AcceleratorPedalPosition", "Zeitronix TPS", "Accelerator position"});
 	this.throttle = get(new String []
 		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle"});
 	this.gear = get("Gear");
 	// look for zeitronix boost for filtering
 	this.boost = get("Zeitronix Boost");
+	/*
+	if(this.pedal==null && this.throttle==null) {
+	    if(this.pedal==null) System.out.println("could not find pedal position data");
+	    if(this.throttle==null) System.out.println("could not find throttle position data");
+	}
+	*/
 	buildRanges(); // regenerate ranges, splines
     }
 
@@ -105,23 +111,44 @@ public class ECUxDataset extends Dataset {
 	this.ticks_per_sec = 1;
 	switch(log_use) {
 	    case LOG_VCDS:
-		reader.readNext();	// ECU type
-		reader.readNext();	// blank
-		reader.readNext();	// group
-		h = reader.readNext(); // headers
-		String[] h2 = reader.readNext(); // headers
-		u = reader.readNext(); // units
+		String[] g,h2;
+					// 1: date read already during detect
+		reader.readNext();	// 2: ECU type
+		reader.readNext();	// 3: blank or GXXX/FXXX headers
+		g = reader.readNext();	// 4: Group or blank
+		h = reader.readNext();	// 5: headers 1 or Group
+		h2 = reader.readNext();	// 6: headers 2 or units or headers
+		if(g.length<h.length) { // if 4 is blank, group is 4, and 5 is headers
+		    g=h;		// 4 is group
+		    h=h2;		// 5 is headers
+		    h2=new String[h.length];	// h2 isn't needed
+		}
+		u = reader.readNext();	// 7: units
 		for(int i=0;i<h.length;i++) {
-		    h[i]=h[i].trim();
-		    h2[i]=h2[i].trim();
-		    u[i]=u[i].trim();
+		    g[i]=(g[i]!=null)?g[i].trim():"";
+		    h[i]=(h[i]!=null)?h[i].trim():"";
+		    h2[i]=(h2[i]!=null)?h2[i].trim():"";
+		    u[i]=(u[i]!=null)?u[i].trim():"";
+		    // g=TIME and h=STAMP means this is a TIME column
+		    if(g[i].equals("TIME") && h[i].equals("STAMP")) {
+			g[i]="";
+			h[i]="TIME";
+		    }
+		    // if h2 has a copy of units, nuke it
 		    if(h2[i].equals(u[i])) h2[i]="";
+		    // concat h1 and h2 if both are non zero length
 		    if(h[i].length()>0 && h2[i].length()>0)  h[i]+=" ";
 		    h[i]+=h2[i];
+		    // remap engine speed to "RPM'
 		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
+		    // ignore weird letter case for throttle angle
 		    if(h[i].matches("^Throttle [Aa]ngle.*")) h[i]="Throttle Angle";
+		    // copy header from u if this h is empty
 		    if(h[i].length()==0) h[i]=u[i];
-		    // System.out.println(h[i] + " [" + u[i] + "]");
+		    // blacklist Group 24 Accelerator position, it has max of 80%?
+		    if(g[i].matches("^Group 24.*") && h[i].equals("Accelerator position"))
+			h[i]=("Accelerator position (G024)");
+		    // System.out.println(g[i] +": " + h[i] + " [" + u[i] + "]");
 		}
 		break;
 	    case LOG_ZEITRONIX:
@@ -142,6 +169,7 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].equals("Lambda")) h[i]="Zeitronix Lambda";
 		    // time is broken
 		    if(h[i].equals("Time")) h[i]=null;
+		    // System.out.println(h[i] + " [" + u[i] + "]");
 		}
 		break;
 	    case LOG_ECUX:
