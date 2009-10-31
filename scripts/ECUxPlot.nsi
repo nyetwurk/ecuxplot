@@ -1,7 +1,7 @@
 
 ; -------------------------------
 ; Start
- 
+
   !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
   !include "scripts\fileassoc.nsh"
   Name "ECUxPlot"
@@ -9,33 +9,33 @@
   !define MUI_FILE "ECUxPlot"
   ; passed from command line
   ; !define VERSION "0.9r0.4"
- 
+
   CRCCheck On
- 
- 
+
+
 ;--------------------------------
 ;General
- 
+
   OutFile "${MUI_FILE}-${VERSION}-setup.exe"
   ShowInstDetails "nevershow"
   ShowUninstDetails "nevershow"
   ;SetCompressor "bzip2"
- 
+
   !define MUI_ICON "${MUI_FILE}.ico"
   !define MUI_UNICON "${MUI_FILE}.ico"
- 
- 
+
+
 ;--------------------------------
 ;Folder selection page
- 
+
   InstallDir "$PROGRAMFILES\${MUI_FILE}"
   InstallDirRegKey HKCU "Software\${MUI_FILE}" ""
   RequestExecutionLevel user
- 
- 
+
+
 ;--------------------------------
 ;Modern UI Configuration
- 
+
   !define MUI_ABORTWARNING
 
 ;--------------------------------
@@ -47,36 +47,36 @@
 
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
- 
- 
+
+
 ;--------------------------------
 ;Language
- 
+
   !insertmacro MUI_LANGUAGE "English"
- 
- 
-;-------------------------------- 
+
+
+;--------------------------------
 ;Modern UI System
- 
-;  !insertmacro MUI_SYSTEM 
- 
- 
+
+;  !insertmacro MUI_SYSTEM
+
+
 ;--------------------------------
 ;Data
- 
+
   ;LicenseData "gpl-3.0.txt"
- 
- 
-;-------------------------------- 
-;Installer Sections     
+
+
+;--------------------------------
+;Installer Sections
 Section "install" InstallationInfo
 
 ;Delete old files
-  Delete "$INSTDIR\*.*"    
+  Delete "$INSTDIR\*.*"
 
 ;Add files
   SetOutPath "$INSTDIR"
- 
+
   File "${MUI_FILE}.exe"
   File "${MUI_FILE}.sh"
   File "${MUI_FILE}-${VERSION}.jar"
@@ -90,10 +90,10 @@ Section "install" InstallationInfo
   File "gpl-3.0.txt"
   File "flanagan-license.txt"
   File "README-Zeitronix.txt"
- 
+
 ;create desktop shortcut
   CreateShortCut "$DESKTOP\${MUI_FILE}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""
- 
+
 ;create start-menu items
   CreateDirectory "$SMPROGRAMS\${MUI_FILE}"
   CreateShortCut "$SMPROGRAMS\${MUI_FILE}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
@@ -109,22 +109,22 @@ Section "install" InstallationInfo
 ;write uninstall information to the registry
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}" "DisplayName" "${MUI_FILE} version ${VERSION} (remove only)"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}" "UninstallString" "$INSTDIR\Uninstall.exe"
- 
+
   WriteUninstaller "$INSTDIR\Uninstall.exe"
- 
+
 SectionEnd
- 
- 
-;--------------------------------    
-;Uninstaller Section  
+
+
+;--------------------------------
+;Uninstaller Section
 Section "Uninstall"
- 
-;Delete Files 
-  RMDir /r "$INSTDIR\*.*"    
- 
+
+;Delete Files
+  RMDir /r "$INSTDIR\*.*"
+
 ;Remove the installation directory
   RMDir "$INSTDIR"
- 
+
 ;Delete Start Menu Shortcuts
   Delete "$DESKTOP\${MUI_FILE}.lnk"
   Delete "$SMPROGRAMS\${MUI_FILE}\*.*"
@@ -141,23 +141,23 @@ Section "Uninstall"
   DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}"
   DeleteRegKey HKCU "Software\Javasoft\Prefs\org\nyet\${MUI_FILE}"
   DeleteRegKey /ifempty HKCU "Software\Javasoft\Prefs\org\nyet"
- 
+
 SectionEnd
- 
- 
-;--------------------------------    
+
+
+;--------------------------------
 ;MessageBox Section
- 
- 
+
+
 ;Function that calls a messagebox when installation finished correctly
 Function .onInstSuccess
   MessageBox MB_OK "You have successfully installed ${MUI_FILE} version ${VERSION}. Use the desktop icon to start the program."
 FunctionEnd
- 
- 
+
+
 Function un.onUninstSuccess
   MessageBox MB_OK "You have successfully uninstalled ${MUI_FILE} version ${VERSION}."
 FunctionEnd
- 
- 
+
+
 ;eof
