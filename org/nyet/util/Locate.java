@@ -86,4 +86,18 @@ public class Locate {
     if(dir.isDirectory()) return dir;
     return dir.getParentFile();
   }
+
+  public static File getClassDirectory(Object o) throws IOException, FileNotFoundException {
+    return getClassDirectory(o.getClass());
+  }
+
+  public static File getDataDirectory(String app) {
+    String dir = System.getProperty("user.home");
+    if(System.getProperty("os.name").startsWith("Windows")) {
+	dir += File.separator + "Application Data";
+    } else {
+	app = "." + app;
+    }
+    return new File(dir, app);
+  }
 }

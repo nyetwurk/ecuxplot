@@ -46,37 +46,52 @@ public final class ProfileMenu extends JMenu {
 
     private void updateProfiles() {
 	try {
-	    LoadProfileAction lpa = new LoadProfileAction();
-	    SaveProfileAction spa = new SaveProfileAction();
-	    File dir=new File(Locate.getClassDirectory(this.getClass()),
+	    File dir=new File(Locate.getClassDirectory(this),
 		"profiles");
-	    File profiles[] = dir.listFiles();
-	    for(File p : profiles) {
+	    LoadProfileAction lpa = new LoadProfileAction(dir);
+	    for(File p : dir.listFiles()) {
 		if(p.isDirectory() && !p.getName().startsWith(".")) {
 		    JMenuItem jmi = new JMenuItem(p.getName());
 		    jmi.addActionListener(lpa);
 		    this.loadProfilesMenu.add(jmi);
-		    jmi = new JMenuItem(p.getName());
-		    jmi.addActionListener(spa);
-		    this.saveProfilesMenu.add(jmi);
 		}
 	    }
-	    this.saveProfilesMenu.add(new JSeparator());
+	    dir=new File(Locate.getDataDirectory("ECUxPlot"),
+		"profiles");
+	    SaveProfileAction spa = new SaveProfileAction(dir);
+	    File profiles[] = dir.listFiles();
+	    if(profiles!=null && profiles.length>0) {
+		this.loadProfilesMenu.add(new JSeparator());
+		lpa = new LoadProfileAction(dir);
+		for(File p : profiles) {
+		    if(p.isDirectory() && !p.getName().startsWith(".")) {
+			JMenuItem jmi = new JMenuItem(p.getName());
+			jmi.addActionListener(lpa);
+			this.loadProfilesMenu.add(jmi);
+			jmi = new JMenuItem(p.getName());
+			jmi.addActionListener(spa);
+			this.saveProfilesMenu.add(jmi);
+		    }
+		}
+		this.saveProfilesMenu.add(new JSeparator());
+	    }
 	    JMenuItem jmi = new JMenuItem("New Profile...");
 	    jmi.addActionListener(spa);
 	    this.saveProfilesMenu.add(jmi);
 	} catch (Exception e) {
-	    System.out.println(e);
+	    ProfileMenu pm = ProfileMenu.this;
+	    JOptionPane.showMessageDialog(pm.plotFrame, e.toString());
 	};
     }
 
     private class LoadProfileAction implements ActionListener {
+	private File dir;
+	public LoadProfileAction(File dir) {this.dir=dir;}
 	public void actionPerformed(ActionEvent event) {
 	    ProfileMenu pm = ProfileMenu.this;
 	    try {
-		File dir=new File(Locate.getClassDirectory(this.getClass()),
-		    "profiles/"+event.getActionCommand());
-		File profiles[] = dir.listFiles(new GenericFileFilter("xml"));
+		File pdir=new File(this.dir, event.getActionCommand());
+		File profiles[] = pdir.listFiles(new GenericFileFilter("xml"));
 		for(File p : profiles) {
 		    pm.plotFrame.getPreferences().importPreferences(new
 			FileInputStream(p));
@@ -89,6 +104,8 @@ public final class ProfileMenu extends JMenu {
     }
 
     private class SaveProfileAction implements ActionListener {
+	private File dir;
+	public SaveProfileAction(File dir) {this.dir=dir;}
 	public void actionPerformed(ActionEvent event) {
 	    String prof = event.getActionCommand();
 	    boolean make = false;
@@ -97,6 +114,7 @@ public final class ProfileMenu extends JMenu {
 		prof = JOptionPane.showInputDialog(pm, "Enter profile name");
 		if(prof == null || prof.length() == 0) return;
 		if(prof.startsWith(".") || prof.contains(":") ||
+		    prof.contains(File.separator) ||
 		    prof.contains("/") || prof.contains("\\")) {
 		    JOptionPane.showMessageDialog(pm.plotFrame,
 			"Invalid profile name");
@@ -105,24 +123,27 @@ public final class ProfileMenu extends JMenu {
 		make = true;
 	    }
 	    try {
-		File dir=new File(Locate.getClassDirectory(this.getClass()),
-		    "profiles/"+prof);
+		File pdir=new File(this.dir, prof);
 		if(make) {
-		    if(dir.isDirectory()) {
+		    if(pdir.isDirectory()) {
 			JOptionPane.showMessageDialog(pm.plotFrame,
 			    "Profile already exists");
 			return;
 		    }
-		    dir.mkdir();
+		    if(!pdir.mkdirs()) {
+			JOptionPane.showMessageDialog(pm.plotFrame,
+			    "Failed to create profile");
+			return;
+		    }
 		    pm.saveProfilesMenu.removeAll();
 		    pm.loadProfilesMenu.removeAll();
 		    updateProfiles();
 		}
-		if(dir.isDirectory()) {
+		if(pdir.isDirectory()) {
 		    pm.plotFrame.getEnv().c.get().exportNode(new
-			FileOutputStream(new File(dir, "constants.xml")));
+			FileOutputStream(new File(pdir, "constants.xml")));
 		    pm.plotFrame.getEnv().f.get().exportNode(new
-			FileOutputStream(new File(dir, "fueling.xml")));
+			FileOutputStream(new File(pdir, "fueling.xml")));
 		}
 	    } catch (Exception e) {
 		JOptionPane.showMessageDialog(pm.plotFrame, e.toString());

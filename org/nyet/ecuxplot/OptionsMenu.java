@@ -14,8 +14,6 @@ import javax.swing.JSeparator;
 public final class OptionsMenu extends JMenu {
     private ECUxPlot plotFrame;
     private JMenu presetsMenu;
-    private JMenu loadProfilesMenu;
-    private JMenu saveProfilesMenu;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
 	super(id);

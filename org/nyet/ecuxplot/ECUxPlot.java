@@ -80,7 +80,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
 
 	this.menuBar.add(new FileMenu("File", this));
-	this.menuBar.add(new ProfileMenu("Profiles", this));
+	this.menuBar.add(new ProfileMenu("Vehicle Profiles", this));
 	this.menuBar.add(new OptionsMenu("Options", this));
 
 	this.menuBar.add(Box.createHorizontalGlue());

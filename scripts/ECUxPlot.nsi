@@ -72,7 +72,7 @@
 Section "install" InstallationInfo
 
 ;Delete old files
-  Delete "$INSTDIR\*.*"
+  RMDir /r "$INSTDIR\*.*"
 
 ;Add files
   SetOutPath "$INSTDIR\profiles"
