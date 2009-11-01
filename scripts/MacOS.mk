@@ -9,6 +9,7 @@ build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
 	@mkdir -p build/ECUxPlot.app/Contents/Resources/Java
 	install -m 644 $(INSTALL_FILES) build/ECUxPlot.app/Contents/Resources/Java
 	install ECUxPlot.sh build/ECUxPlot.app/Contents/Resources/Java
+	cp -a --parents $(PROFILES) build/ECUxPlot.app/Contents/Resources/Java
 	touch build/.ECUxPlot.app.stamp
 
 build/ECUxPlot.app/Contents/%: MacOS.data/%.template Makefile
