@@ -40,14 +40,15 @@ UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 	    MenuListener.java SubActionListener.java \
 	    GenericFileFilter.java Unsigned.java DoubleArray.java \
 	    MovingAverageSmoothing.java Files.java Version.java \
-	    BrowserLaunch.java Strings.java
+	    BrowserLaunch.java Strings.java Locate.java
 
 VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
 EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java \
 	    ECUxChartPanel.java AboutPanel.java \
 	    FATSChartFrame.java FATSDataset.java \
-	    HelpMenu.java AxisMenu.java FileMenu.java OptionsMenu.java \
+	    FileMenu.java OptionsMenu.java ProfileMenu.java \
+	    AxisMenu.java HelpMenu.java \
 	    PreferencesEditor.java Env.java Units.java \
 	    Filter.java FilterEditor.java \
 	    Constants.java ConstantsEditor.java \
@@ -106,6 +107,8 @@ mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
 $(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
 $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
+PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
+
 INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar \
 		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt \
 		gpl-3.0.txt flanagan-license.txt
@@ -122,19 +125,21 @@ GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 include scripts/Windows.mk
 include scripts/MacOS.mk
 
-ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES) ECUxPlot.sh
+ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
 	@rm -f $@
 	@rm -rf build/ECUxPlot
-	@mkdir -p build/ECUxPlot
-	install -m 644 $(INSTALL_FILES) build/ECUxPlot
+	mkdir -p build/ECUxPlot
+	install -D -m 644 $(INSTALL_FILES) build/ECUxPlot
 	install ECUxPlot.sh build/ECUxPlot
+	cp -a --parents $(PROFILES) $(INSTALL_DIR)
 	(cd build; tar czvf ../$@ ECUxPlot)
 
-install: $(INSTALL_FILES)
+install: $(INSTALL_FILES) $(PROFILES)
 	mkdir -p $(INSTALL_DIR)
 	rm -f $(INSTALL_DIR)/ECUxPlot*.jar
-	install -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
+	install -D -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
 	install ECUxPlot.sh $(INSTALL_DIR)
+	cp -a --parents $(PROFILES) $(INSTALL_DIR)
 	ln -sf ../ecuxplot/ECUxPlot.sh /usr/local/bin/ecuxplot
 
 tag:

@@ -11,13 +11,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JCheckBox;
 import javax.swing.JSeparator;
 
-public final class OptionsMenu extends JMenu implements ActionListener {
+public final class OptionsMenu extends JMenu {
     private ECUxPlot plotFrame;
     private JMenu presetsMenu;
+    private JMenu loadProfilesMenu;
+    private JMenu saveProfilesMenu;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
 	super(id);
 	this.plotFrame=plotFrame;
+	JMenuItem jmi;
+	JCheckBox jcb;
 
         Preferences prefs = plotFrame.getPreferences();
 
@@ -25,7 +29,9 @@ public final class OptionsMenu extends JMenu implements ActionListener {
 	updatePresets();
 	this.add(this.presetsMenu);
 
-	JCheckBox jcb = new JCheckBox("Scatter plot",
+	this.add(new JSeparator());
+
+	jcb = new JCheckBox("Scatter plot",
 		ECUxPlot.scatter(prefs));
 	jcb.addActionListener(plotFrame);
 	this.add(jcb);
@@ -40,25 +46,13 @@ public final class OptionsMenu extends JMenu implements ActionListener {
 
 	this.add(new JSeparator());
 
-	JMenuItem jmi = new JMenuItem("Configure filter...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
-
-	this.add(new JSeparator());
-
-	jmi = new JMenuItem("Edit constants...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
-
-	jmi = new JMenuItem("Edit fueling...");
+	jmi = new JMenuItem("Configure filter...");
 	jmi.addActionListener(plotFrame);
 	this.add(jmi);
 
 	jmi = new JMenuItem("Edit SAE constants...");
 	jmi.addActionListener(plotFrame);
 	this.add(jmi);
-
-	this.add(new JSeparator());
 
 	jmi = new JMenuItem("Edit PID...");
 	jmi.addActionListener(plotFrame);
@@ -67,25 +61,29 @@ public final class OptionsMenu extends JMenu implements ActionListener {
 
     private void updatePresets() {
 	TreeMap<Comparable, Preset> presets = this.plotFrame.getPresets();
+	PresetAction pa = new PresetAction();
 	if(presets!=null) {
 	    for(Preset p : presets.values()) {
 		JMenuItem jmi = new JMenuItem(p.getName().toString());
-		jmi.addActionListener(this);
+		jmi.addActionListener(pa);
 		if(!p.getName().equals("Undo"))
 		    this.presetsMenu.add(jmi);
 	    }
 	}
 	this.presetsMenu.add(new JSeparator());
 	JMenuItem jmi = new JMenuItem("Undo");
-	jmi.addActionListener(this);
+	jmi.addActionListener(pa);
 	this.presetsMenu.add(jmi);
     }
 
-    public void actionPerformed(ActionEvent event) {
-	if(!event.getActionCommand().equals("Undo"))
-	    this.plotFrame.savePreset("Undo");
-	this.presetsMenu.removeAll();
-	updatePresets();
-	this.plotFrame.loadPreset(event.getActionCommand());
+    private class PresetAction implements ActionListener {
+	public void actionPerformed(ActionEvent event) {
+	    OptionsMenu om = OptionsMenu.this;
+	    if(!event.getActionCommand().equals("Undo"))
+		om.plotFrame.savePreset("Undo");
+	    om.presetsMenu.removeAll();
+	    updatePresets();
+	    om.plotFrame.loadPreset(event.getActionCommand());
+	}
     }
 }

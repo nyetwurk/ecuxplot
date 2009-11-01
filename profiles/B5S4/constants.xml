@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd">
+<preferences EXTERNAL_XML_VERSION="1.0">
+  <root type="user">
+    <map/>
+    <node name="org">
+      <map/>
+      <node name="nyet">
+        <map/>
+        <node name="ecuxplot">
+          <map/>
+          <node name="constants">
+            <map>
+              <entry key="Cd" value="0.31"/>
+              <entry key="FA" value="2.034"/>
+              <entry key="driveline_loss" value="0.25"/>
+              <entry key="mass" value="1700.0"/>
+              <entry key="rpm_per_mph" value="72.1"/>
+            </map>
+          </node>
+        </node>
+      </node>
+    </node>
+  </root>
+</preferences>

@@ -70,4 +70,6 @@ public class Constants {
     public void driveline_loss_string(String val) {
 	this.prefs.putDouble("driveline_loss", Double.valueOf(val)/100);
     }
+
+    public Preferences get() {return this.prefs;}
 }

@@ -79,11 +79,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 
 	this.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
 
-	FileMenu filemenu = new FileMenu("File", this);
-	this.menuBar.add(filemenu);
-
-	OptionsMenu optmenu = new OptionsMenu("Options", this);
-	this.menuBar.add(optmenu);
+	this.menuBar.add(new FileMenu("File", this));
+	this.menuBar.add(new ProfileMenu("Profiles", this));
+	this.menuBar.add(new OptionsMenu("Options", this));
 
 	this.menuBar.add(Box.createHorizontalGlue());
 	HelpMenu helpMenu = new HelpMenu("Help", this);
@@ -174,15 +172,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	if(this.yAxis[1]!=null) this.menuBar.remove(this.yAxis[1]);
 
 	this.xAxis = new AxisMenu("X Axis", headers, this, true, this.xkey());
-	this.menuBar.add(xAxis, 2);
+	this.menuBar.add(xAxis, 3);
 
 	this.yAxis[0] = new AxisMenu("Y Axis", headers, this, false,
 	    this.ykeys(0));
-	this.menuBar.add(yAxis[0], 3);
+	this.menuBar.add(yAxis[0], 4);
 
 	this.yAxis[1] = new AxisMenu("Y Axis2", headers, this, false,
 	    this.ykeys(1));
-	this.menuBar.add(yAxis[1], 4);
+	this.menuBar.add(yAxis[1], 5);
 
 	// hide/unhide filenames in the legend
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
@@ -682,5 +680,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     public Preferences getPreferences() { return this.prefs; }
+    public Env getEnv() { return this.env; }
     public TreeMap<Comparable, Preset> getPresets() { return this.presets; }
 }

@@ -51,4 +51,5 @@ public class Fueling {
     public void turbos(int val) {
 	prefs.putInt("turbos", val);
     }
+    public Preferences get() {return this.prefs;}
 }

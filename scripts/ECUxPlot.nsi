@@ -75,8 +75,10 @@ Section "install" InstallationInfo
   Delete "$INSTDIR\*.*"
 
 ;Add files
-  SetOutPath "$INSTDIR"
+  SetOutPath "$INSTDIR\profiles"
+  File /r "profiles\*.xml"
 
+  SetOutPath "$INSTDIR"
   File "${MUI_FILE}.exe"
   File "${MUI_FILE}.sh"
   File "${MUI_FILE}-${VERSION}.jar"
