@@ -131,7 +131,7 @@ ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
 	mkdir -p build/ECUxPlot
 	install -D -m 644 $(INSTALL_FILES) build/ECUxPlot
 	install ECUxPlot.sh build/ECUxPlot
-	cp -a --parents $(PROFILES) $(INSTALL_DIR)
+	cp -a --parents $(PROFILES) build/ECUxPlot
 	(cd build; tar czvf ../$@ ECUxPlot)
 
 install: $(INSTALL_FILES) $(PROFILES)
