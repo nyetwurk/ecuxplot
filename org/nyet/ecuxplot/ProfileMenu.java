@@ -46,25 +46,30 @@ public final class ProfileMenu extends JMenu {
 
     private void updateProfiles() {
 	try {
+	    // Add static profiles
 	    File dir=new File(Locate.getClassDirectory(this),
 		"profiles");
 	    LoadProfileAction lpa = new LoadProfileAction(dir);
 	    for(File p : dir.listFiles()) {
 		if(p.isDirectory() && !p.getName().startsWith(".")) {
+		    // do not add static profiles to "save" menu
 		    JMenuItem jmi = new JMenuItem(p.getName());
 		    jmi.addActionListener(lpa);
 		    this.loadProfilesMenu.add(jmi);
 		}
 	    }
+	    // Add custom profiles
 	    dir=new File(Locate.getDataDirectory("ECUxPlot"),
 		"profiles");
 	    SaveProfileAction spa = new SaveProfileAction(dir);
 	    File profiles[] = dir.listFiles();
 	    if(profiles!=null && profiles.length>0) {
+		// add separator to load menu (divide static from custom)
 		this.loadProfilesMenu.add(new JSeparator());
 		lpa = new LoadProfileAction(dir);
 		for(File p : profiles) {
 		    if(p.isDirectory() && !p.getName().startsWith(".")) {
+			// add both static and custom items
 			JMenuItem jmi = new JMenuItem(p.getName());
 			jmi.addActionListener(lpa);
 			this.loadProfilesMenu.add(jmi);
@@ -73,6 +78,7 @@ public final class ProfileMenu extends JMenu {
 			this.saveProfilesMenu.add(jmi);
 		    }
 		}
+		// add separator to save menu (divide custom from new)
 		this.saveProfilesMenu.add(new JSeparator());
 	    }
 	    JMenuItem jmi = new JMenuItem("New Profile...");
@@ -140,6 +146,7 @@ public final class ProfileMenu extends JMenu {
 		    updateProfiles();
 		}
 		if(pdir.isDirectory()) {
+		    for (File f : pdir.listFiles()) f.delete();
 		    pm.plotFrame.getEnv().c.get().exportNode(new
 			FileOutputStream(new File(pdir, "constants.xml")));
 		    pm.plotFrame.getEnv().f.get().exportNode(new
