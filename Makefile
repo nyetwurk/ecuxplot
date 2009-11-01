@@ -1,5 +1,5 @@
 VERSION := 0.9
-RELEASE := 2.1
+RELEASE := 2.2
 RC := -rc1
 ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 
