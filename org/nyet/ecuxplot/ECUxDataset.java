@@ -45,11 +45,13 @@ public class ECUxDataset extends Dataset {
 	*/
 	/* calculate smallest samples per second */
 	Column time = get("TIME");
-	for(int i=1;i<time.data.size();i++) {
-	    double delta=time.data.get(i)-time.data.get(i-1);
-	    if(delta>0) {
-		double rate = 1/delta;
-		if(rate>samples_per_sec) this.samples_per_sec=rate;
+	if (time!=null) {
+	    for(int i=1;i<time.data.size();i++) {
+		double delta=time.data.get(i)-time.data.get(i-1);
+		if(delta>0) {
+		    double rate = 1/delta;
+		    if(rate>samples_per_sec) this.samples_per_sec=rate;
+		}
 	    }
 	}
 	buildRanges(); // regenerate ranges, splines
@@ -73,6 +75,7 @@ public class ECUxDataset extends Dataset {
 	if(h[0].matches("^.*day$")) return LOG_VCDS;
 	if(h[0].matches("^Filename:.*")) {
 	    if(Files.extension(h[0]).equals("zto") ||
+	       Files.extension(h[0]).equals("zdl") ||
 		h[0].matches(".*<unnamed file>$"))
 	    return LOG_ZEITRONIX;
 	}
@@ -170,7 +173,9 @@ public class ECUxDataset extends Dataset {
 		if (log_detected == LOG_ZEITRONIX) {
 		    // we detected zeitronix header, strip it
 		    reader.readNext();     // Date exported
-		    h = reader.readNext(); // headers
+		    do {
+			h = reader.readNext(); // headers
+		    } while (h!=null && h.length<=1);
 		}
 		// otherwise, the user gave us a zeit log with no header,
 		// but asked us to treat it like a zeit log.

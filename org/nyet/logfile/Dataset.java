@@ -158,7 +158,8 @@ public class Dataset {
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
 	    for(int i=0;i<nextLine.length;i++) {
-		this.columns.get(i).add(nextLine[i]);
+		if (this.columns.size() > i)
+		    this.columns.get(i).add(nextLine[i]);
 	    }
 	    this.rows++;
 	}
