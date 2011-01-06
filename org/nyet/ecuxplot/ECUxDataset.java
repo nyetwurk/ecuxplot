@@ -196,6 +196,11 @@ public class ECUxDataset extends Dataset {
 		this.ticks_per_sec = 1000;
 		break;
 	    default:
+		for(int i=0;i<h.length;i++) {
+		    if(h[i].matches("^Time$")) h[i]="TIME";
+		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
+		    if(h[i].matches("^Mass air flow$")) h[i]="MassAirFlow";
+		}
 		break;
 	}
 	for(int i=0;i<h.length;i++) {
