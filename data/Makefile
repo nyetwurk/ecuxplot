@@ -1,4 +1,6 @@
-TARGETS=4Z7907551R.csv 8D0907551F.csv 8D0907551G.csv
+PACKS=4Z7907551R 8D0907551F 8D0907551G
+
+TARGETS=$(addsuffix .csv,$(PACKS)) $(addsuffix .xdf,$(PACKS))
 
 all: $(TARGETS)
 
@@ -7,3 +9,6 @@ clean:
 
 %.csv: %.kp %.bin ../mapdump.class
 	(cd ..; ./mapdump -i data/$*.bin data/$< > data/$@)
+
+%.xdf: %.kp %.bin ../mapdump.class
+	(cd ..; ./mapdump -i data/$*.bin -x data/$< > data/$@)
