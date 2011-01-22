@@ -1,6 +1,6 @@
 VERSION := 0.9
-RELEASE := 2.3
-RC :=
+RELEASE := 2.4
+RC := '-rc1'
 ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 
 JCOMMON_VER := 1.0.16
@@ -13,7 +13,7 @@ JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
-CLASSPATH = '$(shell cygpath -wsp .:$(JARS))'
+CLASSPATH = '$(shell cygpath -wp .:$(JARS))'
 PWD := $(shell cygpath -d $(shell pwd))\\
 LAUNCH4J := '$(shell cygpath -u "C:\Program Files\Launch4j\launch4jc")'
 MAKENSIS := '$(shell cygpath -u "C:\Program Files\NSIS\makensis")'
