@@ -397,6 +397,16 @@ public class Map {
 	out += this.value.eqXDF(off+200, table?"ZEq":"Equation");
 
 	if(table) {
+	    if (this.size.x > 0x100 && this.size.y <= 0x100) {
+		// swap x and y; tunerpro crashes on Cols > 256
+		Axis tmpa = this.y_axis;
+		this.y_axis = this.x_axis;
+		this.x_axis = tmpa;
+
+		int tmp = this.size.y;
+		this.size.y = this.size.x;
+		this.size.x = tmp;
+	    }
 	    // X (columns)
 	    if (this.x_axis.sign) flags |= 0x40;
 	    if (this.x_axis.valueType.isLE()) flags |= 0x100;
