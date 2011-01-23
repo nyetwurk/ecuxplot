@@ -1,11 +1,15 @@
 #!/bin/sh
-source=$1
-dest=`basename $source .kp`
-stem=`echo $source | cut -d - -f 1`
+
 cd ..
-if [ ! -r data/$source ]; then
-    echo "can't read data/$source"
-    exit -1
-fi
-./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp -r data/8D0907551G.kp -i data/$stem.bin data/$source > data/$dest.csv
-./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp -r data/8D0907551G.kp -i data/$stem.bin -x data/$source > data/$dest.xdf
+
+for source in $*; do
+    dest=`basename $source .kp`
+    stem=`echo $source | cut -d - -f 1`
+    if [ -r data/$source ]; then
+	echo "reading data/$source"
+	./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp -r data/8D0907551G.kp -i data/$stem.bin data/$source > data/$dest.csv
+	./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp -r data/8D0907551G.kp -i data/$stem.bin -x data/$source > data/$dest.xdf
+    else
+	echo "can't read data/$source"
+    fi
+done
