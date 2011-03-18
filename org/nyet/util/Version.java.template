@@ -8,7 +8,7 @@ public class Version extends ArrayList<Object> {
     public static final String JFreeChart="JFREECHART_VER";
     public static final String JCommon="JCOMMON_VER";
     public static final String OpenCSV="OPENCSV_VER";
-    public static final double JavacMajor = JAVAC_MAJOR_VER;
+    public static final String JavacMajor = "JAVAC_MAJOR_VER";
 
     public Version () {
 	this.add("ECUxPlot " + Version.ECUxPlot);
