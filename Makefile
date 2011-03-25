@@ -15,8 +15,13 @@ JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
 CLASSPATH = '$(shell cygpath -wp .:$(JARS))'
 PWD := $(shell cygpath -d $(shell pwd))\\
-LAUNCH4J := '$(shell cygpath -u "C:\Program Files\Launch4j\launch4jc")'
-MAKENSIS := '$(shell cygpath -u "C:\Program Files\NSIS\makensis")'
+
+LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
+    "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
+
+MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
+    "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis)'
+
 INSTALL_DIR := '$(shell cygpath -u "C:\Program Files\ECUxPlot")'
 OPT_PRE := '/'
 else
