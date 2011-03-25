@@ -100,6 +100,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	return this.scatter(this.prefs);
     }
 
+    private boolean showFATS() {
+      return this.prefs.getBoolean("showfats", false);
+    }
+
     private Comparable xkey() {
 	final Comparable defaultXkey = this.presets.get("Power").xkey;
 	return this.prefs.get("xkey", defaultXkey.toString());
@@ -255,7 +259,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	super.setVisible(b);
 	if(this.fatsFrame==null) return;
 	if(!this.filter.enabled()) b=false;
-	if(b!=this.fatsFrame.isShowing())
+	if(b!=this.fatsFrame.isShowing() && this.showFATS())
 	    this.fatsFrame.setVisible(b);
     }
 
@@ -379,10 +383,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else if(source.getText().equals("About...")) {
 	    JOptionPane.showMessageDialog(this, new AboutPanel(),
 		    "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
+	} else if(source.getText().equals("Show FATS window...")) {
+	    boolean s = source.isSelected();
+	    this.prefs.putBoolean("showfats", s);
+	    if(!s && this.fatsFrame.isShowing()) {
+		this.fatsFrame.setVisible(s);
+	    }
+	    rebuild();
 	} else {
 	    JOptionPane.showMessageDialog(this,
 		"unhandled getText=" + source.getText() +
-	        ", actionCommand=" + event.getActionCommand());
+		", actionCommand=" + event.getActionCommand());
 	}
     }
 

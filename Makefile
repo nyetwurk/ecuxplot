@@ -77,6 +77,8 @@ ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
 all: $(TARGETS) .classpath version.txt jar exe
 
 jar: $(TARGET).jar
+run: jar
+	java -jar $(TARGET).jar
 archives: $(ARCHIVES)
 exe: ECUxPlot.exe
 installer: $(INSTALLER)
