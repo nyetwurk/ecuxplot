@@ -75,6 +75,7 @@ Section "install" InstallationInfo
   RMDir /r "$INSTDIR\*.*"
 
 ;Add files
+  CreateDirectory "$INSTDIR\profiles"
   SetOutPath "$INSTDIR\profiles"
   File /r "profiles\*.xml"
 
