@@ -14,7 +14,8 @@ public class mapdump {
 	int format = Map.FORMAT_CSV;
 	public Options(String[] args) throws Exception {
 	    if(args.length<1) {
-		throw new Exception("bad syntax");
+		System.out.print(this.Usage());
+		throw new Exception("invalid args");
 	    }
 	    int i;
 	    for(i=0;i<args.length;i++) {
@@ -36,6 +37,15 @@ public class mapdump {
 		    this.filename=args[i];
 		}
 	    }
+	}
+	static String Usage() {
+	    return
+		  "Usage: mapdump [options] file\n"
+		+ "Options:\n"
+		+ " -r <mappack.kp> [-r ...]     annotate with descriptions from matching maps also in these mappacks\n"
+		+ " -i <image.bin>               generate min/max columns based on this image\n"
+		+ " -d                           raw dump\n"
+		+ " -x                           xdf dump\n";
 	}
     }
 
