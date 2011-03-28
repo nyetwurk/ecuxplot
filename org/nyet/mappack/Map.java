@@ -388,6 +388,15 @@ public class Map {
 		    this.valueType.width()*8);
 	}
 
+	// XDF "Flags"
+	// -----------
+	// 0x001 - z value signed
+	// 0x002 - z value LE
+	// 0x040 - x axis signed
+	// 0x100 - x axis LE
+	// 0x080 - y axis signed
+	// 0x200 - y axis LE
+
 	int flags = this.sign?1:0;
 	if (this.valueType.isLE()) flags |= 2;
 
