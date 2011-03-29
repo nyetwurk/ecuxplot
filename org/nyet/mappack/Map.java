@@ -479,7 +479,7 @@ public class Map {
 		    this.y_axis.valueType.width());
 		if(y_axis.precision!=2) {
 		    out += String.format(XDF_LBL+"0x%X\n", off+750,
-			"YOutputDig", x_axis.precision);
+			"YOutputDig", y_axis.precision);
 		}
 	    }
 	}
