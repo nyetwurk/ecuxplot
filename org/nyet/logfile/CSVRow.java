@@ -10,19 +10,24 @@ public class CSVRow extends ArrayList<String> {
     public CSVRow() { super(); }
     public CSVRow(Object[] data) {
 	for(int i=0;i<data.length;i++) {
-	    super.add(data[i].toString());
+	    add(data[i].toString());
 	}
     }
 
+    public boolean add(String s) {
+	if (s.length()==0) s="-";
+	return super.add(s);
+    }
+
     public boolean add(Comparable o) {
-	return super.add(o.toString());
+	return add(o.toString());
     }
 
     public boolean add(double f) {
-	return super.add(String.valueOf(f));
+	return add(String.valueOf(f));
     }
 
     public boolean add(int i) {
-	return super.add(String.valueOf(i));
+	return add(String.valueOf(i));
     }
 }

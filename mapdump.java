@@ -58,7 +58,7 @@ public class mapdump {
 	String refsHeader="";
 	for(String s: opts.reference) {
 	    refs.add(new Parser(s));
-	    refsHeader+="\"" + s + "\",";
+	    refsHeader+=",\"" + s + "\"";
 	}
 	if(opts.image!=null) {
 	    MMapFile mmap = new MMapFile(opts.image, ByteOrder.LITTLE_ENDIAN);
@@ -89,9 +89,9 @@ public class mapdump {
 			ArrayList<Map> matches = pa.find(m);
 			if(matches.size()>0) {
 			    Map r = matches.get(0);
-			    System.out.print("\"" + r.name + "\",");
+			    System.out.print(",\"" + r.name + "\"");
 			} else {
-			    System.out.print("\"\",");
+			    System.out.print(",\"\"");
 			}
 		    }
 		}
