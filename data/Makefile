@@ -10,5 +10,5 @@ clean:
 %.csv: %.kp %.bin ../mapdump.class
 	(cd ..; ./mapdump -i data/$*.bin data/$< > data/$@)
 
-%.xdf: %.kp %.bin ../mapdump.class
-	(cd ..; ./mapdump -i data/$*.bin -x data/$< > data/$@)
+%.xdf: %.kp ../mapdump.class
+	(cd ..; ./mapdump -x data/$< > data/$@)
