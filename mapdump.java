@@ -37,12 +37,16 @@ public class mapdump {
 		    this.filename=args[i];
 		}
 	    }
+	    if (this.filename == null) {
+		System.out.print(this.Usage());
+		throw new Exception("You must specify an input filename");
+	    }
 	}
 	static String Usage() {
 	    return
-		  "Usage: mapdump [options] file\n"
+		  "Usage: mapdump [options] mappack.kp\n"
 		+ "Options:\n"
-		+ " -r <mappack.kp> [-r ...]     annotate with descriptions from matching maps also in these mappacks\n"
+		+ " -r <mappack.kp> [-r ...]     annotate with descriptions from matching maps also in these mappacks (ignored if -x is used)\n"
 		+ " -i <image.bin>               generate min/max columns based on this image\n"
 		+ " -d                           raw dump\n"
 		+ " -x                           xdf dump\n";

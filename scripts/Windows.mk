@@ -11,7 +11,7 @@ ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
 	cat $< | $(GEN) > $@
 
 ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.xml ECUxPlot.ico version.txt
-	$(LAUNCH4J) '$(PWD)ECUxPlot.xml'
+	$(LAUNCH4J) ECUxPlot.xml
 
 $(INSTALLER): ECUxPlot.exe $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	$(MAKENSIS) $(OPT_PRE)NOCD \
