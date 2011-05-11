@@ -11,4 +11,4 @@ clean:
 	(cd ..; ./mapdump -i data/$*.bin data/$< > data/$@)
 
 %.xdf: %.kp ../mapdump.class
-	(cd ..; ./mapdump -x data/$< > data/$@)
+	(cd ..; ./mapdump -i data/$*.bin -x data/$< > data/$@)
