@@ -14,7 +14,7 @@ JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
 CLASSPATH = '$(shell cygpath -wp .:$(JARS))'
-PWD := $(shell cygpath -d $(shell pwd))\\
+PWD := $(shell pwd)\\
 
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
