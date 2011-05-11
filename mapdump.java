@@ -41,6 +41,10 @@ public class mapdump {
 		System.out.print(this.Usage());
 		throw new Exception("You must specify an input filename");
 	    }
+	    if (this.format == Map.FORMAT_XDF && image == null) {
+		System.out.print(this.Usage());
+		throw new Exception("-x requires -i <image.bin> to detect image size");
+	    }
 	}
 	static String Usage() {
 	    return
@@ -49,7 +53,7 @@ public class mapdump {
 		+ " -r <mappack.kp> [-r ...]     annotate with descriptions from matching maps also in these mappacks (ignored if -x is used)\n"
 		+ " -i <image.bin>               generate min/max columns based on this image\n"
 		+ " -d                           raw dump\n"
-		+ " -x                           xdf dump\n";
+		+ " -x                           xdf dump (requires -i <image.bin>)\n";
 	}
     }
 
