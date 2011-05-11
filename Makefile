@@ -7,6 +7,7 @@ JCOMMON_VER := 1.0.16
 JFREECHART_VER := 1.0.13
 OPENCSV_VER := 1.8
 
+PWD := $(shell pwd)
 UNAME := $(shell uname -s)
 JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1 \2/')
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
@@ -14,7 +15,6 @@ JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
 CLASSPATH = '$(shell cygpath -wp .:$(JARS))'
-PWD := $(shell pwd)\\
 
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
@@ -26,7 +26,6 @@ INSTALL_DIR := '$(shell cygpath -u "C:\Program Files\ECUxPlot")'
 OPT_PRE := '/'
 else
 CLASSPATH = .:$(JARS)
-PWD := $(shell pwd)/
 LAUNCH4J := /usr/local/launch4j/launch4j
 MAKENSIS := makensis
 INSTALL_DIR := /usr/local/ecuxplot
