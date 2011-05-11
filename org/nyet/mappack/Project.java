@@ -83,7 +83,9 @@ public class Project {
 		out += String.format(Map.XDF_LBL+"\"%s\"\n",1010, "Author", "mesim translator");
 		if(imagebuf!=null && imagebuf.limit()>0)
 		    out += String.format(Map.XDF_LBL+"0x%X\n",1030, "BinSize", imagebuf.limit());
-		out += String.format(Map.XDF_LBL+"%d\n",1034, "BaseOffset", 0);
+		out += String.format(Map.XDF_LBL+"%d\n",1035, "BaseOffset", 0);
+		out += String.format(Map.XDF_LBL+"\"\"\n",1200, "ADSAssoc", 0);
+		out += String.format(Map.XDF_LBL+"0x0\n",1225, "ADSCheck", 0);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1300, "GenFlags", 0);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1325, "ModeFlags", 0);
 		for(Folder f: this.folders)
