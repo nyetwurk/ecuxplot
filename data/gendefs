@@ -9,7 +9,7 @@ for source in $*; do
 	echo "generating csv"
 	./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp -r data/8D0907551G.kp -i data/$stem.bin data/$source > data/$dest.csv
 	echo "generating xdf"
-	./mapdump -x data/$source > data/$dest.xdf
+	./mapdump -i data/$stem.bin -x data/$source > data/$dest.xdf
     else
 	echo "can't read data/$source"
     fi
