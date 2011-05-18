@@ -388,6 +388,11 @@ public class Map {
 		    this.valueType.width()*8);
 	}
 
+	if(this.precision!=2) {
+	    out += String.format(XDF_LBL+"0x%X\n",off+210,"DecimalPl",
+		    this.precision);
+	}
+
 	// XDF "Flags"
 	// -----------
 	// 0x001 - z value signed
