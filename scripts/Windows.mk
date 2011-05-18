@@ -10,8 +10,9 @@ ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
 %.xml: %.xml.template Makefile scripts/Windows.mk
 	cat $< | $(GEN) > $@
 
+# unix launch4j requires full path to .xml
 ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.xml ECUxPlot.ico version.txt
-	$(LAUNCH4J) $(PWD)/ECUxPlot.xml	# unix launch4j require full path to .xml
+	$(LAUNCH4J) $(PWD)/ECUxPlot.xml
 
 $(INSTALLER): ECUxPlot.exe $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	$(MAKENSIS) $(OPT_PRE)NOCD \
