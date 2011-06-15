@@ -184,6 +184,9 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
 		    // ignore weird letter case for throttle angle
 		    if(h[i].matches("^Throttle [Aa]ngle.*")) h[i]="Throttle Angle";
+		    // ignore weird spacing for MAF
+		    if(h[i].matches("^Mass Air Flow$")) h[i]="MassAirFlow";
+		    if(h[i].matches("^Mass Flow$")) h[i]="MassAirFlow";
 		    // copy header from u if this h is empty
 		    if(h[i].length()==0) h[i]=u[i];
 		    // blacklist Group 24 Accelerator position, it has max of 80%?
