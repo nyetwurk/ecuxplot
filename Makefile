@@ -1,6 +1,6 @@
 VERSION := 0.9
-RELEASE := 2.5
-RC :=
+RELEASE := 2.6
+RC := -rc1
 ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 
 JCOMMON_VER := 1.0.16
@@ -31,7 +31,7 @@ MAKENSIS := makensis
 INSTALL_DIR := /usr/local/ecuxplot
 OPT_PRE := '-'
 endif
-SCP := scp
+RSYNC := rsync
 
 MP_SOURCES= HexValue.java Map.java Parser.java Parse.java \
 	    ParserException.java Project.java MapData.java \
@@ -86,8 +86,8 @@ run: jar
 archives: $(ARCHIVES)
 exe: ECUxPlot.exe
 installer: $(INSTALLER)
-scp: $(ARCHIVES) $(INSTALLER)
-	$(SCP) $^ nyet.org:public_html/cars/files/
+rsync: $(ARCHIVES) $(INSTALLER)
+	$(RSYNC) $^ nyet.org:public_html/cars/files/
 
 binclean:
 	rm -f ECUxPlot*.{exe,jar,zip,tar.gz}
