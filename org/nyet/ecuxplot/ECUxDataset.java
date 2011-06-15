@@ -103,6 +103,7 @@ public class ECUxDataset extends Dataset {
     }
     public void ParseHeaders(CSVReader reader, int log_req)
 	    throws Exception {
+	boolean verbose = false;
 	if (log_req<0)
 	    throw new Exception(this.getFileId() + ": invalid log_req" + log_req);
 	String [] h = reader.readNext();
@@ -129,24 +130,46 @@ public class ECUxDataset extends Dataset {
 	this.ticks_per_sec = 1;
 	switch(log_use) {
 	    case LOG_VCDS:
-		String[] g,h2;
+		String[] e,b,g,h2;
 					// 1: date read already during detect
-		reader.readNext();	// 2: ECU type
-		reader.readNext();	// 3: blank or GXXX/FXXX headers
+		e = reader.readNext();	// 2: ECU type
+		b = reader.readNext();	// 3: blank or GXXX/FXXX headers
 		g = reader.readNext();	// 4: Group or blank
 		h = reader.readNext();	// 5: headers 1 or Group
 		h2 = reader.readNext();	// 6: headers 2 or units or headers
-		if(g.length<h.length) { // if 4 is blank, group is 4, and 5 is headers
-		    g=h;		// 4 is group
-		    h=h2;		// 5 is headers
-		    h2=new String[h.length];	// h2 isn't needed
-		}
 		u = reader.readNext();	// 7: units
+
+		if (verbose)
+		    System.out.println("in e:"
+			+ e.length + ", b:" + b.length + ", g:" + g.length + ", h:"
+			+ h.length + ", h2:" + h2.length + ", u:" + u.length);
+
+		if(g.length<=1) {
+		    // g is blank. move everything up one
+		    g=h;
+		    h=h2;
+		    h2=new String[h.length];
+		}
+
+		if(g.length<h.length) {
+		    // extend g to length of h
+		    String[] newg = new String[h.length];
+		    System.arraycopy(g, 0, newg, 0, g.length);
+		    g=newg;
+		}
+
+		if (verbose)
+		    System.out.println("out e:"
+			+ e.length + ", b:" + b.length + ", g:" + g.length + ", h:"
+			+ h.length + ", h2:" + h2.length + ", u:" + u.length);
+
 		for(int i=0;i<h.length;i++) {
 		    g[i]=(g[i]!=null)?g[i].trim():"";
 		    h[i]=(h[i]!=null)?h[i].trim():"";
 		    h2[i]=(h2[i]!=null)?h2[i].trim():"";
 		    u[i]=(u[i]!=null)?u[i].trim():"";
+		    if (verbose)
+			System.out.println("in: '" + h[i] +"': '" + h2[i] + "' [" + u[i] + "]");
 		    // g=TIME and h=STAMP means this is a TIME column
 		    if(g[i].equals("TIME") && h[i].equals("STAMP")) {
 			g[i]="";
@@ -166,7 +189,8 @@ public class ECUxDataset extends Dataset {
 		    // blacklist Group 24 Accelerator position, it has max of 80%?
 		    if(g[i].matches("^Group 24.*") && h[i].equals("Accelerator position"))
 			h[i]=("Accelerator position (G024)");
-		    // System.out.println(g[i] +": " + h[i] + " [" + u[i] + "]");
+		    if (verbose)
+			System.out.println("out:'" + h[i] +"': '" + h2[i] + "' [" + u[i] + "]");
 		}
 		break;
 	    case LOG_ZEITRONIX:
@@ -183,13 +207,16 @@ public class ECUxDataset extends Dataset {
 		// reparse units
 		u = ParseUnits(h);
 		for(int i=0;i<h.length;i++) {
+		    if (verbose)
+			System.out.println("in : " + h[i] + " [" + u[i] + "]");
 		    if(h[i].equals("Boost")) h[i]="Zeitronix Boost";
 		    if(h[i].equals("TPS")) h[i]="Zeitronix TPS";
 		    if(h[i].equals("AFR")) h[i]="Zeitronix AFR";
 		    if(h[i].equals("Lambda")) h[i]="Zeitronix Lambda";
 		    // time is broken
 		    if(h[i].equals("Time")) h[i]=null;
-		    // System.out.println(h[i] + " [" + u[i] + "]");
+		    if (verbose)
+			System.out.println("out: " + h[i] + " [" + u[i] + "]");
 		}
 		break;
 	    case LOG_ECUX:
@@ -197,9 +224,13 @@ public class ECUxDataset extends Dataset {
 		break;
 	    default:
 		for(int i=0;i<h.length;i++) {
+		    if (verbose)
+			System.out.println("in : " + h[i] + " [" + u[i] + "]");
 		    if(h[i].matches("^Time$")) h[i]="TIME";
 		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
 		    if(h[i].matches("^Mass air flow$")) h[i]="MassAirFlow";
+		    if (verbose)
+			System.out.println("out: " + h[i] + " [" + u[i] + "]");
 		}
 		break;
 	}
