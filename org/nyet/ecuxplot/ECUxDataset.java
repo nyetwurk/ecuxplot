@@ -31,7 +31,7 @@ public class ECUxDataset extends Dataset {
 
 	this.rpm = get("RPM");
 	this.pedal = get(new String []
-		{"AcceleratorPedalPosition", "Zeitronix TPS", "Accelerator position"});
+		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position"});
 	this.throttle = get(new String []
 		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle"});
 	this.gear = get("Gear");
@@ -68,7 +68,9 @@ public class ECUxDataset extends Dataset {
     public static final int LOG_ECUX = 1;
     public static final int LOG_VCDS = 2;
     public static final int LOG_ZEITRONIX = 3;
+    public static final int LOG_ME7LOGGER = 4;
     public int logType;
+
     private int detect(String [] h) {
 	int ret = LOG_UNKNOWN;
 	h[0]=h[0].trim();
@@ -80,6 +82,9 @@ public class ECUxDataset extends Dataset {
 	    return LOG_ZEITRONIX;
 	}
 	if(h[0].matches("^TIME$")) return LOG_ECUX;
+
+	if(h[0].matches(".*ME7-Logger.*")) return LOG_ME7LOGGER;
+
 	return LOG_UNKNOWN;
     }
 
@@ -106,12 +111,17 @@ public class ECUxDataset extends Dataset {
 	boolean verbose = false;
 	if (log_req<0)
 	    throw new Exception(this.getFileId() + ": invalid log_req" + log_req);
-	String [] h = reader.readNext();
+	String [] h,u;
 
-	if (h==null)
-	    throw new Exception(this.getFileId() + ": read failed");
+        do {
+	    h = reader.readNext();
+	    if (verbose)
+		for(int i=0;i<h.length;i++)
+		    System.out.println("h[" + i + "]: " + h[i]);
 
-	String [] u = ParseUnits(h);
+	    if (h==null)
+		throw new Exception(this.getFileId() + ": read failed");
+	} while (h.length<1 || h[0].trim().length() == 0 || h[0].trim().matches("^#.+"));
 
 	int log_detected = detect(h);
 
@@ -207,7 +217,6 @@ public class ECUxDataset extends Dataset {
 		// otherwise, the user gave us a zeit log with no header,
 		// but asked us to treat it like a zeit log.
 
-		// reparse units
 		u = ParseUnits(h);
 		for(int i=0;i<h.length;i++) {
 		    if (verbose)
@@ -223,9 +232,34 @@ public class ECUxDataset extends Dataset {
 		}
 		break;
 	    case LOG_ECUX:
+		u = ParseUnits(h);
+		this.ticks_per_sec = 1000;
+		break;
+	    case LOG_ME7LOGGER:
+		do {
+		    h = reader.readNext();
+		} while (h.length<1 || !h[0].equals("TimeStamp"));
+
+		if (h==null || h.length<1)
+		    throw new Exception(this.getFileId() + ": read failed");
+
+		u = reader.readNext();
+		for(int i=0;i<u.length;i++) u[i]=u[i].trim();
+
+		h = reader.readNext();
+
+		for(int i=0;i<h.length;i++) {
+		    if(h[i].matches("^Engine[Ss]peed.*")) h[i]="RPM";
+		}
+
+		if (verbose)
+		    for(int i=0;i<h.length;i++)
+			System.out.println("out: " + h[i] + " [" + u[i] + "]");
+
 		this.ticks_per_sec = 1000;
 		break;
 	    default:
+		u = ParseUnits(h);
 		for(int i=0;i<h.length;i++) {
 		    if (verbose)
 			System.out.println("in : " + h[i] + " [" + u[i] + "]");
