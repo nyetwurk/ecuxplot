@@ -115,12 +115,11 @@ public class ECUxDataset extends Dataset {
 
         do {
 	    h = reader.readNext();
+	    if (h==null)
+		throw new Exception(this.getFileId() + ": read failed");
 	    if (verbose)
 		for(int i=0;i<h.length;i++)
 		    System.out.println("h[" + i + "]: " + h[i]);
-
-	    if (h==null)
-		throw new Exception(this.getFileId() + ": read failed");
 	} while (h.length<1 || h[0].trim().length() == 0 || h[0].trim().matches("^#.+"));
 
 	int log_detected = detect(h);
@@ -212,7 +211,9 @@ public class ECUxDataset extends Dataset {
 		    reader.readNext();     // Date exported
 		    do {
 			h = reader.readNext(); // headers
-		    } while (h!=null && h.length<=1);
+			if (h==null)
+			    throw new Exception(this.getFileId() + ": read failed");
+		    } while (h.length<=1);
 		}
 		// otherwise, the user gave us a zeit log with no header,
 		// but asked us to treat it like a zeit log.
@@ -238,6 +239,8 @@ public class ECUxDataset extends Dataset {
 	    case LOG_ME7LOGGER:
 		do {
 		    h = reader.readNext();
+		    if (h==null)
+			throw new Exception(this.getFileId() + ": read failed");
 		} while (h.length<1 || !h[0].equals("TimeStamp"));
 
 		if (h==null || h.length<1)
