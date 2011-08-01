@@ -149,14 +149,14 @@ public class ECUxChartFactory {
 	double[][] empty = {{},{}};
 	if(ranges.size()==0) {
 	    Dataset.Key key = data.new Key(ykey);
-	    key.hideSeries();
+	    key.hideRange();
 	    d.addSeries(key, empty);
 	    return;
 	}
 	for(int i=0;i<ranges.size();i++) {
 	    Dataset.Key key = data.new Key(ykey, i);
-	    if(ranges.size()==1) key.hideSeries();
-	    else key.showSeries();
+	    if(ranges.size()==1) key.hideRange();
+	    else key.showRange();
 
 	    Dataset.Range r=ranges.get(i);
 	    try {

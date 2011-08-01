@@ -59,32 +59,32 @@ public class Dataset {
     public class Key implements Comparable {
 	private String fn;
 	private String s;
-	private Integer series;
+	private Integer range;
 	private BitSet flags;
 
-	public Key (String fn, String s, int series, BitSet flags) {
+	public Key (String fn, String s, int range, BitSet flags) {
 	    this.fn=fn;
 	    this.s=s;
-	    this.series=new Integer(series);
+	    this.range=new Integer(range);
 	    this.flags=flags;
 	}
 
 	public Key (Key k) {
 	    this.fn=k.fn;
 	    this.s= new String(k.s);
-	    this.series=k.series;
+	    this.range=k.range;
 	    this.flags=k.flags;
 	}
 
-	public Key (Key k, int series) {
+	public Key (Key k, int range) {
 	    this.fn=k.fn;
 	    this.s= new String(k.s);
-	    this.series=series;
+	    this.range=range;
 	    this.flags=k.flags;
 	}
 
-	public Key (String fn, String s, int series) {
-	    this(fn, s, series, new BitSet(2));
+	public Key (String fn, String s, int range) {
+	    this(fn, s, range, new BitSet(2));
 	}
 
 	public Key (String fn, String s) {
@@ -99,22 +99,22 @@ public class Dataset {
 	    if(!this.flags.get(0))
 		ret = org.nyet.util.Files.filenameStem(this.fn) + ":" + ret;
 
-	    // don't skip series #, add to end
+	    // don't skip range #, add to end
 	    if(!this.flags.get(1))
-		ret += " " + (this.series+1);
+		ret += " " + (this.range+1);
 
 	    return ret;
 	}
 
 	public void hideFilename() { this.flags.set(0); }
 	public void showFilename() { this.flags.clear(0); }
-	public void hideSeries() { this.flags.set(1); }
-	public void showSeries() { this.flags.clear(1); }
+	public void hideRange() { this.flags.set(1); }
+	public void showRange() { this.flags.clear(1); }
 
 	public String getFilename() { return this.fn; }
 	public String getString() { return this.s; }
-	public Integer getSeries() { return this.series; }
-	public void setSeries(int s) { this.series=s; }
+	public Integer getRange() { return this.range; }
+	public void setRange(int r) { this.range=r; }
 
 	public int compareTo(Object o) {
 	    if(o instanceof Key) {
@@ -123,7 +123,7 @@ public class Dataset {
 		if(out!=0) return out;
 		out = this.s.compareTo(k.s);
 		if(out!=0) return out;
-		return this.series.compareTo(k.series);
+		return this.range.compareTo(k.range);
 	    }
 	    if(o instanceof String) {
 		return this.s.compareTo((String)o);
@@ -136,7 +136,7 @@ public class Dataset {
 		final Key k = (Key)o;
 		if(!this.fn.equals(k.fn)) return false;
 		if(!this.s.equals(k.s)) return false;
-		return this.series.equals(k.series);
+		return this.range.equals(k.range);
 	    }
 	    // if passed a string, only check the "s" portion
 	    if(o instanceof String) {
