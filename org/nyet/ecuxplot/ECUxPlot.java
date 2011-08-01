@@ -470,13 +470,29 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	plot.getDomainAxis().setLabel(label);
     }
 
-    private void addDataset(int axis, DefaultXYDataset dataset,
+    private void addDataset(int axis, DefaultXYDataset d,
 	    Dataset.Key ykey) {
-	ECUxDataset data = this.fileDatasets.get(ykey.getFilename());
-	ECUxChartFactory.addDataset(dataset, data,
-	    this.xkey(), ykey);
+	// ugh. need an index for axis stroke, so we cant just do a get.
+	// walk the filenames and get it, and the index for it
+	ECUxDataset data=null;
+	int stroke=0;
+	for(Map.Entry<String, ECUxDataset> e : this.fileDatasets.entrySet()) {
+	    if(e.getKey().equals(ykey.getFilename())) {
+		data=e.getValue();
+		break;
+	    }
+	    stroke++;
+	}
+	if (data==null) return;
+
+	Integer[] series =
+	    ECUxChartFactory.addDataset(d, data, this.xkey(), ykey);
+
+	ECUxChartFactory.setAxisPaint(this.chartPanel.getChart(), axis,
+	    d, ykey, series);
+
 	ECUxChartFactory.setAxisStroke(this.chartPanel.getChart(), axis,
-		new java.awt.BasicStroke(1.5f));
+	    d, ykey, series, stroke);
     }
 
     public void rebuild() {

@@ -81,69 +81,67 @@ public class ECUxChartFactory {
 	}
     }
 
-    // set both axis and all series the same paint
-    public static void setPaint(JFreeChart chart,
-	java.awt.Paint paint) {
-	setAxisPaint(chart, 0, paint);
-	setAxisPaint(chart, 1, paint);
-    }
-
-    // set all series in an axis the same paint
+    // set all series of a given ykey different shades of a base paint
     public static void setAxisPaint(JFreeChart chart, int axis,
-	java.awt.Paint paint) {
+	DefaultXYDataset d, Dataset.Key ykey, Integer[] series) {
 
 	final XYPlot plot = chart.getXYPlot();
 	final XYItemRenderer renderer = plot.getRenderer(axis);
-	// renderer.setBasePaint(paint);
-	for(int i=0; i<plot.getDataset(axis).getSeriesCount(); i++)
-	    renderer.setSeriesPaint(i, paint);
+
+        final java.awt.Color colors[][] = {
+            { java.awt.Color.red, java.awt.Color.blue, java.awt.Color.green},
+            { java.awt.Color.yellow, java.awt.Color.cyan, java.awt.Color.gray}
+        };
+
+	axis = axis%colors.length;
+
+	// find index of ykey in the ykeys list to get a unique base color
+	String[] list = getDatasetYkeys(d);
+        int yki;
+	for (yki=0;yki<list.length;yki++)
+	    if (list[yki].equals(ykey.getString())) break;
+
+	java.awt.Color color=colors[axis][yki%(colors[axis].length)];
+
+	// make a variety of dark/light colors based on yki
+	int i;
+	java.awt.Color c;
+	for(i=series.length/2, c=color; i>=0; i--, c=c.darker())
+	    renderer.setSeriesPaint(series[i], c);
+
+	for(i=(series.length/2+1), c=color; i<series.length; i++, c=c.brighter())
+	    renderer.setSeriesPaint(series[i], c);
     }
 
-    // set both axis for a given series the same paint
-    public static void setSeriesPaint(JFreeChart chart, int series,
-	    java.awt.Paint paint) {
-	setSeriesPaint(chart, 0, series, paint);
-	setSeriesPaint(chart, 1, series, paint);
-    }
-    public static void setSeriesPaint(JFreeChart chart, int axis,
-	    int series, java.awt.Paint paint) {
-
-	final XYPlot plot = chart.getXYPlot();
-	final XYItemRenderer renderer = plot.getRenderer(axis);
-	renderer.setSeriesPaint(series, paint);
-    }
-
-    // set both axis and all series the same stroke
-    public static void setStroke(JFreeChart chart,
-	    java.awt.Stroke stroke) {
-	setSeriesStroke(chart, 0, stroke);
-	setSeriesStroke(chart, 1, stroke);
-    }
-
-    // set all series on an axis the same stroke
+    // set all series for a given filename to the same stroke
     public static void setAxisStroke(JFreeChart chart, int axis,
-	    java.awt.Stroke stroke) {
+	DefaultXYDataset d, Dataset.Key ykey, Integer[] series, int index) {
 	final XYPlot plot = chart.getXYPlot();
 	final XYItemRenderer renderer = plot.getRenderer(axis);
-	// renderer.setBaseStroke(stroke);
-	for(int i=0; i<plot.getDataset(axis).getSeriesCount(); i++)
-	    renderer.setSeriesStroke(i, stroke);
+
+        final java.awt.Stroke strokes[] = {
+	    new java.awt.BasicStroke(1.0f),
+	    new java.awt.BasicStroke(
+		1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
+		1.0f, new float[] {3.0f, 3.0f}, 0.0f
+	    ),
+	    new java.awt.BasicStroke(
+		1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
+		1.0f, new float[] {6.0f, 6.0f}, 0.0f
+	    ),
+	    new java.awt.BasicStroke(
+		1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
+		1.0f, new float[] {6.0f, 3.0f, 1.0f, 3.0f}, 0.0f
+	    )
+        };
+
+	for(int i=0; i<series.length; i++)
+	    renderer.setSeriesStroke(series[i], strokes[index%strokes.length]);
     }
 
-    // set both axis for a given series the same stroke
-    public static void setSeriesStroke(JFreeChart chart, int series,
-	    java.awt.Stroke stroke) {
-	setSeriesStroke(chart, 0, series, stroke);
-	setSeriesStroke(chart, 1, series, stroke);
-    }
-    public static void setSeriesStroke(JFreeChart chart, int axis,
-	int series, java.awt.Stroke stroke) {
-	final XYPlot plot = chart.getXYPlot();
-	plot.getRenderer(axis).setSeriesStroke(series, stroke);
-    }
-
-    public static void addDataset(DefaultXYDataset d, ECUxDataset data,
+    public static Integer[] addDataset(DefaultXYDataset d, ECUxDataset data,
 		    Comparable xkey, Dataset.Key ykey) {
+	ArrayList<Integer> ret = new ArrayList<Integer>();
 	ArrayList<Dataset.Range> ranges = data.getRanges();
 	// add empty data in case we turn off filter, or we get some error
 	double[][] empty = {{},{}};
@@ -151,7 +149,8 @@ public class ECUxChartFactory {
 	    Dataset.Key key = data.new Key(ykey);
 	    key.hideRange();
 	    d.addSeries(key, empty);
-	    return;
+	    ret.add(d.indexOf(key));
+	    return ret.toArray(new Integer[0]);
 	}
 	for(int i=0;i<ranges.size();i++) {
 	    Dataset.Key key = data.new Key(ykey, i);
@@ -164,10 +163,13 @@ public class ECUxChartFactory {
 		    data.getData(xkey, r),
 		    data.getData(ykey, r)};
 		d.addSeries(key, s);
+		ret.add(d.indexOf(key));
 	    } catch (Exception e){
 		d.addSeries(key, empty);
+		ret.add(d.indexOf(key));
 	    }
 	}
+	return ret.toArray(new Integer[0]);
     }
 
     // remove ALL series from the dataset
@@ -198,10 +200,13 @@ public class ECUxChartFactory {
 	ArrayList<String> ret = new ArrayList<String>();
 	for(int i=0;i<d.getSeriesCount();i++) {
 	    Comparable key = d.getSeriesKey(i);
+	    String s;
 	    if(key instanceof Dataset.Key)
-		ret.add(((Dataset.Key)key).getString());
+		s=((Dataset.Key)key).getString();
 	    else
-		ret.add(key.toString());
+		s=key.toString();
+
+	    if (!ret.contains(s)) ret.add(s);
 	}
 	return ret.toArray(new String[0]);
     }
