@@ -216,6 +216,10 @@ public abstract class LinearSmoothing extends Object
 
 	int i1;
 
+	if (start>end)
+	    throw new IllegalArgumentException("Cannot filter cn set: " +
+		(start) + ">"+ (end));
+
 	double[] ret = new double[end-start+1];
 	double maxoff = 0.;
 
