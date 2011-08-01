@@ -73,7 +73,7 @@ REFERENCE=data/4Z7907551R.kp
 
 JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:applib.jar:flanagan.jar:AppleJavaExtensions.jar
 
-JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked -target 1.5
+JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked
 TARGET=ECUxPlot-$(ECUXPLOT_VER)
 INSTALLER=ECUxPlot-$(ECUXPLOT_VER)-setup.exe
 
