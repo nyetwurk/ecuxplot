@@ -5,7 +5,7 @@ ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 
 JCOMMON_VER := 1.0.16
 JFREECHART_VER := 1.0.13
-OPENCSV_VER := 1.8
+OPENCSV_VER := 2.3
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
