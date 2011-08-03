@@ -14,7 +14,7 @@ public class Filter {
     private static final int defaultMinPedal = 95;
     private static final int defaultMinThrottle = 50;
     private static final int defaultGear = 3;
-    private static final int defaultMinPoints = 15;
+    private static final int defaultMinPoints = 5;
     private static final int defaultHPTQMAW = 5; // hp/tq moving average window
     private static final int defaultZeitMAW = 30; // zeitronix MAW
 
