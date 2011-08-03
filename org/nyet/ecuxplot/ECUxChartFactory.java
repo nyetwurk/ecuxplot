@@ -1,5 +1,6 @@
 package org.nyet.ecuxplot;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import org.jfree.chart.ChartFactory;
@@ -88,9 +89,19 @@ public class ECUxChartFactory {
 	final XYPlot plot = chart.getXYPlot();
 	final XYItemRenderer renderer = plot.getRenderer(axis);
 
-        final java.awt.Color colors[][] = {
-            { java.awt.Color.red, java.awt.Color.green, java.awt.Color.yellow},
-            { java.awt.Color.blue, java.awt.Color.cyan, java.awt.Color.gray}
+        final Color colors[][] = {
+            {
+	    new Color(0xff, 0x00, 0x00),
+	    new Color(0x00, 0x16, 0xff),
+	    new Color(0x00, 0xe0, 0xff),
+	    new Color(0xff, 0xc8, 0x00)
+	    },
+            {
+	    new Color(0xb9, 0x00, 0xff),
+	    new Color(0x00, 0xff, 0x48),
+	    new Color(0xb2, 0xff, 0x00),
+	    new Color(0xff, 0x70, 0x00)
+	    }
         };
 
 	axis = axis%colors.length;
@@ -101,11 +112,11 @@ public class ECUxChartFactory {
 	for (yki=0;yki<list.length;yki++)
 	    if (list[yki].equals(ykey.getString())) break;
 
-	java.awt.Color color=colors[axis][yki%(colors[axis].length)];
+	Color color=colors[axis][yki%(colors[axis].length)];
 
 	// make a variety of dark/light colors based on yki
 	int i;
-	java.awt.Color c;
+	Color c;
 	for(i=series.length/2, c=color; i>=0; i--, c=c.darker())
 	    renderer.setSeriesPaint(series[i], c);
 
