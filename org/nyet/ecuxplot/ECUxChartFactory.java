@@ -89,8 +89,8 @@ public class ECUxChartFactory {
 	final XYItemRenderer renderer = plot.getRenderer(axis);
 
         final java.awt.Color colors[][] = {
-            { java.awt.Color.red, java.awt.Color.blue, java.awt.Color.green},
-            { java.awt.Color.yellow, java.awt.Color.cyan, java.awt.Color.gray}
+            { java.awt.Color.red, java.awt.Color.green, java.awt.Color.yellow},
+            { java.awt.Color.blue, java.awt.Color.cyan, java.awt.Color.gray}
         };
 
 	axis = axis%colors.length;
