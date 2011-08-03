@@ -259,6 +259,7 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches("^Engine[Ss]peed.*")) h[i]="RPM";
 		    if(h[i].matches("^BoostPressureSpecified$")) h[i]="BoostPressureDesired";
 		    if(h[i].matches("^AtmosphericPressure$")) h[i]="BaroPressure";
+		    if(h[i].matches("^InjectionTime$")) h[i]="FuelInjectorOnTime";
 		}
 
 		if (verbose)
@@ -392,7 +393,7 @@ public class ECUxDataset extends Dataset {
 
 	} else if(id.equals("FuelInjectorDutyCycle")) {
 	    DoubleArray a = super.get("FuelInjectorOnTime").data.
-		div(60*this.ticks_per_sec);
+		div(60*1000);	/* assumes injector on time is in ms */
 
 	    DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
 	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
