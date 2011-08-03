@@ -18,7 +18,7 @@ public class ECUxDataset extends Dataset {
     private Filter filter;
     private final double hp_per_watt = 0.00134102209;
     private final double mbar_per_psi = 68.9475729;
-    private double ticks_per_sec;
+    private double time_ticks_per_sec;	// ECUx has time in ms. Nobody else does.
     public double samples_per_sec=0;
     private CubicSpline [] splines;	// rpm vs time splines
 
@@ -136,7 +136,7 @@ public class ECUxDataset extends Dataset {
 
 	int log_use = (log_req==LOG_DETECT)?log_detected:log_req;
 
-	this.ticks_per_sec = 1;
+	this.time_ticks_per_sec = 1;
 	switch(log_use) {
 	    case LOG_VCDS:
 		String[] e,b,g,h2;
@@ -235,7 +235,7 @@ public class ECUxDataset extends Dataset {
 		break;
 	    case LOG_ECUX:
 		u = ParseUnits(h);
-		this.ticks_per_sec = 1000;
+		this.time_ticks_per_sec = 1000;
 		break;
 	    case LOG_ME7LOGGER:
 		do {
@@ -337,7 +337,7 @@ public class ECUxDataset extends Dataset {
 	    c = new Column("Sample", "#", a);
 	} else if(id.equals("TIME")) {
 	    DoubleArray a = super.get("TIME").data;
-	    c = new Column("TIME", "s", a.div(this.ticks_per_sec));
+	    c = new Column("TIME", "s", a.div(this.time_ticks_per_sec));
 	} else if(id.equals("RPM")) {
 	    // smooth sampling quantum noise/jitter, RPM is an integer!
 	    if (this.samples_per_sec>10) {
