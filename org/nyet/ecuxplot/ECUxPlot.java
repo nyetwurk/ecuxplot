@@ -485,12 +485,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
 	if (data==null) return;
 
+	/* returns the series indicies of the dataset we just added */
 	Integer[] series =
 	    ECUxChartFactory.addDataset(d, data, this.xkey(), ykey);
 
+	/* set the color for those series */
 	ECUxChartFactory.setAxisPaint(this.chartPanel.getChart(), axis,
 	    d, ykey, series);
 
+	/* set the stroke for those series */
 	ECUxChartFactory.setAxisStroke(this.chartPanel.getChart(), axis,
 	    d, ykey, series, stroke);
     }
