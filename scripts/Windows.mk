@@ -12,7 +12,7 @@ ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
 
 # unix launch4j requires full path to .xml
 ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.xml ECUxPlot.ico version.txt
-	$(LAUNCH4J) "$(shell cygpath -w $(PWD)/ECUxPlot.xml)"
+	$(LAUNCH4J) $(ECUXPLOT_XML)
 
 $(INSTALLER): ECUxPlot.exe $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	$(MAKENSIS) $(OPT_PRE)NOCD \

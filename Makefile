@@ -18,6 +18,7 @@ CLASSPATH = '$(shell cygpath -wp .:$(JARS))'
 
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
+ECUXPLOT_XML := '$(shell cygpath -w $(PWD)/ECUxPlot.xml)'
 
 MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis)'
@@ -27,6 +28,7 @@ OPT_PRE := '/'
 else
 CLASSPATH = .:$(JARS)
 LAUNCH4J := /usr/local/launch4j/launch4j
+ECUXPLOT_XML := $(PWD)/ECUxPlot.xml
 MAKENSIS := makensis
 INSTALL_DIR := /usr/local/ecuxplot
 OPT_PRE := '-'
