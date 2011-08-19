@@ -34,7 +34,8 @@ public class ECUxDataset extends Dataset {
 		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position"});
 	this.throttle = get(new String []
 		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle"});
-	this.gear = get("Gear");
+	this.gear = get(new String []
+		{"Gear", "SelectedGear"});
 	// look for zeitronix boost for filtering
 	this.boost = get("Zeitronix Boost");
 	/*
@@ -238,13 +239,14 @@ public class ECUxDataset extends Dataset {
 		this.time_ticks_per_sec = 1000;
 		break;
 	    case LOG_ME7LOGGER:
+		String[] v;	// ME7 variable name
 		do {
-		    h = reader.readNext();
-		    if (h==null)
+		    v = reader.readNext();
+		    if (v==null)
 			throw new Exception(this.getFileId() + ": read failed");
-		} while (h.length<1 || !h[0].equals("TimeStamp"));
+		} while (v.length<1 || !v[0].equals("TimeStamp"));
 
-		if (h==null || h.length<1)
+		if (v==null || v.length<1)
 		    throw new Exception(this.getFileId() + ": read failed");
 
 		u = reader.readNext();
@@ -259,7 +261,13 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches("^Engine[Ss]peed.*")) h[i]="RPM";
 		    if(h[i].matches("^BoostPressureSpecified$")) h[i]="BoostPressureDesired";
 		    if(h[i].matches("^AtmosphericPressure$")) h[i]="BaroPressure";
+		    if(h[i].matches("^AirFuelRatioRequired$")) h[i]="AirFuelRatioDesired";
 		    if(h[i].matches("^InjectionTime$")) h[i]="FuelInjectorOnTime";
+		    if(h[i].matches("^InjectionTimeBank2$")) h[i]="FuelInjectorOnTimeBank2";
+		    if(h[i].length()==0) {
+			v[i]=v[i].trim();
+		        if(v[i].length()>0) h[i]="ME7L " + v[i];
+		    }
 		}
 
 		if (verbose)
@@ -305,6 +313,14 @@ public class ECUxDataset extends Dataset {
 	Column ambient = this.get("BaroPressure");
 	if(ambient==null) return abs.add(-1013).div(mbar_per_psi);
 	return abs.sub(ambient.data).div(mbar_per_psi);
+    }
+
+    private DoubleArray toCelcius(DoubleArray f) {
+	return f.add(-32).mult(5.0/9.0);
+    }
+
+    private DoubleArray toFahrenheit(DoubleArray c) {
+	return c.mult(9.0/5.0).add(32);
     }
 
     // given a list of id's, find the first that exists
@@ -545,7 +561,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("IgnitionTimingAngleOverallDesired")) {
 	    DoubleArray averetard = null;
 	    int count=0;
-	    for(int i=0;i<6;i++) {
+	    for(int i=0;i<8;i++) {
 		Column retard = this.get("IgnitionRetardCyl" + i);
 		if(retard!=null) {
 		    if(averetard==null) averetard = retard.data;
@@ -555,7 +571,9 @@ public class ECUxDataset extends Dataset {
 	    }
 	    DoubleArray out = this.get("IgnitionTimingAngleOverall").data;
 	    if(count>0) {
-		out = out.add(averetard.div(count));
+		// assume retard is always positive... some loggers log it negative
+		// abs it to normalize
+		out = out.add(averetard.div(count).abs());
 	    }
 	    c = new Column(id, "degrees", out);
 /*****************************************************************************/

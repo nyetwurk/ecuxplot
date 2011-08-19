@@ -149,6 +149,17 @@ public class DoubleArray
 	return new DoubleArray(this._func(fPow, d));
     }
 
+    public double[] _abs() {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=Math.abs(this.array[i]);
+	}
+	return out;
+    }
+    public DoubleArray abs() {
+	return new DoubleArray(this._abs());
+    }
+
     public double[] _min(double d) {
         double[] out = new double[ sp ];
 	for(int i=0;i<this.sp;i++) {

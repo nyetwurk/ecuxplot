@@ -79,20 +79,20 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("^Calc .*")) {
 	    // calc is added last, do not autoadd to submenu
 	    addToSubmenu("Calc", item, false);
-	} else if(id.matches(".*Fuel.*")) {
+	} else if(id.matches(".*(TargetAFR|O2SVoltage|AdaptationPartial|Fuel|Lambda).*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("AirFuelRatioDesired")) {
 		this.add("AirFuelRatioDesired (AFR)", listener, bg);
 	    }
 	    if(id.matches("FuelInjectorOnTime")) {
-		this.add("FuelInjectorDutyCycle", listener, bg);
 		this.add("Calc Fuel Mass", listener, bg);
 		this.add("Calc AFR", listener, bg);
 		this.add("Calc lambda", listener, bg);
 		this.add("Calc lambda error", listener, bg);
 		// addToSubmenu("Calc", new JSeparator(), false);
+		this.add("FuelInjectorDutyCycle", listener, bg);
 	    }
-	} else if(id.matches("^Boost.*")) {
+	} else if(id.matches("^(Boost|Wastegate).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		this.add("BoostPressureDesired (PSI)", listener, bg);
@@ -109,7 +109,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LDR PID", listener, bg);
 		addToSubmenu("Calc", new JSeparator(), false);
 	    }
-	} else if(id.matches("^Ignition.*")) {
+	} else if(id.matches("^(|Eta|Avg)Ign.*")) {
 	    addToSubmenu("Ignition", item);
 	    if(id.matches("IgnitionTimingAngleOverall")) {
 		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
@@ -138,6 +138,8 @@ public class AxisMenu extends JMenu {
 	    this.add(item);
 	    this.add("Engine torque (ft-lb)", listener, bg);
 	    this.add("Engine HP", listener, bg);
+	} else if(id.matches("^ME7L.*")) {
+	    addToSubmenu("ME7 Logger", item);
 	} else {
 	    this.add(item);
 	}
@@ -161,6 +163,12 @@ public class AxisMenu extends JMenu {
 	    if(headers[i] == null) continue;
 	    if(headers[i].length()>0 && !this.members.containsKey(headers[i]))
 		this.add(headers[i], listener, bg);
+	}
+	// put ME7Log next
+	JMenu me7l=subMenus.get("ME7 Logger");
+	if(me7l!=null) {
+	    this.add(new JSeparator());
+	    this.add(me7l);
 	}
 
 	// put calc at bottom
