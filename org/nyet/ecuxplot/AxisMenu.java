@@ -138,6 +138,9 @@ public class AxisMenu extends JMenu {
 	    this.add(item);
 	    this.add("Engine torque (ft-lb)", listener, bg);
 	    this.add("Engine HP", listener, bg);
+	} else if(id.matches("IntakeAirTemperature")) {
+	    this.add(item);
+	    this.add("IntakeAirTemperature (C)", listener, bg);
 	} else if(id.matches("^ME7L.*")) {
 	    addToSubmenu("ME7 Logger", item);
 	} else {

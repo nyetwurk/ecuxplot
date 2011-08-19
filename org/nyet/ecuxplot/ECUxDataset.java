@@ -317,11 +317,11 @@ public class ECUxDataset extends Dataset {
 	return abs.sub(ambient.data).div(mbar_per_psi);
     }
 
-    private DoubleArray toCelcius(DoubleArray f) {
+    private static DoubleArray toCelcius(DoubleArray f) {
 	return f.add(-32).mult(5.0/9.0);
     }
 
-    private DoubleArray toFahrenheit(DoubleArray c) {
+    private static DoubleArray toFahrenheit(DoubleArray c) {
 	return c.mult(9.0/5.0).add(32);
     }
 
@@ -481,7 +481,14 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc Drag")) {
 	    DoubleArray v = this.get("Calc Velocity").data;
 	    DoubleArray drag = this.drag(v);	// in watts
-	    c = new Column(id, "HP", drag.mult(hp_per_watt));
+	} else if(id.equals("IntakeAirTemperature")) {
+	    c = super.get(id);
+	    if (c.getUnits().matches(".*C$"))
+		c = new Column(id, "\u00B0 F", this.toFahrenheit(c.data));
+	} else if(id.equals("IntakeAirTemperature (C)")) {
+	    c = super.get("IntakeAirTemperature");
+	    if (c.getUnits().matches(".*F$"))
+		c = new Column(id, "\u00B0 C", this.toCelcius(c.data));
 	} else if(id.equals("BoostPressureDesired (PSI)")) {
 	    DoubleArray abs = super.get("BoostPressureDesired").data;
 	    c = new Column(id, "PSI", this.toPSI(abs));
@@ -577,7 +584,7 @@ public class ECUxDataset extends Dataset {
 		// abs it to normalize
 		out = out.add(averetard.div(count).abs());
 	    }
-	    c = new Column(id, "degrees", out);
+	    c = new Column(id, "\u00B0", out);
 /*****************************************************************************/
 	} else if(id.equals("Calc LoadSpecified correction")) {
 	    DoubleArray cs = super.get("EngineLoadCorrectedSpecified").data;
