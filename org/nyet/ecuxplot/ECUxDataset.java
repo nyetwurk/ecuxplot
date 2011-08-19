@@ -1,5 +1,6 @@
 package org.nyet.ecuxplot;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -29,7 +30,6 @@ public class ECUxDataset extends Dataset {
 	this.env = env;
 	this.filter = filter;
 
-	this.rpm = get("RPM");
 	this.pedal = get(new String []
 		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position"});
 	this.throttle = get(new String []
@@ -55,6 +55,8 @@ public class ECUxDataset extends Dataset {
 		}
 	    }
 	}
+	// get RPM AFTER getting TIME, so we have an accurate samples per sec
+	this.rpm = get("RPM");
 	buildRanges(); // regenerate ranges, splines
     }
 
@@ -591,71 +593,87 @@ public class ECUxDataset extends Dataset {
     }
 
     protected boolean dataValid(int i) {
-	if(this.filter==null) return true;
-	if(!this.filter.enabled()) return true;
+	boolean ret = true;
+	if(this.filter==null) return ret;
+	if(!this.filter.enabled()) return ret;
+
+	ArrayList<String> reasons = new ArrayList<String>();
+
 	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear()) {
-	    this.lastFilterReason = "gear " + Math.round(gear.data.get(i)) +
-		    "!=" + filter.gear();
-	    return false;
+	    reasons.add("gear " + Math.round(gear.data.get(i)) +
+		    "!=" + filter.gear());
+	    ret=false;
 	}
 	if(pedal!=null && pedal.data.get(i)<filter.minPedal()) {
-	    this.lastFilterReason = "pedal " + pedal.data.get(i) +
-		    "<" + filter.minPedal();
-	    return false;
+	    reasons.add("pedal " + pedal.data.get(i) +
+		    "<" + filter.minPedal());
+	    ret=false;
 	}
 	if(throttle!=null && throttle.data.get(i)<filter.minThrottle()) {
-	    this.lastFilterReason = "throttle " + throttle.data.get(i) +
-		    "<" + filter.minThrottle();
-	    return false;
+	    reasons.add("throttle " + throttle.data.get(i) +
+		    "<" + filter.minThrottle());
+	    ret=false;
 	}
 	if(boost!=null && boost.data.get(i)<0) {
-	    this.lastFilterReason = "boost " + boost.data.get(i) +
-		    "<0";
-	    return false;
+	    reasons.add("boost " + boost.data.get(i) +
+		    "<0");
+	    ret=false;
 	}
 	if(rpm!=null) {
 	    if(rpm.data.get(i)<filter.minRPM()) {
-		this.lastFilterReason = "rpm " + rpm.data.get(i) +
-		    "<" + filter.minRPM();
-		return false;
+		reasons.add("rpm " + rpm.data.get(i) +
+		    "<" + filter.minRPM());
+		ret=false;
 	    }
 	    if(rpm.data.get(i)>filter.maxRPM()) {
-		this.lastFilterReason = "rpm " + rpm.data.get(i) +
-		    ">" + filter.maxRPM();
-		return false;
+		reasons.add("rpm " + rpm.data.get(i) +
+		    ">" + filter.maxRPM());
+		ret=false;
 	    }
-	    if(rpm.data.size()>i+3 &&
-		rpm.data.get(i)-rpm.data.get(i+2)>filter.monotonicRPMfuzz()) {
-		this.lastFilterReason = "rpm delta " + 
-		    (rpm.data.get(i)-rpm.data.get(i+2)) + ">" +
-		    filter.monotonicRPMfuzz();
-		return false;
+	    if(i>0 && rpm.data.size()>i+2 &&
+		rpm.data.get(i-1)-rpm.data.get(i+1)>filter.monotonicRPMfuzz()) {
+		reasons.add("rpm delta " +
+		    rpm.data.get(i-1) + "-" + rpm.data.get(i+1) + ">" +
+		    filter.monotonicRPMfuzz());
+		ret=false;
 	    }
 	}
-	return true;
+
+	if (!ret)
+	    this.lastFilterReasons = reasons;
+
+	return ret;
     }
 
     protected boolean rangeValid(Range r) {
-	if(this.filter==null) return true;
-	if(!this.filter.enabled()) return true;
+	boolean ret = true;
+	if(this.filter==null) return ret;
+	if(!this.filter.enabled()) return ret;
+
+	ArrayList<String> reasons = new ArrayList<String>();
+
 	if(r.size()<filter.minPoints()) {
-	    this.lastFilterReason = "points " + r.size() + "<" +
-		filter.minPoints();
-	    return false;
+	    reasons.add("points " + r.size() + "<" +
+		filter.minPoints());
+	    ret=false;
 	}
 	if(rpm!=null) {
 	    if(rpm.data.get(r.end)<rpm.data.get(r.start)+filter.minRPMRange()) {
-		this.lastFilterReason = "RPM Range " + rpm.data.get(r.end) +
-		    "<" + rpm.data.get(r.start) + "+" +filter.minRPMRange();
-		return false;
+		reasons.add("RPM Range " + rpm.data.get(r.end) +
+		    "<" + rpm.data.get(r.start) + "+" +filter.minRPMRange());
+		ret=false;
 	    }
 	}
-	return true;
+
+	if (!ret)
+	    this.lastFilterReasons = reasons;
+
+	return ret;
     }
 
     public void buildRanges() {
 	super.buildRanges();
-        java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
+        ArrayList<Dataset.Range> ranges = this.getRanges();
 	this.splines = new CubicSpline[ranges.size()];
         for(int i=0;i<ranges.size();i++) {
 	    splines[i] = null;
@@ -673,7 +691,7 @@ public class ECUxDataset extends Dataset {
     }
 
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
-	    java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
+	    ArrayList<Dataset.Range> ranges = this.getRanges();
 	    if(run<0 || run>=ranges.size())
 		throw new Exception("no run found");
 
@@ -696,7 +714,7 @@ public class ECUxDataset extends Dataset {
     }
 
     public double[] calcFATS(int RPMStart, int RPMEnd) {
-        java.util.ArrayList<Dataset.Range> ranges = this.getRanges();
+        ArrayList<Dataset.Range> ranges = this.getRanges();
 	double [] out = new double[ranges.size()];
         for(int i=0;i<ranges.size();i++) {
 	    try {

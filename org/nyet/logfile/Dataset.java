@@ -6,6 +6,7 @@ import java.util.*;
 import au.com.bytecode.opencsv.*;
 
 import org.nyet.util.DoubleArray;
+import org.nyet.util.Strings;
 
 public class Dataset {
     private String [] ids;
@@ -14,7 +15,7 @@ public class Dataset {
     private ArrayList<Column> columns;
     private ArrayList<Range> range_cache = new ArrayList<Range>();
     private int rows;
-    protected String lastFilterReason;
+    protected ArrayList<String> lastFilterReasons = new ArrayList<String>();
 
     public class Range {
 	public int start;
@@ -211,7 +212,7 @@ public class Dataset {
 	    if(dataValid(i)) {
 		if(r==null) {
 		    r = new Range(i);
-		    this.lastFilterReason=null;
+		    this.lastFilterReasons=new ArrayList<String>();
 		}
 		if(i==this.rows-1) end=true; // we hit end of data
 	    } else {
@@ -221,8 +222,8 @@ public class Dataset {
 		r.end=i-1;
 		if(rangeValid(r)) {
 		    /*
-		    if(this.lastFilterReason!=null) {
-			System.out.println(this.lastFilterReason +
+		    if(this.lastFilterReasons.size()!=0) {
+			System.out.println(Strings.join(":", this.lastFilterReasons) +
 				": adding range " + r.toString());
 		    }
 		    */
@@ -253,6 +254,6 @@ public class Dataset {
     public String [] getUnits() { return this.units; }
     public void setUnits(String [] units) { this.units=units; }
 
-    public String getLastFilterReason() { return this.lastFilterReason; }
+    public ArrayList<String> getLastFilterReasons() { return this.lastFilterReasons; }
     public int length() { return this.rows; }
 }
