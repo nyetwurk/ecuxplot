@@ -381,6 +381,11 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray a = super.get("MassAirFlow").data.
 		mult(this.env.f.MAF_correction()).add(this.env.f.MAF_offset());
 	    c = new Column(id, "g/sec", a);
+	} else if(id.equals("Calc MassAirFlow df/dt")) {
+	    // mass in g/sec
+	    DoubleArray maf = super.get("MassAirFlow").data;
+	    DoubleArray time = this.get("TIME").data;
+	    c = new Column(id, "g/sec^s", maf.derivative(time).max(0));
 	} else if(id.equals("Calc Turbo Flow")) {
 	    DoubleArray a = this.get("Calc MAF").data;
 	    c = new Column(id, "m^3/sec", a.div(1225*this.env.f.turbos()));

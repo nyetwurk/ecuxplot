@@ -71,6 +71,7 @@ public class AxisMenu extends JMenu {
 	    this.add("Calc Load", listener, bg);
 	    this.add("Calc Load Corrected", listener, bg);
 	    this.add("Calc MAF", listener, bg);
+	    this.add("Calc MassAirFlow df/dt", listener, bg);
 	    this.add("Calc Turbo Flow", listener, bg);
 	    this.add("Calc Turbo Flow (lb/min)", listener, bg);
 	    this.add(item);
