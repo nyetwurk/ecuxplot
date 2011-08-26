@@ -2,8 +2,8 @@ XDF
 1.110000
 
 %%HEADER%%
-	001000 FileVers         ="Version 1"
-	001005 DefTitle         ="data/8D0907551M-20110715"
+	001000 FileVers         ="Version 1 - Thu Aug 25 18:38:40 PDT 2011"
+	001005 DefTitle         ="data/8D0907551M"
 	001006 Desc             ="Original"
 	001007 DescSize         =0x9
 	001010 Author           ="mesim translator"
@@ -2225,7 +2225,7 @@ XDF
 	020050 SizeInBits       =0x10
 	020210 DecimalPl        =0x5
 	020100 Address          =0x1C2BC
-	020200 Equation         =0.000167 * X,TH|0|0|0|0|
+	020200 Equation         =0.000111 * X,TH|0|0|0|0|
 	020150 Flags            =0x2
 	020360 YLabels          =-
 	020362 YLabelType       =0x4
@@ -5830,5 +5830,30 @@ XDF
 	020150 Flags            =0x0
 	020360 YLabels          =-
 	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0xB
+	040005 Title            ="NDLDRAPU"
+	040010 Desc             ="RPM threshhold for LDRA failure path and healing LDO failure path"
+	040011 DescSize         =0x42
+	040330 ZUnits           ="Upm"
+	040210 DecimalPl        =0x1
+	040100 Address          =0x1999A
+	040200 ZEq              =40.000000 * X,TH|0|0|0|0|
+	040305 Cols             =0x2
+	040320 XUnits           ="hPa"
+	040352 XLabelType       =0x1
+	040354 XEq              =5.000000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x19998
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040300 Rows             =0x1
+	040325 YUnits           ="-"
+	040362 YLabelType       =0x2
+	040150 Flags            =0x0
+	040360 YLabels          =-
+	040362 YLabelType       =0x4
 %%END%%
 
