@@ -2,7 +2,7 @@ XDF
 1.110000
 
 %%HEADER%%
-	001000 FileVers         ="Version 1"
+	001000 FileVers         ="Version 1 - Sat Nov 29 00:52:10 PST 2008"
 	001005 DefTitle         ="data/8D0907551F"
 	001006 Desc             ="Original"
 	001007 DescSize         =0x9

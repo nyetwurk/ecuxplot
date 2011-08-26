@@ -9,6 +9,7 @@ import java.nio.channels.FileChannel;
 
 public class MMapFile {
     public final long length;
+    public final long mTime;
     private MappedByteBuffer buf;
 
     public MMapFile(String fname, ByteOrder order) throws Exception {
@@ -21,6 +22,7 @@ public class MMapFile {
 
 	this.buf.order(order);
 	this.length = file.length();
+	this.mTime = file.lastModified();
     }
 
     public ByteBuffer getByteBuffer() throws Exception {

@@ -8,6 +8,7 @@ import org.nyet.util.Files;
 public class Project {
     public String stem;
     public String name;
+    public Date mTime;
     private HexValue[] header = new HexValue[4];
     public String version;
     private HexValue[] header1 = new HexValue[5];
@@ -73,7 +74,7 @@ public class Project {
 	    case Map.FORMAT_XDF:
 		String out = "%%HEADER%%\n";
 		out += String.format(Map.XDF_LBL+"\"%s\"\n",1000, "FileVers",
-			this.version);
+			this.version + " - " + this.mTime);
 		out += String.format(Map.XDF_LBL+"\"%s\"\n",1005, "DefTitle",
 			this.stem);
 		out += String.format(Map.XDF_LBL+"\"%s\"\n",1006, "Desc",
