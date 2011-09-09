@@ -508,12 +508,21 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "mBar", boost.mult(mbar_per_psi).add(1013));
 	} else if(id.equals("Calc BoostDesired PR")) {
 	    DoubleArray act = super.get("BoostPressureDesired").data;
-	    DoubleArray ambient = super.get("BaroPressure").data;
-	    c = new Column(id, "PR", act.div(ambient));
+	    try {
+		DoubleArray ambient = super.get("BaroPressure").data;
+		c = new Column(id, "PR", act.div(ambient));
+	    } catch (Exception e) {
+		c = new Column(id, "PR", act.div(1013));
+	    }
+
 	} else if(id.equals("Calc BoostActual PR")) {
 	    DoubleArray act = super.get("BoostPressureActual").data;
-	    DoubleArray ambient = super.get("BaroPressure").data;
-	    c = new Column(id, "PR", act.div(ambient));
+	    try {
+		DoubleArray ambient = super.get("BaroPressure").data;
+		c = new Column(id, "PR", act.div(ambient));
+	    } catch (Exception e) {
+		c = new Column(id, "PR", act.div(1013));
+	    }
 	} else if(id.equals("Calc SimBoostPressureDesired")) {
 	    DoubleArray ambient = super.get("BaroPressure").data;
 	    DoubleArray load = super.get("EngineLoadDesired").data;
