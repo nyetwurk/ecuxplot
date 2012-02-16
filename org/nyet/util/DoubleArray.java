@@ -194,11 +194,13 @@ public class DoubleArray
     }
 
     public double[] _derivative(double[] d, int window) {
-        double[] out = new double[ sp ];
-        if(sp==1 || d.length<2 || d.length!=sp) {
+        double[] out = new double[ this.sp ];
+	/*
+        if(this.sp==1 || d.length<2 || d.length!=this.sp) {
             System.out.println("sp: " + sp +", d.len: " + d.length +
-            ", sp=" + sp);
+            ", sp=" + this.sp);
         }
+	*/
         for(int i=0;i<this.sp;i++) {
             int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
             out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
