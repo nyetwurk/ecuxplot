@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 PROG=`readlink -m "$0" 2>/dev/null || true`
 [ -z "$PROG" ] && PROG=$0
