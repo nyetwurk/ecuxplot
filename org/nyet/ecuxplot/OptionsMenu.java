@@ -154,23 +154,24 @@ public final class OptionsMenu extends JMenu {
 	    if(s.equals("Restore Defaults")) {
 		ECUxPreset.createDefaultECUxPresets();
 	    } else {
-		if(s.equals("New Preset..."))
+		if(s.equals("New Preset...")) {
 		    s = ECUxPlot.showInputDialog("Enter preset name");
+		    if (s==null) return;
 
-		if (s!=null) {
+		    if (blacklist.contains(s)) {
+			JOptionPane.showMessageDialog(null, "Illegal name");
+			return;
+		    }
+
 		    String[] keys = ECUxPreset.getPresets();
 		    for(String k : keys) {
-			if (blacklist.contains(s)) {
-			    JOptionPane.showMessageDialog(null, "Illegal name");
-			    return;
-			}
 			if (s.equals(k)) {
 			    JOptionPane.showMessageDialog(null, "Name in use");
 			    return;
 			}
 		    }
-		    plotFrame.savePreset(s);
 		}
+		plotFrame.savePreset(s);
 	    }
 	    updatePresets();
 	}

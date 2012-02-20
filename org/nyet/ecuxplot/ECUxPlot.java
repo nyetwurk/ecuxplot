@@ -720,7 +720,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
 	updatePlotTitleAndYAxisLabels();
 	try {
-	    System.out.println("removing title pref");
+	    // System.out.println("removing title pref");
 	    this.prefs.remove("title");
 	} catch (Exception e) {}
     }
