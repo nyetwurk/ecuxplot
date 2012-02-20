@@ -35,4 +35,8 @@ public class ECUxChartPanel extends ChartPanel {
 	   ChartUtilities.saveChartAsPNG(f, this.getChart(), this.getWidth(),
 		   this.getHeight());
     }
+
+    public void saveChartAsPNG(String filename) throws IOException {
+	   this.saveChartAsPNG(new File(filename));
+    }
 }

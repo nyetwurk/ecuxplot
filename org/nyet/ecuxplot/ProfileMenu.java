@@ -117,15 +117,8 @@ public final class ProfileMenu extends JMenu {
 	    boolean make = false;
 	    ProfileMenu pm = ProfileMenu.this;
 	    if(prof.equals("New Profile...")) {
-		prof = JOptionPane.showInputDialog(pm, "Enter profile name");
-		if(prof == null || prof.length() == 0) return;
-		if(prof.startsWith(".") || prof.contains(":") ||
-		    prof.contains(File.separator) ||
-		    prof.contains("/") || prof.contains("\\")) {
-		    JOptionPane.showMessageDialog(pm.plotFrame,
-			"Invalid profile name");
-		    return;
-		}
+		prof = ECUxPlot.showInputDialog("Enter profile name");
+		if (prof==null) return;
 		make = true;
 	    }
 	    try {

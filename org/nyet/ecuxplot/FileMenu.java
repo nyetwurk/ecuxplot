@@ -53,6 +53,12 @@ public final class FileMenu extends JMenu {
 	item.addActionListener(listener);
 	this.add(item);
 
+	item = new JMenuItem("Export All Charts");
+	item.setAccelerator(KeyStroke.getKeyStroke(
+	    KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+	item.addActionListener(listener);
+	this.add(item);
+
 	this.add(new JSeparator());
 
 	item = new JMenuItem("Quit");

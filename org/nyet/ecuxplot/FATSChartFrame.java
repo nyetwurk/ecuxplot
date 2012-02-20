@@ -1,5 +1,7 @@
 package org.nyet.ecuxplot;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.TreeMap;
 
 import java.awt.*;
@@ -9,6 +11,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.*;
 
 import org.jfree.chart.ChartFrame;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
@@ -155,5 +158,14 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	putWindowSize();
 	putWindowLocation();
 	super.dispose();
+    }
+
+    public void saveChartAsPNG(File f) throws IOException {
+           ChartUtilities.saveChartAsPNG(f, this.getChartPanel().getChart(), this.getWidth(),
+                   this.getHeight());
+    }
+
+    public void saveChartAsPNG(String filename) throws IOException {
+           this.saveChartAsPNG(new File(filename));
     }
 }

@@ -61,7 +61,7 @@ EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java \
 	    PID.java PIDEditor.java \
 	    Fueling.java FuelingEditor.java \
 	    SAE.java SAEEditor.java \
-	    Preset.java ECUxPresets.java
+	    Preset.java ECUxPreset.java
 
 LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
 UT_CLASSES=$(UT_SOURCES:%.java=org/nyet/util/%.class)

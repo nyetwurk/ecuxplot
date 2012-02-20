@@ -1,5 +1,7 @@
 package org.nyet.ecuxplot;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
 
@@ -10,10 +12,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBox;
 import javax.swing.JSeparator;
+import javax.swing.JOptionPane;
 
 public final class OptionsMenu extends JMenu {
     private ECUxPlot plotFrame;
-    private JMenu presetsMenu;
+    private JMenu loadPresetsMenu;
+    private JMenu savePresetsMenu;
+    private JMenu deletePresetsMenu;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
 	super(id);
@@ -21,13 +26,21 @@ public final class OptionsMenu extends JMenu {
 	JMenuItem jmi;
 	JCheckBox jcb;
 
-        Preferences prefs = plotFrame.getPreferences();
+	// Presets
+	this.loadPresetsMenu = new JMenu("Load Preset...");
+	this.savePresetsMenu = new JMenu("Save Preset...");
+	this.deletePresetsMenu = new JMenu("Delete Preset...");
 
-	this.presetsMenu = new JMenu("Load Preset...");
 	updatePresets();
-	this.add(this.presetsMenu);
+
+	this.add(this.loadPresetsMenu);
+	this.add(this.savePresetsMenu);
+	this.add(this.deletePresetsMenu);
 
 	this.add(new JSeparator());
+
+	// Prefs
+        Preferences prefs = plotFrame.getPreferences();
 
 	jcb = new JCheckBox("Scatter plot",
 		ECUxPlot.scatter(prefs));
@@ -62,30 +75,114 @@ public final class OptionsMenu extends JMenu {
     }
 
     private void updatePresets() {
-	TreeMap<Comparable, Preset> presets = this.plotFrame.getPresets();
-	PresetAction pa = new PresetAction();
-	if(presets!=null) {
-	    for(Preset p : presets.values()) {
-		JMenuItem jmi = new JMenuItem(p.getName().toString());
-		jmi.addActionListener(pa);
-		if(!p.getName().equals("Undo"))
-		    this.presetsMenu.add(jmi);
+	this.loadPresetsMenu.removeAll();
+	this.savePresetsMenu.removeAll();
+	this.deletePresetsMenu.removeAll();
+
+	LoadPresetAction lpa = new LoadPresetAction();
+	SavePresetAction spa = new SavePresetAction();
+	DeletePresetAction dpa = new DeletePresetAction();
+	JMenuItem jmi;
+	Boolean undoPresent = false;
+	Boolean addSeparator = false;
+	Boolean presetsPresent = false;
+	String [] keys = null;
+
+	for(String s : ECUxPreset.getPresets()) {
+	    if(!s.equals("Undo")) {
+		jmi = new JMenuItem(s);
+		jmi.addActionListener(lpa);
+		this.loadPresetsMenu.add(jmi);
+
+		jmi = new JMenuItem(s);
+		this.savePresetsMenu.add(jmi);
+		jmi.addActionListener(spa);
+
+		jmi = new JMenuItem(s);
+		this.deletePresetsMenu.add(jmi);
+		jmi.addActionListener(dpa);
+	    } else {
+		undoPresent = true;
 	    }
+	    addSeparator = true;
 	}
-	this.presetsMenu.add(new JSeparator());
-	JMenuItem jmi = new JMenuItem("Undo");
-	jmi.addActionListener(pa);
-	this.presetsMenu.add(jmi);
+
+	if (undoPresent) {
+	    if(addSeparator)
+		this.loadPresetsMenu.add(new JSeparator());
+
+	    jmi = new JMenuItem("Undo");
+	    jmi.addActionListener(lpa);
+	    this.loadPresetsMenu.add(jmi);
+	}
+	if(addSeparator)
+	    this.savePresetsMenu.add(new JSeparator());
+
+	jmi = new JMenuItem("New Preset...");
+	jmi.addActionListener(spa);
+	this.savePresetsMenu.add(jmi);
+
+	this.savePresetsMenu.add(new JSeparator());
+	jmi = new JMenuItem("Restore Defaults");
+	jmi.addActionListener(spa);
+	this.savePresetsMenu.add(jmi);
     }
 
-    private class PresetAction implements ActionListener {
+    private class LoadPresetAction implements ActionListener {
 	public void actionPerformed(ActionEvent event) {
-	    OptionsMenu om = OptionsMenu.this;
-	    if(!event.getActionCommand().equals("Undo"))
-		om.plotFrame.savePreset("Undo");
-	    om.presetsMenu.removeAll();
+	    String s = event.getActionCommand();
+	    if(!s.equals("Undo")) {
+		/* save last setup */
+		plotFrame.saveUndoPreset();
+		/* maybe undo didn't exist. rebuild load menu just in case */
+		updatePresets();
+	    }
+	    plotFrame.loadPreset(s);
+	}
+    }
+
+    private class SavePresetAction implements ActionListener {
+	private final List<String> blacklist = Arrays.asList(
+	    "Undo",
+	    "New Preset...",
+	    "Restore Defaults",
+	    ""
+	);
+
+	public void actionPerformed(ActionEvent event) {
+	    String s = event.getActionCommand();
+	    if(s.equals("Restore Defaults")) {
+		ECUxPreset.createDefaultECUxPresets();
+	    } else {
+		if(s.equals("New Preset..."))
+		    s = ECUxPlot.showInputDialog("Enter preset name");
+
+		if (s!=null) {
+		    String[] keys = ECUxPreset.getPresets();
+		    for(String k : keys) {
+			if (blacklist.contains(s)) {
+			    JOptionPane.showMessageDialog(null, "Illegal name");
+			    return;
+			}
+			if (s.equals(k)) {
+			    JOptionPane.showMessageDialog(null, "Name in use");
+			    return;
+			}
+		    }
+		    plotFrame.savePreset(s);
+		}
+	    }
 	    updatePresets();
-	    om.plotFrame.loadPreset(event.getActionCommand());
+	}
+    }
+
+    private class DeletePresetAction implements ActionListener {
+	public void actionPerformed(ActionEvent event) {
+	    String s = event.getActionCommand();
+	    try {
+		ECUxPreset.getPreferencesStatic().node(s).removeNode();
+		updatePresets();
+	    } catch (Exception e) {}
 	}
     }
 }

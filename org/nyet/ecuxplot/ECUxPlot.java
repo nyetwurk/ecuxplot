@@ -31,10 +31,8 @@ import org.nyet.logfile.Dataset;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     // each file loaded has an associated dataset
-    private TreeMap<String, ECUxDataset> fileDatasets =
-	    new TreeMap<String, ECUxDataset>();
-
-    private ECUxPresets presets = new ECUxPresets();
+    private TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
+    private ArrayList<String> files = new ArrayList<String>();
 
     private ECUxChartPanel chartPanel;
     private FATSChartFrame fatsFrame;
@@ -53,23 +51,28 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     private SAEEditor sae;
 
     // Preferences
-    private Preferences prefs=null;
+    private Preferences prefs = getPreferences();
 
     private Env env;
     private Filter filter;
 
     private boolean exitOnClose = true;
 
+    // List of open plots
+    private ArrayList<ECUxPlot> plotlist = null;
+
     // Constructor
-    public ECUxPlot(final String title, boolean exitOnClose) { this(title, null, exitOnClose); }
-    public ECUxPlot(final String title, java.awt.Dimension size, boolean exitOnClose) {
+    public ECUxPlot(final String title, java.awt.Dimension size, boolean exitOnClose) { this(title, size, null, exitOnClose); }
+    public ECUxPlot(final String title, ArrayList<ECUxPlot> plotlist) { this(title, null, plotlist, false); }
+    public ECUxPlot(final String title, java.awt.Dimension size, ArrayList<ECUxPlot> plotlist, boolean exitOnClose) {
         super(title);
+
+	this.plotlist = (plotlist!=null)?plotlist:new ArrayList<ECUxPlot>();
+	this.plotlist.add(this);
 
 	this.exitOnClose=exitOnClose;
 	WindowUtilities.setNativeLookAndFeel();
 	this.menuBar = new JMenuBar();
-
-	this.prefs = Preferences.userNodeForPackage(ECUxPlot.class);
 
 	this.filter = new Filter(this.prefs);
 	this.env = new Env(this.prefs);
@@ -105,13 +108,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private Comparable xkey() {
-	final Comparable defaultXkey = this.presets.get("Power").xkey;
+	final Comparable defaultXkey = new ECUxPreset("Power").xkey();
 	return this.prefs.get("xkey", defaultXkey.toString());
     }
 
     private Comparable[] ykeys(int index) {
-	final Comparable[] ykeys = this.presets.get("Power").ykeys;
-	final Comparable[] ykeys2 = this.presets.get("Power").ykeys2;
+	final Comparable[] ykeys = new ECUxPreset("Power").ykeys();
+	final Comparable[] ykeys2 = new ECUxPreset("Power").ykeys2();
 	final String[] defaultYkeys = { Strings.join(",", ykeys), Strings.join(",", ykeys2) };
 
 	String k=this.prefs.get("ykeys"+index, defaultYkeys[index]);
@@ -214,6 +217,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	} else {
 	    this.fatsFrame.setDatasets(this.fileDatasets);
 	}
+
+	// grab title from prefs, or just use what current title is
+	this.chartTitle(prefs.get("title", this.chartTitle()));
     }
 
     public void loadFiles(ArrayList<String> files) {
@@ -248,6 +254,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		    this.env, this.filter);
 
 	    this.fileDatasets.put(file.getName(), data);
+	    this.files.add(file.getAbsolutePath());
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
@@ -266,6 +273,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     // nuke datasets
     private void nuke() {
 	this.fileDatasets = new TreeMap<String, ECUxDataset>();
+	this.files = new ArrayList<String>();
 	this.setTitle("ECUxPlot");
 	if(this.chartPanel!=null) {
 	    this.chartPanel.setChart(null);
@@ -274,6 +282,31 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
 	if(this.fatsFrame!=null)
 	    this.fatsFrame.clearDataset();
+    }
+
+    private String getExportStem() {
+	String stem=null;
+	for(ECUxDataset d : this.fileDatasets.values()) {
+	    String fname=d.getFileId();
+	    if(stem == null) {
+		stem = Files.stem(fname);
+	    } else {
+		stem += "_vs_" + Files.stem(Files.filename(fname));
+	    }
+	}
+
+	if (this.chartPanel == null) return stem;
+	return stem;
+    }
+
+    public String exportChartStem(String dir)
+    {
+	String ret = null;
+	if (this.chartPanel != null) {
+	    String stem = getExportStem();
+	    ret = dir + File.separator + stem;
+	}
+	return ret;
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -285,20 +318,73 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 		JOptionPane.showMessageDialog(this, "Open a CSV first");
 	    } else {
 		try {
-		    String stem=null;
-		    for(ECUxDataset d : this.fileDatasets.values()) {
-			String fname=d.getFileId();
-			if(stem == null) {
-			    stem = Files.stem(fname);
-			} else {
-			    stem += "_vs_" + Files.stem(Files.filename(fname));
-			}
-		    }
-		    this.chartPanel.doSaveAs(stem);
+		    this.chartPanel.doSaveAs(getExportStem());
 		} catch (Exception e) {
 		    JOptionPane.showMessageDialog(this, e);
 		    e.printStackTrace();
 		}
+	    }
+	} else if(source.getText().equals("Export All Charts")) {
+	    if (this.plotlist == null || this.plotlist.isEmpty()) {
+		JOptionPane.showMessageDialog(this, "No charts to export");
+		return;
+	    }
+	    Boolean ok = false;
+	    for (ECUxPlot p: this.plotlist) {
+		if(p.chartPanel != null) {
+		    ok = true;
+		    break;
+		}
+	    }
+
+	    if (!ok) {
+		JOptionPane.showMessageDialog(this, "No charts to export");
+		return;
+	    }
+
+	    String dir = this.prefs.get("exportDir",
+		System.getProperty("user.home"));
+	    JFileChooser fileChooser = new JFileChooser(dir);
+	    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+	    int option = fileChooser.showSaveDialog(this);
+	    ArrayList<String> seen = new ArrayList<String>();
+	    if (option == JFileChooser.APPROVE_OPTION) {
+		dir = fileChooser.getSelectedFile().getPath();
+		for (ECUxPlot p: this.plotlist) {
+		    if (p==null) continue;
+		    String stem = p.exportChartStem(dir);
+		    if (stem==null) continue;
+		    String fname = stem + "-" + p.chartTitle() + ".png";
+		    for(int i=1; seen.contains(fname); i++)
+			fname = stem + "-" + p.chartTitle() + "_" + i + ".png";
+		    try {
+			p.chartPanel.saveChartAsPNG(fname);
+			seen.add(fname);
+		    } catch (Exception e) {
+			JOptionPane.showMessageDialog(this, e);
+			e.printStackTrace();
+		    }
+
+		    if((p.fatsFrame != null) && p.fatsFrame.isShowing()) {
+			fname = stem + "-FATS.png";
+			for(int i=1; seen.contains(fname); i++)
+			    fname = stem + "-FATS_" + i + ".png";
+			try {
+			    p.fatsFrame.saveChartAsPNG(fname);
+			    seen.add(fname);
+			} catch (Exception e) {
+			    JOptionPane.showMessageDialog(this, e);
+			    e.printStackTrace();
+			}
+		    }
+		}
+		if (seen.isEmpty()) {
+		    JOptionPane.showMessageDialog(this, "Nothing exported");
+		} else {
+		    JOptionPane.showMessageDialog(this, "Exported:\n" +
+			Strings.join("\n", seen));
+		}
+		this.prefs.put("exportDir", dir);
 	    }
 	} else if(source.getText().equals("Clear Chart")) {
 	    // nuke axis menus
@@ -316,14 +402,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.yAxis = new AxisMenu[2];
 	    this.nuke();
 	} else if(source.getText().equals("Close Chart")) {
+	    this.plotlist.remove(this);
 	    this.dispose();
 	} else if(source.getText().equals("New Chart")) {
 	    // do not exit if this child plot is closed
-	    final ECUxPlot plot = new ECUxPlot("ECUxPlot", false);
+	    final ECUxPlot plot = new ECUxPlot("ECUxPlot", this.plotlist);
 	    plot.pack();
 	    Point where = this.getLocation();
 	    where.translate(20,20);
 	    plot.setLocation(where);
+	    if (this.files!=null) {
+		plot.loadFiles(this.files);
+		plot.removeAllY();
+		plot.updatePlotTitleAndYAxisLabels();
+	    }
 	    plot.setMyVisible(true);
 	} else if(source.getText().equals("Open File") ||
 		  source.getText().equals("Add File") ) {
@@ -407,6 +499,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	return Strings.join(",", units);
     }
 
+    private void chartTitle(String title) {
+	this.chartPanel.getChart().setTitle(title);
+    }
+    private String chartTitle() {
+	String ret = this.chartPanel.getChart().getTitle().getText();
+	return ret;
+    }
     private void updatePlotTitleAndYAxisLabels() {
 	if(this.chartPanel!=null)
 	    updatePlotTitleAndYAxisLabels(
@@ -446,7 +545,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    // hide axis if this axis has no series
 	    plot.getRangeAxis(axis).setVisible(dataset.getSeriesCount()>0);
 	}
-	this.chartPanel.getChart().setTitle(Strings.join(" and ", title));
+	this.chartTitle(Strings.join(" and ", title));
     }
 
     private void updateXAxisLabel() {
@@ -558,36 +657,47 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    editChartY(k, axis, true);
     }
 
-    public void savePreset(Comparable name) {
-	final Preset p = new Preset(name, this.xkey(),
+    public void saveUndoPreset() {
+	if(this.chartPanel==null) return;
+	final ECUxPreset p = new ECUxPreset("Undo", this.xkey(),
 	    this.ykeys(0), this.ykeys(1), this.scatter());
-	this.presets.put(name, p);
+	p.tag(this.chartTitle());
+    }
+
+    public void savePreset(Comparable name) {
+	if(this.chartPanel==null) return;
+	final ECUxPreset p = new ECUxPreset(name, this.xkey(),
+	    this.ykeys(0), this.ykeys(1), this.scatter());
+	this.chartTitle((String)name);
+	this.prefs.put("title", (String)name);
     }
 
     public void loadPreset(Comparable name) {
-	final Preset p = this.presets.get(name);
+	final ECUxPreset p = new ECUxPreset(name);
 	if(p!=null) loadPreset(p);
     }
-    private void loadPreset(Preset p) {
+    private void loadPreset(ECUxPreset p) {
 	if(this.chartPanel==null) return;
 
 	// get rid of everything
 	removeAllY();
 
-	prefsPutXkey(p.xkey);
+	prefsPutXkey(p.xkey());
 	// updateXAxisLabel depends on xkey prefs
 	updateXAxisLabel();
 
-	prefsPutYkeys(0,p.ykeys);
-	prefsPutYkeys(1,p.ykeys2);
+	prefsPutYkeys(0,p.ykeys());
+	prefsPutYkeys(1,p.ykeys2());
 
 	// addChart depends on the xkey,ykeys put in prefs
 	addChartYFromPrefs();
 
 	// set up scatter depending on preset
-	final boolean s = p.scatter;
+	final boolean s = p.scatter();
 	ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !s, s);
 	this.prefs.putBoolean("scatter", s);
+	this.chartTitle(p.name());
+	this.prefs.put("title", p.name());
     }
 
     public void actionPerformed(ActionEvent event, Comparable parentId) {
@@ -609,6 +719,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    prefsPutYkeys(1);
 	}
 	updatePlotTitleAndYAxisLabels();
+	try {
+	    System.out.println("removing title pref");
+	    this.prefs.remove("title");
+	} catch (Exception e) {}
     }
 
     public void windowClosing(java.awt.event.WindowEvent we) {
@@ -620,6 +734,22 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	if(this.fatsFrame!=null)
 	    this.fatsFrame.dispose();
 	System.exit(0);
+    }
+
+    public static final Preferences getPreferences() {
+	return Preferences.userNodeForPackage(ECUxPlot.class);
+    }
+
+    public static final String showInputDialog(String message) {
+	String ret = JOptionPane.showInputDialog(message);
+	if(ret == null || ret.length() == 0) return null;
+	if(ret.startsWith(".") || ret.contains(":") ||
+	    ret.contains(File.separator) ||
+	    ret.contains("/") || ret.contains("\\")) {
+	    JOptionPane.showMessageDialog(null, "Invalid name");
+	    return null;
+	}
+	return ret;
     }
 
     private static class Options {
@@ -644,13 +774,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 			i++;
 		    }
 		    if(args[i].equals("-l")) {
-			final ECUxPresets p = new ECUxPresets();
-			for(String s : p.keySet().toArray(new String[0]))
-			    System.out.println(s);
+			try {
+			    for(String s : ECUxPreset.getPresets())
+				System.out.println(s);
+			} catch (Exception e) {}
 			System.exit(0);
 		    }
 		    if(args[i].equals("-h")) {
-			final ECUxPresets p = new ECUxPresets();
 			System.out.println(
 			    "usage: ECUxPlot [-p Preset] [-o OutputFile] " +
 			    "[-w width] [-h height] [LogFiles ... ]");
@@ -709,7 +839,5 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	});
     }
 
-    public Preferences getPreferences() { return this.prefs; }
     public Env getEnv() { return this.env; }
-    public TreeMap<Comparable, Preset> getPresets() { return this.presets; }
 }

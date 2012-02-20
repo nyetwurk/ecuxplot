@@ -1,46 +1,46 @@
 package org.nyet.ecuxplot;
 
-import org.nyet.util.Strings;
+import java.util.prefs.Preferences;
 
 public class Preset {
-    private Comparable name;
+    protected Preferences prefs;
 
-    public Comparable xkey;
-    public Comparable [] ykeys;
-    public Comparable [] ykeys2;
-    public Boolean scatter;
-
-    public Preset (Comparable name, Comparable xkey, Comparable [] ykeys) {
-	this(name, xkey, ykeys, new Comparable [] {});
-    }
-    public Preset (Comparable name, Comparable xkey, Comparable ykey) {
-	this(name, xkey, new Comparable [] {ykey}, new Comparable [] {});
-    }
-    public Preset (Comparable name, Comparable xkey, Comparable ykey,
-	Comparable ykey2) {
-	this(name, xkey, new Comparable [] {ykey}, new Comparable [] {ykey2});
-    }
-    public Preset (Comparable name, Comparable xkey, Comparable [] ykeys,
-	Comparable [] ykeys2) {
-	this(name, xkey, ykeys, ykeys2, false);
-    }
-    public Preset (Comparable name, Comparable xkey, Comparable [] ykeys,
-	Comparable [] ykeys2, boolean scatter)
-    {
-	this.name=name;
-	this.xkey=xkey;
-	this.ykeys=ykeys;
-	this.ykeys2=ykeys2;
-	this.scatter=scatter;
+    public Preferences getPreferences() {
+	System.out.println("preset get prefs wrong\n");
+	return Preferences.userNodeForPackage(Preset.class).node("presets");
     }
 
-    public Comparable getName() { return this.name; }
-    public void setName(Comparable name) { this.name = name; }
-
-    public String toString() {
-	return this.name + ": \"" +
-	    this.xkey + "\" vs \"" +
-            Strings.join(", ", this.ykeys) + "\" and \"" +
-            Strings.join(", ", this.ykeys2) + "\"";
+    public Preset(Comparable name) {
+	this.prefs=getPreferences().node(name.toString());
     }
+
+    public Preset(String name) {
+	this.prefs=getPreferences().node(name);
+    }
+
+    // GETS
+    protected Comparable[] getArray(Comparable what) {
+	int num = this.prefs.getInt("num_" + what, 0);
+	// System.out.println(what + ":" + num);
+	String[] out = new String[num];
+	Preferences p = this.prefs.node(what.toString());
+	for(int i=0; i<num; i++) {
+	    out[i] = p.get("" + i, "");
+	    // System.out.println(what + ":" + i + ":" + out[i]);
+	}
+	return out;
+    }
+
+    // PUTS
+    protected void putArray(Comparable what, Comparable[] in) {
+	int i=0;
+	this.prefs.putInt("num_" + what, in.length);
+	Preferences p = this.prefs.node(what.toString());
+	for(Comparable s : in)
+	    p.put("" + (i++), s.toString());
+    }
+
+    // misc
+    protected String name() { return this.prefs.name(); }
+    public String toString() { return this.prefs.name(); }
 }
