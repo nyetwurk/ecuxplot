@@ -3,11 +3,37 @@ package org.nyet.ecuxplot;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
 
+import javax.swing.JOptionPane;
+
 import org.nyet.util.Strings;
 
 public class ECUxPreset extends Preset {
+
+    private static boolean detectOldPrefs(Preferences prefs) {
+	String[] names = null;
+	boolean ret=false;
+	try { names = prefs.childrenNames(); }
+	catch (Exception e) { return false; }
+	for (String s : names) {
+	    Preferences n = prefs.node(s);
+	    try {
+		if (n.nodeExists("ykeys") || n.nodeExists("ykeys2")) {
+		    n.removeNode();
+		    ret=true;
+		}
+	    } catch (Exception e) {}
+	}
+	if (ret) {
+	    createDefaultECUxPresets();
+	    JOptionPane.showMessageDialog(null, "Old presets detected. Resetting to default.");
+	}
+	return ret;
+    }
+
     public static Preferences getPreferencesStatic() {
-        return Preferences.userNodeForPackage(ECUxPlot.class).node("presets");
+	Preferences p=Preferences.userNodeForPackage(ECUxPlot.class).node("presets");
+	detectOldPrefs(p);
+	return p;
     }
 
     public Preferences getPreferences() {
@@ -56,31 +82,29 @@ public class ECUxPreset extends Preset {
     {
 	super(name);
 	this.xkey(xkey);
-	this.ykeys(ykeys);
-	this.ykeys2(ykeys2);
+	this.ykeys(0,ykeys);
+	this.ykeys(1,ykeys2);
 	this.scatter(scatter);
     }
 
     // GETS
     public String tag() { return this.prefs.get("tag", this.prefs.name()); } // for Undo
     public Comparable xkey() { return this.prefs.get("xkey", null); }
-    public Comparable[] ykeys() { return this.getArray("ykeys"); }
-    public Comparable[] ykeys2() { return this.getArray("ykeys2"); }
+    public Comparable[] ykeys(int which) { return this.getArray(which==0?"ykeys0":"ykeys1"); }
     public Boolean scatter() { return this.prefs.getBoolean("scatter", false); }
 
     // PUTS
     public void tag(String tag) { this.prefs.put("tag", tag); }	// for Undo
     public void xkey(Comparable xkey) { this.prefs.put("xkey", xkey.toString()); }
-    public void ykeys(Comparable[] ykeys) { this.putArray("ykeys", ykeys); }
-    public void ykeys2(Comparable[] ykeys2) { this.putArray("ykeys2", ykeys2); }
+    public void ykeys(int which, Comparable[] ykeys) { this.putArray(which==0?"ykeys0":"ykeys1", ykeys); }
     public void scatter(Boolean scatter) { this.prefs.putBoolean("scatter", scatter); }
 
     // misc
     public String toString() {
 	return this.prefs.name() + ": \"" +
 	    this.xkey() + "\" vs \"" +
-            Strings.join(", ", this.ykeys()) + "\" and \"" +
-            Strings.join(", ", this.ykeys2()) + "\"";
+            Strings.join(", ", this.ykeys(0)) + "\" and \"" +
+            Strings.join(", ", this.ykeys(1)) + "\"";
     }
     public static String[] getPresets() {
 	String [] ret = null;

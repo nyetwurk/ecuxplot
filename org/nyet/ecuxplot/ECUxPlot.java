@@ -113,8 +113,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private Comparable[] ykeys(int index) {
-	final Comparable[] ykeys = new ECUxPreset("Power").ykeys();
-	final Comparable[] ykeys2 = new ECUxPreset("Power").ykeys2();
+	final Comparable[] ykeys = new ECUxPreset("Power").ykeys(0);
+	final Comparable[] ykeys2 = new ECUxPreset("Power").ykeys(1);
 	final String[] defaultYkeys = { Strings.join(",", ykeys), Strings.join(",", ykeys2) };
 
 	String k=this.prefs.get("ykeys"+index, defaultYkeys[index]);
@@ -686,8 +686,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	// updateXAxisLabel depends on xkey prefs
 	updateXAxisLabel();
 
-	prefsPutYkeys(0,p.ykeys());
-	prefsPutYkeys(1,p.ykeys2());
+	prefsPutYkeys(0,p.ykeys(0));
+	prefsPutYkeys(1,p.ykeys(1));
 
 	// addChart depends on the xkey,ykeys put in prefs
 	addChartYFromPrefs();
@@ -698,6 +698,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.prefs.putBoolean("scatter", s);
 	this.chartTitle(p.name());
 	this.prefs.put("title", p.name());
+
+	// update AxisMenu selections
+	xAxis.setSelected(p.xkey());
+	yAxis[0].setOnlySelected(p.ykeys(0));
+	yAxis[1].setOnlySelected(p.ykeys(1));
     }
 
     public void actionPerformed(ActionEvent event, Comparable parentId) {

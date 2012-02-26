@@ -10,7 +10,11 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.ui.ExtensionFileFilter;
 
 public class ECUxChartPanel extends ChartPanel {
-    public ECUxChartPanel(JFreeChart chart) { super(chart); }
+    public ECUxChartPanel(JFreeChart chart) {
+	super(chart);
+	setMouseWheelEnabled(true);
+	setMouseZoomable(true);
+    }
 
     public void doSaveAs(String fname) throws IOException {
 	JFileChooser fileChooser = new JFileChooser();

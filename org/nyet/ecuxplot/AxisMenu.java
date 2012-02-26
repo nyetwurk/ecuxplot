@@ -1,6 +1,9 @@
 package org.nyet.ecuxplot;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -200,14 +203,25 @@ public class AxisMenu extends JMenu {
 	    item.setSelected(false);
     }
 
-    public void setSelected(String key) {
+    public void setSelected(Comparable key) {
 	AbstractButton item = this.members.get(key);
 	if(item!=null) item.setSelected(true);
     }
 
-    public void setSelected(String[] keys) {
+    public void setSelected(Comparable[] keys) {
 	for(int i=0; i<keys.length; i++) {
 	    this.setSelected(keys[i]);
+	}
+    }
+
+    public void setOnlySelected(Comparable[] keys) {
+	this.setOnlySelected(new HashSet<Comparable>(Arrays.asList(keys)));
+    }
+
+    public void setOnlySelected(Set<Comparable> keys) {
+	for(String ik : this.members.keySet()) {
+	    AbstractButton item = this.members.get(ik);
+	    item.setSelected(keys.contains(ik));
 	}
     }
 }
