@@ -226,10 +226,12 @@ public class ECUxDataset extends Dataset {
 		for(int i=0;i<h.length;i++) {
 		    if (verbose)
 			System.out.println("in : " + h[i] + " [" + u[i] + "]");
-		    if(h[i].equals("Boost")) h[i]="Zeitronix Boost";
-		    if(h[i].equals("TPS")) h[i]="Zeitronix TPS";
-		    if(h[i].equals("AFR")) h[i]="Zeitronix AFR";
-		    if(h[i].equals("Lambda")) h[i]="Zeitronix Lambda";
+		    if(h[i].matches(".*RPM$")) h[i]="RPM";
+		    if(h[i].matches(".*Boost$")) h[i]="Zeitronix Boost";
+		    if(h[i].matches(".*TPS$")) h[i]="Zeitronix TPS";
+		    if(h[i].matches(".*AFR$")) h[i]="Zeitronix AFR";
+		    if(h[i].matches(".*Lambda$")) h[i]="Zeitronix Lambda";
+		    if(h[i].matches(".*EGT$")) h[i]="Zeitronix EGT";
 		    // time is broken
 		    if(h[i].equals("Time")) h[i]=null;
 		    if (verbose)
@@ -401,6 +403,9 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("AirFuelRatioDesired (AFR)")) {
 	    DoubleArray abs = super.get("AirFuelRatioDesired").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
+	} else if(id.equals("TargetAFRDriverRequest (AFR)")) {
+	    DoubleArray abs = super.get("TargetAFRDriverRequest").data;
+	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("Calc AFR")) {
 	    DoubleArray a = this.get("Calc MAF").data;
 	    DoubleArray b = this.get("Calc Fuel Mass").data;
@@ -506,6 +511,12 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Zeitronix Boost")) {
 	    DoubleArray boost = this.get("Zeitronix Boost (PSI)").data;
 	    c = new Column(id, "mBar", boost.mult(mbar_per_psi).add(1013));
+	} else if(id.equals("Zeitronix AFR (lambda)")) {
+	    DoubleArray abs = super.get("Zeitronix AFR").data;
+	    c = new Column(id, "lambda", abs.div(14.7));
+	} else if(id.equals("Zeitronix Lambda (AFR)")) {
+	    DoubleArray abs = super.get("Zeitronix Lambda").data;
+	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("Calc BoostDesired PR")) {
 	    DoubleArray act = super.get("BoostPressureDesired").data;
 	    try {

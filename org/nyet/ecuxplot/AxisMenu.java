@@ -88,6 +88,9 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("AirFuelRatioDesired")) {
 		this.add("AirFuelRatioDesired (AFR)", listener, bg);
 	    }
+	    if(id.matches("TargetAFRDriverRequest")) {
+		this.add("TargetAFRDriverRequest (AFR)", listener, bg);
+	    }
 	    if(id.matches("FuelInjectorOnTime")) {
 		this.add("Calc Fuel Mass", listener, bg);
 		this.add("Calc AFR", listener, bg);
@@ -136,6 +139,12 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("^Zeitronix Boost")) {
 		this.add("Zeitronix Boost (PSI)", listener, bg);
 		this.add("Calc Boost Spool Rate Zeit (RPM)", listener, bg);
+	    }
+	    if(id.matches("^Zeitronix AFR")) {
+		this.add("Zeitronix AFR (lambda)", listener, bg);
+	    }
+	    if(id.matches("^Zeitronix Lambda")) {
+		this.add("Zeitronix Lambda (AFR)", listener, bg);
 	    }
 	    addToSubmenu("Zeitronix", item);
 	} else if(id.matches("Engine torque")) {
