@@ -309,6 +309,29 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	return ret;
     }
 
+    private Point newChart() { return this.newChart(null, null); }
+    private Point newChart(String preset, Point where) {
+	// do not exit if this child plot is closed
+	final ECUxPlot plot = new ECUxPlot("ECUxPlot", this.plotlist);
+	plot.pack();
+
+	if (where==null) where = this.getLocation();
+	where.translate(20,20);
+
+	plot.setLocation(where);
+
+	if (this.files!=null) plot.loadFiles(this.files);
+
+	if (preset!=null) plot.loadPreset(preset);
+	else {
+	    plot.removeAllY();
+	    plot.updatePlotTitleAndYAxisLabels();
+	}
+
+	plot.setMyVisible(true);
+	return where;
+    }
+
     public void actionPerformed(ActionEvent event) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(source.getText().equals("Quit")) {
@@ -405,18 +428,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.plotlist.remove(this);
 	    this.dispose();
 	} else if(source.getText().equals("New Chart")) {
-	    // do not exit if this child plot is closed
-	    final ECUxPlot plot = new ECUxPlot("ECUxPlot", this.plotlist);
-	    plot.pack();
-	    Point where = this.getLocation();
-	    where.translate(20,20);
-	    plot.setLocation(where);
-	    if (this.files!=null) {
-		plot.loadFiles(this.files);
-		plot.removeAllY();
-		plot.updatePlotTitleAndYAxisLabels();
-	    }
-	    plot.setMyVisible(true);
+	    this.newChart();
 	} else if(source.getText().equals("Open File") ||
 		  source.getText().equals("Add File") ) {
 	    if(fc==null) {
@@ -670,6 +682,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    this.ykeys(0), this.ykeys(1), this.scatter());
 	this.chartTitle((String)name);
 	this.prefs.put("title", (String)name);
+    }
+
+    public void loadAllPresets() {
+	boolean first = true;
+	Point where = null;
+	for (String s : ECUxPreset.getPresets()) {
+	    if (first) {
+		loadPreset(s);
+		first = false;
+		continue;
+	    }
+	    where = this.newChart(s, where);
+	}
     }
 
     public void loadPreset(Comparable name) {

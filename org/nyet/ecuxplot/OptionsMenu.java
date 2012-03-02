@@ -29,11 +29,16 @@ public final class OptionsMenu extends JMenu {
 	// Presets
 	this.loadPresetsMenu = new JMenu("Load Preset...");
 	this.savePresetsMenu = new JMenu("Save Preset...");
+	jmi = new JMenuItem("Load All Presets");
+	jmi.addActionListener(new LoadAllPresetsAction());
+	this.add(jmi);
+
 	this.deletePresetsMenu = new JMenu("Delete Preset...");
 
 	updatePresets();
 
 	this.add(this.loadPresetsMenu);
+	this.add(jmi);
 	this.add(this.savePresetsMenu);
 	this.add(this.deletePresetsMenu);
 
@@ -141,6 +146,12 @@ public final class OptionsMenu extends JMenu {
 	}
     }
 
+    private class LoadAllPresetsAction implements ActionListener {
+	public void actionPerformed(ActionEvent event) {
+	    plotFrame.loadAllPresets();
+	}
+    }
+
     private class SavePresetAction implements ActionListener {
 	private final List<String> blacklist = Arrays.asList(
 	    "Undo",
@@ -163,8 +174,7 @@ public final class OptionsMenu extends JMenu {
 			return;
 		    }
 
-		    String[] keys = ECUxPreset.getPresets();
-		    for(String k : keys) {
+		    for(String k : ECUxPreset.getPresets()) {
 			if (s.equals(k)) {
 			    JOptionPane.showMessageDialog(null, "Name in use");
 			    return;
