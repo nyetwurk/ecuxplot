@@ -1,6 +1,7 @@
 package org.nyet.ecuxplot;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
@@ -148,7 +149,10 @@ public final class OptionsMenu extends JMenu {
 
     private class LoadAllPresetsAction implements ActionListener {
 	public void actionPerformed(ActionEvent event) {
-	    plotFrame.loadAllPresets();
+	    ArrayList<String> list = new
+		ArrayList<String>(Arrays.asList(ECUxPreset.getPresets()));
+	    list.remove("Undo");
+	    plotFrame.loadPresets(list);
 	}
     }
 

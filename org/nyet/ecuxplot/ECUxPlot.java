@@ -684,10 +684,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.prefs.put("title", (String)name);
     }
 
-    public void loadAllPresets() {
+    public void loadPresets(List<String> presets) {
 	boolean first = true;
 	Point where = null;
-	for (String s : ECUxPreset.getPresets()) {
+	for (String s : presets) {
 	    if (first) {
 		loadPreset(s);
 		first = false;
@@ -721,8 +721,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	final boolean s = p.scatter();
 	ECUxChartFactory.setChartStyle(this.chartPanel.getChart(), !s, s);
 	this.prefs.putBoolean("scatter", s);
-	this.chartTitle(p.name());
-	this.prefs.put("title", p.name());
+	this.chartTitle(p.tag());
+	this.prefs.put("title", p.tag());
 
 	// update AxisMenu selections
 	xAxis.setSelected(p.xkey());
