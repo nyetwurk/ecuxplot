@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.awt.Component;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBox;
@@ -18,12 +20,18 @@ import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 
 public class AxisMenu extends JMenu {
+    private SubActionListener listener;
+    private boolean radioButton;
     private Comparable[] initialChecked;
+
     private HashMap<String, AbstractButton> members =
 	new HashMap<String, AbstractButton>();
 
     private HashMap<String, JMenu> subMenus =
 	new HashMap<String, JMenu>();
+
+    private int count=0;
+    private AxisMenu more=null;
 
     private void addToSubmenu(String id, JComponent item, boolean autoadd) {
 	JMenu sub = this.subMenus.get(id);
@@ -34,6 +42,7 @@ public class AxisMenu extends JMenu {
 	}
 	sub.add(item);
     }
+
     private void addToSubmenu(String id, JComponent item) {
 	addToSubmenu(id, item, true);	// autoadd to submenu
     }
@@ -163,48 +172,81 @@ public class AxisMenu extends JMenu {
 	this.members.put(id, item);
     }
 
-    public AxisMenu (String text, String[] headers, SubActionListener listener,
+    // constructors
+    public AxisMenu(String text, String[] headers, SubActionListener listener,
 	boolean radioButton, Comparable[] initialChecked) {
+
 	super(text);
-	this.initialChecked=initialChecked;
 
-	ButtonGroup bg = null;
-	if(radioButton) {
-	    bg = new ButtonGroup();
-	    this.add("Sample", listener, bg);
-	    this.add(new JSeparator());
+	this.listener = listener;
+	this.radioButton = radioButton;
+	this.initialChecked = initialChecked;
+
+	if (headers!=null) {
+	    /* top level menu (before "more...") */
+	    ButtonGroup bg = null;
+	    if(radioButton) {
+		bg = new ButtonGroup();
+		this.add("Sample", listener, bg);
+		this.add(new JSeparator());
+	    }
+
+	    for(int i=0;i<headers.length;i++) {
+		if(headers[i] == null) continue;
+		if(headers[i].length()>0 && !this.members.containsKey(headers[i])) {
+		    this.add(headers[i], listener, bg);
+		}
+	    }
+
+	    // put ME7Log next
+	    JMenu me7l=subMenus.get("ME7 Logger");
+	    if(me7l!=null) {
+		this.add(new JSeparator());
+		this.add(me7l);
+	    }
+
+	    // put calc at bottom
+	    JMenu calc=subMenus.get("Calc");
+	    if(calc!=null) {
+		this.add(new JSeparator());
+		this.add(calc);
+	    }
 	}
 
-	for(int i=0;i<headers.length;i++) {
-	    if(headers[i] == null) continue;
-	    if(headers[i].length()>0 && !this.members.containsKey(headers[i]))
-		this.add(headers[i], listener, bg);
-	}
-	// put ME7Log next
-	JMenu me7l=subMenus.get("ME7 Logger");
-	if(me7l!=null) {
-	    this.add(new JSeparator());
-	    this.add(me7l);
+	for (AxisMenu me=this; me!=null; me=me.more) {
+	    // add all the "more" menu's to their parents */
+	    if (me.more!=null) {
+		me.add(new JSeparator(), true);
+		me.add(me.more, true);
+	    }
 	}
 
-	// put calc at bottom
-	JMenu calc=subMenus.get("Calc");
-	if(calc!=null) {
-	    this.add(new JSeparator());
-	    this.add(calc);
-	}
-
-	if(bg==null) {
-	    this.add(new JSeparator());
+	// add "Remove all" to top level menu
+	if(headers!=null && !radioButton) {
+	    super.add(new JSeparator());
 	    JMenuItem item=new JMenuItem("Remove all");
-	    this.add(item);
+	    super.add(item);
 	    item.addActionListener(new MenuListener(listener,this.getText()));
 	}
     }
-    public AxisMenu (String text, String[] headers, SubActionListener listener,
+    public AxisMenu(String text, String[] headers, SubActionListener listener,
 	boolean radioButton, Comparable initialChecked) {
 	this(text, headers, listener, radioButton,
 	    new Comparable [] {initialChecked});
+    }
+    // end constructors
+
+    public Component add(JMenu item) {return add(item, false);}
+    public Component add(Component item) {return add(item, false);}
+    private Component add(Component item, boolean force) {
+	// recursively cascade too many items into a "more" submenu
+	if(force || this.count++<25)
+	    return super.add(item);
+
+	if (this.more == null)
+	    this.more = new AxisMenu("More...", null, this.listener, this.radioButton, this.initialChecked);
+
+	return this.more.add(item);
     }
 
     public void uncheckAll() {
