@@ -6,7 +6,7 @@ public class Fueling {
     public static final String PREFS_TAG = "fueling";
 
     private static final double defaultMAF = 73;
-    private static final double defaultInjector = 320;	// in cc/min
+    private static final double defaultInjector = 349;	// in cc/min
     private static final double defaultMAF_offset = 6;
     private static final int defaultCylinders = 6;
     private static final int defaultTurbos = 2;
