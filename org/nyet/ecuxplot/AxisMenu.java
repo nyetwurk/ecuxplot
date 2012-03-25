@@ -79,20 +79,23 @@ public class AxisMenu extends JMenu {
 	    else this.add(item);
 
 	    addToSubmenu("Calc", new JSeparator(), false);
-	} else if(id.matches("MassAirFlow")) {
-	    this.add("Calc Load", listener, bg);
-	    this.add("Calc Load Corrected", listener, bg);
-	    this.add("Calc MAF", listener, bg);
-	    this.add("Calc MassAirFlow df/dt", listener, bg);
-	    this.add("Calc Turbo Flow", listener, bg);
-	    this.add("Calc Turbo Flow (lb/min)", listener, bg);
-	    this.add(item);
-	    addToSubmenu("Calc", new JSeparator(), false);
+
 	// goes before .*Load.* to catch CalcLoad
 	} else if(id.matches("^Calc .*")) {
 	    // calc is added last, do not autoadd to submenu
 	    addToSubmenu("Calc", item, false);
-	} else if(id.matches(".*(TargetAFR|O2SVoltage|AdaptationPartial|Fuel|Lambda).*")) {
+	} else if(id.matches(".*(MAF|MassAir|AirMass).*")) {
+	    addToSubmenu("MAF", item);
+	    if(id.matches("MassAirFlow")) {
+		this.add("Calc Load", listener, bg);
+		this.add("Calc Load Corrected", listener, bg);
+		this.add("Calc MAF", listener, bg);
+		this.add("Calc MassAirFlow df/dt", listener, bg);
+		this.add("Calc Turbo Flow", listener, bg);
+		this.add("Calc Turbo Flow (lb/min)", listener, bg);
+		addToSubmenu("Calc", new JSeparator(), false);
+	    }
+	} else if(id.matches(".*(TargetAFR|AdaptationPartial|Injection|Fuel|Lambda).*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("AirFuelRatioDesired")) {
 		this.add("AirFuelRatioDesired (AFR)", listener, bg);
@@ -108,7 +111,7 @@ public class AxisMenu extends JMenu {
 		// addToSubmenu("Calc", new JSeparator(), false);
 		this.add("FuelInjectorDutyCycle", listener, bg);
 	    }
-	} else if(id.matches("^(Boost|Wastegate).*")) {
+	} else if(id.matches(".*([Bb]oost|Wastegate|Charge).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		this.add("BoostPressureDesired (PSI)", listener, bg);
@@ -125,18 +128,24 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LDR PID", listener, bg);
 		addToSubmenu("Calc", new JSeparator(), false);
 	    }
-	} else if(id.matches("^(|Eta|Avg)Ign.*")) {
+	} else if(id.matches("^(|Eta|Avg|Adapted)Ign.*")) {
 	    addToSubmenu("Ignition", item);
 	    if(id.matches("IgnitionTimingAngleOverall")) {
 		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
 	    }
-	} else if(id.matches("^Knock.*")) {
-	    addToSubmenu("Knock", item);
-	} else if(id.matches("^EGT.*")) {
+	} else if(id.matches("(Cat|MainCat).*")) {
+	    addToSubmenu("Cats", item);
+	} else if(id.matches(".*EGT.*")) {
 	    addToSubmenu("EGT", item);
-	} else if(id.matches("^OXS.*")) {
-	    addToSubmenu("OXS", item);
-	} else if(id.matches(".*Load.*")) {
+	} else if(id.matches(".*(Idle|Idling).*")) {
+	    addToSubmenu("Idle", item);
+	} else if(id.matches("Knock.*")) {
+	    addToSubmenu("Knock", item);
+	} else if(id.matches("(OXS|O2SVoltage|ResistanceSensor).*")) {
+	    addToSubmenu("O2 Sensor(s)", item);
+	} else if(id.matches("(AccelPedal|Throttle).*")) {
+	    addToSubmenu("Throttle", item);
+	} else if(id.matches(".*(Load|Torque).*")) {
 	    addToSubmenu("Load", item);
 	    if(id.matches("EngineLoadDesired")) {
 		this.add("Calc SimBoostPressureDesired", listener, bg);
