@@ -1,0 +1,1267 @@
+XDF
+1.110000
+
+%%HEADER%%
+	001000 FileVers         ="Version 1 - Thu May 05 05:28:47 PDT 2011"
+	001005 DefTitle         ="data/8D0907551H"
+	001006 Desc             ="Original"
+	001007 DescSize         =0x9
+	001010 Author           ="mesim translator"
+	001030 BinSize          =0x100000
+	001035 BaseOffset       =0
+	001200 ADSAssoc         =""
+	001225 ADSCheck         =0x0
+	001300 GenFlags         =0x0
+	001325 ModeFlags        =0x0
+	002000 Category0        ="My maps"
+	002001 Category1        ="Hexdump"
+	002002 Category2        ="Fueling"
+	002003 Category3        ="Ignition "
+	002004 Category4        ="Drivers Wish"
+	002005 Category5        ="Vehicle Speed And Rev Limiters"
+	002006 Category6        ="PID Boost Control Maps"
+	002007 Category7        ="DTC's - Enable/Disable"
+	002008 Category8        ="Throttle Cut "
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="KFKHFM"
+	040010 Desc             ="(KFKHFM) Correction Map For MAF"
+	040011 DescSize         =0x20
+	040330 ZUnits           ="-"
+	040210 DecimalPl        =0x4
+	040100 Address          =0x10C94
+	040200 ZEq              =0.007813 * X,TH|0|0|0|0|
+	040305 Cols             =0xE
+	040320 XUnits           ="%"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.750000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x10C86
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x3
+	040300 Rows             =0xE
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x10C78
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x0
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x4
+	040005 Title            ="KFZWOP"
+	040010 Desc             ="(KFZWOP) Optimal Ignition Angle"
+	040011 DescSize         =0x20
+	040330 ZUnits           ="grad KW"
+	040210 DecimalPl        =0x3
+	040100 Address          =0x11430
+	040200 ZEq              =0.750000 * X,TH|0|0|0|0|
+	040305 Cols             =0xB
+	040320 XUnits           ="%"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.023438 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1635A
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.250000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x12AEC
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x301
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x4
+	040005 Title            ="KFZWOP2"
+	040010 Desc             ="(KFZWOP) Optimal Ignition Angle Variant 2"
+	040011 DescSize         =0x2A
+	040330 ZUnits           ="grad KW"
+	040210 DecimalPl        =0x3
+	040100 Address          =0x114E0
+	040200 ZEq              =0.750000 * X,TH|0|0|0|0|
+	040305 Cols             =0xB
+	040320 XUnits           ="%"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.023438 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1635A
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.250000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x12AEC
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x301
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x4
+	040005 Title            ="KFZW"
+	040010 Desc             ="(KFZW) Ignition Advance Lookup Table"
+	040011 DescSize         =0x25
+	040330 ZUnits           ="grad KW"
+	040210 DecimalPl        =0x3
+	040100 Address          =0x11C92
+	040200 ZEq              =0.750000 * X,TH|0|0|0|0|
+	040305 Cols             =0xC
+	040320 XUnits           ="%"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.750000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x100FF
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x3
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x100C2
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x1
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x4
+	040005 Title            ="KFZW2"
+	040010 Desc             ="(KFZW2) Ignition Advance Lookup Table Variant 2"
+	040011 DescSize         =0x30
+	040330 ZUnits           ="grad KW"
+	040210 DecimalPl        =0x3
+	040100 Address          =0x11D52
+	040200 ZEq              =0.750000 * X,TH|0|0|0|0|
+	040305 Cols             =0xC
+	040320 XUnits           ="%"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.750000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x100FF
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x3
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x100C2
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x1
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="MLHFM"
+	040010 Desc             ="(MLHFM) MAF Linearization 1st Half"
+	040011 DescSize         =0x23
+	040330 ZUnits           ="kg/h"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x3
+	040100 Address          =0x14254
+	040200 ZEq              =0.100000 * X,TH|0|0|0|0|
+	040305 Cols             =0x100
+	040320 XUnits           ="Volts"
+	040352 XLabelType       =0x1
+	040350 XLabels          =1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256
+	040352 XLabelType       =0x2
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x100C2
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x2
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="KFMIRL"
+	040010 Desc             ="(KFMIRL) Target Fuelling Table(Requested Load)"
+	040011 DescSize         =0x2F
+	040330 ZUnits           ="% Load?"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x14BEE
+	040200 ZEq              =0.023438 * X,TH|0|0|0|0|
+	040305 Cols             =0xC
+	040320 XUnits           ="% PED?"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.001526 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x14BD6
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.250000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x14BB6
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x302
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x5
+	040005 Title            ="KFPED"
+	040010 Desc             ="(KFPED) Relative Drivers Wish From Pedal"
+	040011 DescSize         =0x29
+	040330 ZUnits           ="%"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x15ECA
+	040200 ZEq              =0.003052 * X,TH|0|0|0|0|
+	040305 Cols             =0xC
+	040320 XUnits           ="RPM"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.250000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x15EB2
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x3
+	040300 Rows             =0x10
+	040325 YUnits           ="%PED"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.001526 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x15E92
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x4
+	040150 Flags            =0x302
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x5
+	040005 Title            ="KFPEDR"
+	040010 Desc             ="(KFPEDR) Relative Drivers Wish From Pedal In Reverse"
+	040011 DescSize         =0x35
+	040330 ZUnits           ="%"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1607E
+	040200 ZEq              =0.003052 * X,TH|0|0|0|0|
+	040305 Cols             =0x8
+	040320 XUnits           ="RPM"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.250000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1606E
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x3
+	040300 Rows             =0x10
+	040325 YUnits           ="%PED"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.001526 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x1604E
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x4
+	040150 Flags            =0x302
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="KFMIOP"
+	040010 Desc             ="(KFMIOP) Optimal Engine Torque Map (Torque Calculations)"
+	040011 DescSize         =0x39
+	040330 ZUnits           ="%Injection Quantity???"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x161F8
+	040200 ZEq              =0.001526 * X,TH|0|0|0|0|
+	040305 Cols             =0xB
+	040320 XUnits           ="Load?"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.023438 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1635A
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.250000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x12AEC
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x302
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="NMAX"
+	020010 Desc             ="(NMAX) Engine Speed Limit"
+	020011 DescSize         =0x1A
+	020020 Units            ="RPM"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x3
+	020100 Address          =0x1637C
+	020200 Equation         =0.250000 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="NMAXDZ"
+	020010 Desc             ="(NMAXDZ) Engine Speed Limit On Dual Ignition?"
+	020011 DescSize         =0x2E
+	020020 Units            ="RPM"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x3
+	020100 Address          =0x1637E
+	020200 Equation         =0.250000 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="NMAXNL"
+	020010 Desc             ="(NMAXNL) Engine Speed Limit Fail-safe On Speed Sensor Failure"
+	020011 DescSize         =0x3E
+	020020 Units            ="RPM"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x3
+	020100 Address          =0x16380
+	020200 Equation         =0.250000 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="NMAXOG"
+	020010 Desc             ="(NMAXOG) Increased Speed Limiter"
+	020011 DescSize         =0x21
+	020020 Units            ="RPM"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x3
+	020100 Address          =0x16382
+	020200 Equation         =0.250000 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="KFLDHBN"
+	040010 Desc             ="(KFLDHBN) Boost Pressure Limit(Max. Pressure Ratio)"
+	040011 DescSize         =0x34
+	040330 ZUnits           ="-"
+	040210 DecimalPl        =0x4
+	040100 Address          =0x196DF
+	040200 ZEq              =0.001563 * X,TH|0|0|0|0|
+	040305 Cols             =0x8
+	040320 XUnits           ="Grad C"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.750000 * X+ -48.000000,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1010C
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040300 Rows             =0x8
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x10085
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x0
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="KFLDRAPP"
+	040010 Desc             ="(KFLDRAPP) Map for LDR-Applicatioin Without MD-Coordination"
+	040011 DescSize         =0x3C
+	040330 ZUnits           ="%"
+	040210 DecimalPl        =0x3
+	040100 Address          =0x19749
+	040200 ZEq              =0.390625 * X,TH|0|0|0|0|
+	040305 Cols             =0x8
+	040320 XUnits           ="% PED"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.392157 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x19741
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x3
+	040300 Rows             =0x8
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x19739
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x0
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x4
+	040005 Title            ="NLLM"
+	040010 Desc             ="(NLLM) Idle RPM"
+	040011 DescSize         =0x10
+	040330 ZUnits           ="RPM"
+	040210 DecimalPl        =0x1
+	040100 Address          =0x19945
+	040200 ZEq              =10.000000 * X,TH|0|0|0|0|
+	040305 Cols             =0x6
+	040320 XUnits           ="Grad C"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.750000 * X+ -48.000000,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x182FF
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x19739
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x0
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x3
+	020005 Title            ="TABGBTS"
+	020010 Desc             ="(TABGBTS) EGT Threshold for Component Protection"
+	020011 DescSize         =0x31
+	020020 Units            ="Grad C"
+	020050 SizeInBits       =0x10
+	020100 Address          =0x1BFE4
+	020200 Equation         =0.019531 * X+ -50.000000,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x3
+	020005 Title            ="TABGSS"
+	020010 Desc             ="(TABGSS) Desired EGT for EGT Regulation Bank 1"
+	020011 DescSize         =0x2F
+	020020 Units            ="Grad C"
+	020050 SizeInBits       =0x10
+	020100 Address          =0x1BFFC
+	020200 Equation         =0.019531 * X+ -50.000000,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x3
+	020005 Title            ="TABGSS2"
+	020010 Desc             ="(TABGSS2) Desired EGT for EGT Regulation Bank 2"
+	020011 DescSize         =0x30
+	020020 Units            ="Grad C"
+	020050 SizeInBits       =0x10
+	020100 Address          =0x1BFFE
+	020200 Equation         =0.019531 * X+ -50.000000,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="LAMFA"
+	040010 Desc             ="(LAMFA) Drivers Wish Lambda"
+	040011 DescSize         =0x1C
+	040330 ZUnits           ="-"
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1C25A
+	040200 ZEq              =0.007813 * X,TH|0|0|0|0|
+	040305 Cols             =0x6
+	040320 XUnits           ="%"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.003052 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1C24E
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0xF
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x1C23E
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x100
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x3
+	020005 Title            ="KRKTE"
+	020010 Desc             ="(KRKTE) Conversion Of Relative Fuel Mass On Effective Injection"
+	020011 DescSize         =0x40
+	020020 Units            ="ms/%"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x5
+	020100 Address          =0x1C23C
+	020200 Equation         =0.000111 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x3
+	020005 Title            ="TDATSO"
+	020010 Desc             ="(TDATSO) Upper Boundry Of EGT Model For Diagnosing EGT"
+	020011 DescSize         =0x37
+	020020 Units            ="Grad C"
+	020050 SizeInBits       =0x10
+	020100 Address          =0x1C36E
+	020200 Equation         =0.019531 * X+ -50.000000,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="KFLDRL"
+	040010 Desc             ="(KFLDRL) Map For Linearization Of Boost Pressure = f(TV) (Boost Limit/N75)"
+	040011 DescSize         =0x4B
+	040330 ZUnits           ="Corrected N75 duty cycle"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1D624
+	040200 ZEq              =0.005000 * X,TH|0|0|0|0|
+	040305 Cols             =0xA
+	040320 XUnits           ="TPS"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.005000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1D832
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.250000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x12ACA
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x343
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="KFLDRQ2"
+	040010 Desc             ="(KFLDRQ2) LDR PID Q2 (Differential)"
+	040011 DescSize         =0x24
+	040330 ZUnits           ="%/100hPa"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1D764
+	040200 ZEq              =0.050000 * X,TH|0|0|0|0|
+	040305 Cols             =0x4
+	040320 XUnits           ="hPa"
+	040352 XLabelType       =0x1
+	040354 XEq              =10.000000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x10070
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x1
+	040300 Rows             =0x8
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x10085
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x2
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="LDRQ0DY"
+	040010 Desc             ="(LDRQ0DY) Boost Pressure Adjustment Parameters Q0 (P1)"
+	040011 DescSize         =0x37
+	040330 ZUnits           ="%/100hPa"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1D7CE
+	040200 ZEq              =0.050000 * X,TH|0|0|0|0|
+	040305 Cols             =0x10
+	040320 XUnits           ="RPM"
+	040352 XLabelType       =0x1
+	040354 XEq              =40.000000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x100B1
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x1
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x10085
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x2
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="LDRXN"
+	040010 Desc             ="(LDRXN) Maximum Fueling - Boost Pressure (Boost Request? or Limit?)"
+	040011 DescSize         =0x44
+	040330 ZUnits           ="%"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1DB6A
+	040200 ZEq              =0.023438 * X,TH|0|0|0|0|
+	040305 Cols             =0x10
+	040320 XUnits           ="RPM"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.250000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1DB4A
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x3
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x10085
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x102
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="KFTARX"
+	040010 Desc             ="(KFTARX) IAT Compensation for Maximum Specified Load "
+	040011 DescSize         =0x36
+	040330 ZUnits           ="-"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x6
+	040100 Address          =0x1DA48
+	040200 ZEq              =0.000031 * X,TH|0|0|0|0|
+	040305 Cols             =0x8
+	040320 XUnits           ="Grad C"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.750000 * X+ -48.000000,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1010C
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040300 Rows             =0x8
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.250000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x12A9E
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x202
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x3
+	020005 Title            ="KVB"
+	020010 Desc             ="(KVB) Constant Fuel Injector Size (For Consumption)"
+	020011 DescSize         =0x34
+	020020 Units            ="cm^3/min"
+	020100 Address          =0x1A37C
+	020200 Equation         =3.046875 * X,TH|0|0|0|0|
+	020150 Flags            =0x0
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x1
+	020005 Title            ="FRKAP_0_A"
+	020010 Desc             ="(FRKAP_0_A)Faktor relative Kraftstoffmasse für Applikation 0"
+	020011 DescSize         =0x3D
+	020020 Units            ="-"
+	020210 DecimalPl        =0x4
+	020100 Address          =0x1C000
+	020200 Equation         =0.007813 * X,TH|0|0|0|0|
+	020150 Flags            =0x0
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x1
+	040005 Title            ="FKKVS"
+	040010 Desc             ="(FKKVS) Korrekturfaktor Kraftstoffversorgungssystem"
+	040011 DescSize         =0x34
+	040330 ZUnits           ="-"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x6
+	040100 Address          =0x1C032
+	040200 ZEq              =0.000031 * X,TH|0|0|0|0|
+	040305 Cols             =0x10
+	040320 XUnits           ="ms"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.002667 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1C012
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x1C002
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x102
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="FRLFSDP"
+	040010 Desc             ="(FRLFSDP) Injection Correction for RLFS"
+	040011 DescSize         =0x28
+	040330 ZUnits           ="-"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x6
+	040100 Address          =0x1BF42
+	040200 ZEq              =0.000031 * X,TH|0|0|0|0|
+	040305 Cols             =0xB
+	040320 XUnits           ="hPa"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.078125 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1BF2C
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.250000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x12AEC
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x342
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x1
+	020005 Title            ="FRKAP_1_A"
+	020010 Desc             ="(FRKAP_1_A)Faktor relative Kraftstoffmasse für Applikation 1"
+	020011 DescSize         =0x3D
+	020020 Units            ="-"
+	020210 DecimalPl        =0x4
+	020100 Address          =0x1C000
+	020200 Equation         =0.007813 * X,TH|0|0|0|0|
+	020150 Flags            =0x0
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="MLHFM"
+	040010 Desc             ="(MLHFM) MAF Linearization 2nd Half"
+	040011 DescSize         =0x23
+	040330 ZUnits           ="kg/h"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x3
+	040100 Address          =0x14454
+	040200 ZEq              =0.100000 * X,TH|0|0|0|0|
+	040305 Cols             =0x100
+	040320 XUnits           ="Volts"
+	040352 XLabelType       =0x1
+	040350 XLabels          =1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256
+	040352 XLabelType       =0x2
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x100C2
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x2
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="LDRQ1ST"
+	040010 Desc             ="(LDRQ1ST) LDR PID Q1 In Static Operation (Integral)"
+	040011 DescSize         =0x34
+	040330 ZUnits           ="%/100Hpa"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1D810
+	040200 ZEq              =0.050000 * X,TH|0|0|0|0|
+	040305 Cols             =0x10
+	040320 XUnits           ="RPM"
+	040352 XLabelType       =0x1
+	040354 XEq              =40.000000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x100B1
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x1
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x10085
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x2
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="LDRQ1DY"
+	040010 Desc             ="(LDRQ1DY) Reglerparameter Q1 PID-Regler im Dynamikbetrieb (Integrationsbeiwert) (P)"
+	040011 DescSize         =0x54
+	040330 ZUnits           ="%/100Hpa"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1D7F0
+	040200 ZEq              =0.050000 * X,TH|0|0|0|0|
+	040305 Cols             =0x10
+	040320 XUnits           ="RPM"
+	040352 XLabelType       =0x1
+	040354 XEq              =40.000000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x100B1
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x1
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x10085
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x2
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x7
+	020005 Title            ="LDRQ0S"
+	020010 Desc             ="(LDRQ0S) LDR PID Q0 In Static Operation (Proportional)"
+	020011 DescSize         =0x37
+	020020 Units            ="%/100Hpa"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x4
+	020100 Address          =0x1D7EE
+	020200 Equation         =0.050000 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="KFLDIMX"
+	040010 Desc             ="(KFLDIMX) Kennfeld LDR I-Reglerbegrenzung"
+	040011 DescSize         =0x2A
+	040330 ZUnits           ="%"
+	040050 SizeInBits       =0x10
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1D4D2
+	040200 ZEq              =0.005000 * X,TH|0|0|0|0|
+	040305 Cols             =0x8
+	040320 XUnits           ="hPa(MAP)"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.039063 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x12B0E
+	040610 XDataSize        =2
+	040620 XAddrStep        =2
+	040650 XOutputDig       =0x4
+	040300 Rows             =0x10
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.250000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x12ACA
+	040710 YDataSize        =2
+	040720 YAddrStep        =2
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x302
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="KFLF"
+	040010 Desc             ="(KFLF) Lambda At Part Throttle"
+	040011 DescSize         =0x1F
+	040330 ZUnits           ="-"
+	040210 DecimalPl        =0x4
+	040100 Address          =0x18A45
+	040200 ZEq              =0.007813 * X,TH|0|0|0|0|
+	040305 Cols             =0x10
+	040320 XUnits           ="%"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.750000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x18A35
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x3
+	040300 Rows             =0xC
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x18A29
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x0
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x8
+	040005 Title            ="Codewords:"
+	040330 ZUnits           ="-"
+	040210 DecimalPl        =0x0
+	040100 Address          =0x106AD
+	040305 Cols             =0xA8
+	040320 XUnits           ="-"
+	040352 XLabelType       =0x2
+	040350 XLabels          =1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168
+	040352 XLabelType       =0x2
+	040300 Rows             =0x1
+	040325 YUnits           ="-"
+	040362 YLabelType       =0x2
+	040150 Flags            =0x0
+	040360 YLabels          =-
+	040362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x8
+	020005 Title            ="DTC: 02 B1S2 Heating"
+	020020 Units            ="-"
+	020210 DecimalPl        =0x0
+	020100 Address          =0x106EC
+	020150 Flags            =0x0
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x8
+	020005 Title            ="DTC: 02 B2S2 Heating"
+	020020 Units            ="-"
+	020210 DecimalPl        =0x0
+	020100 Address          =0x106ED
+	020150 Flags            =0x0
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x8
+	020005 Title            ="DTC: 02 B1S2 Signal"
+	020020 Units            ="-"
+	020210 DecimalPl        =0x0
+	020100 Address          =0x106EE
+	020150 Flags            =0x0
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x8
+	020005 Title            ="DTC: 02 B2S2 Signal"
+	020020 Units            ="-"
+	020210 DecimalPl        =0x0
+	020100 Address          =0x106EF
+	020150 Flags            =0x0
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="VAVMXNIV"
+	020010 Desc             ="(VAVMXNIV) Maximum Speed For Activation VMAX Limit By Level Control"
+	020011 DescSize         =0x44
+	020020 Units            ="Km/h"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x4
+	020100 Address          =0x1E2C6
+	020200 Equation         =0.007813 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="VAVMXPNG"
+	020010 Desc             ="(VAVMXPNG) Maximum Speed For Activation Of VMAX Limit By Plan?"
+	020011 DescSize         =0x3F
+	020020 Units            ="Km/h"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x4
+	020100 Address          =0x1E2C8
+	020200 Equation         =0.007813 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="VMAXNB"
+	020010 Desc             ="(VMAXNB) Maximum Speed During Normal Operation"
+	020011 DescSize         =0x2F
+	020020 Units            ="Km/h"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x4
+	020100 Address          =0x1E2CA
+	020200 Equation         =0.007813 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="VMAXNIV"
+	020010 Desc             ="(VMAXNIV) Maximum Allowable Speed Limit By Level Control"
+	020011 DescSize         =0x39
+	020020 Units            ="Km/h"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x4
+	020100 Address          =0x1E2CC
+	020200 Equation         =0.007813 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="VMAXPNG"
+	020010 Desc             ="(VMAXPNG) Maximum Allowable Speed Limit By Plan?"
+	020011 DescSize         =0x31
+	020020 Units            ="Km/h"
+	020050 SizeInBits       =0x10
+	020210 DecimalPl        =0x4
+	020100 Address          =0x1E2CE
+	020200 Equation         =0.007813 * X,TH|0|0|0|0|
+	020150 Flags            =0x2
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x8
+	020005 Title            ="CDKAT"
+	020010 Desc             ="(CDKAT) Seconday 02 Delete"
+	020011 DescSize         =0x1B
+	020020 Units            ="-"
+	020210 DecimalPl        =0x0
+	020100 Address          =0x181A2
+	020150 Flags            =0x0
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x9
+	020005 Title            ="NWPMBBR"
+	020010 Desc             ="(NWPMBBR) Minimum RPM For Accelerator Lockout On Braking(RPM Left Foot Braking)"
+	020011 DescSize         =0x50
+	020020 Units            ="RPM"
+	020210 DecimalPl        =0x1
+	020100 Address          =0x109C6
+	020200 Equation         =49.000000 * X,TH|0|0|0|0|
+	020150 Flags            =0x0
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x9
+	020005 Title            ="VWPMBBR"
+	020010 Desc             ="(VWPMBBR) Minimum Vehicle Speed For Accelerator Lockout On Braking(RPM Left Foot Braking)"
+	020011 DescSize         =0x5A
+	020020 Units            ="Km/h"
+	020100 Address          =0x109DE
+	020200 Equation         =1.250000 * X,TH|0|0|0|0|
+	020150 Flags            =0x0
+	020360 YLabels          =-
+	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x7
+	040005 Title            ="LDIATA"
+	040010 Desc             ="(LDIATA) LDR I-Regulator Limit As A Function Of IAT"
+	040011 DescSize         =0x34
+	040330 ZUnits           ="%"
+	040210 DecimalPl        =0x3
+	040100 Address          =0x19657
+	040200 ZEq              =0.640000 * X,TH|0|0|0|0|
+	040305 Cols             =0x8
+	040320 XUnits           ="Grad C"
+	040352 XLabelType       =0x1
+	040354 XEq              =0.750000 * X+ -48.000000,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x1010C
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040300 Rows             =0x1
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =40.000000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x10085
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x1
+	040150 Flags            =0x1
+	040360 YLabels          =RPM
+	040362 YLabelType       =0x4
+%%END%%
+
+%%CONSTANT%%
+	000100 Cat0ID           =0x6
+	020005 Title            ="NLLM"
+	020010 Desc             ="(NLLM) Engine Idle Limit"
+	020011 DescSize         =0x19
+	020020 Units            ="RPM"
+	020210 DecimalPl        =0x1
+	020100 Address          =0x1DC2A
+	020200 Equation         =10.000000 * X,TH|0|0|0|0|
+	020150 Flags            =0x0
+	020360 YLabels          =RPM
+	020362 YLabelType       =0x4
+%%END%%
+
+%%TABLE%%
+	000100 Cat0ID           =0x3
+	040005 Title            ="KFLBTS"
+	040010 Desc             ="(KFLBTS) Lambda For Component Protection"
+	040011 DescSize         =0x29
+	040330 ZUnits           ="-"
+	040210 DecimalPl        =0x4
+	040100 Address          =0x1908C
+	040200 ZEq              =0.007813 * X,TH|0|0|0|0|
+	040305 Cols             =0x10
+	040320 XUnits           ="%"
+	040352 XLabelType       =0x1
+	040354 XEq              =40.000000 * X,TH|0|0|0|0|
+	040505 XLabelSource     =0x1
+	040600 XAddress         =0x18252
+	040610 XDataSize        =1
+	040620 XAddrStep        =1
+	040650 XOutputDig       =0x1
+	040300 Rows             =0xC
+	040325 YUnits           ="RPM"
+	040362 YLabelType       =0x1
+	040364 YEq              =0.750000 * X,TH|0|0|0|0|
+	040515 YLabelSource     =0x1
+	040700 YAddress         =0x182B3
+	040710 YDataSize        =1
+	040720 YAddrStep        =1
+	040750 YOutputDig       =0x3
+	040150 Flags            =0x0
+%%END%%
+
