@@ -208,6 +208,7 @@ public class Map {
 	    return out;
 	}
 
+	// Axis.toXDF()
 	public String toXDF(String id, int size) {
 	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 	    m.put("id", id);
@@ -246,6 +247,9 @@ public class Map {
 		    m.put("mmedtypeflags",String.format("0x%02X", flags));
 		m.put("mmedaddress",String.format("0x%X", this.addr.v));
 		m.put("mmedelementsizebits", this.valueType.width()*8);
+		// weird. tunerpro puts mmedcolcount here sometimes, but not always
+		//if (flags!=0 && this.valueType.width()>1 && this.precision==2)
+		//    m.put("mmedcolcount", size);
 		m.put("mmedmajorstridebits", this.valueType.width()*8);
 		out += XmlString.factory(3,"EMBEDDEDDATA",m);
 

@@ -30,12 +30,12 @@ public class XmlString implements CharSequence {
     public XmlString(String tag, Map<String, Object> attrs) { this(0,tag, attrs); }
     public XmlString(int indent, String tag, Map<String, Object> attrs) { this(indent, tag, attrs, true); }
     public XmlString(int indent, String tag, Map<String, Object> attrs, boolean leaf) {
-	this(String.format("<%s", StringEscapeUtils.escapeXml(tag)));
+	this(String.format("<%s", escape(tag)));
 	if (indent>0)
 	    this.indent(indent);
 	for (Map.Entry<String, Object> e: attrs.entrySet()) {
-	    String k = StringEscapeUtils.escapeXml(e.getKey());
-	    String v = StringEscapeUtils.escapeXml(e.getValue().toString());
+	    String k = escape(e.getKey());
+	    String v = escape(e.getValue().toString());
 	    this.buf.append(String.format(" %s=\"%s\"", k, v));
 	}
 	this.buf.append(leaf?" />":">");
@@ -50,16 +50,23 @@ public class XmlString implements CharSequence {
     }
 
     // Static methods
+    private static String escape(String s)
+    {
+	//return StringEscapeUtils.escapeXml(s);
+	return StringEscapeUtils.escapeHtml3(s);
+	//return StringEscapeUtils.escapeHtml4(s);
+    }
+
     private static String tagIt(String tag, int value)
     {
-	tag = StringEscapeUtils.escapeXml(tag);
+	tag = escape(tag);
 	return String.format("<%s>%d</%s>", tag, value, tag);
     }
     private static String tagIt(String tag, Object value)
     {
 	if(tag.length()<=0 || value.toString().length()<=0) return "";
-	tag = StringEscapeUtils.escapeXml(tag);
-	String v = StringEscapeUtils.escapeXml(value.toString());
+	tag = escape(tag);
+	String v = escape(value.toString());
 	return String.format("<%s>%s</%s>", tag, v, tag);
     }
 
