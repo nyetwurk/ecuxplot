@@ -9,12 +9,14 @@ public class Version extends ArrayList<Object> {
     public static final String JCommon="JCOMMON_VER";
     public static final String OpenCSV="OPENCSV_VER";
     public static final String JavacMajor = "JAVAC_MAJOR_VER";
+    public static final String CommonsLang3 = "COMMONS_LANG3_VER";
 
     public Version () {
 	this.add("ECUxPlot " + Version.ECUxPlot);
 	this.add("JFreeChart " + Version.JFreeChart);
 	this.add("JCommon " + Version.JCommon);
 	this.add("OpenCSV " + Version.OpenCSV);
+	this.add("commons-lang3 " + Version.CommonsLang3);
 	this.add("Java compiler " + Version.JavacMajor);
 	this.add("Java runtime "+ System.getProperty("java.version"));
     }

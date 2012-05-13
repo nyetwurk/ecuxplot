@@ -1,9 +1,12 @@
 package org.nyet.mappack;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.nio.ByteBuffer;
 
 import org.nyet.util.Strings;
+import org.nyet.util.XmlString;
+
 import org.nyet.logfile.CSVRow;
 
 
@@ -128,13 +131,23 @@ public class Map {
 	}
 	public double convert(double in) { return in*factor+offset; }
 
-	public String eqXDF (int off, String tag) {
+	public String eqOldXDF (int off, String tag) {
 	    String out="";
 	    if(this.factor != 1 || this.offset != 0) {
 		out += String.format(XDF_LBL+"%f * X", off, tag, this.factor);
 		if(this.offset!=0)
 		    out += String.format("+ %f",this.offset);
 		out+=",TH|0|0|0|0|\n";
+	    }
+	    return out;
+	}
+
+	public String eqXDF () {
+	    String out="X";
+	    if(this.factor != 1 || this.offset != 0) {
+		out = String.format("%f * X", this.factor);
+		if(this.offset!=0)
+		    out += String.format("+ %f",this.offset);
 	    }
 	    return out;
 	}
@@ -193,6 +206,69 @@ public class Map {
 	    if(signature.v!=-1)
 		out += "\t  sig: " + signature + "\n";
 	    return out;
+	}
+
+	public String toXDF(String id, int size) {
+	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	    m.put("id", id);
+	    m.put("uniqueid", "0x0");
+	    String out = XmlString.factory(2,"XDFAXIS", m, false);
+	    if(this.datasource.isOrdinal() && this.addr==null) {
+		m.clear();
+		m.put("mmedelementsizebits",16);
+		m.put("mmedmajorstridebits",-32);
+		out += XmlString.factory(3,"EMBEDDEDDATA",m);
+		out += XmlString.factory(3,"units",this.units);
+		out += XmlString.factory(3,"indexcount",size);
+
+		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
+		out += XmlString.factory(3,"outputtype",2);
+		out += XmlString.factory(3,"datatype",0);
+		out += XmlString.factory(3,"unittype",0);
+		m.clear();
+		m.put("index",0);
+		out += XmlString.factory(3,"DALINK",m);
+
+		m.clear();
+		for(int i=0; i<size; i++) {
+		    m.put("index",i);
+		    m.put("value",String.format("%02d",size==1?0:i+1));
+		    out += XmlString.factory(3,"LABEL",m);
+		}
+		out += XmlString.factory(3,"MATH equation=\"X\"");
+		out += XmlString.factory(4,"VAR id=\"X\" /");
+		out += XmlString.factory(3,"/MATH");
+	    } else if(this.addr!=null) {
+		int flags = this.sign?1:0;
+		if (this.valueType.isLE()) flags |= 2;
+		m.clear();
+		if (flags!=0)
+		    m.put("mmedtypeflags",String.format("0x%02X", flags));
+		m.put("mmedaddress",String.format("0x%X", this.addr.v));
+		m.put("mmedelementsizebits", this.valueType.width()*8);
+		m.put("mmedmajorstridebits", this.valueType.width()*8);
+		out += XmlString.factory(3,"EMBEDDEDDATA",m);
+
+		out += XmlString.factory(3,"units",this.units);
+		out += XmlString.factory(3,"indexcount",size);
+
+		if(this.precision!=2)
+		    out += XmlString.factory(3,"decimalpl",this.precision);
+
+		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
+		if (this.precision==0)
+		    out += XmlString.factory(3,"outputtype",2);
+
+		out += XmlString.factory(3,"embedinfo type=\"1\" /");
+		out += XmlString.factory(3,"datatype", 0);
+		out += XmlString.factory(3,"unittype", 0);
+		out += XmlString.factory(3,"DALINK index=\"0\" /");
+
+		out += XmlString.factory(3,"MATH equation=\"" + this.eqXDF() + "\"");
+		out += XmlString.factory(4,"VAR id=\"X\" /");
+		out += XmlString.factory(3,"/MATH");
+	    }
+	    return out + XmlString.factory(2,"/XDFAXIS");
 	}
     }
     private byte header0;
@@ -306,13 +382,15 @@ public class Map {
 
     public static final int FORMAT_DUMP = 0;
     public static final int FORMAT_CSV = 1;
-    public static final int FORMAT_XDF = 2;
+    public static final int FORMAT_OLD_XDF = 2;
+    public static final int FORMAT_XDF = 3;
     public static final String XDF_LBL = "\t%06d %-17s=";
     public String toString(int format, ByteBuffer image)
 	throws Exception {
 	switch(format) {
 	    case FORMAT_DUMP: return toString();
 	    case FORMAT_CSV: return toStringCSV(image);
+	    case FORMAT_OLD_XDF: return toStringOldXDF(image);
 	    case FORMAT_XDF: return toStringXDF(image);
 	}
 	return "";
@@ -351,7 +429,7 @@ public class Map {
 	return Strings.join(",", out);
     }
 
-    private String toStringXDF(ByteBuffer image) throws Exception {
+    private String toStringOldXDF(ByteBuffer image) throws Exception {
 	boolean table = this.organization.isTable();
 	boolean oneD = this.organization.is1D() || this.size.y<=1;
 	String out = table?"%%TABLE%%\n":"%%CONSTANT%%\n";
@@ -408,7 +486,7 @@ public class Map {
 	out += String.format(XDF_LBL+"0x%X\n",off+100,"Address",
 		this.extent[0].v);
 
-	out += this.value.eqXDF(off+200, table?"ZEq":"Equation");
+	out += this.value.eqOldXDF(off+200, table?"ZEq":"Equation");
 
 	if(table) {
 	    if (this.size.x > 0x100 && this.size.y <= 0x100) {
@@ -438,7 +516,7 @@ public class Map {
 			ordinalArray(this.size.x));
 		out += String.format(XDF_LBL+"0x%X\n", off+352, "XLabelType", 2);
 	    } else if(this.x_axis.addr!=null) {
-		out += this.x_axis.eqXDF(off+354, "XEq");
+		out += this.x_axis.eqOldXDF(off+354, "XEq");
 		// 500s
 		out += String.format(XDF_LBL+"0x%X\n", off+505, "XLabelSource", 1);
 		// 600s
@@ -472,7 +550,7 @@ public class Map {
 			ordinalArray(this.size.y));
 		out += String.format(XDF_LBL+"0x%X\n", off+362, "YLabelType", 2);
 	    } else if(this.y_axis.addr!=null) {
-		out += this.y_axis.eqXDF(off+364, "YEq");
+		out += this.y_axis.eqOldXDF(off+364, "YEq");
 		// 500s
 		out += String.format(XDF_LBL+"0x%X\n", off+515, "YLabelSource", 1);
 		// 700s
@@ -524,6 +602,136 @@ public class Map {
 	}
 
 	return out + "%%END%%\n";
+    }
+
+    private String toStringXDF(ByteBuffer image) throws Exception {
+	boolean table = this.organization.isTable();
+	String out, tag;
+
+	int flags = this.sign?1:0;
+	if (this.valueType.isLE()) flags |= 2;
+
+	if (table) {
+	    tag = "XDFTABLE";
+	    out = XmlString.factory(1,"XDFTABLE uniqueid=\"0x0\" flags=\"0x0\"");
+	} else {
+	    tag = "XDFCONSTANT";
+	    out = XmlString.factory(1,"XDFCONSTANT uniqueid=\"0x0\"");
+	}
+	String title = "";
+	String desc = "";
+	if(this.id.length()>0) {
+	    title = this.id.split(" ")[0];	// HACK: drop the junk
+	    desc = this.name;
+	} else {
+	    title = this.name;
+	}
+	out += XmlString.factory(2,"title", title);
+	out += XmlString.factory(2,"description", desc);
+	out += XmlString.factory(2,"CATEGORYMEM index=\"0\" category=\"" + (this.folderId+1) + "\" /");
+
+	if(table) {
+	    if (this.size.x > 0x100 && this.size.y <= 0x100) {
+		// swap x and y; tunerpro crashes on Cols > 256
+		Axis tmpa = this.y_axis;
+		this.y_axis = this.x_axis;
+		this.x_axis = tmpa;
+
+		int tmp = this.size.y;
+		this.size.y = this.size.x;
+		this.size.x = tmp;
+	    }
+
+	    out += this.x_axis.toXDF("x", this.size.x);
+
+	    if (this.organization.is1D()) {
+		int size=this.size.y;
+		Axis axis=this.y_axis;
+		out += XmlString.factory(2,"XDFAXIS id=\"y\" uniqueid=\"0x0\"");
+
+		LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+		if(axis.addr!=null) {
+		    int aflags = axis.sign?1:0;
+		    if (axis.valueType.isLE()) aflags |= 2;
+		    if (aflags!=0)
+			m.put("mmedtypeflags", String.format("0x%02X", aflags));
+		    m.put("mmedaddress", String.format("0x%02X", axis.addr.v));
+		    m.put("mmedelementsizebits", axis.valueType.width()*8);
+		    m.put("mmedmajorstridebits", axis.valueType.width()*8);
+		} else {
+		    m.put("mmedelementsizebits", 16);
+		    m.put("mmedmajorstridebits", -32);
+		}
+		out += XmlString.factory(3,"EMBEDDEDDATA",m);
+
+		out += XmlString.factory(3,"units",axis.units);
+		out += XmlString.factory(3,"indexcount",size);
+		if (axis.addr!=null)
+		    out += XmlString.factory(3,"decimalpl",0);
+		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
+		out += XmlString.factory(3,"outputtype",4);
+		if (axis.addr!=null)
+		    out += XmlString.factory(3,"embedinfo type=\"1\" /");
+		out += XmlString.factory(3,"datatype", 0);
+		out += XmlString.factory(3,"unittype", 0);
+		out += XmlString.factory(3,"DALINK index=\"0\" /");
+
+		if (axis.addr==null) {
+		    m.clear();
+		    for(int i=0; i<size; i++) {
+			m.put("index",i);
+			m.put("value",i==0?axis.units:"");
+			out += XmlString.factory(3,"LABEL",m);
+		    }
+		}
+
+		out += XmlString.factory(3,"MATH equation=\"X\"");
+		out += XmlString.factory(4,"VAR id=\"X\" /");
+		out += XmlString.factory(3,"/MATH");
+		out += XmlString.factory(2,"/XDFAXIS");
+	    } else {
+		out += this.y_axis.toXDF("y", this.size.y);
+	    }
+
+	    // Z AXIS
+	    out += XmlString.factory(2,"XDFAXIS id=\"z\"");
+        }
+
+	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	if (flags!=0)
+	    m.put("mmedtypeflags",String.format("0x%02X", flags));
+	m.put("mmedaddress",String.format("0x%X", this.extent[0].v));
+	m.put("mmedelementsizebits", this.valueType.width()*8);
+
+	if (table) {
+	    m.put("mmedrowcount", this.size.y);
+	    if(this.size.x>1)
+		m.put("mmedcolcount", this.size.x);
+	    out += XmlString.factory(3,"EMBEDDEDDATA",m);
+	    out += XmlString.factory(3,"units",this.value.units);
+	    out += XmlString.factory(3,"decimalpl", this.precision);
+	    out += XmlString.factory(3,"min","0.000000");
+	    out += XmlString.factory(3,"max","255.000000");
+	    // outputtype 0x1 = float, 0x2 = integer, 0x4 = string
+	    out += XmlString.factory(3,"outputtype",1);
+	    out += XmlString.factory(3,"MATH equation=\"" + this.value.eqXDF() + "\"");
+	    out += XmlString.factory(4,"VAR id=\"X\" /");
+	    out += XmlString.factory(3,"/MATH");
+	    out += XmlString.factory(2,"/XDFAXIS");
+	} else {
+	    out += XmlString.factory(2,"EMBEDDEDDATA",m);
+	    out += XmlString.factory(2,"units",this.value.units);
+	    if(this.precision!=2)
+		out += XmlString.factory(2,"decimalpl", this.precision);
+	    out += XmlString.factory(2,"datatype",0);
+	    out += XmlString.factory(2,"unittype",0);
+	    out += XmlString.factory(2,"DALINK index=\"0\" /");
+	    out += XmlString.factory(2,"MATH equation=\"" + this.value.eqXDF() + "\"");
+	    out += XmlString.factory(3,"VAR id=\"X\" /");
+	    out += XmlString.factory(2,"/MATH");
+	}
+
+	return out + XmlString.factory(1,"/" + tag);
     }
 
     public String toString() {

@@ -6,6 +6,7 @@ ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 JCOMMON_VER := 1.0.17
 JFREECHART_VER := 1.0.14
 OPENCSV_VER := 2.3
+COMMONS_LANG3_VER := 3.1
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
@@ -46,7 +47,7 @@ UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
 	    MenuListener.java SubActionListener.java \
 	    GenericFileFilter.java Unsigned.java Signed.java DoubleArray.java \
 	    MovingAverageSmoothing.java Files.java Version.java \
-	    BrowserLaunch.java Strings.java Locate.java
+	    BrowserLaunch.java Strings.java Locate.java XmlString.java
 
 VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
 
@@ -73,7 +74,7 @@ EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
 TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
-JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:applib.jar:flanagan.jar:AppleJavaExtensions.jar
+JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:commons-lang3-$(COMMONS_LANG3_VER).jar:applib.jar:flanagan.jar:AppleJavaExtensions.jar
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked
 TARGET=ECUxPlot-$(ECUXPLOT_VER)
@@ -128,7 +129,8 @@ GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 	sed -e 's/ECUXPLOT_VER/$(ECUXPLOT_VER)/g' | \
 	sed -e 's/JFREECHART_VER/$(JFREECHART_VER)/g' | \
 	sed -e 's/JCOMMON_VER/$(JCOMMON_VER)/g' | \
-	sed -e 's/OPENCSV_VER/$(OPENCSV_VER)/g'
+	sed -e 's/OPENCSV_VER/$(OPENCSV_VER)/g' | \
+	sed -e 's/COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g'
 
 include scripts/Windows.mk
 include scripts/MacOS.mk

@@ -2,6 +2,7 @@ import java.nio.channels.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.nyet.mappack.*;
 import org.nyet.util.*;
@@ -31,6 +32,8 @@ public class mapdump {
 		    this.image=args[i];
 		} else if(args[i].equals("-d")) {
 		    this.format = Map.FORMAT_DUMP;
+		} else if(args[i].equals("-o")) {
+		    this.format = Map.FORMAT_OLD_XDF;
 		} else if(args[i].equals("-x")) {
 		    this.format = Map.FORMAT_XDF;
 		} else {
@@ -40,6 +43,10 @@ public class mapdump {
 	    if (this.filename == null) {
 		System.out.print(this.Usage());
 		throw new Exception("You must specify an input filename");
+	    }
+	    if (this.format == Map.FORMAT_OLD_XDF && image == null) {
+		System.out.print(this.Usage());
+		throw new Exception("-o requires -i <image.bin> to detect image size");
 	    }
 	    if (this.format == Map.FORMAT_XDF && image == null) {
 		System.out.print(this.Usage());
@@ -53,6 +60,7 @@ public class mapdump {
 		+ " -r <mappack.kp> [-r ...]     annotate with descriptions from matching maps also in these mappacks (ignored if -x is used)\n"
 		+ " -i <image.bin>               generate min/max columns based on this image\n"
 		+ " -d                           raw dump\n"
+		+ " -o                           old xdf dump (requires -i <image.bin>)\n"
 		+ " -x                           xdf dump (requires -i <image.bin>)\n";
 	}
     }
@@ -77,8 +85,13 @@ public class mapdump {
 		System.out.print(Map.CSVHeader()+refsHeader);
 		System.out.println();
 		break;
-	    case Map.FORMAT_XDF:
+	    case Map.FORMAT_OLD_XDF:
 		System.out.print("XDF\n1.110000\n\n");
+		break;
+	    case Map.FORMAT_XDF:
+		Date date = new Date();
+		System.out.print("<!-- Written " + date.toString() + "-->\n");
+		System.out.print("<XDFFORMAT version=\"1.50\">\n");
 		break;
 	    default: break;
 	}
@@ -102,9 +115,11 @@ public class mapdump {
 			    System.out.print(",\"\"");
 			}
 		    }
+		    System.out.println();
 		}
-		System.out.println();
 	    }
 	}
+	if (opts.format==Map.FORMAT_XDF)
+	    System.out.print("</XDFFORMAT>\n");
     }
 }

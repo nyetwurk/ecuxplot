@@ -4,6 +4,7 @@ import java.util.*;
 import java.nio.ByteBuffer;
 
 import org.nyet.util.Files;
+import org.nyet.util.XmlString;
 
 public class Project {
     public String stem;
@@ -70,9 +71,10 @@ public class Project {
 	return out;
     }
     public String toString(int format, ByteBuffer imagebuf) {
+	String out;
 	switch(format) {
-	    case Map.FORMAT_XDF:
-		String out = "%%HEADER%%\n";
+	    case Map.FORMAT_OLD_XDF:
+		out = "%%HEADER%%\n";
 		out += String.format(Map.XDF_LBL+"\"%s\"\n",1000, "FileVers",
 			this.version + " - " + this.mTime);
 		out += String.format(Map.XDF_LBL+"\"%s\"\n",1005, "DefTitle",
@@ -92,6 +94,40 @@ public class Project {
 		for(Folder f: this.folders)
 		    out += String.format(Map.XDF_LBL+"\"%s\"\n", 2000+f.id, "Category"+f.id, f.name);
 		return out + "%%END%%\n\n";
+	    case Map.FORMAT_XDF:
+		out = XmlString.factory(1,"XDFHEADER");
+		out += XmlString.factory(2,"flags", "0x1");	// ????
+		out += XmlString.factory(2,"fileversion", this.version + " - " + this.mTime);
+		out += XmlString.factory(2,"deftitle",this.stem);
+		out += XmlString.factory(2,"description",this.name);
+		out += XmlString.factory(2,"author","mesim translator");
+		out += XmlString.factory(2,"baseoffset", 0);
+		LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+		m.put("datasizeinbits",8);
+		m.put("sigdigits",2);
+		m.put("outputtype",1);
+		m.put("signed",0);
+		m.put("lsbfirst",1);
+		m.put("float",0);
+		out += XmlString.factory(2,"DEFAULTS", m);
+		if(imagebuf!=null && imagebuf.limit()>0) {
+		    m.clear();
+		    m.put("type","0xFFFFFFFF");
+		    m.put("startaddress","0x0");
+		    m.put("size", String.format("0x%X", imagebuf.limit()));
+		    m.put("regionflags", "0x0");
+		    m.put("name", "Binary File");
+		    m.put("desc", "This region describes the bin file edited by this XDF");
+		    out += XmlString.factory(2,"REGION", m);
+		}
+		for(Folder f: this.folders) {
+		    m.clear();
+		    m.put("index", String.format("0x%X", f.id));
+		    m.put("name", f.name);
+		    out += XmlString.factory(2,"CATEGORY", m);
+		}
+		out += XmlString.factory(1,"/XDFHEADER");
+		return out;
 	    case Map.FORMAT_DUMP:
 		return toString();
 	    default:
