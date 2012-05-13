@@ -90,7 +90,7 @@ public class mapdump {
 		break;
 	    case Map.FORMAT_XDF:
 		Date date = new Date();
-		System.out.print("<!-- Written " + date.toString() + "-->\n");
+		System.out.print("<!-- Written " + date.toString() + " -->\n");
 		System.out.print("<XDFFORMAT version=\"1.50\">\n");
 		break;
 	    default: break;
