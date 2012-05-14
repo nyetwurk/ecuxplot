@@ -77,6 +77,7 @@ TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
 JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:commons-lang3-$(COMMONS_LANG3_VER).jar:applib.jar:flanagan.jar:AppleJavaExtensions.jar
+MAPDUMP_JARS:=ECUxPlot-$(ECUXPLOT_VER).jar:opencsv-$(OPENCSV_VER).jar:commons-lang3-$(COMMONS_LANG3_VER).jar
 
 JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked
 TARGET=ECUxPlot-$(ECUXPLOT_VER)
@@ -120,7 +121,7 @@ $(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
 
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
 
-INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar \
+INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar mapdump.jar \
 		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt \
 		gpl-3.0.txt flanagan-license.txt
 
@@ -139,13 +140,18 @@ ECUxPlot.MF: Makefile
 	@echo "Main-Class: org.nyet.ecuxplot.ECUxPlot" >> $@
 	@echo "Class-Path: $(subst :, ,$(JARS))" >> $@
 
+mapdump.MF: Makefile
+	@echo "Manifest-Version: 1.0" > $@
+	@echo "Main-Class: mapdump" >> $@
+	@echo "Class-Path: $(subst :, ,$(MAPDUMP_JARS))" >> $@
+
 ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
 	jar cfm $@ ECUxPlot.MF `find org -name \*.class -o -name \*.png` `find vec_math -name \*.class`
 
 mapdump.jar: mapdump.MF mapdump.class
 	@rm -f $@
-	jar cfm $@ ECUxPlot.MF mapdump.class
+	jar cfm $@ mapdump.MF mapdump.class
 
 include scripts/Windows.mk
 include scripts/MacOS.mk
