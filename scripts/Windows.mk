@@ -1,18 +1,12 @@
-ECUxPlot.MF: Makefile
-	@echo "Manifest-Version: 1.0" > $@
-	@echo "Main-Class: org.nyet.ecuxplot.ECUxPlot" >> $@
-	@echo "Class-Path: $(subst :, ,$(JARS))" >> $@
-
-ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
-	@rm -f $@
-	jar cfm $@ ECUxPlot.MF `find org -name \*.class -o -name \*.png` `find vec_math -name \*.class`
-
 %.xml: %.xml.template Makefile scripts/Windows.mk
 	cat $< | $(GEN) > $@
 
 # unix launch4j requires full path to .xml
 ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.xml ECUxPlot.ico version.txt
 	$(LAUNCH4J) $(ECUXPLOT_XML)
+
+mapdump.exe: mapdump.java mapdump.xml ECUxPlot.ico version.txt
+	$(LAUNCH4J) $(MAPDUMP_XML)
 
 $(INSTALLER): ECUxPlot.exe $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	$(MAKENSIS) $(OPT_PRE)NOCD \

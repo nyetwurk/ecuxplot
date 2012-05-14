@@ -20,6 +20,7 @@ CLASSPATH = '$(shell cygpath -wp .:$(JARS))'
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
 ECUXPLOT_XML := '$(shell cygpath -w $(PWD)/ECUxPlot.xml)'
+MAPDUMP_XML := '$(shell cygpath -w $(PWD)/mapdump.xml)'
 
 MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis)'
@@ -83,21 +84,21 @@ INSTALLER=ECUxPlot-$(ECUXPLOT_VER)-setup.exe
 ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
 all: $(TARGETS) .classpath version.txt jar exe
 
-jar: $(TARGET).jar
+jar: $(TARGET).jar mapdump.jar
 run: jar
 	java -jar $(TARGET).jar
 archives: $(ARCHIVES)
-exe: ECUxPlot.exe
+exe: ECUxPlot.exe mapdump.exe
 installer: $(INSTALLER)
 rsync: $(ARCHIVES) $(INSTALLER)
 	$(RSYNC) $^ nyet.org:public_html/cars/files/
 
 binclean:
-	rm -f ECUxPlot*.{exe,jar,zip,tar.gz}
+	rm -f ECUxPlot*.{jar,zip,tar.gz} *.exe
 
 clean: binclean
 	rm -rf build
-	rm -f ECUxPlot.xml version.txt .classpath org/nyet/util/Version.java
+	rm -f ECUxPlot.xml mapdump.xml version.txt .classpath org/nyet/util/Version.java
 	rm -f *.class
 	find org -name \*.class | xargs rm
 	find vec_math -name \*.class | xargs rm
@@ -131,6 +132,19 @@ GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
 	sed -e 's/JCOMMON_VER/$(JCOMMON_VER)/g' | \
 	sed -e 's/OPENCSV_VER/$(OPENCSV_VER)/g' | \
 	sed -e 's/COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g'
+
+ECUxPlot.MF: Makefile
+	@echo "Manifest-Version: 1.0" > $@
+	@echo "Main-Class: org.nyet.ecuxplot.ECUxPlot" >> $@
+	@echo "Class-Path: $(subst :, ,$(JARS))" >> $@
+
+ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
+	@rm -f $@
+	jar cfm $@ ECUxPlot.MF `find org -name \*.class -o -name \*.png` `find vec_math -name \*.class`
+
+mapdump.jar: mapdump.MF mapdump.class
+	@rm -f $@
+	jar cfm $@ ECUxPlot.MF mapdump.class
 
 include scripts/Windows.mk
 include scripts/MacOS.mk
