@@ -96,7 +96,7 @@ rsync: $(ARCHIVES) $(INSTALLER)
 	$(RSYNC) $^ nyet.org:public_html/cars/files/
 
 binclean:
-	rm -f ECUxPlot*.{jar,zip,tar.gz} *.exe
+	rm -f ECUxPlot*.{jar,zip,tar.gz} *.exe *.MF
 
 clean: binclean
 	rm -rf build
