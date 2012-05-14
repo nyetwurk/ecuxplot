@@ -33,8 +33,8 @@ public class XmlString implements CharSequence, Appendable {
     // Static methods
     private static String escape(String s)
     {
-	//return StringEscapeUtils.escapeXml(s);
-	return StringEscapeUtils.escapeHtml3(s);
+	return StringEscapeUtils.escapeXml(s);
+	//return StringEscapeUtils.escapeHtml3(s);
 	//return StringEscapeUtils.escapeHtml4(s);
     }
 

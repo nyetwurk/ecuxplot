@@ -226,11 +226,12 @@ public class Map {
 
 		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
 		xs.append("outputtype",2);
+
+		/*
 		xs.append("datatype",0);
 		xs.append("unittype",0);
-		m.clear();
-		m.put("index",0);
-		xs.append("DALINK",m);
+		xs.append("DALINK index=\"0\" /");
+		*/
 
 		m.clear();
 		for(int i=0; i<size; i++) {
@@ -264,9 +265,12 @@ public class Map {
 		    xs.append("outputtype",2);
 
 		xs.append("embedinfo type=\"1\" /");
+
+		/*
 		xs.append("datatype", 0);
 		xs.append("unittype", 0);
 		xs.append("DALINK index=\"0\" /");
+		*/
 
 		doMath(xs,this.eqXDF());
 	    }
@@ -617,12 +621,134 @@ public class Map {
 	xs.append("/MATH");
     }
 
+    private void oneDtoXDF(XmlString xs) {
+	int size=this.size.y;
+	Axis axis=this.y_axis;
+
+	xs.append("XDFAXIS id=\"y\" uniqueid=\"0x0\"");
+	xs.indent();
+
+	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	if(axis.addr!=null) {
+	    int flags = axis.sign?1:0;
+	    if (axis.valueType.isLE()) flags |= 2;
+	    if (flags!=0)
+		m.put("mmedtypeflags", String.format("0x%02X", flags));
+	    m.put("mmedaddress", String.format("0x%02X", axis.addr.v));
+	    m.put("mmedelementsizebits", axis.valueType.width()*8);
+	    m.put("mmedmajorstridebits", axis.valueType.width()*8);
+	} else {
+	    m.put("mmedelementsizebits", 16);
+	    m.put("mmedmajorstridebits", -32);
+	}
+	xs.append("EMBEDDEDDATA",m);
+
+	xs.append("units",axis.units);
+	xs.append("indexcount",size);
+
+	if (axis.addr!=null)
+	    xs.append("decimalpl",0);
+
+	// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
+	xs.append("outputtype",4);
+
+	if (axis.addr!=null)
+	    xs.append("embedinfo type=\"1\" /");
+
+	/*
+	xs.append("datatype", 0);
+	xs.append("unittype", 0);
+	xs.append("DALINK index=\"0\" /");
+	*/
+
+	if (axis.addr==null) {
+	    m.clear();
+	    for(int i=0; i<size; i++) {
+		m.put("index",i);
+		m.put("value",i==0?axis.units:"");
+		xs.append("LABEL",m);
+	    }
+	}
+
+	doMath(xs);
+	xs.unindent();
+	xs.append("/XDFAXIS");
+    }
+
+    private void tableToXDF(XmlString xs) {
+	int flags = this.sign?1:0;
+	if (this.valueType.isLE()) flags |= 2;
+
+	if (this.size.x > 0x100 && this.size.y <= 0x100) {
+	    // swap x and y; tunerpro crashes on Cols > 256
+	    Axis tmpa = this.y_axis;
+	    this.y_axis = this.x_axis;
+	    this.x_axis = tmpa;
+
+	    int tmp = this.size.y;
+	    this.size.y = this.size.x;
+	    this.size.x = tmp;
+	}
+
+	this.x_axis.toXDF(xs, "x", this.size.x);
+
+	if (this.organization.is1D()) oneDtoXDF(xs);
+	else this.y_axis.toXDF(xs, "y", this.size.y);
+
+	// Z AXIS
+	xs.append("XDFAXIS id=\"z\"");
+	xs.indent();
+
+	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	if (flags!=0)
+	    m.put("mmedtypeflags",String.format("0x%02X", flags));
+	m.put("mmedaddress",String.format("0x%X", this.extent[0].v));
+	m.put("mmedelementsizebits", this.valueType.width()*8);
+
+	m.put("mmedrowcount", this.size.y);
+	if(this.size.x>1)
+	    m.put("mmedcolcount", this.size.x);
+	xs.append("EMBEDDEDDATA",m);
+	xs.append("units",this.value.units);
+	xs.append("decimalpl", this.precision);
+	/*
+	xs.append("min","0.000000");
+	xs.append("max","255.000000");
+	*/
+	// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
+	xs.append("outputtype",1);
+	doMath(xs, this.value.eqXDF());
+	xs.unindent();
+	xs.append("/XDFAXIS");
+    }
+
+    private void constantToXDF(XmlString xs) {
+	int flags = this.sign?1:0;
+	if (this.valueType.isLE()) flags |= 2;
+
+	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	if (flags!=0)
+	    m.put("mmedtypeflags",String.format("0x%02X", flags));
+	m.put("mmedaddress",String.format("0x%X", this.extent[0].v));
+	m.put("mmedelementsizebits", this.valueType.width()*8);
+
+
+	xs.append("EMBEDDEDDATA",m);
+	xs.append("units",this.value.units);
+	if(this.precision!=2)
+	    xs.append("decimalpl", this.precision);
+	/*
+	xs.append("datatype",0);
+	xs.append("unittype",0);
+	xs.append("DALINK index=\"0\" /");
+	*/
+	doMath(xs,this.value.eqXDF());
+    }
+
     private String toStringXDF(ByteBuffer image) throws Exception {
 	boolean table = this.organization.isTable();
 	String out, tag;
 
-	int flags = this.sign?1:0;
-	if (this.valueType.isLE()) flags |= 2;
 	XmlString xs = new XmlString(1);
 	if (table) {
 	    tag = "XDFTABLE";
@@ -645,104 +771,8 @@ public class Map {
 	xs.append("description", desc);
 	xs.append("CATEGORYMEM index=\"0\" category=\"" + (this.folderId+1) + "\" /");
 
-	if(table) {
-	    if (this.size.x > 0x100 && this.size.y <= 0x100) {
-		// swap x and y; tunerpro crashes on Cols > 256
-		Axis tmpa = this.y_axis;
-		this.y_axis = this.x_axis;
-		this.x_axis = tmpa;
-
-		int tmp = this.size.y;
-		this.size.y = this.size.x;
-		this.size.x = tmp;
-	    }
-
-	    this.x_axis.toXDF(xs, "x", this.size.x);
-
-	    if (this.organization.is1D()) {
-		int size=this.size.y;
-		Axis axis=this.y_axis;
-		xs.append("XDFAXIS id=\"y\" uniqueid=\"0x0\"");
-		xs.indent();
-
-		LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
-		if(axis.addr!=null) {
-		    int aflags = axis.sign?1:0;
-		    if (axis.valueType.isLE()) aflags |= 2;
-		    if (aflags!=0)
-			m.put("mmedtypeflags", String.format("0x%02X", aflags));
-		    m.put("mmedaddress", String.format("0x%02X", axis.addr.v));
-		    m.put("mmedelementsizebits", axis.valueType.width()*8);
-		    m.put("mmedmajorstridebits", axis.valueType.width()*8);
-		} else {
-		    m.put("mmedelementsizebits", 16);
-		    m.put("mmedmajorstridebits", -32);
-		}
-		xs.append("EMBEDDEDDATA",m);
-
-		xs.append("units",axis.units);
-		xs.append("indexcount",size);
-		if (axis.addr!=null)
-		    xs.append("decimalpl",0);
-		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-		xs.append("outputtype",4);
-		if (axis.addr!=null)
-		    xs.append("embedinfo type=\"1\" /");
-		xs.append("datatype", 0);
-		xs.append("unittype", 0);
-		xs.append("DALINK index=\"0\" /");
-
-		if (axis.addr==null) {
-		    m.clear();
-		    for(int i=0; i<size; i++) {
-			m.put("index",i);
-			m.put("value",i==0?axis.units:"");
-			xs.append("LABEL",m);
-		    }
-		}
-
-		doMath(xs);
-		xs.unindent();
-		xs.append("/XDFAXIS");
-	    } else {
-		this.y_axis.toXDF(xs, "y", this.size.y);
-	    }
-
-	    // Z AXIS
-	    xs.append("XDFAXIS id=\"z\"");
-	    xs.indent();
-        }
-
-	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
-	if (flags!=0)
-	    m.put("mmedtypeflags",String.format("0x%02X", flags));
-	m.put("mmedaddress",String.format("0x%X", this.extent[0].v));
-	m.put("mmedelementsizebits", this.valueType.width()*8);
-
-	if (table) {
-	    m.put("mmedrowcount", this.size.y);
-	    if(this.size.x>1)
-		m.put("mmedcolcount", this.size.x);
-	    xs.append("EMBEDDEDDATA",m);
-	    xs.append("units",this.value.units);
-	    xs.append("decimalpl", this.precision);
-	    xs.append("min","0.000000");
-	    xs.append("max","255.000000");
-	    // outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-	    xs.append("outputtype",1);
-	    doMath(xs, this.value.eqXDF());
-	    xs.unindent();
-	    xs.append("/XDFAXIS");
-	} else {
-	    xs.append("EMBEDDEDDATA",m);
-	    xs.append("units",this.value.units);
-	    if(this.precision!=2)
-		xs.append("decimalpl", this.precision);
-	    xs.append("datatype",0);
-	    xs.append("unittype",0);
-	    xs.append("DALINK index=\"0\" /");
-	    doMath(xs,this.value.eqXDF());
-	}
+	if(table) tableToXDF(xs);
+	else constantToXDF(xs);
 
 	xs.unindent();
 	return xs.append("/" + tag).toString();

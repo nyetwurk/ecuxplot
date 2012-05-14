@@ -99,8 +99,8 @@ public class Project {
 		xs.indent();
 		xs.append("XDFHEADER");
 		xs.indent();
-		xs.append("flags", "0x1");	// ????
-		xs.append("fileversion", this.version + " - " + this.mTime);
+		// xs.append("flags", "0x1");	// ????
+		xs.append("fileversion", this.version);
 		xs.append("deftitle",this.stem);
 		xs.append("description",this.name);
 		xs.append("author","mesim translator");
