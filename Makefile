@@ -149,9 +149,9 @@ ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
 	@rm -f $@
 	jar cfm $@ ECUxPlot.MF `find org -name \*.class -o -name \*.png` `find vec_math -name \*.class`
 
-mapdump.jar: mapdump.MF mapdump.class
+mapdump.jar: mapdump.MF mapdump.class mapdump$$Options.class
 	@rm -f $@
-	jar cfm $@ mapdump.MF mapdump.class
+	jar cfm $@ mapdump.MF mapdump.class 'mapdump$$Options.class'
 
 include scripts/Windows.mk
 include scripts/MacOS.mk
