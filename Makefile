@@ -31,6 +31,7 @@ else
 CLASSPATH = .:$(JARS)
 LAUNCH4J := /usr/local/launch4j/launch4j
 ECUXPLOT_XML := $(PWD)/ECUxPlot.xml
+MAPDUMP_XML := $(PWD)/mapdump.xml
 MAKENSIS := makensis
 INSTALL_DIR := /usr/local/ecuxplot
 OPT_PRE := '-'

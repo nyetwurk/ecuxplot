@@ -84,6 +84,7 @@ Section "install" InstallationInfo
   File "${MUI_FILE}.sh"
   File "${MUI_FILE}-${VERSION}.jar"
   File "mapdump.exe"
+  File "mapdump.jar"
   File "jcommon-${JCOMMON_VER}.jar"
   File "jfreechart-${JFREECHART_VER}.jar"
   File "opencsv-${OPENCSV_VER}.jar"
