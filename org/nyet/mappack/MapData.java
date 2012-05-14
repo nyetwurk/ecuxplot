@@ -17,19 +17,19 @@ public class MapData {
 	this.map = map;
 	b.position(map.extent[0].v);
 	data = new Double[map.size.x][map.size.y];
-	widthmask = (1<<(map.valueType.width()*8))-1;
+	widthmask = (1<<(map.value.type.width()*8))-1;
 	for(int i=0;i<map.size.x;i++) {
 	    for(int j=0;j<map.size.y;j++) {
 		long out;
-		if (map.sign) {
-		    switch(map.valueType.width()) {
+		if (map.value.sign) {
+		    switch(map.value.type.width()) {
 			case 1: out=Signed.getSignedByte(b); break;
 			case 2: out=Signed.getSignedShort(b); break;
 			case 4: out=Signed.getSignedInt(b); break;
 			default: data[i][j]=Double.NaN; continue;
 		    }
 		} else {
-		    switch(map.valueType.width()) {
+		    switch(map.value.type.width()) {
 			case 1: out=Unsigned.getUnsignedByte(b); break;
 			case 2: out=Unsigned.getUnsignedShort(b); break;
 			case 4: out=Unsigned.getUnsignedInt(b); break;
@@ -52,10 +52,10 @@ public class MapData {
 	for(int i=0;i<data.length;i++) {
 	    String[] row = new String[data[i].length];
 	    for(int j=0;j<data[i].length;j++) {
-		if(this.map.precision==0)
+		if(this.map.value.precision==0)
 		    row[j] = String.format("%d", (int)(data[i][j]+.5));
 		else
-		    row[j] = String.format("%." + this.map.precision +"f", data[i][j]);
+		    row[j] = String.format("%." + this.map.value.precision +"f", data[i][j]);
 	    }
 	    rows[i]=Strings.join(",", row);
 	}
