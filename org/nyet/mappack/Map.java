@@ -209,36 +209,36 @@ public class Map {
 	}
 
 	// Axis.toXDF()
-	public String toXDF(String id, int size) {
+	public String toXDF(XmlString xs, String id, int size) {
+	    int xsAt=xs.length();
 	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 	    m.put("id", id);
 	    m.put("uniqueid", "0x0");
-	    String out = XmlString.factory(2,"XDFAXIS", m, false);
+	    xs.append("XDFAXIS", m, false);
+	    xs.indent();
 	    if(this.datasource.isOrdinal() && this.addr==null) {
 		m.clear();
 		m.put("mmedelementsizebits",16);
 		m.put("mmedmajorstridebits",-32);
-		out += XmlString.factory(3,"EMBEDDEDDATA",m);
-		out += XmlString.factory(3,"units",this.units);
-		out += XmlString.factory(3,"indexcount",size);
+		xs.append("EMBEDDEDDATA",m);
+		xs.append("units",this.units);
+		xs.append("indexcount",size);
 
 		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-		out += XmlString.factory(3,"outputtype",2);
-		out += XmlString.factory(3,"datatype",0);
-		out += XmlString.factory(3,"unittype",0);
+		xs.append("outputtype",2);
+		xs.append("datatype",0);
+		xs.append("unittype",0);
 		m.clear();
 		m.put("index",0);
-		out += XmlString.factory(3,"DALINK",m);
+		xs.append("DALINK",m);
 
 		m.clear();
 		for(int i=0; i<size; i++) {
 		    m.put("index",i);
 		    m.put("value",String.format("%02d",size==1?0:i+1));
-		    out += XmlString.factory(3,"LABEL",m);
+		    xs.append("LABEL",m);
 		}
-		out += XmlString.factory(3,"MATH equation=\"X\"");
-		out += XmlString.factory(4,"VAR id=\"X\" /");
-		out += XmlString.factory(3,"/MATH");
+		doMath(xs);
 	    } else if(this.addr!=null) {
 		int flags = this.sign?1:0;
 		if (this.valueType.isLE()) flags |= 2;
@@ -251,28 +251,28 @@ public class Map {
 		//if (flags!=0 && this.valueType.width()>1 && this.precision==2)
 		//    m.put("mmedcolcount", size);
 		m.put("mmedmajorstridebits", this.valueType.width()*8);
-		out += XmlString.factory(3,"EMBEDDEDDATA",m);
+		xs.append("EMBEDDEDDATA",m);
 
-		out += XmlString.factory(3,"units",this.units);
-		out += XmlString.factory(3,"indexcount",size);
+		xs.append("units",this.units);
+		xs.append("indexcount",size);
 
 		if(this.precision!=2)
-		    out += XmlString.factory(3,"decimalpl",this.precision);
+		    xs.append("decimalpl",this.precision);
 
 		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
 		if (this.precision==0)
-		    out += XmlString.factory(3,"outputtype",2);
+		    xs.append("outputtype",2);
 
-		out += XmlString.factory(3,"embedinfo type=\"1\" /");
-		out += XmlString.factory(3,"datatype", 0);
-		out += XmlString.factory(3,"unittype", 0);
-		out += XmlString.factory(3,"DALINK index=\"0\" /");
+		xs.append("embedinfo type=\"1\" /");
+		xs.append("datatype", 0);
+		xs.append("unittype", 0);
+		xs.append("DALINK index=\"0\" /");
 
-		out += XmlString.factory(3,"MATH equation=\"" + this.eqXDF() + "\"");
-		out += XmlString.factory(4,"VAR id=\"X\" /");
-		out += XmlString.factory(3,"/MATH");
+		doMath(xs,this.eqXDF());
 	    }
-	    return out + XmlString.factory(2,"/XDFAXIS");
+	    xs.unindent();
+	    xs.append("/XDFAXIS");
+	    return xs.subSequence(xsAt, xs.length()).toString();
 	}
     }
     private byte header0;
@@ -608,20 +608,31 @@ public class Map {
 	return out + "%%END%%\n";
     }
 
+    private static void doMath(XmlString xs) { doMath(xs,"X"); }
+    private static void doMath(XmlString xs, String eq) {
+	xs.append("MATH equation=\"" + eq + "\"");
+	xs.indent();
+	xs.append("VAR id=\"X\" /");
+	xs.unindent();
+	xs.append("/MATH");
+    }
+
     private String toStringXDF(ByteBuffer image) throws Exception {
 	boolean table = this.organization.isTable();
 	String out, tag;
 
 	int flags = this.sign?1:0;
 	if (this.valueType.isLE()) flags |= 2;
-
+	XmlString xs = new XmlString(1);
 	if (table) {
 	    tag = "XDFTABLE";
-	    out = XmlString.factory(1,"XDFTABLE uniqueid=\"0x0\" flags=\"0x0\"");
+	    xs.append("XDFTABLE uniqueid=\"0x0\" flags=\"0x0\"");
 	} else {
 	    tag = "XDFCONSTANT";
-	    out = XmlString.factory(1,"XDFCONSTANT uniqueid=\"0x0\"");
+	    xs.append("XDFCONSTANT uniqueid=\"0x0\"");
 	}
+	xs.indent();
+
 	String title = "";
 	String desc = "";
 	if(this.id.length()>0) {
@@ -630,9 +641,9 @@ public class Map {
 	} else {
 	    title = this.name;
 	}
-	out += XmlString.factory(2,"title", title);
-	out += XmlString.factory(2,"description", desc);
-	out += XmlString.factory(2,"CATEGORYMEM index=\"0\" category=\"" + (this.folderId+1) + "\" /");
+	xs.append("title", title);
+	xs.append("description", desc);
+	xs.append("CATEGORYMEM index=\"0\" category=\"" + (this.folderId+1) + "\" /");
 
 	if(table) {
 	    if (this.size.x > 0x100 && this.size.y <= 0x100) {
@@ -646,12 +657,13 @@ public class Map {
 		this.size.x = tmp;
 	    }
 
-	    out += this.x_axis.toXDF("x", this.size.x);
+	    this.x_axis.toXDF(xs, "x", this.size.x);
 
 	    if (this.organization.is1D()) {
 		int size=this.size.y;
 		Axis axis=this.y_axis;
-		out += XmlString.factory(2,"XDFAXIS id=\"y\" uniqueid=\"0x0\"");
+		xs.append("XDFAXIS id=\"y\" uniqueid=\"0x0\"");
+		xs.indent();
 
 		LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 		if(axis.addr!=null) {
@@ -666,39 +678,39 @@ public class Map {
 		    m.put("mmedelementsizebits", 16);
 		    m.put("mmedmajorstridebits", -32);
 		}
-		out += XmlString.factory(3,"EMBEDDEDDATA",m);
+		xs.append("EMBEDDEDDATA",m);
 
-		out += XmlString.factory(3,"units",axis.units);
-		out += XmlString.factory(3,"indexcount",size);
+		xs.append("units",axis.units);
+		xs.append("indexcount",size);
 		if (axis.addr!=null)
-		    out += XmlString.factory(3,"decimalpl",0);
+		    xs.append("decimalpl",0);
 		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-		out += XmlString.factory(3,"outputtype",4);
+		xs.append("outputtype",4);
 		if (axis.addr!=null)
-		    out += XmlString.factory(3,"embedinfo type=\"1\" /");
-		out += XmlString.factory(3,"datatype", 0);
-		out += XmlString.factory(3,"unittype", 0);
-		out += XmlString.factory(3,"DALINK index=\"0\" /");
+		    xs.append("embedinfo type=\"1\" /");
+		xs.append("datatype", 0);
+		xs.append("unittype", 0);
+		xs.append("DALINK index=\"0\" /");
 
 		if (axis.addr==null) {
 		    m.clear();
 		    for(int i=0; i<size; i++) {
 			m.put("index",i);
 			m.put("value",i==0?axis.units:"");
-			out += XmlString.factory(3,"LABEL",m);
+			xs.append("LABEL",m);
 		    }
 		}
 
-		out += XmlString.factory(3,"MATH equation=\"X\"");
-		out += XmlString.factory(4,"VAR id=\"X\" /");
-		out += XmlString.factory(3,"/MATH");
-		out += XmlString.factory(2,"/XDFAXIS");
+		doMath(xs);
+		xs.unindent();
+		xs.append("/XDFAXIS");
 	    } else {
-		out += this.y_axis.toXDF("y", this.size.y);
+		this.y_axis.toXDF(xs, "y", this.size.y);
 	    }
 
 	    // Z AXIS
-	    out += XmlString.factory(2,"XDFAXIS id=\"z\"");
+	    xs.append("XDFAXIS id=\"z\"");
+	    xs.indent();
         }
 
 	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
@@ -711,31 +723,29 @@ public class Map {
 	    m.put("mmedrowcount", this.size.y);
 	    if(this.size.x>1)
 		m.put("mmedcolcount", this.size.x);
-	    out += XmlString.factory(3,"EMBEDDEDDATA",m);
-	    out += XmlString.factory(3,"units",this.value.units);
-	    out += XmlString.factory(3,"decimalpl", this.precision);
-	    out += XmlString.factory(3,"min","0.000000");
-	    out += XmlString.factory(3,"max","255.000000");
+	    xs.append("EMBEDDEDDATA",m);
+	    xs.append("units",this.value.units);
+	    xs.append("decimalpl", this.precision);
+	    xs.append("min","0.000000");
+	    xs.append("max","255.000000");
 	    // outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-	    out += XmlString.factory(3,"outputtype",1);
-	    out += XmlString.factory(3,"MATH equation=\"" + this.value.eqXDF() + "\"");
-	    out += XmlString.factory(4,"VAR id=\"X\" /");
-	    out += XmlString.factory(3,"/MATH");
-	    out += XmlString.factory(2,"/XDFAXIS");
+	    xs.append("outputtype",1);
+	    doMath(xs, this.value.eqXDF());
+	    xs.unindent();
+	    xs.append("/XDFAXIS");
 	} else {
-	    out += XmlString.factory(2,"EMBEDDEDDATA",m);
-	    out += XmlString.factory(2,"units",this.value.units);
+	    xs.append("EMBEDDEDDATA",m);
+	    xs.append("units",this.value.units);
 	    if(this.precision!=2)
-		out += XmlString.factory(2,"decimalpl", this.precision);
-	    out += XmlString.factory(2,"datatype",0);
-	    out += XmlString.factory(2,"unittype",0);
-	    out += XmlString.factory(2,"DALINK index=\"0\" /");
-	    out += XmlString.factory(2,"MATH equation=\"" + this.value.eqXDF() + "\"");
-	    out += XmlString.factory(3,"VAR id=\"X\" /");
-	    out += XmlString.factory(2,"/MATH");
+		xs.append("decimalpl", this.precision);
+	    xs.append("datatype",0);
+	    xs.append("unittype",0);
+	    xs.append("DALINK index=\"0\" /");
+	    doMath(xs,this.value.eqXDF());
 	}
 
-	return out + XmlString.factory(1,"/" + tag);
+	xs.unindent();
+	return xs.append("/" + tag).toString();
     }
 
     public String toString() {

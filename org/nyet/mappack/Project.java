@@ -95,13 +95,16 @@ public class Project {
 		    out += String.format(Map.XDF_LBL+"\"%s\"\n", 2000+f.id, "Category"+f.id, f.name);
 		return out + "%%END%%\n\n";
 	    case Map.FORMAT_XDF:
-		out = XmlString.factory(1,"XDFHEADER");
-		out += XmlString.factory(2,"flags", "0x1");	// ????
-		out += XmlString.factory(2,"fileversion", this.version + " - " + this.mTime);
-		out += XmlString.factory(2,"deftitle",this.stem);
-		out += XmlString.factory(2,"description",this.name);
-		out += XmlString.factory(2,"author","mesim translator");
-		out += XmlString.factory(2,"baseoffset", 0);
+		XmlString xs = new XmlString();
+		xs.indent();
+		xs.append("XDFHEADER");
+		xs.indent();
+		xs.append("flags", "0x1");	// ????
+		xs.append("fileversion", this.version + " - " + this.mTime);
+		xs.append("deftitle",this.stem);
+		xs.append("description",this.name);
+		xs.append("author","mesim translator");
+		xs.append("baseoffset", 0);
 		LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 		m.put("datasizeinbits",8);
 		m.put("sigdigits",2);
@@ -109,7 +112,7 @@ public class Project {
 		m.put("signed",0);
 		m.put("lsbfirst",1);
 		m.put("float",0);
-		out += XmlString.factory(2,"DEFAULTS", m);
+		xs.append("DEFAULTS", m);
 		if(imagebuf!=null && imagebuf.limit()>0) {
 		    m.clear();
 		    m.put("type","0xFFFFFFFF");
@@ -118,16 +121,16 @@ public class Project {
 		    m.put("regionflags", "0x0");
 		    m.put("name", "Binary File");
 		    m.put("desc", "This region describes the bin file edited by this XDF");
-		    out += XmlString.factory(2,"REGION", m);
+		    xs.append("REGION", m);
 		}
 		for(Folder f: this.folders) {
 		    m.clear();
 		    m.put("index", String.format("0x%X", f.id));
 		    m.put("name", f.name);
-		    out += XmlString.factory(2,"CATEGORY", m);
+		    xs.append("CATEGORY", m);
 		}
-		out += XmlString.factory(1,"/XDFHEADER");
-		return out;
+		xs.unindent();
+		return xs.append("/XDFHEADER").toString();
 	    case Map.FORMAT_DUMP:
 		return toString();
 	    default:
