@@ -295,6 +295,7 @@ public class Map {
 		m.put("mmedelementsizebits",16);
 		m.put("mmedmajorstridebits",-32);
 		xs.append("EMBEDDEDDATA",m);
+
 		xs.append("units",this.value.units);
 		xs.append("indexcount",this.size);
 
@@ -334,7 +335,8 @@ public class Map {
 		xs.append("EMBEDDEDDATA",m);
 
 		xs.append("units",this.value.units);
-		if (this.size>0)
+
+		if (!isZ)
 		    xs.append("indexcount",this.size);
 
 		if(this.value.precision!=2)
@@ -493,6 +495,19 @@ public class Map {
 	return (id.equals(this.id.split("[? ]")[0]));
     }
 
+    // swap x and y; tunerpro crashes on Cols > 256
+    private void swapXY() {
+	Axis tmpa = this.y_axis;
+	this.y_axis = this.x_axis;
+	this.x_axis = tmpa;
+
+	this.x_axis.name = "x";
+	this.y_axis.name = "y";
+
+	int tmp = this.size.y;
+	this.size.y = this.size.x;
+	this.size.x = tmp;
+    }
 
     public static final int FORMAT_DUMP = 0;
     public static final int FORMAT_CSV = 1;
@@ -605,19 +620,10 @@ public class Map {
 	out += this.value.eqOldXDF(off+200, table?"ZEq":"Equation");
 
 	if(table) {
-	    if (this.size.x > 0x100 && this.size.y <= 0x100) {
-		// swap x and y; tunerpro crashes on Cols > 256
-		Axis tmpa = this.y_axis;
-		this.y_axis = this.x_axis;
-		this.x_axis = tmpa;
+	    // swap x and y; tunerpro crashes on Cols > 256
+	    if (this.size.x > 0x100 && this.size.y <= 0x100)
+		this.swapXY();
 
-		this.x_axis.name = "x";
-		this.y_axis.name = "y";
-
-		int tmp = this.size.y;
-		this.size.y = this.size.x;
-		this.size.x = tmp;
-	    }
 	    // X (columns)
 	    if (this.x_axis.value.sign) flags |= 0x40;
 	    if (this.x_axis.value.type.isLE()) flags |= 0x100;
@@ -724,22 +730,9 @@ public class Map {
     }
 
     private void tableToXDF(XmlString xs) {
-	int flags = this.value.sign?1:0;
-	if (this.value.type.isLE()) flags |= 2;
-
-	if (this.size.x > 0x100 && this.size.y <= 0x100) {
-	    // swap x and y; tunerpro crashes on Cols > 256
-	    Axis tmpa = this.y_axis;
-	    this.y_axis = this.x_axis;
-	    this.x_axis = tmpa;
-
-	    this.x_axis.name = "x";
-	    this.y_axis.name = "y";
-
-	    int tmp = this.size.y;
-	    this.size.y = this.size.x;
-	    this.size.x = tmp;
-	}
+	// swap x and y; tunerpro crashes on Cols > 256
+	if (this.size.x > 0x100 && this.size.y <= 0x100)
+	    this.swapXY();
 
 	this.x_axis.toXDF(xs);
 	this.y_axis.toXDF(xs);
@@ -755,8 +748,8 @@ public class Map {
 	    m.put("mmedtypeflags",String.format("0x%02X", flags));
 	m.put("mmedaddress",String.format("0x%X", this.extent[0].v));
 	m.put("mmedelementsizebits", this.value.type.width()*8);
-
 	xs.append("EMBEDDEDDATA",m);
+
 	xs.append("units",this.value.units);
 	if(this.value.precision!=2)
 	    xs.append("decimalpl", this.value.precision);
