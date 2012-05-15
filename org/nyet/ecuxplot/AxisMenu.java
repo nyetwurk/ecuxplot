@@ -141,6 +141,8 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Idle", item);
 	} else if(id.matches("Knock.*")) {
 	    addToSubmenu("Knock", item);
+	} else if(id.matches("*Misfire.*")) {
+	    addToSubmenu("Misfires", item);
 	} else if(id.matches("(OXS|O2SVoltage|ResistanceSensor).*")) {
 	    addToSubmenu("O2 Sensor(s)", item);
 	} else if(id.matches("(AccelPedal|Throttle).*")) {

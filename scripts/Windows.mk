@@ -8,7 +8,7 @@ ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.xml ECUxPlot.ico version.txt
 mapdump.exe: mapdump.java mapdump.xml ECUxPlot.ico version.txt
 	$(LAUNCH4J) $(MAPDUMP_XML)
 
-$(INSTALLER): ECUxPlot.exe $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
+$(INSTALLER): ECUxPlot.exe mapdump.exe $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	$(MAKENSIS) $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DVERSION=$(ECUXPLOT_VER) \
 	    $(OPT_PRE)DJFREECHART_VER=$(JFREECHART_VER) \
