@@ -170,8 +170,8 @@ install: $(INSTALL_FILES) $(PROFILES)
 	rm -f $(INSTALL_DIR)/ECUxPlot*.jar
 	install -D -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
 	install ECUxPlot.sh $(INSTALL_DIR)
+	install mapdump.sh $(INSTALL_DIR)
 	cp -a --parents $(PROFILES) $(INSTALL_DIR)
-	ln -sf ../ecuxplot/ECUxPlot.sh /usr/local/bin/ecuxplot
 
 tag:
 	scripts/svn-tag $(ECUXPLOT_VER)
