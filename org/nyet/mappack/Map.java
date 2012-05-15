@@ -176,13 +176,25 @@ public class Map {
 	    // get maximum possible value
 	    double max = convert(((1<<width)-1));
 
+	    // digits left of decimal
+	    int intdigits = (int)(Math.floor(Math.log10(max))+1);
+
 	    // 99 = 2 digits, 100 = 3 digits
-	    int digits = this.precision + (int)(Math.floor(Math.log10(max))+1);
+	    int digits = this.precision + intdigits;
 
 	    if (digits>maxDigits)
-		this.precision -= (digits-maxDigits-1);
+		this.precision = maxDigits>intdigits?maxDigits - intdigits:0;
 
 	    return this.precision;
+	}
+
+	protected void doMathXDF(XmlString xs) { doMathXDF(xs, this.eqXDF()); }
+	protected void doMathXDF(XmlString xs, String x) {
+	    xs.append("MATH equation=\"" + x + "\"");
+	    xs.indent();
+	    xs.append("VAR id=\"X\" /");
+	    xs.unindent();
+	    xs.append("/MATH");
 	}
     }
 
@@ -249,7 +261,7 @@ public class Map {
 	    m.put("uniqueid", "0x0");
 	    xs.append("XDFAXIS", m, false);
 	    xs.indent();
-	    if(this.datasource.isOrdinal() && this.addr==null) {
+	    if(size<2 || (this.datasource.isOrdinal() && this.addr==null)) {
 		m.clear();
 		m.put("mmedelementsizebits",16);
 		m.put("mmedmajorstridebits",-32);
@@ -257,8 +269,11 @@ public class Map {
 		xs.append("units",this.units);
 		xs.append("indexcount",size);
 
+		if(this.precision!=2)
+		    xs.append("decimalpl",this.precision);
+
 		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-		xs.append("outputtype",2);
+		xs.append("outputtype",this.precision==0?2:1);
 
 		if (XDF_Pedantic) {
 		    xs.append("datatype",0);
@@ -266,13 +281,7 @@ public class Map {
 		    xs.append("DALINK index=\"0\" /");
 		}
 
-		m.clear();
-		for(int i=0; i<size; i++) {
-		    m.put("index",i);
-		    m.put("value",String.format("%02d",size==1?0:i+1));
-		    xs.append("LABEL",m);
-		}
-		doMath(xs);
+		genLabelsXDF(xs, size);
 	    } else if(this.addr!=null) {
 		int flags = this.sign?1:0;
 		if (this.type.isLE()) flags |= 2;
@@ -305,11 +314,75 @@ public class Map {
 		    xs.append("DALINK index=\"0\" /");
 		}
 
-		doMath(xs,this.eqXDF());
+		this.doMathXDF(xs);
 	    }
 	    xs.unindent();
 	    xs.append("/XDFAXIS");
 	    return xs.subSequence(xsAt, xs.length()).toString();
+	}
+
+	private void oneDtoXDF(XmlString xs, String id, int size) {
+	    xs.append("XDFAXIS id=\""+id+"\" uniqueid=\"0x0\"");
+	    xs.indent();
+
+	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	    if(size<2 || (this.datasource.isOrdinal() && this.addr==null)) {
+		m.put("mmedelementsizebits", 16);
+		m.put("mmedmajorstridebits", -32);
+	    } else {
+		int flags = this.sign?1:0;
+		if (this.type.isLE()) flags |= 2;
+		if (flags!=0)
+		    m.put("mmedtypeflags", String.format("0x%02X", flags));
+		m.put("mmedaddress", String.format("0x%02X", this.addr.v));
+		m.put("mmedelementsizebits", this.type.width()*8);
+		m.put("mmedmajorstridebits", this.type.width()*8);
+	    }
+	    xs.append("EMBEDDEDDATA",m);
+
+	    xs.append("units",this.units);
+	    xs.append("indexcount",size);
+
+	    if(this.precision!=2)
+		xs.append("decimalpl",this.precision);
+
+	    // outputtype 0x1 = float, 0x2 = integer, 0x4 = string
+	    xs.append("outputtype",4);
+
+	    if (this.addr!=null)
+		xs.append("embedinfo type=\"1\" /");
+
+	    if (XDF_Pedantic) {
+		xs.append("datatype", 0);
+		xs.append("unittype", 0);
+		xs.append("DALINK index=\"0\" /");
+	    }
+
+	    if(size<2 || (this.datasource.isOrdinal() && this.addr==null)) {
+		genLabelsXDF(xs, size);
+	    } else {
+		this.doMathXDF(xs);
+	    }
+
+	    xs.unindent();
+	    xs.append("/XDFAXIS");
+	}
+
+	private void genLabelsXDF(XmlString xs, int size) {
+	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	    for(int i=0; i<size; i++) {
+		m.put("index",i);
+		if (size==1) {
+		    m.put("value",this.units);
+		} else if (this.precision==0) {
+		    m.put("value",String.format("%d",Math.round(convert(i))));
+		} else {
+		    m.put("value",String.format("%." + this.precision + "f",convert(i)));
+		}
+		xs.append("LABEL",m);
+	    }
+	    if (XDF_Pedantic)
+		this.doMathXDF(xs, "X");
 	}
     }
 
@@ -646,69 +719,6 @@ public class Map {
 	return out + "%%END%%\n";
     }
 
-    private static void doMath(XmlString xs) { doMath(xs,"X"); }
-    private static void doMath(XmlString xs, String eq) {
-	xs.append("MATH equation=\"" + eq + "\"");
-	xs.indent();
-	xs.append("VAR id=\"X\" /");
-	xs.unindent();
-	xs.append("/MATH");
-    }
-
-    private void oneDtoXDF(XmlString xs) {
-	int size=this.size.y;
-	Axis axis=this.y_axis;
-
-	xs.append("XDFAXIS id=\"y\" uniqueid=\"0x0\"");
-	xs.indent();
-
-	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
-	if(axis.addr!=null) {
-	    int flags = axis.sign?1:0;
-	    if (axis.type.isLE()) flags |= 2;
-	    if (flags!=0)
-		m.put("mmedtypeflags", String.format("0x%02X", flags));
-	    m.put("mmedaddress", String.format("0x%02X", axis.addr.v));
-	    m.put("mmedelementsizebits", axis.type.width()*8);
-	    m.put("mmedmajorstridebits", axis.type.width()*8);
-	} else {
-	    m.put("mmedelementsizebits", 16);
-	    m.put("mmedmajorstridebits", -32);
-	}
-	xs.append("EMBEDDEDDATA",m);
-
-	xs.append("units",axis.units);
-	xs.append("indexcount",size);
-
-	if (axis.addr!=null)
-	    xs.append("decimalpl",0);
-
-	// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-	xs.append("outputtype",4);
-
-	if (axis.addr!=null)
-	    xs.append("embedinfo type=\"1\" /");
-
-	if (XDF_Pedantic) {
-	    xs.append("datatype", 0);
-	    xs.append("unittype", 0);
-	    xs.append("DALINK index=\"0\" /");
-	}
-
-	if (axis.addr==null) {
-	    m.clear();
-	    for(int i=0; i<size; i++) {
-		m.put("index",i);
-		m.put("value",i==0?axis.units:"");
-		xs.append("LABEL",m);
-	    }
-	}
-
-	doMath(xs);
-	xs.unindent();
-	xs.append("/XDFAXIS");
-    }
-
     private void tableToXDF(XmlString xs) {
 	int flags = this.value.sign?1:0;
 	if (this.value.type.isLE()) flags |= 2;
@@ -726,7 +736,7 @@ public class Map {
 
 	this.x_axis.toXDF(xs, "x", this.size.x);
 
-	if (this.organization.is1D()) oneDtoXDF(xs);
+	if (this.organization.is1D()) this.y_axis.oneDtoXDF(xs, "y", this.size.y);
 	else this.y_axis.toXDF(xs, "y", this.size.y);
 
 	// Z AXIS
@@ -753,7 +763,7 @@ public class Map {
 
 	// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
 	xs.append("outputtype",1);
-	doMath(xs, this.value.eqXDF());
+	this.value.doMathXDF(xs);
 	xs.unindent();
 	xs.append("/XDFAXIS");
     }
@@ -780,7 +790,7 @@ public class Map {
 	    xs.append("DALINK index=\"0\" /");
 	}
 
-	doMath(xs,this.value.eqXDF());
+	this.value.doMathXDF(xs);
     }
 
     private String toStringXDF(ByteBuffer image) throws Exception {
