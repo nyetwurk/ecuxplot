@@ -168,6 +168,10 @@ ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
 install: $(INSTALL_FILES) $(PROFILES)
 	mkdir -p $(INSTALL_DIR)
 	rm -f $(INSTALL_DIR)/ECUxPlot*.jar
+	rm -f $(INSTALL_DIR)/commons-lang3-*.jar
+	rm -f $(INSTALL_DIR)/jcommon-*.jar
+	rm -f $(INSTALL_DIR)/jfreechart-*.jar
+	rm -f $(INSTALL_DIR)/opencsv-*.jar
 	install -D -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
 	install ECUxPlot.sh $(INSTALL_DIR)
 	install mapdump.sh $(INSTALL_DIR)
