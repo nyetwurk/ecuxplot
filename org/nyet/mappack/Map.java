@@ -85,15 +85,20 @@ public class Map {
     }
 
     private class DataSource extends Enm {
+	private final String[] l = {
+	    "1,2,3",		// 0
+	    "Eprom",		// 1
+	    "Eprom, add",		// 2
+	    "Eprom, subtract",	// 3
+	    "Free editable"		// 4
+	};
+
 	public DataSource(ByteBuffer b) {
 	    super(b);
-	    final String[] l = {
-		"1,2,3",		// 0
-		"Eprom",		// 1
-		"Eprom, add",		// 2
-		"Eprom, subtract",	// 3
-		"Free editable"		// 4
-	    };
+	    legend = l;
+	}
+	public DataSource() {
+	    super(1);	// eeprom is default
 	    legend = l;
 	}
 	public boolean isEeprom() {
@@ -198,54 +203,75 @@ public class Map {
 	}
     }
 
-    private class Axis extends Value {
+    private class Axis {
+        // passed
+	private int size;
+	private Dimension z_size;	/* for z axis - rows/cols */
+	private String name;
+
+	// parsed
+	public Value value;
 	public DataSource datasource;
 	public HexValue addr = null;
 	private int[] header1 = new int[2];	// unk
 	private byte header1a;
 	public boolean reciprocal = false;	// todo (find)
 	private byte[] header2 = new byte[3];
-	private int count;
+	private int header3_size;
 	private int[] header3;
 	private int header4;
-	public HexValue signature;
+	public HexValue signature = null;
 
-	public Axis(ByteBuffer b) throws ParserException {
-	    super(b);			// new Value(b)
+	private boolean isZ = false;
+
+	public Axis(ByteBuffer b, String n, int s) throws ParserException {
+	    value = new Value(b);
 	    datasource = new DataSource(b);
 	    // always read addr, so we advance pointer regardless of datasource
 	    addr = new HexValue(b);
 	    if(!datasource.isEeprom()) addr = null;
-	    type = new ValueType(b);
+	    value.type = new ValueType(b);
 	    Parse.buffer(b, header1);	// unk
 	    header1a = b.get();		// unk
 	    reciprocal = b.get()==1;
-	    precision = b.get();
+	    value.precision = b.get();
 	    Parse.buffer(b, header2);	// unk
-	    sign = (b.get()==1);
-	    count = b.getInt();		// unk
-	    header3 = new int[count/4];
+	    value.sign = (b.get()==1);
+	    header3_size = b.getInt();		// unk
+	    header3 = new int[header3_size/4];
 	    Parse.buffer(b, header3);	// unk
 	    header4 = b.getInt();		// unk
 	    signature = new HexValue(b);
 
 	    // fix precision last once we have the whole Value
-	    limitPrecision(XDF_MaxDigits);
+	    value.limitPrecision(XDF_MaxDigits);
+	    name = n;
+	    size = s;
+	}
+
+	public Axis(Value v, HexValue a, Dimension d) {
+	    value = v;
+	    datasource = new DataSource();
+	    addr = a;
+	    name = "z";
+	    size = 0;
+	    z_size = d;
+	    isZ = true;
 	}
 
 	public String toString() {
 	    String out = super.toString() + "\n";
 	    out += "\t   ds: " + datasource + "\n";
-	    out += "\t addr: " + addr + " " + type + "\n";
+	    out += "\t addr: " + addr + " " + value.type + "\n";
 	    out += "\t   h1: " + Arrays.toString(header1) + "\n";
 	    out += "\t  h1a: " + header1a + " (short)\n";
 	    out += "\tflags: ";
 	    if(reciprocal) out += "R";
-	    if(sign) out += "S";
+	    if(value.sign) out += "S";
 	    out += "\n";
-	    out += "\t prec: " + precision + " (byte)\n";
+	    out += "\t prec: " + value.precision + " (byte)\n";
 	    out += "\t   h2: " + Arrays.toString(header2) + "\n";
-	    out += "\tcount: " + count + "\n";
+	    out += "\th3_sz: " + header3_size + "\n";
 	    out += "\t   h3: " + Arrays.toString(header3) + "\n";
 	    out += "\t   h4: " + header4 + "\n";
 	    if(signature.v!=-1)
@@ -254,26 +280,29 @@ public class Map {
 	}
 
 	// Axis.toXDF()
-	public String toXDF(XmlString xs, String id, int size) {
+	public String toXDF(XmlString xs) {
 	    int xsAt=xs.length();
-	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
-	    m.put("id", id);
-	    m.put("uniqueid", "0x0");
-	    xs.append("XDFAXIS", m, false);
+
+	    if (!isZ)
+		xs.append("XDFAXIS id=\"" + this.name + "\" uniqueid=\"0x0\"");
+	    else
+		xs.append("XDFAXIS id=\"" + this.name + "\"");
+
 	    xs.indent();
-	    if(size<2 || (this.datasource.isOrdinal() && this.addr==null)) {
-		m.clear();
+
+	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	    if(this.datasource.isOrdinal()) {
 		m.put("mmedelementsizebits",16);
 		m.put("mmedmajorstridebits",-32);
 		xs.append("EMBEDDEDDATA",m);
-		xs.append("units",this.units);
-		xs.append("indexcount",size);
+		xs.append("units",this.value.units);
+		xs.append("indexcount",this.size);
 
-		if(this.precision!=2)
-		    xs.append("decimalpl",this.precision);
+		if(this.value.precision!=2)
+		    xs.append("decimalpl",this.value.precision);
 
 		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-		xs.append("outputtype",this.precision==0?2:1);
+		xs.append("outputtype",this.value.precision==0?2:1);
 
 		if (XDF_Pedantic) {
 		    xs.append("datatype",0);
@@ -281,108 +310,78 @@ public class Map {
 		    xs.append("DALINK index=\"0\" /");
 		}
 
-		genLabelsXDF(xs, size);
-	    } else if(this.addr!=null) {
-		int flags = this.sign?1:0;
-		if (this.type.isLE()) flags |= 2;
-		m.clear();
+		genLabelsXDF(xs);
+	    } else {
+		int flags = this.value.sign?1:0;
+		if (this.value.type.isLE()) flags |= 2;
 		if (flags!=0)
 		    m.put("mmedtypeflags",String.format("0x%02X", flags));
 		m.put("mmedaddress",String.format("0x%X", this.addr.v));
-		m.put("mmedelementsizebits", this.type.width()*8);
-		// weird. tunerpro puts mmedcolcount here sometimes, but not always
-		//if (flags!=0 && this.type.width()>1 && this.precision==2)
-		//    m.put("mmedcolcount", size);
-		m.put("mmedmajorstridebits", this.type.width()*8);
+		m.put("mmedelementsizebits", this.value.type.width()*8);
+
+		if (isZ) {
+		    m.put("mmedrowcount", z_size.y);
+		    if (z_size.x>1)
+			m.put("mmedcolcount", z_size.x);
+		} else {
+		    // weird. tunerpro puts mmedcolcount here sometimes, but not always
+		    /*
+		    if (flags!=0 && this.value.type.width()>1 && this.value.precision==2)
+			m.put("mmedcolcount", this.size);
+		    */
+		    m.put("mmedmajorstridebits", this.value.type.width()*8);
+		}
 		xs.append("EMBEDDEDDATA",m);
 
-		xs.append("units",this.units);
-		xs.append("indexcount",size);
+		xs.append("units",this.value.units);
+		if (this.size>0)
+		    xs.append("indexcount",this.size);
 
-		if(this.precision!=2)
-		    xs.append("decimalpl",this.precision);
+		if(this.value.precision!=2)
+		    xs.append("decimalpl",this.value.precision);
 
 		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-		if (this.precision==0)
+		if (this.value.precision==0)
 		    xs.append("outputtype",2);
 
-		xs.append("embedinfo type=\"1\" /");
+		if (!isZ)
+		    xs.append("embedinfo type=\"1\" /");
 
 		if (XDF_Pedantic) {
-		    xs.append("datatype", 0);
-		    xs.append("unittype", 0);
-		    xs.append("DALINK index=\"0\" /");
+		    if (!isZ) {
+			xs.append("datatype", 0);
+			xs.append("unittype", 0);
+			xs.append("DALINK index=\"0\" /");
+		    } else {
+			xs.append("min","0.000000");
+			if (this.value.type.width()==1)
+			    xs.append("max","255.000000");
+		    }
 		}
 
-		this.doMathXDF(xs);
+		this.value.doMathXDF(xs);
 	    }
 	    xs.unindent();
 	    xs.append("/XDFAXIS");
 	    return xs.subSequence(xsAt, xs.length()).toString();
 	}
 
-	private void oneDtoXDF(XmlString xs, String id, int size) {
-	    xs.append("XDFAXIS id=\""+id+"\" uniqueid=\"0x0\"");
-	    xs.indent();
-
+	private void genLabelsXDF(XmlString xs) {
 	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
-	    if(size<2 || (this.datasource.isOrdinal() && this.addr==null)) {
-		m.put("mmedelementsizebits", 16);
-		m.put("mmedmajorstridebits", -32);
-	    } else {
-		int flags = this.sign?1:0;
-		if (this.type.isLE()) flags |= 2;
-		if (flags!=0)
-		    m.put("mmedtypeflags", String.format("0x%02X", flags));
-		m.put("mmedaddress", String.format("0x%02X", this.addr.v));
-		m.put("mmedelementsizebits", this.type.width()*8);
-		m.put("mmedmajorstridebits", this.type.width()*8);
-	    }
-	    xs.append("EMBEDDEDDATA",m);
-
-	    xs.append("units",this.units);
-	    xs.append("indexcount",size);
-
-	    if(this.precision!=2)
-		xs.append("decimalpl",this.precision);
-
-	    // outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-	    xs.append("outputtype",4);
-
-	    if (this.addr!=null)
-		xs.append("embedinfo type=\"1\" /");
-
-	    if (XDF_Pedantic) {
-		xs.append("datatype", 0);
-		xs.append("unittype", 0);
-		xs.append("DALINK index=\"0\" /");
-	    }
-
-	    if(size<2 || (this.datasource.isOrdinal() && this.addr==null)) {
-		genLabelsXDF(xs, size);
-	    } else {
-		this.doMathXDF(xs);
-	    }
-
-	    xs.unindent();
-	    xs.append("/XDFAXIS");
-	}
-
-	private void genLabelsXDF(XmlString xs, int size) {
-	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
-	    for(int i=0; i<size; i++) {
+	    for(int i=0; i<this.size; i++) {
 		m.put("index",i);
-		if (size==1) {
-		    m.put("value",this.units);
-		} else if (this.precision==0) {
-		    m.put("value",String.format("%d",Math.round(convert(i))));
-		} else {
-		    m.put("value",String.format("%." + this.precision + "f",convert(i)));
-		}
+		if (this.size==1)
+		    m.put("value",this.value.units);
+		/*
+		else if (this.value.precision==0)
+		    m.put("value",String.format("%d",Math.round(value.convert(i))));
+		*/
+		else
+		    m.put("value",String.format("%." + this.value.precision + "f",value.convert(i)));
 		xs.append("LABEL",m);
 	    }
 	    if (XDF_Pedantic)
-		this.doMathXDF(xs, "X");
+		this.value.doMathXDF(xs, "X");
 	}
     }
 
@@ -411,6 +410,7 @@ public class Map {
     private int header7;		// unk
     public Axis x_axis;
     public Axis y_axis;
+    public Axis z_axis;
     private int header8;		// unk
     private short header8a;		// unk
     private int[] header9 = new int[8];	// unk
@@ -448,8 +448,8 @@ public class Map {
 	Parse.buffer(b, header5);	// unk
 	header6 = new HexValue(b);
 	header7 = b.getInt();
-	x_axis = new Axis(b);
-	y_axis = new Axis(b);
+	x_axis = new Axis(b, "x", size.x);
+	y_axis = new Axis(b, "y", size.y);
 	header8 = b.getInt();		// unk
 	header8a = b.getShort();	// unk
 	Parse.buffer(b, header9);	// unk
@@ -459,14 +459,15 @@ public class Map {
 	Parse.buffer(b, header10);	// unk
 	Parse.buffer(b, header11);	// unk
 	b.get(term2);
+	z_axis = new Axis(this.value, this.extent[0], this.size);
 	// System.out.println(this);
     }
 
     // generate a 1d map for an axis
     public Map(Axis axis, int size) {
 	this.extent[0] = axis.addr;
+	this.value = axis.value;
 	this.size = new Dimension(1, size);
-	this.value = axis;
     }
 
     // Map methods
@@ -497,7 +498,7 @@ public class Map {
     public static final int FORMAT_CSV = 1;
     public static final int FORMAT_OLD_XDF = 2;
     public static final int FORMAT_XDF = 3;
-    public static final boolean XDF_Pedantic = true;
+    public static final boolean XDF_Pedantic = false;
     public static final int XDF_MaxDigits = 6;	// tunerpro doesn't like > 6 digits
     public static final String XDF_LBL = "\t%06d %-17s=";
     public String toString(int format, ByteBuffer image)
@@ -520,11 +521,11 @@ public class Map {
 	row.add(this.value.type);
 	row.add(this.value.description);
 	row.add(this.value.units);
-	row.add(this.x_axis.units);
-	row.add(this.y_axis.units);
+	row.add(this.x_axis.value.units);
+	row.add(this.y_axis.value.units);
 	row.add(this.value.factor);
-	row.add(this.x_axis.factor);
-	row.add(this.y_axis.factor);
+	row.add(this.x_axis.value.factor);
+	row.add(this.y_axis.value.factor);
 	if(image!=null && image.limit()>0) {
 	    MapData mapdata = new MapData(this, image);
 	    row.add(mapdata.getMinimumValue());
@@ -610,74 +611,77 @@ public class Map {
 		this.y_axis = this.x_axis;
 		this.x_axis = tmpa;
 
+		this.x_axis.name = "x";
+		this.y_axis.name = "y";
+
 		int tmp = this.size.y;
 		this.size.y = this.size.x;
 		this.size.x = tmp;
 	    }
 	    // X (columns)
-	    if (this.x_axis.sign) flags |= 0x40;
-	    if (this.x_axis.type.isLE()) flags |= 0x100;
+	    if (this.x_axis.value.sign) flags |= 0x40;
+	    if (this.x_axis.value.type.isLE()) flags |= 0x100;
 
 	    // 300s
 	    out += String.format(XDF_LBL+"0x%X\n", off+305, "Cols",
 		this.size.x);
 	    out += String.format(XDF_LBL+"\"%s\"\n", off+320, "XUnits",
-		this.x_axis.units);
+		this.x_axis.value.units);
 	    out += String.format(XDF_LBL+"0x%X\n", off+352,
-		"XLabelType", x_axis.precision==0?2:1);
+		"XLabelType", x_axis.value.precision==0?2:1);
 
 	    if(this.x_axis.datasource.isOrdinal() && this.size.x>1) {
 		out += String.format(XDF_LBL+"%s\n", off+350, "XLabels",
 			ordinalArray(this.size.x));
 		out += String.format(XDF_LBL+"0x%X\n", off+352, "XLabelType", 2);
 	    } else if(this.x_axis.addr!=null) {
-		out += this.x_axis.eqOldXDF(off+354, "XEq");
+		out += this.x_axis.value.eqOldXDF(off+354, "XEq");
 		// 500s
 		out += String.format(XDF_LBL+"0x%X\n", off+505, "XLabelSource", 1);
 		// 600s
 		out += String.format(XDF_LBL+"0x%X\n", off+600, "XAddress",
 		    this.x_axis.addr.v);
 		out += String.format(XDF_LBL+"%d\n", off+610, "XDataSize",
-		    this.x_axis.type.width());
+		    this.x_axis.value.type.width());
 		out += String.format(XDF_LBL+"%d\n", off+620, "XAddrStep",
-		    this.x_axis.type.width());
-		if(x_axis.precision!=2) {
+		    this.x_axis.value.type.width());
+		if(x_axis.value.precision!=2) {
 		    out += String.format(XDF_LBL+"0x%X\n", off+650,
-			"XOutputDig", x_axis.precision);
+			"XOutputDig", x_axis.value.precision);
 		}
 	    }
 
 	    // Y (rows)
-	    if (this.y_axis.sign) flags |= 0x80;
-	    if (this.y_axis.type.isLE()) flags |= 0x200;
+	    if (this.y_axis.value.sign) flags |= 0x80;
+	    if (this.y_axis.value.type.isLE()) flags |= 0x200;
 
 	    // 300s
 	    out += String.format(XDF_LBL+"0x%X\n", off+300, "Rows",
 		this.size.y);
 	    out += String.format(XDF_LBL+"\"%s\"\n", off+325, "YUnits",
-		this.y_axis.units);
+		this.y_axis.value.units);
 	    // LabelType 0x1 = float, 0x2 = integer, 0x4 = string
 	    out += String.format(XDF_LBL+"0x%X\n", off+362,
-		"YLabelType", y_axis.precision==0?2:1);
+		"YLabelType", y_axis.value.precision==0?2:1);
 
 	    if(this.y_axis.datasource.isOrdinal() && this.size.y>1 ) {
 		out += String.format(XDF_LBL+"%s\n", off+360, "YLabels",
 			ordinalArray(this.size.y));
 		out += String.format(XDF_LBL+"0x%X\n", off+362, "YLabelType", 2);
 	    } else if(this.y_axis.addr!=null) {
-		out += this.y_axis.eqOldXDF(off+364, "YEq");
+		out += this.y_axis.value.eqOldXDF(off+364, "YEq");
 		// 500s
 		out += String.format(XDF_LBL+"0x%X\n", off+515, "YLabelSource", 1);
 		// 700s
 		out += String.format(XDF_LBL+"0x%X\n", off+700, "YAddress",
 		    this.y_axis.addr.v);
 		out += String.format(XDF_LBL+"%d\n", off+710, "YDataSize",
-		    this.y_axis.type.width());
+		    this.y_axis.value.type.width());
 		out += String.format(XDF_LBL+"%d\n", off+720, "YAddrStep",
-		    this.y_axis.type.width());
-		if(y_axis.precision!=2) {
+		    this.y_axis.value.type.width());
+		if(y_axis.value.precision!=2) {
 		    out += String.format(XDF_LBL+"0x%X\n", off+750,
-			"YOutputDig", y_axis.precision);
+			"YOutputDig", y_axis.value.precision);
 		}
 	    }
 	}
@@ -692,7 +696,7 @@ public class Map {
 			xaxis.toString());
 		// LabelType 0x1 = float, 0x2 = integer, 0x4 = string
 		out += String.format(XDF_LBL+"0x%X\n", off+352,
-		    "XLabelType", x_axis.precision==0?2:1);
+		    "XLabelType", x_axis.value.precision==0?2:1);
 		if(!oneD && this.y_axis.addr!=null) {
 		    MapData yaxis = new MapData(new Map(this.y_axis,
 				this.size.y), image);
@@ -711,7 +715,7 @@ public class Map {
 	if(oneD) {
 	    // LabelType 0x1 = float, 0x2 = integer, 0x4 = string
 	    out += String.format(XDF_LBL+"%s\n", off+360, "YLabels",
-		this.y_axis.units);
+		this.y_axis.value.units);
 	    out += String.format(XDF_LBL+"0x%X\n", off+362,
 		"YLabelType", 4);
 	}
@@ -729,43 +733,17 @@ public class Map {
 	    this.y_axis = this.x_axis;
 	    this.x_axis = tmpa;
 
+	    this.x_axis.name = "x";
+	    this.y_axis.name = "y";
+
 	    int tmp = this.size.y;
 	    this.size.y = this.size.x;
 	    this.size.x = tmp;
 	}
 
-	this.x_axis.toXDF(xs, "x", this.size.x);
-
-	if (this.organization.is1D()) this.y_axis.oneDtoXDF(xs, "y", this.size.y);
-	else this.y_axis.toXDF(xs, "y", this.size.y);
-
-	// Z AXIS
-	xs.append("XDFAXIS id=\"z\"");
-	xs.indent();
-
-	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
-	if (flags!=0)
-	    m.put("mmedtypeflags",String.format("0x%02X", flags));
-	m.put("mmedaddress",String.format("0x%X", this.extent[0].v));
-	m.put("mmedelementsizebits", this.value.type.width()*8);
-
-	m.put("mmedrowcount", this.size.y);
-	if(this.size.x>1)
-	    m.put("mmedcolcount", this.size.x);
-	xs.append("EMBEDDEDDATA",m);
-	xs.append("units",this.value.units);
-	xs.append("decimalpl", this.value.precision);
-
-	if (XDF_Pedantic) {
-	    xs.append("min","0.000000");
-	    xs.append("max","255.000000");
-	}
-
-	// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-	xs.append("outputtype",1);
-	this.value.doMathXDF(xs);
-	xs.unindent();
-	xs.append("/XDFAXIS");
+	this.x_axis.toXDF(xs);
+	this.y_axis.toXDF(xs);
+	this.z_axis.toXDF(xs);
     }
 
     private void constantToXDF(XmlString xs) {
@@ -777,7 +755,6 @@ public class Map {
 	    m.put("mmedtypeflags",String.format("0x%02X", flags));
 	m.put("mmedaddress",String.format("0x%X", this.extent[0].v));
 	m.put("mmedelementsizebits", this.value.type.width()*8);
-
 
 	xs.append("EMBEDDEDDATA",m);
 	xs.append("units",this.value.units);

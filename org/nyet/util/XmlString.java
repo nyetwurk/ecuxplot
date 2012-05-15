@@ -66,8 +66,7 @@ public class XmlString implements CharSequence, Appendable {
 	return this.append(tagIt(tag, value));
     }
 
-    public Appendable append(String tag, Map<String, Object> attrs) { return this.append(tag, attrs, true); }
-    public Appendable append(String tag, Map<String, Object> attrs, boolean leaf) {
+    public Appendable append(String tag, Map<String, Object> attrs) {
 	this.doIndent();
 	this.buf.append(String.format("<%s", escape(tag)));
 	for (Map.Entry<String, Object> e: attrs.entrySet()) {
@@ -75,7 +74,7 @@ public class XmlString implements CharSequence, Appendable {
 	    String v = escape(e.getValue().toString());
 	    this.buf.append(String.format(" %s=\"%s\"", k, v));
 	}
-	return this.buf.append((leaf?" />":">") + EOL);
+	return this.buf.append(" />" + EOL);
     }
 
     private Appendable doIndent() {
