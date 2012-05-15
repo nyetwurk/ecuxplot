@@ -1,4 +1,4 @@
-<!-- Written Mon May 14 20:24:48 PDT 2012 -->
+<!-- Written Mon May 14 23:51:03 PDT 2012 -->
 <XDFFORMAT version="1.50">
   <XDFHEADER>
     <fileversion>Version 1</fileversion>
@@ -90,7 +90,6 @@
     <CATEGORYMEM index="0" category="3" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D978" mmedelementsizebits="16" />
     <units>%/100hPa</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -119,6 +118,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -131,7 +131,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D958" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
       <units>%/100hPa</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -148,7 +148,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14BD6" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>% rltsol</units>
       <indexcount>12</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -161,6 +161,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14BB6" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>RPM</units>
       <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -172,7 +173,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14BEE" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="12" />
       <units>%</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -216,7 +217,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15E34" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="12" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -275,6 +276,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B7D4" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>RPM</units>
       <indexcount>12</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -287,7 +289,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B7B4" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>16</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -299,7 +301,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B7EC" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="12" />
       <units>-</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -709,7 +711,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BA66" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>% DK</units>
       <indexcount>8</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -721,7 +722,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BA86" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
       <units>kg/h</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -738,7 +739,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BB3A" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>10</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -751,6 +751,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BB26" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>10</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -762,7 +763,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BB4E" mmedelementsizebits="16" mmedrowcount="10" mmedcolcount="10" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -779,11 +780,12 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="00" />
+      <LABEL index="0" value="-" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -792,522 +794,523 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>v</units>
       <indexcount>512</indexcount>
+      <decimalpl>4</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="v" />
-      <LABEL index="1" value="" />
-      <LABEL index="2" value="" />
-      <LABEL index="3" value="" />
-      <LABEL index="4" value="" />
-      <LABEL index="5" value="" />
-      <LABEL index="6" value="" />
-      <LABEL index="7" value="" />
-      <LABEL index="8" value="" />
-      <LABEL index="9" value="" />
-      <LABEL index="10" value="" />
-      <LABEL index="11" value="" />
-      <LABEL index="12" value="" />
-      <LABEL index="13" value="" />
-      <LABEL index="14" value="" />
-      <LABEL index="15" value="" />
-      <LABEL index="16" value="" />
-      <LABEL index="17" value="" />
-      <LABEL index="18" value="" />
-      <LABEL index="19" value="" />
-      <LABEL index="20" value="" />
-      <LABEL index="21" value="" />
-      <LABEL index="22" value="" />
-      <LABEL index="23" value="" />
-      <LABEL index="24" value="" />
-      <LABEL index="25" value="" />
-      <LABEL index="26" value="" />
-      <LABEL index="27" value="" />
-      <LABEL index="28" value="" />
-      <LABEL index="29" value="" />
-      <LABEL index="30" value="" />
-      <LABEL index="31" value="" />
-      <LABEL index="32" value="" />
-      <LABEL index="33" value="" />
-      <LABEL index="34" value="" />
-      <LABEL index="35" value="" />
-      <LABEL index="36" value="" />
-      <LABEL index="37" value="" />
-      <LABEL index="38" value="" />
-      <LABEL index="39" value="" />
-      <LABEL index="40" value="" />
-      <LABEL index="41" value="" />
-      <LABEL index="42" value="" />
-      <LABEL index="43" value="" />
-      <LABEL index="44" value="" />
-      <LABEL index="45" value="" />
-      <LABEL index="46" value="" />
-      <LABEL index="47" value="" />
-      <LABEL index="48" value="" />
-      <LABEL index="49" value="" />
-      <LABEL index="50" value="" />
-      <LABEL index="51" value="" />
-      <LABEL index="52" value="" />
-      <LABEL index="53" value="" />
-      <LABEL index="54" value="" />
-      <LABEL index="55" value="" />
-      <LABEL index="56" value="" />
-      <LABEL index="57" value="" />
-      <LABEL index="58" value="" />
-      <LABEL index="59" value="" />
-      <LABEL index="60" value="" />
-      <LABEL index="61" value="" />
-      <LABEL index="62" value="" />
-      <LABEL index="63" value="" />
-      <LABEL index="64" value="" />
-      <LABEL index="65" value="" />
-      <LABEL index="66" value="" />
-      <LABEL index="67" value="" />
-      <LABEL index="68" value="" />
-      <LABEL index="69" value="" />
-      <LABEL index="70" value="" />
-      <LABEL index="71" value="" />
-      <LABEL index="72" value="" />
-      <LABEL index="73" value="" />
-      <LABEL index="74" value="" />
-      <LABEL index="75" value="" />
-      <LABEL index="76" value="" />
-      <LABEL index="77" value="" />
-      <LABEL index="78" value="" />
-      <LABEL index="79" value="" />
-      <LABEL index="80" value="" />
-      <LABEL index="81" value="" />
-      <LABEL index="82" value="" />
-      <LABEL index="83" value="" />
-      <LABEL index="84" value="" />
-      <LABEL index="85" value="" />
-      <LABEL index="86" value="" />
-      <LABEL index="87" value="" />
-      <LABEL index="88" value="" />
-      <LABEL index="89" value="" />
-      <LABEL index="90" value="" />
-      <LABEL index="91" value="" />
-      <LABEL index="92" value="" />
-      <LABEL index="93" value="" />
-      <LABEL index="94" value="" />
-      <LABEL index="95" value="" />
-      <LABEL index="96" value="" />
-      <LABEL index="97" value="" />
-      <LABEL index="98" value="" />
-      <LABEL index="99" value="" />
-      <LABEL index="100" value="" />
-      <LABEL index="101" value="" />
-      <LABEL index="102" value="" />
-      <LABEL index="103" value="" />
-      <LABEL index="104" value="" />
-      <LABEL index="105" value="" />
-      <LABEL index="106" value="" />
-      <LABEL index="107" value="" />
-      <LABEL index="108" value="" />
-      <LABEL index="109" value="" />
-      <LABEL index="110" value="" />
-      <LABEL index="111" value="" />
-      <LABEL index="112" value="" />
-      <LABEL index="113" value="" />
-      <LABEL index="114" value="" />
-      <LABEL index="115" value="" />
-      <LABEL index="116" value="" />
-      <LABEL index="117" value="" />
-      <LABEL index="118" value="" />
-      <LABEL index="119" value="" />
-      <LABEL index="120" value="" />
-      <LABEL index="121" value="" />
-      <LABEL index="122" value="" />
-      <LABEL index="123" value="" />
-      <LABEL index="124" value="" />
-      <LABEL index="125" value="" />
-      <LABEL index="126" value="" />
-      <LABEL index="127" value="" />
-      <LABEL index="128" value="" />
-      <LABEL index="129" value="" />
-      <LABEL index="130" value="" />
-      <LABEL index="131" value="" />
-      <LABEL index="132" value="" />
-      <LABEL index="133" value="" />
-      <LABEL index="134" value="" />
-      <LABEL index="135" value="" />
-      <LABEL index="136" value="" />
-      <LABEL index="137" value="" />
-      <LABEL index="138" value="" />
-      <LABEL index="139" value="" />
-      <LABEL index="140" value="" />
-      <LABEL index="141" value="" />
-      <LABEL index="142" value="" />
-      <LABEL index="143" value="" />
-      <LABEL index="144" value="" />
-      <LABEL index="145" value="" />
-      <LABEL index="146" value="" />
-      <LABEL index="147" value="" />
-      <LABEL index="148" value="" />
-      <LABEL index="149" value="" />
-      <LABEL index="150" value="" />
-      <LABEL index="151" value="" />
-      <LABEL index="152" value="" />
-      <LABEL index="153" value="" />
-      <LABEL index="154" value="" />
-      <LABEL index="155" value="" />
-      <LABEL index="156" value="" />
-      <LABEL index="157" value="" />
-      <LABEL index="158" value="" />
-      <LABEL index="159" value="" />
-      <LABEL index="160" value="" />
-      <LABEL index="161" value="" />
-      <LABEL index="162" value="" />
-      <LABEL index="163" value="" />
-      <LABEL index="164" value="" />
-      <LABEL index="165" value="" />
-      <LABEL index="166" value="" />
-      <LABEL index="167" value="" />
-      <LABEL index="168" value="" />
-      <LABEL index="169" value="" />
-      <LABEL index="170" value="" />
-      <LABEL index="171" value="" />
-      <LABEL index="172" value="" />
-      <LABEL index="173" value="" />
-      <LABEL index="174" value="" />
-      <LABEL index="175" value="" />
-      <LABEL index="176" value="" />
-      <LABEL index="177" value="" />
-      <LABEL index="178" value="" />
-      <LABEL index="179" value="" />
-      <LABEL index="180" value="" />
-      <LABEL index="181" value="" />
-      <LABEL index="182" value="" />
-      <LABEL index="183" value="" />
-      <LABEL index="184" value="" />
-      <LABEL index="185" value="" />
-      <LABEL index="186" value="" />
-      <LABEL index="187" value="" />
-      <LABEL index="188" value="" />
-      <LABEL index="189" value="" />
-      <LABEL index="190" value="" />
-      <LABEL index="191" value="" />
-      <LABEL index="192" value="" />
-      <LABEL index="193" value="" />
-      <LABEL index="194" value="" />
-      <LABEL index="195" value="" />
-      <LABEL index="196" value="" />
-      <LABEL index="197" value="" />
-      <LABEL index="198" value="" />
-      <LABEL index="199" value="" />
-      <LABEL index="200" value="" />
-      <LABEL index="201" value="" />
-      <LABEL index="202" value="" />
-      <LABEL index="203" value="" />
-      <LABEL index="204" value="" />
-      <LABEL index="205" value="" />
-      <LABEL index="206" value="" />
-      <LABEL index="207" value="" />
-      <LABEL index="208" value="" />
-      <LABEL index="209" value="" />
-      <LABEL index="210" value="" />
-      <LABEL index="211" value="" />
-      <LABEL index="212" value="" />
-      <LABEL index="213" value="" />
-      <LABEL index="214" value="" />
-      <LABEL index="215" value="" />
-      <LABEL index="216" value="" />
-      <LABEL index="217" value="" />
-      <LABEL index="218" value="" />
-      <LABEL index="219" value="" />
-      <LABEL index="220" value="" />
-      <LABEL index="221" value="" />
-      <LABEL index="222" value="" />
-      <LABEL index="223" value="" />
-      <LABEL index="224" value="" />
-      <LABEL index="225" value="" />
-      <LABEL index="226" value="" />
-      <LABEL index="227" value="" />
-      <LABEL index="228" value="" />
-      <LABEL index="229" value="" />
-      <LABEL index="230" value="" />
-      <LABEL index="231" value="" />
-      <LABEL index="232" value="" />
-      <LABEL index="233" value="" />
-      <LABEL index="234" value="" />
-      <LABEL index="235" value="" />
-      <LABEL index="236" value="" />
-      <LABEL index="237" value="" />
-      <LABEL index="238" value="" />
-      <LABEL index="239" value="" />
-      <LABEL index="240" value="" />
-      <LABEL index="241" value="" />
-      <LABEL index="242" value="" />
-      <LABEL index="243" value="" />
-      <LABEL index="244" value="" />
-      <LABEL index="245" value="" />
-      <LABEL index="246" value="" />
-      <LABEL index="247" value="" />
-      <LABEL index="248" value="" />
-      <LABEL index="249" value="" />
-      <LABEL index="250" value="" />
-      <LABEL index="251" value="" />
-      <LABEL index="252" value="" />
-      <LABEL index="253" value="" />
-      <LABEL index="254" value="" />
-      <LABEL index="255" value="" />
-      <LABEL index="256" value="" />
-      <LABEL index="257" value="" />
-      <LABEL index="258" value="" />
-      <LABEL index="259" value="" />
-      <LABEL index="260" value="" />
-      <LABEL index="261" value="" />
-      <LABEL index="262" value="" />
-      <LABEL index="263" value="" />
-      <LABEL index="264" value="" />
-      <LABEL index="265" value="" />
-      <LABEL index="266" value="" />
-      <LABEL index="267" value="" />
-      <LABEL index="268" value="" />
-      <LABEL index="269" value="" />
-      <LABEL index="270" value="" />
-      <LABEL index="271" value="" />
-      <LABEL index="272" value="" />
-      <LABEL index="273" value="" />
-      <LABEL index="274" value="" />
-      <LABEL index="275" value="" />
-      <LABEL index="276" value="" />
-      <LABEL index="277" value="" />
-      <LABEL index="278" value="" />
-      <LABEL index="279" value="" />
-      <LABEL index="280" value="" />
-      <LABEL index="281" value="" />
-      <LABEL index="282" value="" />
-      <LABEL index="283" value="" />
-      <LABEL index="284" value="" />
-      <LABEL index="285" value="" />
-      <LABEL index="286" value="" />
-      <LABEL index="287" value="" />
-      <LABEL index="288" value="" />
-      <LABEL index="289" value="" />
-      <LABEL index="290" value="" />
-      <LABEL index="291" value="" />
-      <LABEL index="292" value="" />
-      <LABEL index="293" value="" />
-      <LABEL index="294" value="" />
-      <LABEL index="295" value="" />
-      <LABEL index="296" value="" />
-      <LABEL index="297" value="" />
-      <LABEL index="298" value="" />
-      <LABEL index="299" value="" />
-      <LABEL index="300" value="" />
-      <LABEL index="301" value="" />
-      <LABEL index="302" value="" />
-      <LABEL index="303" value="" />
-      <LABEL index="304" value="" />
-      <LABEL index="305" value="" />
-      <LABEL index="306" value="" />
-      <LABEL index="307" value="" />
-      <LABEL index="308" value="" />
-      <LABEL index="309" value="" />
-      <LABEL index="310" value="" />
-      <LABEL index="311" value="" />
-      <LABEL index="312" value="" />
-      <LABEL index="313" value="" />
-      <LABEL index="314" value="" />
-      <LABEL index="315" value="" />
-      <LABEL index="316" value="" />
-      <LABEL index="317" value="" />
-      <LABEL index="318" value="" />
-      <LABEL index="319" value="" />
-      <LABEL index="320" value="" />
-      <LABEL index="321" value="" />
-      <LABEL index="322" value="" />
-      <LABEL index="323" value="" />
-      <LABEL index="324" value="" />
-      <LABEL index="325" value="" />
-      <LABEL index="326" value="" />
-      <LABEL index="327" value="" />
-      <LABEL index="328" value="" />
-      <LABEL index="329" value="" />
-      <LABEL index="330" value="" />
-      <LABEL index="331" value="" />
-      <LABEL index="332" value="" />
-      <LABEL index="333" value="" />
-      <LABEL index="334" value="" />
-      <LABEL index="335" value="" />
-      <LABEL index="336" value="" />
-      <LABEL index="337" value="" />
-      <LABEL index="338" value="" />
-      <LABEL index="339" value="" />
-      <LABEL index="340" value="" />
-      <LABEL index="341" value="" />
-      <LABEL index="342" value="" />
-      <LABEL index="343" value="" />
-      <LABEL index="344" value="" />
-      <LABEL index="345" value="" />
-      <LABEL index="346" value="" />
-      <LABEL index="347" value="" />
-      <LABEL index="348" value="" />
-      <LABEL index="349" value="" />
-      <LABEL index="350" value="" />
-      <LABEL index="351" value="" />
-      <LABEL index="352" value="" />
-      <LABEL index="353" value="" />
-      <LABEL index="354" value="" />
-      <LABEL index="355" value="" />
-      <LABEL index="356" value="" />
-      <LABEL index="357" value="" />
-      <LABEL index="358" value="" />
-      <LABEL index="359" value="" />
-      <LABEL index="360" value="" />
-      <LABEL index="361" value="" />
-      <LABEL index="362" value="" />
-      <LABEL index="363" value="" />
-      <LABEL index="364" value="" />
-      <LABEL index="365" value="" />
-      <LABEL index="366" value="" />
-      <LABEL index="367" value="" />
-      <LABEL index="368" value="" />
-      <LABEL index="369" value="" />
-      <LABEL index="370" value="" />
-      <LABEL index="371" value="" />
-      <LABEL index="372" value="" />
-      <LABEL index="373" value="" />
-      <LABEL index="374" value="" />
-      <LABEL index="375" value="" />
-      <LABEL index="376" value="" />
-      <LABEL index="377" value="" />
-      <LABEL index="378" value="" />
-      <LABEL index="379" value="" />
-      <LABEL index="380" value="" />
-      <LABEL index="381" value="" />
-      <LABEL index="382" value="" />
-      <LABEL index="383" value="" />
-      <LABEL index="384" value="" />
-      <LABEL index="385" value="" />
-      <LABEL index="386" value="" />
-      <LABEL index="387" value="" />
-      <LABEL index="388" value="" />
-      <LABEL index="389" value="" />
-      <LABEL index="390" value="" />
-      <LABEL index="391" value="" />
-      <LABEL index="392" value="" />
-      <LABEL index="393" value="" />
-      <LABEL index="394" value="" />
-      <LABEL index="395" value="" />
-      <LABEL index="396" value="" />
-      <LABEL index="397" value="" />
-      <LABEL index="398" value="" />
-      <LABEL index="399" value="" />
-      <LABEL index="400" value="" />
-      <LABEL index="401" value="" />
-      <LABEL index="402" value="" />
-      <LABEL index="403" value="" />
-      <LABEL index="404" value="" />
-      <LABEL index="405" value="" />
-      <LABEL index="406" value="" />
-      <LABEL index="407" value="" />
-      <LABEL index="408" value="" />
-      <LABEL index="409" value="" />
-      <LABEL index="410" value="" />
-      <LABEL index="411" value="" />
-      <LABEL index="412" value="" />
-      <LABEL index="413" value="" />
-      <LABEL index="414" value="" />
-      <LABEL index="415" value="" />
-      <LABEL index="416" value="" />
-      <LABEL index="417" value="" />
-      <LABEL index="418" value="" />
-      <LABEL index="419" value="" />
-      <LABEL index="420" value="" />
-      <LABEL index="421" value="" />
-      <LABEL index="422" value="" />
-      <LABEL index="423" value="" />
-      <LABEL index="424" value="" />
-      <LABEL index="425" value="" />
-      <LABEL index="426" value="" />
-      <LABEL index="427" value="" />
-      <LABEL index="428" value="" />
-      <LABEL index="429" value="" />
-      <LABEL index="430" value="" />
-      <LABEL index="431" value="" />
-      <LABEL index="432" value="" />
-      <LABEL index="433" value="" />
-      <LABEL index="434" value="" />
-      <LABEL index="435" value="" />
-      <LABEL index="436" value="" />
-      <LABEL index="437" value="" />
-      <LABEL index="438" value="" />
-      <LABEL index="439" value="" />
-      <LABEL index="440" value="" />
-      <LABEL index="441" value="" />
-      <LABEL index="442" value="" />
-      <LABEL index="443" value="" />
-      <LABEL index="444" value="" />
-      <LABEL index="445" value="" />
-      <LABEL index="446" value="" />
-      <LABEL index="447" value="" />
-      <LABEL index="448" value="" />
-      <LABEL index="449" value="" />
-      <LABEL index="450" value="" />
-      <LABEL index="451" value="" />
-      <LABEL index="452" value="" />
-      <LABEL index="453" value="" />
-      <LABEL index="454" value="" />
-      <LABEL index="455" value="" />
-      <LABEL index="456" value="" />
-      <LABEL index="457" value="" />
-      <LABEL index="458" value="" />
-      <LABEL index="459" value="" />
-      <LABEL index="460" value="" />
-      <LABEL index="461" value="" />
-      <LABEL index="462" value="" />
-      <LABEL index="463" value="" />
-      <LABEL index="464" value="" />
-      <LABEL index="465" value="" />
-      <LABEL index="466" value="" />
-      <LABEL index="467" value="" />
-      <LABEL index="468" value="" />
-      <LABEL index="469" value="" />
-      <LABEL index="470" value="" />
-      <LABEL index="471" value="" />
-      <LABEL index="472" value="" />
-      <LABEL index="473" value="" />
-      <LABEL index="474" value="" />
-      <LABEL index="475" value="" />
-      <LABEL index="476" value="" />
-      <LABEL index="477" value="" />
-      <LABEL index="478" value="" />
-      <LABEL index="479" value="" />
-      <LABEL index="480" value="" />
-      <LABEL index="481" value="" />
-      <LABEL index="482" value="" />
-      <LABEL index="483" value="" />
-      <LABEL index="484" value="" />
-      <LABEL index="485" value="" />
-      <LABEL index="486" value="" />
-      <LABEL index="487" value="" />
-      <LABEL index="488" value="" />
-      <LABEL index="489" value="" />
-      <LABEL index="490" value="" />
-      <LABEL index="491" value="" />
-      <LABEL index="492" value="" />
-      <LABEL index="493" value="" />
-      <LABEL index="494" value="" />
-      <LABEL index="495" value="" />
-      <LABEL index="496" value="" />
-      <LABEL index="497" value="" />
-      <LABEL index="498" value="" />
-      <LABEL index="499" value="" />
-      <LABEL index="500" value="" />
-      <LABEL index="501" value="" />
-      <LABEL index="502" value="" />
-      <LABEL index="503" value="" />
-      <LABEL index="504" value="" />
-      <LABEL index="505" value="" />
-      <LABEL index="506" value="" />
-      <LABEL index="507" value="" />
-      <LABEL index="508" value="" />
-      <LABEL index="509" value="" />
-      <LABEL index="510" value="" />
-      <LABEL index="511" value="" />
+      <LABEL index="0" value="0.0000" />
+      <LABEL index="1" value="0.0098" />
+      <LABEL index="2" value="0.0195" />
+      <LABEL index="3" value="0.0293" />
+      <LABEL index="4" value="0.0391" />
+      <LABEL index="5" value="0.0488" />
+      <LABEL index="6" value="0.0586" />
+      <LABEL index="7" value="0.0684" />
+      <LABEL index="8" value="0.0781" />
+      <LABEL index="9" value="0.0879" />
+      <LABEL index="10" value="0.0977" />
+      <LABEL index="11" value="0.1074" />
+      <LABEL index="12" value="0.1172" />
+      <LABEL index="13" value="0.1270" />
+      <LABEL index="14" value="0.1367" />
+      <LABEL index="15" value="0.1465" />
+      <LABEL index="16" value="0.1563" />
+      <LABEL index="17" value="0.1660" />
+      <LABEL index="18" value="0.1758" />
+      <LABEL index="19" value="0.1856" />
+      <LABEL index="20" value="0.1953" />
+      <LABEL index="21" value="0.2051" />
+      <LABEL index="22" value="0.2149" />
+      <LABEL index="23" value="0.2246" />
+      <LABEL index="24" value="0.2344" />
+      <LABEL index="25" value="0.2442" />
+      <LABEL index="26" value="0.2539" />
+      <LABEL index="27" value="0.2637" />
+      <LABEL index="28" value="0.2734" />
+      <LABEL index="29" value="0.2832" />
+      <LABEL index="30" value="0.2930" />
+      <LABEL index="31" value="0.3027" />
+      <LABEL index="32" value="0.3125" />
+      <LABEL index="33" value="0.3223" />
+      <LABEL index="34" value="0.3320" />
+      <LABEL index="35" value="0.3418" />
+      <LABEL index="36" value="0.3516" />
+      <LABEL index="37" value="0.3613" />
+      <LABEL index="38" value="0.3711" />
+      <LABEL index="39" value="0.3809" />
+      <LABEL index="40" value="0.3906" />
+      <LABEL index="41" value="0.4004" />
+      <LABEL index="42" value="0.4102" />
+      <LABEL index="43" value="0.4199" />
+      <LABEL index="44" value="0.4297" />
+      <LABEL index="45" value="0.4395" />
+      <LABEL index="46" value="0.4492" />
+      <LABEL index="47" value="0.4590" />
+      <LABEL index="48" value="0.4688" />
+      <LABEL index="49" value="0.4785" />
+      <LABEL index="50" value="0.4883" />
+      <LABEL index="51" value="0.4981" />
+      <LABEL index="52" value="0.5078" />
+      <LABEL index="53" value="0.5176" />
+      <LABEL index="54" value="0.5274" />
+      <LABEL index="55" value="0.5371" />
+      <LABEL index="56" value="0.5469" />
+      <LABEL index="57" value="0.5567" />
+      <LABEL index="58" value="0.5664" />
+      <LABEL index="59" value="0.5762" />
+      <LABEL index="60" value="0.5860" />
+      <LABEL index="61" value="0.5957" />
+      <LABEL index="62" value="0.6055" />
+      <LABEL index="63" value="0.6153" />
+      <LABEL index="64" value="0.6250" />
+      <LABEL index="65" value="0.6348" />
+      <LABEL index="66" value="0.6446" />
+      <LABEL index="67" value="0.6543" />
+      <LABEL index="68" value="0.6641" />
+      <LABEL index="69" value="0.6739" />
+      <LABEL index="70" value="0.6836" />
+      <LABEL index="71" value="0.6934" />
+      <LABEL index="72" value="0.7032" />
+      <LABEL index="73" value="0.7129" />
+      <LABEL index="74" value="0.7227" />
+      <LABEL index="75" value="0.7325" />
+      <LABEL index="76" value="0.7422" />
+      <LABEL index="77" value="0.7520" />
+      <LABEL index="78" value="0.7617" />
+      <LABEL index="79" value="0.7715" />
+      <LABEL index="80" value="0.7813" />
+      <LABEL index="81" value="0.7910" />
+      <LABEL index="82" value="0.8008" />
+      <LABEL index="83" value="0.8106" />
+      <LABEL index="84" value="0.8203" />
+      <LABEL index="85" value="0.8301" />
+      <LABEL index="86" value="0.8399" />
+      <LABEL index="87" value="0.8496" />
+      <LABEL index="88" value="0.8594" />
+      <LABEL index="89" value="0.8692" />
+      <LABEL index="90" value="0.8789" />
+      <LABEL index="91" value="0.8887" />
+      <LABEL index="92" value="0.8985" />
+      <LABEL index="93" value="0.9082" />
+      <LABEL index="94" value="0.9180" />
+      <LABEL index="95" value="0.9278" />
+      <LABEL index="96" value="0.9375" />
+      <LABEL index="97" value="0.9473" />
+      <LABEL index="98" value="0.9571" />
+      <LABEL index="99" value="0.9668" />
+      <LABEL index="100" value="0.9766" />
+      <LABEL index="101" value="0.9864" />
+      <LABEL index="102" value="0.9961" />
+      <LABEL index="103" value="1.0059" />
+      <LABEL index="104" value="1.0157" />
+      <LABEL index="105" value="1.0254" />
+      <LABEL index="106" value="1.0352" />
+      <LABEL index="107" value="1.0450" />
+      <LABEL index="108" value="1.0547" />
+      <LABEL index="109" value="1.0645" />
+      <LABEL index="110" value="1.0743" />
+      <LABEL index="111" value="1.0840" />
+      <LABEL index="112" value="1.0938" />
+      <LABEL index="113" value="1.1036" />
+      <LABEL index="114" value="1.1133" />
+      <LABEL index="115" value="1.1231" />
+      <LABEL index="116" value="1.1329" />
+      <LABEL index="117" value="1.1426" />
+      <LABEL index="118" value="1.1524" />
+      <LABEL index="119" value="1.1622" />
+      <LABEL index="120" value="1.1719" />
+      <LABEL index="121" value="1.1817" />
+      <LABEL index="122" value="1.1915" />
+      <LABEL index="123" value="1.2012" />
+      <LABEL index="124" value="1.2110" />
+      <LABEL index="125" value="1.2208" />
+      <LABEL index="126" value="1.2305" />
+      <LABEL index="127" value="1.2403" />
+      <LABEL index="128" value="1.2500" />
+      <LABEL index="129" value="1.2598" />
+      <LABEL index="130" value="1.2696" />
+      <LABEL index="131" value="1.2793" />
+      <LABEL index="132" value="1.2891" />
+      <LABEL index="133" value="1.2989" />
+      <LABEL index="134" value="1.3086" />
+      <LABEL index="135" value="1.3184" />
+      <LABEL index="136" value="1.3282" />
+      <LABEL index="137" value="1.3379" />
+      <LABEL index="138" value="1.3477" />
+      <LABEL index="139" value="1.3575" />
+      <LABEL index="140" value="1.3672" />
+      <LABEL index="141" value="1.3770" />
+      <LABEL index="142" value="1.3868" />
+      <LABEL index="143" value="1.3965" />
+      <LABEL index="144" value="1.4063" />
+      <LABEL index="145" value="1.4161" />
+      <LABEL index="146" value="1.4258" />
+      <LABEL index="147" value="1.4356" />
+      <LABEL index="148" value="1.4454" />
+      <LABEL index="149" value="1.4551" />
+      <LABEL index="150" value="1.4649" />
+      <LABEL index="151" value="1.4747" />
+      <LABEL index="152" value="1.4844" />
+      <LABEL index="153" value="1.4942" />
+      <LABEL index="154" value="1.5040" />
+      <LABEL index="155" value="1.5137" />
+      <LABEL index="156" value="1.5235" />
+      <LABEL index="157" value="1.5333" />
+      <LABEL index="158" value="1.5430" />
+      <LABEL index="159" value="1.5528" />
+      <LABEL index="160" value="1.5626" />
+      <LABEL index="161" value="1.5723" />
+      <LABEL index="162" value="1.5821" />
+      <LABEL index="163" value="1.5919" />
+      <LABEL index="164" value="1.6016" />
+      <LABEL index="165" value="1.6114" />
+      <LABEL index="166" value="1.6212" />
+      <LABEL index="167" value="1.6309" />
+      <LABEL index="168" value="1.6407" />
+      <LABEL index="169" value="1.6505" />
+      <LABEL index="170" value="1.6602" />
+      <LABEL index="171" value="1.6700" />
+      <LABEL index="172" value="1.6798" />
+      <LABEL index="173" value="1.6895" />
+      <LABEL index="174" value="1.6993" />
+      <LABEL index="175" value="1.7091" />
+      <LABEL index="176" value="1.7188" />
+      <LABEL index="177" value="1.7286" />
+      <LABEL index="178" value="1.7383" />
+      <LABEL index="179" value="1.7481" />
+      <LABEL index="180" value="1.7579" />
+      <LABEL index="181" value="1.7676" />
+      <LABEL index="182" value="1.7774" />
+      <LABEL index="183" value="1.7872" />
+      <LABEL index="184" value="1.7969" />
+      <LABEL index="185" value="1.8067" />
+      <LABEL index="186" value="1.8165" />
+      <LABEL index="187" value="1.8262" />
+      <LABEL index="188" value="1.8360" />
+      <LABEL index="189" value="1.8458" />
+      <LABEL index="190" value="1.8555" />
+      <LABEL index="191" value="1.8653" />
+      <LABEL index="192" value="1.8751" />
+      <LABEL index="193" value="1.8848" />
+      <LABEL index="194" value="1.8946" />
+      <LABEL index="195" value="1.9044" />
+      <LABEL index="196" value="1.9141" />
+      <LABEL index="197" value="1.9239" />
+      <LABEL index="198" value="1.9337" />
+      <LABEL index="199" value="1.9434" />
+      <LABEL index="200" value="1.9532" />
+      <LABEL index="201" value="1.9630" />
+      <LABEL index="202" value="1.9727" />
+      <LABEL index="203" value="1.9825" />
+      <LABEL index="204" value="1.9923" />
+      <LABEL index="205" value="2.0020" />
+      <LABEL index="206" value="2.0118" />
+      <LABEL index="207" value="2.0216" />
+      <LABEL index="208" value="2.0313" />
+      <LABEL index="209" value="2.0411" />
+      <LABEL index="210" value="2.0509" />
+      <LABEL index="211" value="2.0606" />
+      <LABEL index="212" value="2.0704" />
+      <LABEL index="213" value="2.0802" />
+      <LABEL index="214" value="2.0899" />
+      <LABEL index="215" value="2.0997" />
+      <LABEL index="216" value="2.1095" />
+      <LABEL index="217" value="2.1192" />
+      <LABEL index="218" value="2.1290" />
+      <LABEL index="219" value="2.1388" />
+      <LABEL index="220" value="2.1485" />
+      <LABEL index="221" value="2.1583" />
+      <LABEL index="222" value="2.1681" />
+      <LABEL index="223" value="2.1778" />
+      <LABEL index="224" value="2.1876" />
+      <LABEL index="225" value="2.1974" />
+      <LABEL index="226" value="2.2071" />
+      <LABEL index="227" value="2.2169" />
+      <LABEL index="228" value="2.2266" />
+      <LABEL index="229" value="2.2364" />
+      <LABEL index="230" value="2.2462" />
+      <LABEL index="231" value="2.2559" />
+      <LABEL index="232" value="2.2657" />
+      <LABEL index="233" value="2.2755" />
+      <LABEL index="234" value="2.2852" />
+      <LABEL index="235" value="2.2950" />
+      <LABEL index="236" value="2.3048" />
+      <LABEL index="237" value="2.3145" />
+      <LABEL index="238" value="2.3243" />
+      <LABEL index="239" value="2.3341" />
+      <LABEL index="240" value="2.3438" />
+      <LABEL index="241" value="2.3536" />
+      <LABEL index="242" value="2.3634" />
+      <LABEL index="243" value="2.3731" />
+      <LABEL index="244" value="2.3829" />
+      <LABEL index="245" value="2.3927" />
+      <LABEL index="246" value="2.4024" />
+      <LABEL index="247" value="2.4122" />
+      <LABEL index="248" value="2.4220" />
+      <LABEL index="249" value="2.4317" />
+      <LABEL index="250" value="2.4415" />
+      <LABEL index="251" value="2.4513" />
+      <LABEL index="252" value="2.4610" />
+      <LABEL index="253" value="2.4708" />
+      <LABEL index="254" value="2.4806" />
+      <LABEL index="255" value="2.4903" />
+      <LABEL index="256" value="2.5001" />
+      <LABEL index="257" value="2.5099" />
+      <LABEL index="258" value="2.5196" />
+      <LABEL index="259" value="2.5294" />
+      <LABEL index="260" value="2.5392" />
+      <LABEL index="261" value="2.5489" />
+      <LABEL index="262" value="2.5587" />
+      <LABEL index="263" value="2.5685" />
+      <LABEL index="264" value="2.5782" />
+      <LABEL index="265" value="2.5880" />
+      <LABEL index="266" value="2.5978" />
+      <LABEL index="267" value="2.6075" />
+      <LABEL index="268" value="2.6173" />
+      <LABEL index="269" value="2.6271" />
+      <LABEL index="270" value="2.6368" />
+      <LABEL index="271" value="2.6466" />
+      <LABEL index="272" value="2.6564" />
+      <LABEL index="273" value="2.6661" />
+      <LABEL index="274" value="2.6759" />
+      <LABEL index="275" value="2.6857" />
+      <LABEL index="276" value="2.6954" />
+      <LABEL index="277" value="2.7052" />
+      <LABEL index="278" value="2.7149" />
+      <LABEL index="279" value="2.7247" />
+      <LABEL index="280" value="2.7345" />
+      <LABEL index="281" value="2.7442" />
+      <LABEL index="282" value="2.7540" />
+      <LABEL index="283" value="2.7638" />
+      <LABEL index="284" value="2.7735" />
+      <LABEL index="285" value="2.7833" />
+      <LABEL index="286" value="2.7931" />
+      <LABEL index="287" value="2.8028" />
+      <LABEL index="288" value="2.8126" />
+      <LABEL index="289" value="2.8224" />
+      <LABEL index="290" value="2.8321" />
+      <LABEL index="291" value="2.8419" />
+      <LABEL index="292" value="2.8517" />
+      <LABEL index="293" value="2.8614" />
+      <LABEL index="294" value="2.8712" />
+      <LABEL index="295" value="2.8810" />
+      <LABEL index="296" value="2.8907" />
+      <LABEL index="297" value="2.9005" />
+      <LABEL index="298" value="2.9103" />
+      <LABEL index="299" value="2.9200" />
+      <LABEL index="300" value="2.9298" />
+      <LABEL index="301" value="2.9396" />
+      <LABEL index="302" value="2.9493" />
+      <LABEL index="303" value="2.9591" />
+      <LABEL index="304" value="2.9689" />
+      <LABEL index="305" value="2.9786" />
+      <LABEL index="306" value="2.9884" />
+      <LABEL index="307" value="2.9982" />
+      <LABEL index="308" value="3.0079" />
+      <LABEL index="309" value="3.0177" />
+      <LABEL index="310" value="3.0275" />
+      <LABEL index="311" value="3.0372" />
+      <LABEL index="312" value="3.0470" />
+      <LABEL index="313" value="3.0568" />
+      <LABEL index="314" value="3.0665" />
+      <LABEL index="315" value="3.0763" />
+      <LABEL index="316" value="3.0861" />
+      <LABEL index="317" value="3.0958" />
+      <LABEL index="318" value="3.1056" />
+      <LABEL index="319" value="3.1154" />
+      <LABEL index="320" value="3.1251" />
+      <LABEL index="321" value="3.1349" />
+      <LABEL index="322" value="3.1447" />
+      <LABEL index="323" value="3.1544" />
+      <LABEL index="324" value="3.1642" />
+      <LABEL index="325" value="3.1740" />
+      <LABEL index="326" value="3.1837" />
+      <LABEL index="327" value="3.1935" />
+      <LABEL index="328" value="3.2032" />
+      <LABEL index="329" value="3.2130" />
+      <LABEL index="330" value="3.2228" />
+      <LABEL index="331" value="3.2325" />
+      <LABEL index="332" value="3.2423" />
+      <LABEL index="333" value="3.2521" />
+      <LABEL index="334" value="3.2618" />
+      <LABEL index="335" value="3.2716" />
+      <LABEL index="336" value="3.2814" />
+      <LABEL index="337" value="3.2911" />
+      <LABEL index="338" value="3.3009" />
+      <LABEL index="339" value="3.3107" />
+      <LABEL index="340" value="3.3204" />
+      <LABEL index="341" value="3.3302" />
+      <LABEL index="342" value="3.3400" />
+      <LABEL index="343" value="3.3497" />
+      <LABEL index="344" value="3.3595" />
+      <LABEL index="345" value="3.3693" />
+      <LABEL index="346" value="3.3790" />
+      <LABEL index="347" value="3.3888" />
+      <LABEL index="348" value="3.3986" />
+      <LABEL index="349" value="3.4083" />
+      <LABEL index="350" value="3.4181" />
+      <LABEL index="351" value="3.4279" />
+      <LABEL index="352" value="3.4376" />
+      <LABEL index="353" value="3.4474" />
+      <LABEL index="354" value="3.4572" />
+      <LABEL index="355" value="3.4669" />
+      <LABEL index="356" value="3.4767" />
+      <LABEL index="357" value="3.4865" />
+      <LABEL index="358" value="3.4962" />
+      <LABEL index="359" value="3.5060" />
+      <LABEL index="360" value="3.5158" />
+      <LABEL index="361" value="3.5255" />
+      <LABEL index="362" value="3.5353" />
+      <LABEL index="363" value="3.5451" />
+      <LABEL index="364" value="3.5548" />
+      <LABEL index="365" value="3.5646" />
+      <LABEL index="366" value="3.5744" />
+      <LABEL index="367" value="3.5841" />
+      <LABEL index="368" value="3.5939" />
+      <LABEL index="369" value="3.6037" />
+      <LABEL index="370" value="3.6134" />
+      <LABEL index="371" value="3.6232" />
+      <LABEL index="372" value="3.6330" />
+      <LABEL index="373" value="3.6427" />
+      <LABEL index="374" value="3.6525" />
+      <LABEL index="375" value="3.6623" />
+      <LABEL index="376" value="3.6720" />
+      <LABEL index="377" value="3.6818" />
+      <LABEL index="378" value="3.6915" />
+      <LABEL index="379" value="3.7013" />
+      <LABEL index="380" value="3.7111" />
+      <LABEL index="381" value="3.7208" />
+      <LABEL index="382" value="3.7306" />
+      <LABEL index="383" value="3.7404" />
+      <LABEL index="384" value="3.7501" />
+      <LABEL index="385" value="3.7599" />
+      <LABEL index="386" value="3.7697" />
+      <LABEL index="387" value="3.7794" />
+      <LABEL index="388" value="3.7892" />
+      <LABEL index="389" value="3.7990" />
+      <LABEL index="390" value="3.8087" />
+      <LABEL index="391" value="3.8185" />
+      <LABEL index="392" value="3.8283" />
+      <LABEL index="393" value="3.8380" />
+      <LABEL index="394" value="3.8478" />
+      <LABEL index="395" value="3.8576" />
+      <LABEL index="396" value="3.8673" />
+      <LABEL index="397" value="3.8771" />
+      <LABEL index="398" value="3.8869" />
+      <LABEL index="399" value="3.8966" />
+      <LABEL index="400" value="3.9064" />
+      <LABEL index="401" value="3.9162" />
+      <LABEL index="402" value="3.9259" />
+      <LABEL index="403" value="3.9357" />
+      <LABEL index="404" value="3.9455" />
+      <LABEL index="405" value="3.9552" />
+      <LABEL index="406" value="3.9650" />
+      <LABEL index="407" value="3.9748" />
+      <LABEL index="408" value="3.9845" />
+      <LABEL index="409" value="3.9943" />
+      <LABEL index="410" value="4.0041" />
+      <LABEL index="411" value="4.0138" />
+      <LABEL index="412" value="4.0236" />
+      <LABEL index="413" value="4.0334" />
+      <LABEL index="414" value="4.0431" />
+      <LABEL index="415" value="4.0529" />
+      <LABEL index="416" value="4.0627" />
+      <LABEL index="417" value="4.0724" />
+      <LABEL index="418" value="4.0822" />
+      <LABEL index="419" value="4.0920" />
+      <LABEL index="420" value="4.1017" />
+      <LABEL index="421" value="4.1115" />
+      <LABEL index="422" value="4.1213" />
+      <LABEL index="423" value="4.1310" />
+      <LABEL index="424" value="4.1408" />
+      <LABEL index="425" value="4.1506" />
+      <LABEL index="426" value="4.1603" />
+      <LABEL index="427" value="4.1701" />
+      <LABEL index="428" value="4.1798" />
+      <LABEL index="429" value="4.1896" />
+      <LABEL index="430" value="4.1994" />
+      <LABEL index="431" value="4.2091" />
+      <LABEL index="432" value="4.2189" />
+      <LABEL index="433" value="4.2287" />
+      <LABEL index="434" value="4.2384" />
+      <LABEL index="435" value="4.2482" />
+      <LABEL index="436" value="4.2580" />
+      <LABEL index="437" value="4.2677" />
+      <LABEL index="438" value="4.2775" />
+      <LABEL index="439" value="4.2873" />
+      <LABEL index="440" value="4.2970" />
+      <LABEL index="441" value="4.3068" />
+      <LABEL index="442" value="4.3166" />
+      <LABEL index="443" value="4.3263" />
+      <LABEL index="444" value="4.3361" />
+      <LABEL index="445" value="4.3459" />
+      <LABEL index="446" value="4.3556" />
+      <LABEL index="447" value="4.3654" />
+      <LABEL index="448" value="4.3752" />
+      <LABEL index="449" value="4.3849" />
+      <LABEL index="450" value="4.3947" />
+      <LABEL index="451" value="4.4045" />
+      <LABEL index="452" value="4.4142" />
+      <LABEL index="453" value="4.4240" />
+      <LABEL index="454" value="4.4338" />
+      <LABEL index="455" value="4.4435" />
+      <LABEL index="456" value="4.4533" />
+      <LABEL index="457" value="4.4631" />
+      <LABEL index="458" value="4.4728" />
+      <LABEL index="459" value="4.4826" />
+      <LABEL index="460" value="4.4924" />
+      <LABEL index="461" value="4.5021" />
+      <LABEL index="462" value="4.5119" />
+      <LABEL index="463" value="4.5217" />
+      <LABEL index="464" value="4.5314" />
+      <LABEL index="465" value="4.5412" />
+      <LABEL index="466" value="4.5510" />
+      <LABEL index="467" value="4.5607" />
+      <LABEL index="468" value="4.5705" />
+      <LABEL index="469" value="4.5803" />
+      <LABEL index="470" value="4.5900" />
+      <LABEL index="471" value="4.5998" />
+      <LABEL index="472" value="4.6096" />
+      <LABEL index="473" value="4.6193" />
+      <LABEL index="474" value="4.6291" />
+      <LABEL index="475" value="4.6389" />
+      <LABEL index="476" value="4.6486" />
+      <LABEL index="477" value="4.6584" />
+      <LABEL index="478" value="4.6681" />
+      <LABEL index="479" value="4.6779" />
+      <LABEL index="480" value="4.6877" />
+      <LABEL index="481" value="4.6974" />
+      <LABEL index="482" value="4.7072" />
+      <LABEL index="483" value="4.7170" />
+      <LABEL index="484" value="4.7267" />
+      <LABEL index="485" value="4.7365" />
+      <LABEL index="486" value="4.7463" />
+      <LABEL index="487" value="4.7560" />
+      <LABEL index="488" value="4.7658" />
+      <LABEL index="489" value="4.7756" />
+      <LABEL index="490" value="4.7853" />
+      <LABEL index="491" value="4.7951" />
+      <LABEL index="492" value="4.8049" />
+      <LABEL index="493" value="4.8146" />
+      <LABEL index="494" value="4.8244" />
+      <LABEL index="495" value="4.8342" />
+      <LABEL index="496" value="4.8439" />
+      <LABEL index="497" value="4.8537" />
+      <LABEL index="498" value="4.8635" />
+      <LABEL index="499" value="4.8732" />
+      <LABEL index="500" value="4.8830" />
+      <LABEL index="501" value="4.8928" />
+      <LABEL index="502" value="4.9025" />
+      <LABEL index="503" value="4.9123" />
+      <LABEL index="504" value="4.9221" />
+      <LABEL index="505" value="4.9318" />
+      <LABEL index="506" value="4.9416" />
+      <LABEL index="507" value="4.9514" />
+      <LABEL index="508" value="4.9611" />
+      <LABEL index="509" value="4.9709" />
+      <LABEL index="510" value="4.9807" />
+      <LABEL index="511" value="4.9904" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -1315,7 +1318,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14254" mmedelementsizebits="16" mmedrowcount="512" />
       <units>kg/h</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -1343,6 +1346,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1630A" mmedelementsizebits="16" />
     <units>RPM</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -1357,18 +1361,19 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -1377,6 +1382,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -1389,7 +1395,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E4A0" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="8" />
       <units>RPM</units>
-      <decimalpl>2</decimalpl>
+      <decimalpl>1</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -1475,6 +1481,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -1517,6 +1524,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -1559,6 +1567,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -1601,6 +1610,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -1769,6 +1779,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AE2" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -1780,7 +1791,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D65C" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="8" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -1923,7 +1934,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x162E8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>11</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -1965,7 +1975,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x162E8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>11</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2007,7 +2016,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BC2E" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>10</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2020,6 +2028,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BC1A" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>10</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2031,7 +2040,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BC42" mmedelementsizebits="16" mmedrowcount="10" mmedcolcount="10" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -2048,6 +2057,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BB0A" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>6</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2060,6 +2070,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2072,7 +2083,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BB16" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="6" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -2173,7 +2184,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C06E" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>ms</units>
       <indexcount>16</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2198,7 +2209,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C08E" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="16" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -2296,7 +2307,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D7AE" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="10" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -2462,6 +2473,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2503,6 +2515,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2544,6 +2557,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2585,6 +2599,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2626,6 +2641,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2752,6 +2768,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2781,7 +2798,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B42" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>-</units>
       <indexcount>12</indexcount>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2794,6 +2811,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AC8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>12</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2805,7 +2823,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1546A" mmedelementsizebits="16" mmedrowcount="12" mmedcolcount="12" />
       <units>-</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -2822,6 +2840,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1469A" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>6</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2834,7 +2853,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1467A" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>16</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2846,7 +2865,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x146A6" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="6" />
       <units>kg/h</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -2863,7 +2882,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x162E8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>11</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2876,6 +2894,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B04" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -2887,7 +2906,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16186" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="11" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -2971,7 +2990,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1CB3E" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="6" />
       <units>%/seg</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -2986,7 +3005,6 @@
     <CATEGORYMEM index="0" category="7" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1A684" mmedelementsizebits="16" />
     <units>kg/h</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -3002,6 +3020,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B5C" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>Grad KW</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3014,6 +3033,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15FD8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3025,7 +3045,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DA52" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3042,6 +3062,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B6E" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>Grad KW</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3054,6 +3075,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15FD8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3065,7 +3087,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DAD2" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3094,6 +3116,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15FD8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3105,7 +3128,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DBD2" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3136,6 +3159,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3165,6 +3189,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DD16" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3177,6 +3202,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3189,7 +3215,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DD36" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
       <units>%</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3206,21 +3232,22 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>Grad C</units>
       <indexcount>5</indexcount>
-      <outputtype>2</outputtype>
+      <decimalpl>1</decimalpl>
+      <outputtype>1</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
+      <LABEL index="0" value="-60.0" />
+      <LABEL index="1" value="-59.8" />
+      <LABEL index="2" value="-59.5" />
+      <LABEL index="3" value="-59.3" />
+      <LABEL index="4" value="-59.1" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
     </XDFAXIS>
     <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x1E4BB" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
       <decimalpl>0</decimalpl>
@@ -3229,6 +3256,7 @@
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
+      <LABEL index="0" value="-" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -3236,7 +3264,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E4C0" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="5" />
       <units>km/h</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3253,6 +3281,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E4CC" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>Grad C</units>
       <indexcount>5</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3265,6 +3294,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3277,7 +3307,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E4D6" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="5" />
       <units>km/h</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3307,6 +3337,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3319,7 +3350,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E4EC" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="5" />
       <units>km/h</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3458,6 +3489,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15FD8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>RPM</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3470,7 +3502,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15FB8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>% PED</units>
       <indexcount>16</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3482,7 +3514,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15FE8" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="8" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3553,6 +3585,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3565,7 +3598,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedaddress="0x197E2" mmedelementsizebits="8" mmedrowcount="1" mmedcolcount="8" />
       <units>s</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3582,7 +3615,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1C290" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>hPa</units>
       <indexcount>11</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3595,6 +3627,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3607,7 +3640,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C2A6" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="11" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3846,7 +3879,7 @@
     <CATEGORYMEM index="0" category="7" />
     <EMBEDDEDDATA mmedaddress="0x10D6C" mmedelementsizebits="8" />
     <units>(kg/h)/(1/min)(%)</units>
-    <decimalpl>9</decimalpl>
+    <decimalpl>8</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -3860,7 +3893,6 @@
     <CATEGORYMEM index="0" category="7" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14656" mmedelementsizebits="16" />
     <units>kg/h</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -3876,6 +3908,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BEEA" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>6</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3888,7 +3921,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BECA" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>kg/h</units>
       <indexcount>16</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3900,7 +3932,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BEF6" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="6" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3930,6 +3962,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3959,7 +3992,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C382" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>6</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4014,6 +4047,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4056,6 +4090,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4097,6 +4132,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>%</units>
       <indexcount>1</indexcount>
+      <decimalpl>3</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4126,7 +4162,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13F10" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>-</units>
       <indexcount>3</indexcount>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4139,6 +4175,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13EFC" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>10</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4150,7 +4187,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13F16" mmedelementsizebits="16" mmedrowcount="10" mmedcolcount="3" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -4347,6 +4384,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14FE8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>s</units>
       <indexcount>4</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4414,6 +4452,7 @@
     <CATEGORYMEM index="0" category="17" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1631E" mmedelementsizebits="16" />
     <units>s</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -4494,7 +4533,7 @@
       </MATH>
     </XDFAXIS>
     <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x19F8D" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
       <decimalpl>0</decimalpl>
@@ -4503,6 +4542,7 @@
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
+      <LABEL index="0" value="-" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -4539,7 +4579,6 @@
     <CATEGORYMEM index="0" category="7" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1A6F0" mmedelementsizebits="16" />
     <units>kg/h</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -4553,7 +4592,6 @@
     <CATEGORYMEM index="0" category="11" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B590" mmedelementsizebits="16" />
     <units>s</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -4567,7 +4605,6 @@
     <CATEGORYMEM index="0" category="22" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B58E" mmedelementsizebits="16" />
     <units>kg/h</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -4596,7 +4633,6 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B9C2" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>% DK</units>
       <indexcount>8</indexcount>
-      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4608,7 +4644,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B9E2" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
       <units>kg/h</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -4625,6 +4661,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C004" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>s</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4665,7 +4702,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C6D4" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>-</units>
       <indexcount>4</indexcount>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4704,7 +4741,6 @@
     <CATEGORYMEM index="0" category="1" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C732" mmedelementsizebits="16" />
     <units>s</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -4733,6 +4769,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4760,7 +4797,7 @@
     <CATEGORYMEM index="0" category="23" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1F374" mmedelementsizebits="16" />
     <units>-</units>
-    <decimalpl>5</decimalpl>
+    <decimalpl>4</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -4774,7 +4811,7 @@
     <CATEGORYMEM index="0" category="23" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1F37E" mmedelementsizebits="16" />
     <units>-</units>
-    <decimalpl>6</decimalpl>
+    <decimalpl>5</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -4790,6 +4827,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B5C" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>Grad KW</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4813,7 +4851,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DB52" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -4843,6 +4881,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4885,6 +4924,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -4955,6 +4995,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5039,6 +5080,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5051,7 +5093,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x169F8" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="10" />
       <units>-</units>
-      <decimalpl>5</decimalpl>
+      <decimalpl>4</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -5094,6 +5136,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15FD8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5105,7 +5148,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DC52" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
       <units>-</units>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -5122,7 +5165,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B42" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>-</units>
       <indexcount>12</indexcount>
-      <decimalpl>6</decimalpl>
+      <decimalpl>5</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5135,6 +5178,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AC8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>12</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5146,7 +5190,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1558A" mmedelementsizebits="16" mmedrowcount="12" mmedcolcount="12" />
       <units>-</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -5175,6 +5219,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AE2" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5245,6 +5290,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BD1A" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>10</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5257,7 +5303,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BD0E" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>°KW</units>
       <indexcount>3</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5269,7 +5315,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BD2E" mmedelementsizebits="16" mmedrowcount="3" mmedcolcount="10" />
       <units>hPa</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -5286,6 +5332,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BDB6" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>10</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5298,7 +5345,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BDAA" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>°KW</units>
       <indexcount>3</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5310,7 +5357,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BDCA" mmedelementsizebits="16" mmedrowcount="3" mmedcolcount="10" />
       <units>%/hPa</units>
-      <decimalpl>7</decimalpl>
+      <decimalpl>6</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -5339,7 +5386,7 @@
     <CATEGORYMEM index="0" category="12" />
     <EMBEDDEDDATA mmedaddress="0x156AA" mmedelementsizebits="8" />
     <units>s</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -5353,6 +5400,7 @@
     <CATEGORYMEM index="0" category="24" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16312" mmedelementsizebits="16" />
     <units>RPM</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -5366,6 +5414,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16310" mmedelementsizebits="16" />
     <units>RPM</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -5379,6 +5428,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1630E" mmedelementsizebits="16" />
     <units>RPM</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -5392,6 +5442,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1630C" mmedelementsizebits="16" />
     <units>RPM</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -5420,6 +5471,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5449,6 +5501,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B80" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>Grad KW</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5461,6 +5514,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AB6" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5487,7 +5541,7 @@
     <CATEGORYMEM index="0" category="4" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D9D0" mmedelementsizebits="16" />
     <units>%</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -5516,6 +5570,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5528,7 +5583,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D97A" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
       <units>%/100hPa</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -5558,6 +5613,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5570,7 +5626,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D99A" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
       <units>%/100hPa</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -5599,6 +5655,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5781,6 +5838,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5904,22 +5962,23 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>12</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
-      <LABEL index="8" value="09" />
-      <LABEL index="9" value="10" />
-      <LABEL index="10" value="11" />
-      <LABEL index="11" value="12" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
+      <LABEL index="8" value="8" />
+      <LABEL index="9" value="9" />
+      <LABEL index="10" value="10" />
+      <LABEL index="11" value="11" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -5928,6 +5987,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -5956,16 +6016,17 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>6</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -5974,6 +6035,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6002,26 +6064,27 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>16</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
-      <LABEL index="8" value="09" />
-      <LABEL index="9" value="10" />
-      <LABEL index="10" value="11" />
-      <LABEL index="11" value="12" />
-      <LABEL index="12" value="13" />
-      <LABEL index="13" value="14" />
-      <LABEL index="14" value="15" />
-      <LABEL index="15" value="16" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
+      <LABEL index="8" value="8" />
+      <LABEL index="9" value="9" />
+      <LABEL index="10" value="10" />
+      <LABEL index="11" value="11" />
+      <LABEL index="12" value="12" />
+      <LABEL index="13" value="13" />
+      <LABEL index="14" value="14" />
+      <LABEL index="15" value="15" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -6030,6 +6093,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6042,7 +6106,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AE2" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
       <units>U/min</units>
-      <decimalpl>2</decimalpl>
+      <decimalpl>1</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -6058,26 +6122,27 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>16</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
-      <LABEL index="8" value="09" />
-      <LABEL index="9" value="10" />
-      <LABEL index="10" value="11" />
-      <LABEL index="11" value="12" />
-      <LABEL index="12" value="13" />
-      <LABEL index="13" value="14" />
-      <LABEL index="14" value="15" />
-      <LABEL index="15" value="16" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
+      <LABEL index="8" value="8" />
+      <LABEL index="9" value="9" />
+      <LABEL index="10" value="10" />
+      <LABEL index="11" value="11" />
+      <LABEL index="12" value="12" />
+      <LABEL index="13" value="13" />
+      <LABEL index="14" value="14" />
+      <LABEL index="15" value="15" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -6086,6 +6151,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6098,7 +6164,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedaddress="0x100C2" mmedelementsizebits="8" mmedrowcount="1" mmedcolcount="16" />
       <units>U/min</units>
-      <decimalpl>2</decimalpl>
+      <decimalpl>1</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -6115,6 +6181,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B26" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6127,6 +6194,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6139,7 +6207,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12CA4" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="8" />
       <units>U/min/s</units>
-      <decimalpl>2</decimalpl>
+      <decimalpl>1</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -6155,18 +6223,19 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>8</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -6175,6 +6244,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6187,7 +6257,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B26" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="8" />
       <units>U/min</units>
-      <decimalpl>2</decimalpl>
+      <decimalpl>1</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -6213,7 +6283,7 @@
       </MATH>
     </XDFAXIS>
     <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x18859" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
       <decimalpl>0</decimalpl>
@@ -6222,6 +6292,7 @@
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
+      <LABEL index="0" value="-" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -6300,6 +6371,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6467,26 +6539,27 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>16</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
-      <LABEL index="8" value="09" />
-      <LABEL index="9" value="10" />
-      <LABEL index="10" value="11" />
-      <LABEL index="11" value="12" />
-      <LABEL index="12" value="13" />
-      <LABEL index="13" value="14" />
-      <LABEL index="14" value="15" />
-      <LABEL index="15" value="16" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
+      <LABEL index="8" value="8" />
+      <LABEL index="9" value="9" />
+      <LABEL index="10" value="10" />
+      <LABEL index="11" value="11" />
+      <LABEL index="12" value="12" />
+      <LABEL index="13" value="13" />
+      <LABEL index="14" value="14" />
+      <LABEL index="15" value="15" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -6495,6 +6568,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6536,6 +6610,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6577,6 +6652,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6604,7 +6680,6 @@
     <CATEGORYMEM index="0" category="7" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BEB0" mmedelementsizebits="16" />
     <units>kg/h</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -6617,6 +6692,7 @@
     <description>Supplemental codeword: short strip requirements display group 195</description>
     <CATEGORYMEM index="0" category="1" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1CE1C" mmedelementsizebits="16" />
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -6630,7 +6706,6 @@
     <CATEGORYMEM index="0" category="23" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1F438" mmedelementsizebits="16" />
     <units>hPa</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -6645,28 +6720,29 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>12</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
-      <LABEL index="8" value="09" />
-      <LABEL index="9" value="10" />
-      <LABEL index="10" value="11" />
-      <LABEL index="11" value="12" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
+      <LABEL index="8" value="8" />
+      <LABEL index="9" value="9" />
+      <LABEL index="10" value="10" />
+      <LABEL index="11" value="11" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
     </XDFAXIS>
     <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x100F2" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
       <decimalpl>0</decimalpl>
@@ -6675,6 +6751,7 @@
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
+      <LABEL index="0" value="-" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -6711,6 +6788,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6723,7 +6801,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14FA8" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="12" />
       <units>-</units>
-      <decimalpl>5</decimalpl>
+      <decimalpl>4</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -6752,6 +6830,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6764,7 +6843,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14FCE" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="12" />
       <units>-</units>
-      <decimalpl>5</decimalpl>
+      <decimalpl>4</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -6833,6 +6912,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6861,21 +6941,22 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>11</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
-      <LABEL index="8" value="09" />
-      <LABEL index="9" value="10" />
-      <LABEL index="10" value="11" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
+      <LABEL index="8" value="8" />
+      <LABEL index="9" value="9" />
+      <LABEL index="10" value="10" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -6884,6 +6965,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6896,7 +6978,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x162E8" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="11" />
       <units>%</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -6926,6 +7008,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -6981,7 +7064,6 @@
     <CATEGORYMEM index="0" category="12" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BE44" mmedelementsizebits="16" />
     <units>hPa</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7010,6 +7092,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -7022,7 +7105,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x156F2" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="8" />
       <units>hPa</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -7052,6 +7135,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -7064,7 +7148,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x156D8" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="8" />
       <units>hPa</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -7079,6 +7163,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16300" mmedelementsizebits="16" />
     <units>U/min</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7092,6 +7177,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16302" mmedelementsizebits="16" />
     <units>U/min</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7105,6 +7191,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16304" mmedelementsizebits="16" />
     <units>U/min</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7118,7 +7205,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16306" mmedelementsizebits="16" />
     <units>s</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7132,7 +7219,7 @@
     <CATEGORYMEM index="0" category="24" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16308" mmedelementsizebits="16" />
     <units>s</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7146,6 +7233,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16314" mmedelementsizebits="16" />
     <units>U/min</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7172,7 +7260,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x16318" mmedelementsizebits="16" />
     <units>s</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7186,7 +7274,7 @@
     <CATEGORYMEM index="0" category="24" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1631A" mmedelementsizebits="16" />
     <units>s</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7229,6 +7317,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -7269,6 +7358,7 @@
     <CATEGORYMEM index="0" category="13" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13B52" mmedelementsizebits="16" />
     <units>Upm</units>
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7428,6 +7518,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -7454,6 +7545,7 @@
     <description>Login code to activate ADR</description>
     <CATEGORYMEM index="0" category="29" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15312" mmedelementsizebits="16" />
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7466,6 +7558,7 @@
     <description>Login code for GRA locking</description>
     <CATEGORYMEM index="0" category="29" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15314" mmedelementsizebits="16" />
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7478,6 +7571,7 @@
     <description>Login code for GRA unlocking</description>
     <CATEGORYMEM index="0" category="29" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15316" mmedelementsizebits="16" />
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7490,6 +7584,7 @@
     <description>Login code for service</description>
     <CATEGORYMEM index="0" category="29" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x15318" mmedelementsizebits="16" />
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7502,6 +7597,7 @@
     <description>Login code for development</description>
     <CATEGORYMEM index="0" category="29" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1531A" mmedelementsizebits="16" />
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7514,6 +7610,7 @@
     <description>Default variant for variant encoding</description>
     <CATEGORYMEM index="0" category="29" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1531C" mmedelementsizebits="16" />
+    <decimalpl>1</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7527,7 +7624,6 @@
     <CATEGORYMEM index="0" category="4" />
     <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x13DEE" mmedelementsizebits="16" />
     <units>hPa</units>
-    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -7543,26 +7639,27 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>16</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
-      <LABEL index="8" value="09" />
-      <LABEL index="9" value="10" />
-      <LABEL index="10" value="11" />
-      <LABEL index="11" value="12" />
-      <LABEL index="12" value="13" />
-      <LABEL index="13" value="14" />
-      <LABEL index="14" value="15" />
-      <LABEL index="15" value="16" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
+      <LABEL index="8" value="8" />
+      <LABEL index="9" value="9" />
+      <LABEL index="10" value="10" />
+      <LABEL index="11" value="11" />
+      <LABEL index="12" value="12" />
+      <LABEL index="13" value="13" />
+      <LABEL index="14" value="14" />
+      <LABEL index="15" value="15" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -7571,6 +7668,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8093,6 +8191,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8105,7 +8204,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14EEE" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="5" />
       <units>ms</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -8120,7 +8219,7 @@
     <CATEGORYMEM index="0" category="10" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14EE4" mmedelementsizebits="16" />
     <units>ms</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -8134,7 +8233,7 @@
     <CATEGORYMEM index="0" category="10" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14EE6" mmedelementsizebits="16" />
     <units>ms</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -8163,6 +8262,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AA8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>6</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8204,6 +8304,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AA8" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>6</indexcount>
+      <decimalpl>1</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8279,7 +8380,7 @@
     <description>Number of speed pulses per m for signal normalization v</description>
     <CATEGORYMEM index="0" category="20" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12A56" mmedelementsizebits="16" />
-    <decimalpl>5</decimalpl>
+    <decimalpl>4</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -8370,6 +8471,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8398,16 +8500,17 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>6</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -8416,6 +8519,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>%</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8583,7 +8687,7 @@
     <CATEGORYMEM index="0" category="17" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x158BA" mmedelementsizebits="16" />
     <units>% PED</units>
-    <decimalpl>4</decimalpl>
+    <decimalpl>3</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
@@ -8598,18 +8702,18 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>2</outputtype>
+      <outputtype>1</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
+      <LABEL index="0" value="0.00" />
+      <LABEL index="1" value="1.00" />
+      <LABEL index="2" value="2.00" />
+      <LABEL index="3" value="3.00" />
+      <LABEL index="4" value="4.00" />
+      <LABEL index="5" value="5.00" />
+      <LABEL index="6" value="6.00" />
+      <LABEL index="7" value="7.00" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -8618,6 +8722,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8630,7 +8735,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1589A" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="8" />
       <units>-</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -8647,7 +8752,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1DF8E" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>8</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8670,7 +8775,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DE1C" mmedelementsizebits="16" mmedrowcount="6" mmedcolcount="8" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -8687,7 +8792,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1DF8E" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>%</units>
       <indexcount>8</indexcount>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8710,7 +8815,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DE7C" mmedelementsizebits="16" mmedrowcount="6" mmedcolcount="8" />
       <units>%</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>3</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -8741,81 +8846,82 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>71</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>2</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
       <DALINK index="0" />
-      <LABEL index="0" value="01" />
-      <LABEL index="1" value="02" />
-      <LABEL index="2" value="03" />
-      <LABEL index="3" value="04" />
-      <LABEL index="4" value="05" />
-      <LABEL index="5" value="06" />
-      <LABEL index="6" value="07" />
-      <LABEL index="7" value="08" />
-      <LABEL index="8" value="09" />
-      <LABEL index="9" value="10" />
-      <LABEL index="10" value="11" />
-      <LABEL index="11" value="12" />
-      <LABEL index="12" value="13" />
-      <LABEL index="13" value="14" />
-      <LABEL index="14" value="15" />
-      <LABEL index="15" value="16" />
-      <LABEL index="16" value="17" />
-      <LABEL index="17" value="18" />
-      <LABEL index="18" value="19" />
-      <LABEL index="19" value="20" />
-      <LABEL index="20" value="21" />
-      <LABEL index="21" value="22" />
-      <LABEL index="22" value="23" />
-      <LABEL index="23" value="24" />
-      <LABEL index="24" value="25" />
-      <LABEL index="25" value="26" />
-      <LABEL index="26" value="27" />
-      <LABEL index="27" value="28" />
-      <LABEL index="28" value="29" />
-      <LABEL index="29" value="30" />
-      <LABEL index="30" value="31" />
-      <LABEL index="31" value="32" />
-      <LABEL index="32" value="33" />
-      <LABEL index="33" value="34" />
-      <LABEL index="34" value="35" />
-      <LABEL index="35" value="36" />
-      <LABEL index="36" value="37" />
-      <LABEL index="37" value="38" />
-      <LABEL index="38" value="39" />
-      <LABEL index="39" value="40" />
-      <LABEL index="40" value="41" />
-      <LABEL index="41" value="42" />
-      <LABEL index="42" value="43" />
-      <LABEL index="43" value="44" />
-      <LABEL index="44" value="45" />
-      <LABEL index="45" value="46" />
-      <LABEL index="46" value="47" />
-      <LABEL index="47" value="48" />
-      <LABEL index="48" value="49" />
-      <LABEL index="49" value="50" />
-      <LABEL index="50" value="51" />
-      <LABEL index="51" value="52" />
-      <LABEL index="52" value="53" />
-      <LABEL index="53" value="54" />
-      <LABEL index="54" value="55" />
-      <LABEL index="55" value="56" />
-      <LABEL index="56" value="57" />
-      <LABEL index="57" value="58" />
-      <LABEL index="58" value="59" />
-      <LABEL index="59" value="60" />
-      <LABEL index="60" value="61" />
-      <LABEL index="61" value="62" />
-      <LABEL index="62" value="63" />
-      <LABEL index="63" value="64" />
-      <LABEL index="64" value="65" />
-      <LABEL index="65" value="66" />
-      <LABEL index="66" value="67" />
-      <LABEL index="67" value="68" />
-      <LABEL index="68" value="69" />
-      <LABEL index="69" value="70" />
-      <LABEL index="70" value="71" />
+      <LABEL index="0" value="0" />
+      <LABEL index="1" value="1" />
+      <LABEL index="2" value="2" />
+      <LABEL index="3" value="3" />
+      <LABEL index="4" value="4" />
+      <LABEL index="5" value="5" />
+      <LABEL index="6" value="6" />
+      <LABEL index="7" value="7" />
+      <LABEL index="8" value="8" />
+      <LABEL index="9" value="9" />
+      <LABEL index="10" value="10" />
+      <LABEL index="11" value="11" />
+      <LABEL index="12" value="12" />
+      <LABEL index="13" value="13" />
+      <LABEL index="14" value="14" />
+      <LABEL index="15" value="15" />
+      <LABEL index="16" value="16" />
+      <LABEL index="17" value="17" />
+      <LABEL index="18" value="18" />
+      <LABEL index="19" value="19" />
+      <LABEL index="20" value="20" />
+      <LABEL index="21" value="21" />
+      <LABEL index="22" value="22" />
+      <LABEL index="23" value="23" />
+      <LABEL index="24" value="24" />
+      <LABEL index="25" value="25" />
+      <LABEL index="26" value="26" />
+      <LABEL index="27" value="27" />
+      <LABEL index="28" value="28" />
+      <LABEL index="29" value="29" />
+      <LABEL index="30" value="30" />
+      <LABEL index="31" value="31" />
+      <LABEL index="32" value="32" />
+      <LABEL index="33" value="33" />
+      <LABEL index="34" value="34" />
+      <LABEL index="35" value="35" />
+      <LABEL index="36" value="36" />
+      <LABEL index="37" value="37" />
+      <LABEL index="38" value="38" />
+      <LABEL index="39" value="39" />
+      <LABEL index="40" value="40" />
+      <LABEL index="41" value="41" />
+      <LABEL index="42" value="42" />
+      <LABEL index="43" value="43" />
+      <LABEL index="44" value="44" />
+      <LABEL index="45" value="45" />
+      <LABEL index="46" value="46" />
+      <LABEL index="47" value="47" />
+      <LABEL index="48" value="48" />
+      <LABEL index="49" value="49" />
+      <LABEL index="50" value="50" />
+      <LABEL index="51" value="51" />
+      <LABEL index="52" value="52" />
+      <LABEL index="53" value="53" />
+      <LABEL index="54" value="54" />
+      <LABEL index="55" value="55" />
+      <LABEL index="56" value="56" />
+      <LABEL index="57" value="57" />
+      <LABEL index="58" value="58" />
+      <LABEL index="59" value="59" />
+      <LABEL index="60" value="60" />
+      <LABEL index="61" value="61" />
+      <LABEL index="62" value="62" />
+      <LABEL index="63" value="63" />
+      <LABEL index="64" value="64" />
+      <LABEL index="65" value="65" />
+      <LABEL index="66" value="66" />
+      <LABEL index="67" value="67" />
+      <LABEL index="68" value="68" />
+      <LABEL index="69" value="69" />
+      <LABEL index="70" value="70" />
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
@@ -8824,6 +8930,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8947,6 +9054,7 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
       <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
       <outputtype>4</outputtype>
       <datatype>0</datatype>
       <unittype>0</unittype>
