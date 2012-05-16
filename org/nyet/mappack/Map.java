@@ -362,24 +362,26 @@ public class Map {
 		if (!isZ)
 		    xs.append("indexcount",this.size);
 
-		if(this.value.precision!=2)
+		if(this.value.precision!=2 || (XDF_Pedantic && isZ))
 		    xs.append("decimalpl",this.value.precision);
+
+		if (XDF_Pedantic && isZ) {
+		    xs.append("min","0.000000");
+		    // if (this.value.type.width()==1)
+			xs.append("max","255.000000");
+		    if (this.value.precision!=0)
+			xs.append("outputtype",1);
+		}
 
 		xs.append("outputtype",this.value.outputtypeXDF(this.base));
 
 		if (!isZ)
 		    xs.append("embedinfo type=\"1\" /");
 
-		if (XDF_Pedantic) {
-		    if (!isZ) {
+		if (XDF_Pedantic && !isZ) {
 			xs.append("datatype", 0);
 			xs.append("unittype", 0);
 			xs.append("DALINK index=\"0\" /");
-		    } else {
-			xs.append("min","0.000000");
-			if (this.value.type.width()==1)
-			    xs.append("max","255.000000");
-		    }
 		}
 
 		this.value.doMathXDF(xs);
@@ -393,12 +395,9 @@ public class Map {
 	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 	    for(int i=0; i<this.size; i++) {
 		m.put("index",i);
-		if (this.size==1)
-		    m.put("value",this.value.units);
-		/*
-		else if (this.value.precision==0)
-		    m.put("value",String.format("%d",Math.round(value.convert(i))));
-		*/
+		// wow. don't ask.
+		if ((this.size==1 && !XDF_Pedantic) || (XDF_Pedantic && i==0 && this.value.precision==0))
+		    m.put("value","");
 		else
 		    m.put("value",String.format("%." + this.value.precision + "f",value.convert(i)));
 		xs.append("LABEL",m);
@@ -536,7 +535,7 @@ public class Map {
     public static final int FORMAT_CSV = 1;
     public static final int FORMAT_OLD_XDF = 2;
     public static final int FORMAT_XDF = 3;
-    public static final boolean XDF_Pedantic = false;
+    public static final boolean XDF_Pedantic = true;
     public static final int XDF_MaxDigits = 6;	// tunerpro doesn't like > 6 digits
     public static final String XDF_LBL = "\t%06d %-17s=";
     public String toString(int format, ByteBuffer image)
