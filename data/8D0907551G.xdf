@@ -1,4 +1,4 @@
-<!-- Written Tue May 15 23:06:43 GMT 2012 -->
+<!-- Written Tue May 15 22:39:09 PDT 2012 -->
 <XDFFORMAT version="1.50">
   <XDFHEADER>
     <fileversion>Version 1</fileversion>
@@ -11291,6 +11291,7 @@
     <CATEGORYMEM index="0" category="171" />
     <EMBEDDEDDATA mmedtypeflags="0x01" mmedaddress="0x11BBA" mmedelementsizebits="8" />
     <units>U/min/s</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="100.000000 * X">
       <VAR id="X" />
@@ -11847,6 +11848,7 @@
     <CATEGORYMEM index="0" category="5" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B574" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -11858,6 +11860,7 @@
     <CATEGORYMEM index="0" category="6" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B5B0" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -13298,7 +13301,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>5</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -13433,7 +13435,6 @@
       <units>%</units>
       <indexcount>201</indexcount>
       <decimalpl>3</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.000" />
       <LABEL index="1" value="0.500" />
       <LABEL index="2" value="1.000" />
@@ -13975,7 +13976,6 @@
       <units>grad KW</units>
       <indexcount>65</indexcount>
       <decimalpl>3</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.000" />
       <LABEL index="1" value="0.750" />
       <LABEL index="2" value="1.500" />
@@ -14068,7 +14068,6 @@
       <units>grad KW</units>
       <indexcount>65</indexcount>
       <decimalpl>3</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.000" />
       <LABEL index="1" value="0.750" />
       <LABEL index="2" value="1.500" />
@@ -14161,7 +14160,6 @@
       <units>grad KW</units>
       <indexcount>65</indexcount>
       <decimalpl>3</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.000" />
       <LABEL index="1" value="0.750" />
       <LABEL index="2" value="1.500" />
@@ -14254,7 +14252,6 @@
       <units>grad KW</units>
       <indexcount>65</indexcount>
       <decimalpl>3</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.000" />
       <LABEL index="1" value="0.750" />
       <LABEL index="2" value="1.500" />
@@ -14933,7 +14930,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -14967,7 +14963,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -15183,7 +15178,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>16</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -15225,7 +15219,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>16</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -15490,7 +15483,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -15765,7 +15757,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -15852,7 +15843,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -17120,7 +17110,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -17154,7 +17143,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -17188,7 +17176,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -17222,7 +17209,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -19916,7 +19902,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -20753,6 +20738,7 @@
     <CATEGORYMEM index="0" category="9" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B5A8" mmedelementsizebits="16" />
     <units>mg/(V*s)</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="10.401986 * X">
       <VAR id="X" />
@@ -29006,7 +28992,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -29039,7 +29024,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -29195,7 +29179,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -29267,7 +29250,6 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>501</indexcount>
       <decimalpl>5</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.50000" />
       <LABEL index="1" value="0.50100" />
       <LABEL index="2" value="0.50200" />
@@ -29795,7 +29777,6 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>501</indexcount>
       <decimalpl>5</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.50000" />
       <LABEL index="1" value="0.50100" />
       <LABEL index="2" value="0.50200" />
@@ -30323,7 +30304,6 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>501</indexcount>
       <decimalpl>5</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.50000" />
       <LABEL index="1" value="0.50100" />
       <LABEL index="2" value="0.50200" />
@@ -31743,7 +31723,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -32429,6 +32408,7 @@
     <CATEGORYMEM index="0" category="21" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x14FF4" mmedelementsizebits="16" />
     <units>min</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="6.000000 * X">
       <VAR id="X" />
@@ -34301,7 +34281,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -35049,7 +35028,6 @@
       <units>V</units>
       <indexcount>512</indexcount>
       <decimalpl>4</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.0000" />
       <LABEL index="1" value="0.0098" />
       <LABEL index="2" value="0.0195" />
@@ -36306,7 +36284,6 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>16</indexcount>
       <decimalpl>1</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.0" />
       <LABEL index="1" value="1.0" />
       <LABEL index="2" value="2.0" />
@@ -36328,7 +36305,6 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
       <decimalpl>1</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.0" />
       <LABEL index="1" value="1.0" />
       <LABEL index="2" value="2.0" />
@@ -36415,7 +36391,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -36449,7 +36424,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -36535,7 +36509,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -36569,7 +36542,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -37198,6 +37170,7 @@
     <CATEGORYMEM index="0" category="125" />
     <EMBEDDEDDATA mmedaddress="0x111AA" mmedelementsizebits="8" />
     <units>U/min/s</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="100.000000 * X">
       <VAR id="X" />
@@ -37722,6 +37695,7 @@
     <CATEGORYMEM index="0" category="45" />
     <EMBEDDEDDATA mmedaddress="0x101A5" mmedelementsizebits="8" />
     <units>U/min/s</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="100.000000 * X">
       <VAR id="X" />
@@ -38811,7 +38785,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -38856,7 +38829,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -38890,7 +38862,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -40202,6 +40173,7 @@
     <CATEGORYMEM index="0" category="24" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13BBE" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -40213,6 +40185,7 @@
     <CATEGORYMEM index="0" category="25" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13BBE" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -40269,7 +40242,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -40282,7 +40254,6 @@
     <XDFAXIS id="y" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -40383,6 +40354,7 @@
     <CATEGORYMEM index="0" category="24" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13BC0" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -40394,6 +40366,7 @@
     <CATEGORYMEM index="0" category="25" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13BD6" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -40405,6 +40378,7 @@
     <CATEGORYMEM index="0" category="5" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B576" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -40416,6 +40390,7 @@
     <CATEGORYMEM index="0" category="6" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1B5B2" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -40666,6 +40641,7 @@
     <CATEGORYMEM index="0" category="24" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13BC2" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -40677,6 +40653,7 @@
     <CATEGORYMEM index="0" category="25" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x13BC2" mmedelementsizebits="16" />
     <units>Ohm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="2.000000 * X">
       <VAR id="X" />
@@ -42184,7 +42161,6 @@
       <units>hPa</units>
       <indexcount>16</indexcount>
       <decimalpl>1</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.0" />
       <LABEL index="1" value="160.0" />
       <LABEL index="2" value="320.0" />
@@ -60720,7 +60696,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -60765,7 +60740,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -61084,7 +61058,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -63043,7 +63016,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -65537,7 +65509,6 @@
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>%</units>
       <indexcount>26</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="6.00" />
       <LABEL index="2" value="12.00" />

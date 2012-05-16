@@ -175,6 +175,16 @@ public class Map {
 	    return out;
 	}
 
+	// outputtype 0x1 = float, 0x2 = integer, 0x3 = hex, 0x4 = string
+	public String outputtypeXDF(int base) {
+	    if(this.precision==0)
+		return base==16?"3":"2";
+	    // default outputtype is 1 as set in XDF header.
+	    // return empty string so it isn't printed
+	    return "";
+	    //return "1";
+	}
+
 	protected int limitPrecision(int maxDigits) {
 	    int width = this.sign?(this.type.width()*8)-1:this.type.width()*8;
 
@@ -205,15 +215,16 @@ public class Map {
 
     private class Axis {
         // passed
+	private String name;
 	private int size;
 	private Dimension z_size;	/* for z axis - rows/cols */
-	private String name;
 
 	// parsed
 	public Value value;
 	public DataSource datasource;
 	public HexValue addr = null;
-	private int[] header1 = new int[2];	// unk
+	private int header1;
+	public int base;
 	private byte header1a;
 	public boolean reciprocal = false;	// todo (find)
 	private byte[] header2 = new byte[3];
@@ -231,7 +242,9 @@ public class Map {
 	    addr = new HexValue(b);
 	    if(!datasource.isEeprom()) addr = null;
 	    value.type = new ValueType(b);
-	    Parse.buffer(b, header1);	// unk
+	    header1 = b.getInt();	// unk
+	    base = b.getInt();
+	    if(!datasource.isEeprom()) base = 10;
 	    header1a = b.get();		// unk
 	    reciprocal = b.get()==1;
 	    value.precision = b.get();
@@ -245,17 +258,27 @@ public class Map {
 
 	    // fix precision last once we have the whole Value
 	    value.limitPrecision(XDF_MaxDigits);
+
+	    // passed in through constructor call
 	    name = n;
 	    size = s;
 	}
 
-	public Axis(Value v, HexValue a, Dimension d) {
+	public Axis(Value v, Map m) {
+	    // normally parsed, in this case, we get it from parent Map
 	    value = v;
 	    datasource = new DataSource();
-	    addr = a;
+	    addr = m.extent[0];
+	    base = m.base;
+
+	    // fill in by hand
 	    name = "z";
 	    size = 0;
-	    z_size = d;
+
+	    // get from parent Map
+	    z_size = m.size;
+
+	    // set flag so we know this is a z axis
 	    isZ = true;
 	}
 
@@ -263,7 +286,8 @@ public class Map {
 	    String out = super.toString() + "\n";
 	    out += "\t   ds: " + datasource + "\n";
 	    out += "\t addr: " + addr + " " + value.type + "\n";
-	    out += "\t   h1: " + Arrays.toString(header1) + "\n";
+	    out += "\t   h1: " + header1 + "\n";
+	    out += "\t base: " + base + "\n";
 	    out += "\t  h1a: " + header1a + " (short)\n";
 	    out += "\tflags: ";
 	    if(reciprocal) out += "R";
@@ -302,8 +326,7 @@ public class Map {
 		if(this.value.precision!=2)
 		    xs.append("decimalpl",this.value.precision);
 
-		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-		xs.append("outputtype",this.value.precision==0?2:1);
+		xs.append("outputtype",this.value.outputtypeXDF(this.base));
 
 		if (XDF_Pedantic) {
 		    xs.append("datatype",0);
@@ -342,9 +365,7 @@ public class Map {
 		if(this.value.precision!=2)
 		    xs.append("decimalpl",this.value.precision);
 
-		// outputtype 0x1 = float, 0x2 = integer, 0x4 = string
-		if (this.value.precision==0)
-		    xs.append("outputtype",2);
+		xs.append("outputtype",this.value.outputtypeXDF(this.base));
 
 		if (!isZ)
 		    xs.append("embedinfo type=\"1\" /");
@@ -392,7 +413,8 @@ public class Map {
     public String name;
     public Organization organization;
     private int header;			//unk
-    private int[] headera = new int[2];	// unk
+    private int headera;
+    public int base;
     public int folderId;
     public String id;
     private int header1;		// unk
@@ -430,7 +452,8 @@ public class Map {
 	organization = new Organization(b);
 	header = b.getInt();
 	ValueType vt = new ValueType(b);
-	Parse.buffer(b, headera);	// unk
+	header = b.getInt();
+	base = b.getInt();
 	folderId = b.getInt();
 	id = Parse.string(b);
 	header1 = b.getInt();		// unk
@@ -461,7 +484,7 @@ public class Map {
 	Parse.buffer(b, header10);	// unk
 	Parse.buffer(b, header11);	// unk
 	b.get(term2);
-	z_axis = new Axis(this.value, this.extent[0], this.size);
+	z_axis = new Axis(this.value, this);
 	// System.out.println(this);
     }
 
@@ -751,6 +774,9 @@ public class Map {
 	xs.append("EMBEDDEDDATA",m);
 
 	xs.append("units",this.value.units);
+
+	xs.append("outputtype",this.value.outputtypeXDF(this.base));
+
 	if(this.value.precision!=2)
 	    xs.append("decimalpl", this.value.precision);
 
@@ -801,7 +827,8 @@ public class Map {
 	out += "  map: " + name + " [" + id + "] " + value.type + "\n";
 	out += "  org: " + organization + "\n";
 	out += "    h: " + header + "\n";
-	out += "   ha: " + Arrays.toString(headera) + "\n";
+	out += "   ha: " + headera + "\n";
+	out += " base: " + base + "\n";
 	out += "fdrId: " + folderId + "\n";
 	out += "   h1: " + header1 + "\n";
 	out += "  h1a: " + header1a + " (byte)\n";

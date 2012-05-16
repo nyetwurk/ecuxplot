@@ -1,4 +1,4 @@
-<!-- Written Tue May 15 23:06:46 GMT 2012 -->
+<!-- Written Tue May 15 22:39:11 PDT 2012 -->
 <XDFFORMAT version="1.50">
   <XDFHEADER>
     <fileversion>Version 1</fileversion>
@@ -625,7 +625,6 @@
       <units>v</units>
       <indexcount>512</indexcount>
       <decimalpl>4</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.0000" />
       <LABEL index="1" value="0.0098" />
       <LABEL index="2" value="0.0195" />
@@ -1152,6 +1151,7 @@
     <description>Codeword: No ROM check reset</description>
     <CATEGORYMEM index="0" category="1" />
     <EMBEDDEDDATA mmedaddress="0x11A24" mmedelementsizebits="8" />
+    <outputtype>3</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="X">
       <VAR id="X" />
@@ -2594,7 +2594,6 @@
       <units>Grad C</units>
       <indexcount>5</indexcount>
       <decimalpl>1</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="-60.0" />
       <LABEL index="1" value="-59.8" />
       <LABEL index="2" value="-59.5" />
@@ -3275,7 +3274,6 @@
       <units>%</units>
       <indexcount>1</indexcount>
       <decimalpl>3</decimalpl>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="%" />
     </XDFAXIS>
     <XDFAXIS id="z">
@@ -4617,6 +4615,7 @@
     <description>Codeword: Lambda coordination during cat heating</description>
     <CATEGORYMEM index="0" category="25" />
     <EMBEDDEDDATA mmedaddress="0x10E52" mmedelementsizebits="8" />
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="X">
       <VAR id="X" />
@@ -4628,6 +4627,7 @@
     <CATEGORYMEM index="0" category="26" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C514" mmedelementsizebits="16" />
     <units>grad C</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="0.019531 * X+ -50.000000">
       <VAR id="X" />
@@ -4639,6 +4639,7 @@
     <CATEGORYMEM index="0" category="26" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C516" mmedelementsizebits="16" />
     <units>grad C</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="0.019531 * X+ -50.000000">
       <VAR id="X" />
@@ -6514,6 +6515,7 @@
     <description>Codeword: Error Class: CAN-Timeout message instrument cluster</description>
     <CATEGORYMEM index="0" category="25" />
     <EMBEDDEDDATA mmedaddress="0x106C3" mmedelementsizebits="8" />
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="X">
       <VAR id="X" />
@@ -6631,6 +6633,7 @@
     <CATEGORYMEM index="0" category="32" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x17E06" mmedelementsizebits="16" />
     <units>rpm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="0.250000 * X">
       <VAR id="X" />
@@ -6642,6 +6645,7 @@
     <CATEGORYMEM index="0" category="32" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x17E00" mmedelementsizebits="16" />
     <units>km/h</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="0.007813 * X">
       <VAR id="X" />
@@ -6653,6 +6657,7 @@
     <CATEGORYMEM index="0" category="32" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x17E04" mmedelementsizebits="16" />
     <units>ms</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="20.000000 * X">
       <VAR id="X" />
@@ -6664,6 +6669,7 @@
     <CATEGORYMEM index="0" category="32" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x17E02" mmedelementsizebits="16" />
     <units>rpm</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="0.250000 * X">
       <VAR id="X" />
@@ -6675,6 +6681,7 @@
     <CATEGORYMEM index="0" category="32" />
     <EMBEDDEDDATA mmedaddress="0x17E08" mmedelementsizebits="8" />
     <units>%PED</units>
+    <outputtype>2</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="0.392157 * X">
       <VAR id="X" />
@@ -6720,7 +6727,6 @@
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <indexcount>8</indexcount>
-      <outputtype>1</outputtype>
       <LABEL index="0" value="0.00" />
       <LABEL index="1" value="1.00" />
       <LABEL index="2" value="2.00" />
@@ -6814,6 +6820,7 @@
     <CATEGORYMEM index="0" category="32" />
     <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x8B3A6" mmedelementsizebits="32" />
     <units>-</units>
+    <outputtype>3</outputtype>
     <decimalpl>0</decimalpl>
     <MATH equation="X">
       <VAR id="X" />
@@ -6913,7 +6920,7 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x8E800" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="71" />
       <units>-</units>
       <decimalpl>0</decimalpl>
-      <outputtype>2</outputtype>
+      <outputtype>3</outputtype>
       <MATH equation="X">
         <VAR id="X" />
       </MATH>
