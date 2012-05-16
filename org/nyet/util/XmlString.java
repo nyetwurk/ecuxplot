@@ -8,6 +8,7 @@ import java.lang.StringBuffer;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
 
 public class XmlString implements CharSequence, Appendable {
     // Members
@@ -15,12 +16,20 @@ public class XmlString implements CharSequence, Appendable {
     private int ShiftWidth=2;
     private int Indent=0;
     private static final String EOL="\n";
+    private LookupTranslator lt;
 
     // Constructors
-    public XmlString() { }
-    public XmlString(int i) { this.indent(i); }
-    public XmlString(String s) { this.append(s); }
-    public XmlString(int i, String s) { this.indent(i); this.append(s); }
+    public XmlString() {
+	String[][] sb = new String[128][2];
+	for(char i=0; i<128; i++) {
+	    sb[i][0] = String.format("%c",i+128);
+	    sb[i][1] = "&#" + (i+128) + ";";
+	}
+	this.lt = new LookupTranslator(sb);
+    }
+    public XmlString(int i) { this(); this.indent(i); }
+    public XmlString(String s) { this(); this.append(s); }
+    public XmlString(int i, String s) { this(); this.indent(i); this.append(s); }
 
     // CharSequence methods
     public String toString() { return this.buf.toString(); }
@@ -30,27 +39,26 @@ public class XmlString implements CharSequence, Appendable {
 	return this.buf.subSequence(start, end);
     }
 
-    // Static methods
-    private static String escape(String s)
+    // Methods
+    private String escape(String s)
     {
-	return StringEscapeUtils.escapeXml(s);
+	return this.lt.translate(StringEscapeUtils.escapeXml(s));
 	//return StringEscapeUtils.escapeHtml3(s);
 	//return StringEscapeUtils.escapeHtml4(s);
     }
 
-    private static String tagIt(String tag, int value)
+    private Appendable tagIt(String tag, int value)
     {
 	tag = escape(tag);
-	return String.format("%s>%d</%s", tag, value, tag);
+	return this.append(String.format("%s>%d</%s", tag, value, tag));
     }
-    private static String tagIt(String tag, Object value)
+    private Appendable tagIt(String tag, Object value)
     {
 	tag = escape(tag);
 	String v = escape(value.toString());
-	return String.format("%s>%s</%s", tag, v, tag);
+	return this.append(String.format("%s>%s</%s", tag, v, tag));
     }
 
-    // Methods
     public Appendable append(char c) { return this.buf.append(c); }
     public Appendable append(CharSequence cs, int start, int end) { return this.append(cs.subSequence(start,end)); }
     public Appendable append(CharSequence cs) { return this.append(cs.toString()); }
@@ -63,7 +71,7 @@ public class XmlString implements CharSequence, Appendable {
 	if (tag.length()<=0) return this.buf;
 	if (value==null) return this.append(escape(tag));
 	if (value.toString().length()<=0) return this.buf;
-	return this.append(tagIt(tag, value));
+	return this.tagIt(tag, value);
     }
 
     public Appendable append(String tag, Map<String, Object> attrs) {
