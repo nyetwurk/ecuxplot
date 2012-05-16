@@ -14,10 +14,10 @@ public class Project {
     public String version;
     private HexValue[] header1 = new HexValue[5];
     public int numMaps;
-    public ArrayList<Map> maps;
+    public TreeSet<Map> maps;
     private HexValue[] header2 = new HexValue[3];
     public int numFolders;
-    public Folder[] folders;
+    public TreeSet<Folder> folders = new TreeSet<Folder>();
     private byte[] remaining;
     public Project(String filename, ByteBuffer b) throws ParserException {
 	this.stem = Files.stem(filename);
@@ -28,7 +28,7 @@ public class Project {
 
 	// Maps
 	this.numMaps = b.getInt();
-	this.maps = new ArrayList<Map>();
+	this.maps = new TreeSet<Map>();
 	for(int i=0;i<numMaps;i++) {
 	    try {
 		this.maps.add(new Map(b));
@@ -44,12 +44,12 @@ public class Project {
 
 	// Folders
 	this.numFolders = b.getInt();
-	this.folders = new Folder[numFolders];
+
 	for(int i=0;i<numFolders;i++) {
 	    try {
 		Folder f = new Folder(b);
 		if(f.id>=0 && f.id<numFolders)
-		    this.folders[f.id]=f;
+		    this.folders.add(f);
 	    } catch (ParserException e) {
 		throw new ParserException(e.b,
 		    String.format("error parsing folder %d/%d: %s",
@@ -57,6 +57,18 @@ public class Project {
 		    e.o);
 	    }
 	}
+
+	// renumber ordinally, and make a lookup table for it
+        int flut[] = new int[numFolders];
+	int i=0;
+	for(Folder f: this.folders) {
+	    flut[f.id]=i; // old->new
+	    f.id=i++; // new id
+	}
+
+	// fix up map folder ids
+	for(Map m: this.maps)
+	    m.folderId=flut[m.folderId]; // old->new
 
 	// Trailing junk
 	//this.remaining = new byte[b.remaining()];
@@ -91,8 +103,9 @@ public class Project {
 		out += String.format(Map.XDF_LBL+"0x0\n",1225, "ADSCheck", 0);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1300, "GenFlags", 0);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1325, "ModeFlags", 0);
-		for(Folder f: this.folders)
+		for(Folder f: this.folders) {
 		    out += String.format(Map.XDF_LBL+"\"%s\"\n", 2000+f.id, "Category"+f.id, f.name);
+		}
 		return out + "%%END%%\n\n";
 	    case Map.FORMAT_XDF:
 		XmlString xs = new XmlString();

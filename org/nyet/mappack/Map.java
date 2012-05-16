@@ -10,7 +10,7 @@ import org.nyet.util.XmlString;
 import org.nyet.logfile.CSVRow;
 
 
-public class Map {
+public class Map implements Comparable {
     // Inner classes
     private class Enm implements Comparable {
 	protected int enm;
@@ -541,7 +541,7 @@ public class Map {
     public String toString(int format, ByteBuffer image)
 	throws Exception {
 	switch(format) {
-	    case FORMAT_DUMP: return toString();
+	    case FORMAT_DUMP: return toStringDump();
 	    case FORMAT_CSV: return toStringCSV(image);
 	    case FORMAT_OLD_XDF: return toStringOldXDF(image);
 	    case FORMAT_XDF: return toStringXDF(image);
@@ -821,7 +821,7 @@ public class Map {
 	return xs.append("/" + tag).toString();
     }
 
-    public String toString() {
+    public String toStringDump() {
 	String out = "   h0: " + header0 + "\n";
 	out += "  map: " + name + " [" + id + "] " + value.type + "\n";
 	out += "  org: " + organization + "\n";
@@ -860,5 +860,13 @@ public class Map {
 	out += "  h11: " + Arrays.toString(header11) + "\n";
 	out += " term2: " + Arrays.toString(term2) + "\n";
 	return out;
+    }
+
+    public String toString() {
+	return "" + this.extent[0].v;
+    }
+
+    public int compareTo(Object o) {
+	return this.toString().compareTo(o.toString());
     }
 }

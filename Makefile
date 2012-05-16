@@ -145,7 +145,8 @@ mapdump.MF: Makefile
 	@echo "Main-Class: mapdump" >> $@
 	@echo "Class-Path: $(subst :, ,$(MAPDUMP_JARS))" >> $@
 
-ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(EX_CLASSES)
+ALL_CLASSES:=$(shell find org -name \*.class -o -name \*.png) $(shell find vec_math -name \*.class)
+ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(ALL_CLASSES)
 	@rm -f $@
 	jar cfm $@ ECUxPlot.MF `find org -name \*.class -o -name \*.png` `find vec_math -name \*.class`
 

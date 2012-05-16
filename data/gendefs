@@ -1,18 +1,16 @@
 #!/bin/sh
 
-cd ..
-
 for source in $*; do
     dest=`basename $source .kp`
     stem=`echo $dest | cut -d - -f 1`
-    if [ -r data/$source ]; then
+    if [ -r $source ]; then
 	echo "generating csv"
-	echo ./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp -r data/8D0907551G.kp -i data/$stem.bin data/$source
-	./mapdump -r data/4Z7907551R.kp -r data/8D0907551F.kp -r data/8D0907551G.kp -i data/$stem.bin data/$source > data/$dest.csv
+	echo ./mapdump -r 4Z7907551R.kp -r 8D0907551F.kp -r 8D0907551G.kp -i $stem.bin $source
+	../mapdump.sh -r 4Z7907551R.kp -r 8D0907551F.kp -r 8D0907551G.kp -i $stem.bin $source > $dest.csv
 	echo "generating xdf"
-	echo ./mapdump -i data/$stem.bin -x data/$source
-	./mapdump -i data/$stem.bin -x data/$source > data/$dest.xdf
+	echo ./mapdump -i $stem.bin -x $source
+	../mapdump.sh -i $stem.bin -x $source > $dest.xdf
     else
-	echo "can't read data/$source"
+	echo "can't read $source"
     fi
 done
