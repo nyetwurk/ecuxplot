@@ -3,6 +3,7 @@ package org.nyet.logfile;
 import java.io.*;
 import java.lang.Math;
 import java.util.*;
+import java.text.SimpleDateFormat;
 import au.com.bytecode.opencsv.*;
 
 import org.nyet.util.DoubleArray;
@@ -44,9 +45,19 @@ public class Dataset {
 	}
 
 	public void add(String s) {
-	    try {
-		data.append(Double.valueOf(s));
-	    } catch (Exception e) {
+	    if (this.id.toString().equalsIgnoreCase("time") &&
+		s.matches("\\d{2}:\\d{2}:\\d{2}.\\d{3}")) {
+		SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss.SSS");
+		try {
+		    Date d = fmt.parse(s);
+		    data.append(Double.valueOf(d.getTime())/1000);
+		} catch (Exception e) {
+		}
+	    } else {
+		try {
+		    data.append(Double.valueOf(s));
+		} catch (Exception e) {
+		}
 	    }
 	}
 
