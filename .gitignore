@@ -10,3 +10,4 @@ ECUxPlot*.tar.gz
 ECUxPlot.app
 mapdump.jar
 version.txt
+org/nyet/util/Version.java
