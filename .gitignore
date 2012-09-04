@@ -1,0 +1,12 @@
+*.MF
+*.class
+*.exe
+*.swp
+*.tmp
+*.xml
+.classpath
+ECUxPlot*.jar
+ECUxPlot*.tar.gz
+ECUxPlot.app
+mapdump.jar
+version.txt

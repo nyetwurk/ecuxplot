@@ -1,6 +1,6 @@
 VERSION := 0.9
-RELEASE := 4.1
-RC :=
+RELEASE := 4.2
+RC := -rc1
 ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 
 JCOMMON_VER := 1.0.17
@@ -96,14 +96,14 @@ rsync: $(ARCHIVES) $(INSTALLER)
 	$(RSYNC) $^ nyet.org:public_html/cars/files/
 
 binclean:
-	rm -f ECUxPlot*.{jar,zip,tar.gz} *.exe *.MF
+	rm -f ECUxPlot*.{jar,zip,tar.gz} mapdump.jar *.exe *.MF
 
 clean: binclean
 	rm -rf build
 	rm -f ECUxPlot.xml mapdump.xml version.txt .classpath org/nyet/util/Version.java
 	rm -f *.class
-	find org -name \*.class | xargs rm
-	find vec_math -name \*.class | xargs rm
+	find org -name \*.class -exec rm {} \;
+	find vec_math -name \*.class -exec rm {} \;
 
 %.csv: %.kp mapdump
 	./mapdump -r $(REFERENCE) $< > $@
@@ -179,7 +179,7 @@ install: $(INSTALL_FILES) $(PROFILES)
 	cp -a --parents $(PROFILES) $(INSTALL_DIR)
 
 tag:
-	scripts/svn-tag $(ECUXPLOT_VER)
+	echo git tag -a $(ECUXPLOT_VER) -m "Version $(ECUXPLOT_VER)"
 
 %.java: %.java.template Makefile
 	cat $< | $(GEN) > $@
