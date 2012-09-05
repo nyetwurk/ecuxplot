@@ -1,14 +1,17 @@
-%.xml: %.xml.template Makefile scripts/Windows.mk
+EXES:=build/ECUxPlot.exe build/mapdump.exe
+
+build/%.xml: %.xml.template Makefile scripts/Windows.mk
+	@mkdir -p build
 	cat $< | $(GEN) > $@
 
 # unix launch4j requires full path to .xml
-ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar ECUxPlot.xml ECUxPlot.ico version.txt
+build/ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar build/ECUxPlot.xml ECUxPlot.ico build/version.txt
 	$(LAUNCH4J) $(ECUXPLOT_XML)
 
-mapdump.exe: mapdump.java mapdump.xml ECUxPlot.ico version.txt
+build/mapdump.exe: mapdump.jar build/mapdump.xml ECUxPlot.ico build/version.txt
 	$(LAUNCH4J) $(MAPDUMP_XML)
 
-$(INSTALLER): ECUxPlot.exe mapdump.exe $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
+$(INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	$(MAKENSIS) $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DVERSION=$(ECUXPLOT_VER) \
 	    $(OPT_PRE)DJFREECHART_VER=$(JFREECHART_VER) \

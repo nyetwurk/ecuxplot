@@ -14,13 +14,15 @@ JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
+space:=
+space+=
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
-CLASSPATH = '$(shell cygpath -wp .:$(JARS))'
+CLASSPATH = '$(shell cygpath -wp .:$(subst $(space),:,$(JARS)))'
 
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
-ECUXPLOT_XML := '$(shell cygpath -w $(PWD)/ECUxPlot.xml)'
-MAPDUMP_XML := '$(shell cygpath -w $(PWD)/mapdump.xml)'
+ECUXPLOT_XML := '$(shell cygpath -w $(PWD)/build/ECUxPlot.xml)'
+MAPDUMP_XML := '$(shell cygpath -w $(PWD)/build/mapdump.xml)'
 
 MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis)'
@@ -28,131 +30,85 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 INSTALL_DIR := '$(shell cygpath -u "C:\Program Files\ECUxPlot")'
 OPT_PRE := '/'
 else
-CLASSPATH = .:$(JARS)
+CLASSPATH = .:$(subst $(space),:,$(JARS))
 LAUNCH4J := /usr/local/launch4j/launch4j
-ECUXPLOT_XML := $(PWD)/ECUxPlot.xml
-MAPDUMP_XML := $(PWD)/mapdump.xml
+ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
+MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := makensis
 INSTALL_DIR := /usr/local/ecuxplot
 OPT_PRE := '-'
 endif
 RSYNC := rsync
 
-MP_SOURCES= HexValue.java Map.java Parser.java Parse.java \
-	    ParserException.java Project.java MapData.java \
-	    Folder.java
-
-LF_SOURCES= Dataset.java CSVFileFilter.java CSVRow.java
-
-UT_SOURCES= ExitListener.java WindowUtilities.java Cursors.java \
-	    WaitCursor.java MMapFile.java \
-	    MenuListener.java SubActionListener.java \
-	    GenericFileFilter.java Unsigned.java Signed.java DoubleArray.java \
-	    MovingAverageSmoothing.java Files.java Version.java \
-	    BrowserLaunch.java Strings.java Locate.java XmlString.java
-
-VM_SOURCES= LinearSmoothing.java SavitzkyGolaySmoothing.java
-
-EX_SOURCES= ECUxPlot.java ECUxChartFactory.java ECUxDataset.java \
-	    ECUxChartPanel.java AboutPanel.java \
-	    FATSChartFrame.java FATSDataset.java \
-	    FileMenu.java OptionsMenu.java ProfileMenu.java \
-	    AxisMenu.java HelpMenu.java \
-	    PreferencesEditor.java Env.java Units.java \
-	    Filter.java FilterEditor.java \
-	    Constants.java ConstantsEditor.java \
-	    PID.java PIDEditor.java \
-	    Fueling.java FuelingEditor.java \
-	    SAE.java SAEEditor.java \
-	    Preset.java ECUxPreset.java
-
-LF_CLASSES=$(LF_SOURCES:%.java=org/nyet/logfile/%.class)
-UT_CLASSES=$(UT_SOURCES:%.java=org/nyet/util/%.class)
-VM_CLASSES=$(VM_SOURCES:%.java=vec_math/%.class)
-MP_CLASSES=$(MP_SOURCES:%.java=org/nyet/mappack/%.class)
-
-EX_CLASSES=$(EX_SOURCES:%.java=org/nyet/ecuxplot/%.class)
-
-TARGETS=mapdump.class $(EX_CLASSES)
 REFERENCE=data/4Z7907551R.kp
 
-JARS:=jcommon-$(JCOMMON_VER).jar:jfreechart-$(JFREECHART_VER).jar:opencsv-$(OPENCSV_VER).jar:commons-lang3-$(COMMONS_LANG3_VER).jar:applib.jar:flanagan.jar:AppleJavaExtensions.jar
-MAPDUMP_JARS:=ECUxPlot-$(ECUXPLOT_VER).jar:opencsv-$(OPENCSV_VER).jar:commons-lang3-$(COMMONS_LANG3_VER).jar
+ECUXPLOT_JARS:=jcommon-$(JCOMMON_VER).jar jfreechart-$(JFREECHART_VER).jar applib.jar flanagan.jar AppleJavaExtensions.jar
+COMMON_JARS:=opencsv-$(OPENCSV_VER).jar commons-lang3-$(COMMONS_LANG3_VER).jar
 
-JFLAGS=-classpath $(CLASSPATH) -Xlint:deprecation -Xlint:unchecked
+JARS:=$(ECUXPLOT_JARS) $(COMMON_JARS)
+
 TARGET=ECUxPlot-$(ECUXPLOT_VER)
 INSTALLER=ECUxPlot-$(ECUXPLOT_VER)-setup.exe
 
 ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
-all: $(TARGETS) .classpath version.txt jar exe
 
-jar: $(TARGET).jar mapdump.jar
-run: jar
-	java -jar $(TARGET).jar
+AFLAGS:= -Decuxplot_jars="$(ECUXPLOT_JARS)" -Dcommon_jars="$(COMMON_JARS)" -Dtarget="$(TARGET)"
+ANT:=ant $(AFLAGS)
+
+VERSION_JAVA:=src/org/nyet/util/Version.java
+
+all: $(TARGET).jar mapdump.jar .classpath
+
+compile: build.xml $(VERSION_JAVA)
+	$(ANT) compile
+
+$(TARGET).jar: compile
+	$(ANT) ecuxplot
+
+mapdump.jar: compile
+	$(ANT) mapdump
+
+run: $(TARGET).jar
+	$(ANT) run
+
 archives: $(ARCHIVES)
-exe: ECUxPlot.exe mapdump.exe
 installer: $(INSTALLER)
 rsync: $(ARCHIVES) $(INSTALLER)
 	$(RSYNC) $^ nyet.org:public_html/cars/files/
 
 binclean:
-	rm -f ECUxPlot*.{jar,zip,tar.gz} mapdump.jar *.exe *.MF
+	rm -f ECUxPlot*.{jar,zip,tar.gz} mapdump.jar *.exe
 
 clean: binclean
 	rm -rf build
-	rm -f ECUxPlot.xml mapdump.xml version.txt .classpath org/nyet/util/Version.java
-	rm -f *.class
-	find org -name \*.class -exec rm {} \;
-	find vec_math -name \*.class -exec rm {} \;
+	rm -f .classpath $(VERSION_JAVA)
 
 %.csv: %.kp mapdump
 	./mapdump -r $(REFERENCE) $< > $@
 
 .classpath: Makefile
-	echo "export CLASSPATH=$(CLASSPATH)" > .classpath
+	@echo "export CLASSPATH=$(CLASSPATH)" > .classpath
 
-version.txt: Makefile
-	@rm -f version.txt
-	echo $(ECUXPLOT_VER) > $@
-
-mapdump.class: mapdump.java $(MP_CLASSES) $(UT_CLASSES)
-$(MP_CLASSES): $(LF_CLASSES) $(UT_CLASSES)
-$(EX_CLASSES): $(LF_CLASSES) $(UT_CLASSES) $(VM_CLASSES)
+build/version.txt: Makefile
+	@mkdir -p build
+	@rm -f $@
+	@echo $(ECUXPLOT_VER) > $@
 
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
 
 INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar mapdump.jar \
-		$(subst :, ,$(JARS)) version.txt README-Zeitronix.txt \
+		$(subst :, ,$(JARS)) build/version.txt README-Zeitronix.txt \
 		gpl-3.0.txt flanagan-license.txt
 
-GEN:=	sed -e 's/VERSION/$(VERSION)/g' | \
-	sed -e 's/RELEASE/$(RELEASE)/g' | \
-	sed -e 's/JAVAC_MAJOR_VER/$(JAVAC_MAJOR_VER)/g' | \
-	sed -e 's/JAVAC_MINOR_VER/$(JAVAC_MINOR_VER)/g' | \
-	sed -e 's/ECUXPLOT_VER/$(ECUXPLOT_VER)/g' | \
-	sed -e 's/JFREECHART_VER/$(JFREECHART_VER)/g' | \
-	sed -e 's/JCOMMON_VER/$(JCOMMON_VER)/g' | \
-	sed -e 's/OPENCSV_VER/$(OPENCSV_VER)/g' | \
-	sed -e 's/COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g'
-
-ECUxPlot.MF: Makefile
-	@echo "Manifest-Version: 1.0" > $@
-	@echo "Main-Class: org.nyet.ecuxplot.ECUxPlot" >> $@
-	@echo "Class-Path: $(subst :, ,$(JARS))" >> $@
-
-mapdump.MF: Makefile
-	@echo "Manifest-Version: 1.0" > $@
-	@echo "Main-Class: mapdump" >> $@
-	@echo "Class-Path: $(subst :, ,$(MAPDUMP_JARS))" >> $@
-
-ALL_CLASSES:=$(shell find org -name \*.class -o -name \*.png) $(shell find vec_math -name \*.class)
-ECUxPlot-$(ECUXPLOT_VER).jar: ECUxPlot.MF $(ALL_CLASSES)
-	@rm -f $@
-	jar cfm $@ ECUxPlot.MF `find org -name \*.class -o -name \*.png` `find vec_math -name \*.class`
-
-mapdump.jar: mapdump.MF mapdump.class mapdump$$Options.class
-	@rm -f $@
-	jar cfm $@ mapdump.MF mapdump.class 'mapdump$$Options.class'
+GEN:=	sed -e 's/%VERSION/$(VERSION)/g' | \
+	sed -e 's/%RELEASE/$(RELEASE)/g' | \
+	sed -e 's/%JAVAC_MAJOR_VER/$(JAVAC_MAJOR_VER)/g' | \
+	sed -e 's/%JAVAC_MINOR_VER/$(JAVAC_MINOR_VER)/g' | \
+	sed -e 's/%ECUXPLOT_VER/$(ECUXPLOT_VER)/g' | \
+	sed -e 's/%JFREECHART_VER/$(JFREECHART_VER)/g' | \
+	sed -e 's/%JCOMMON_VER/$(JCOMMON_VER)/g' | \
+	sed -e 's/%OPENCSV_VER/$(OPENCSV_VER)/g' | \
+	sed -e 's/%COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g'
 
 include scripts/Windows.mk
 include scripts/MacOS.mk
@@ -184,7 +140,4 @@ tag:
 %.java: %.java.template Makefile
 	cat $< | $(GEN) > $@
 
-%.class: %.java
-	javac $(JFLAGS) $<
-
-.PRECIOUS: org/nyet/util/Version.java
+.PRECIOUS: $(VERSION_JAVA)

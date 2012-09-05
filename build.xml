@@ -1,0 +1,53 @@
+<project>
+
+    <property name="main-class"	value="org.nyet.ecuxplot.ECUxPlot"/>
+
+    <depend srcdir="src" destdir="build/classes" cache="build/depcache" closure="yes"/>
+
+    <path id="classpath">
+	<fileset dir="." includes="${ecuxplot_jars}"/>
+	<fileset dir="." includes="${common_jars}"/>
+    </path>
+
+    <target name="prep">
+        <mkdir dir="build/classes"/>
+    </target>
+
+    <target name="compile" depends="prep">
+        <javac includeantruntime="false" srcdir="src" destdir="build/classes" classpathref="classpath"/>
+    </target>
+
+    <target name="ecuxplot" depends="compile">
+	<dependset>
+	    <srcfileset dir="." includes="build.xml"/>
+	    <targetfileset dir="." includes="${target}.jar"/>
+	</dependset>
+        <jar destfile="${target}.jar">
+	    <fileset dir="build/classes" excludes="mapdump*.class" />
+	    <fileset dir="src" includes="org/nyet/**/*.png" />
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+                <attribute name="Class-Path" value="${ecuxplot_jars}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="mapdump" depends="compile">
+	<dependset>
+	    <srcfileset dir="." includes="build.xml"/>
+	    <targetfileset dir="." includes="mapdump.jar"/>
+	</dependset>
+        <jar destfile="mapdump.jar">
+	    <fileset dir="build/classes" includes="mapdump*.class" />
+            <manifest>
+                <attribute name="Main-Class" value="mapdump"/>
+                <attribute name="Class-Path" value="${target}.jar ${common_jars}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="ecuxplot">
+        <java jar="${target}.jar" fork="true"/>
+    </target>
+
+</project>

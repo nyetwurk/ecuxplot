@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>ECUxPlot</string>
+	<string>%ECUxPlot</string>
 	<key>CFBundleVersion</key>
-	<string>ECUXPLOT_VER</string>
+	<string>%ECUXPLOT_VER</string>
 	<key>CFBundleAllowMixedLocalizations</key>
 	<string>true</string>
 	<key>CFBundleExecutable</key>
@@ -64,12 +64,12 @@
 		<string>1.5+</string>
 		<key>ClassPath</key>
 		<array>
-			<string>$JAVAROOT/ECUxPlot-ECUXPLOT_VER.jar</string>
+			<string>$JAVAROOT/ECUxPlot-%ECUXPLOT_VER.jar</string>
 			<string>$JAVAROOT/applib.jar</string>
 			<string>$JAVAROOT/flanagan.jar</string>
-			<string>$JAVAROOT/jcommon-JCOMMON_VER.jar</string>
-			<string>$JAVAROOT/jfreechart-JFREECHART_VER.jar</string>
-			<string>$JAVAROOT/opencsv-OPENCSV_VER.jar</string>
+			<string>$JAVAROOT/jcommon-%JCOMMON_VER.jar</string>
+			<string>$JAVAROOT/jfreechart-%JFREECHART_VER.jar</string>
+			<string>$JAVAROOT/opencsv-%OPENCSV_VER.jar</string>
 		</array>
 	</dict>
 </dict>

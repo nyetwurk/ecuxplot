@@ -1,13 +1,10 @@
-*.MF
+build
 *.class
 *.exe
 *.swp
 *.tmp
-*.xml
 .classpath
 ECUxPlot*.jar
 ECUxPlot*.tar.gz
-ECUxPlot.app
 mapdump.jar
-version.txt
-org/nyet/util/Version.java
+src/org/nyet/util/Version.java

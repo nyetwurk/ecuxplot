@@ -1,7 +1,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>mapdump.jar</jar>
+  <jar>../mapdump.jar</jar>
   <outfile>mapdump.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
@@ -11,7 +11,7 @@
   <supportUrl></supportUrl>
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
-  <icon>ECUxPlot.ico</icon>
+  <icon>../ECUxPlot.ico</icon>
   <classPath>
     <mainClass>mapdump</mainClass>
     <cp>.</cp>
@@ -25,12 +25,12 @@
     <maxHeapSize>0</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>VERSION.RELEASE</fileVersion>
-    <txtFileVersion>ECUXPLOT_VER</txtFileVersion>
+    <fileVersion>%VERSION.%RELEASE</fileVersion>
+    <txtFileVersion>%ECUXPLOT_VER</txtFileVersion>
     <fileDescription>Map pack converter</fileDescription>
     <copyright>Nye Liu</copyright>
-    <productVersion>VERSION.RELEASE</productVersion>
-    <txtProductVersion>ECUXPLOT_VER</txtProductVersion>
+    <productVersion>%VERSION.%RELEASE</productVersion>
+    <txtProductVersion>%ECUXPLOT_VER</txtProductVersion>
     <productName>Map pack converter</productName>
     <companyName></companyName>
     <internalName>mapdump</internalName>
