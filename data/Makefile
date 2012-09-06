@@ -7,8 +7,8 @@ all: $(TARGETS)
 clean:
 	rm -f $(TARGETS)
 
-%.csv: %.kp %.bin ../mapdump.class
+%.csv: %.kp %.bin ../mapdump.jar
 	../mapdump.sh -i $*.bin $< > $@
 
-%.xdf: %.kp ../mapdump.class
+%.xdf: %.kp ../mapdump.jar
 	../mapdump.sh -i $*.bin -x $< > $@
