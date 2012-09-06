@@ -3,7 +3,6 @@ build
 *.exe
 *.swp
 *.tmp
-.classpath
 ECUxPlot*.jar
 ECUxPlot*.tar.gz
 mapdump.jar

@@ -1,9 +1,0 @@
-#!/bin/sh
-set -e
-PROG=`readlink -m "$0" 2>/dev/null || true`
-[ -z "$PROG" ] && PROG=$0
-DIR=`dirname "$PROG"`
-if [ -r $DIR/.classpath ]; then
-    . $DIR/.classpath
-fi
-java -Dawt.useSystemAAFontSettings=on -cp $CLASSPATH org.nyet.ecuxplot.ECUxPlot "$@"

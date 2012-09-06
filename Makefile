@@ -17,8 +17,6 @@ JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 space:=
 space+=
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
-CLASSPATH = '$(shell cygpath -wp .:$(subst $(space),:,$(JARS)))'
-
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
 ECUXPLOT_XML := '$(shell cygpath -w $(PWD)/build/ECUxPlot.xml)'
@@ -30,7 +28,6 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 INSTALL_DIR := '$(shell cygpath -u "C:\Program Files\ECUxPlot")'
 OPT_PRE := '/'
 else
-CLASSPATH = .:$(subst $(space),:,$(JARS))
 LAUNCH4J := /usr/local/launch4j/launch4j
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
@@ -57,7 +54,7 @@ ANT:=ant $(AFLAGS)
 
 VERSION_JAVA:=src/org/nyet/util/Version.java
 
-all: $(TARGET).jar mapdump.jar .classpath
+all: $(TARGET).jar mapdump.jar build/version.txt
 
 compile: build.xml $(VERSION_JAVA)
 	$(ANT) compile
@@ -81,13 +78,10 @@ binclean:
 
 clean: binclean
 	rm -rf build
-	rm -f .classpath $(VERSION_JAVA)
+	rm -f $(VERSION_JAVA)
 
 %.csv: %.kp mapdump
 	./mapdump -r $(REFERENCE) $< > $@
-
-.classpath: Makefile
-	@echo "export CLASSPATH=$(CLASSPATH)" > .classpath
 
 build/version.txt: Makefile
 	@mkdir -p build
