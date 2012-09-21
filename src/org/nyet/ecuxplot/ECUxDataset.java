@@ -14,7 +14,7 @@ import org.nyet.util.DoubleArray;
 import org.nyet.util.Files;
 
 public class ECUxDataset extends Dataset {
-    private Column rpm, pedal, throttle, gear, boost;
+    private Column rpm, pedal, throttle, gear, zboost;
     private Env env;
     private Filter filter;
     private final double hp_per_watt = 0.00134102209;
@@ -33,11 +33,11 @@ public class ECUxDataset extends Dataset {
 	this.pedal = get(new String []
 		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position"});
 	this.throttle = get(new String []
-		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle"});
+		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle", "TPS"});
 	this.gear = get(new String []
 		{"Gear", "SelectedGear"});
 	// look for zeitronix boost for filtering
-	this.boost = get("Zeitronix Boost");
+	this.zboost = get("Zeitronix Boost");
 	/*
 	if(this.pedal==null && this.throttle==null) {
 	    if(this.pedal==null) System.out.println("could not find pedal position data");
@@ -72,6 +72,7 @@ public class ECUxDataset extends Dataset {
     public static final int LOG_VCDS = 2;
     public static final int LOG_ZEITRONIX = 3;
     public static final int LOG_ME7LOGGER = 4;
+    public static final int LOG_EVOSCAN = 5;
     public int logType;
 
     private int detect(String [] h) {
@@ -87,6 +88,8 @@ public class ECUxDataset extends Dataset {
 	if(h[0].matches("^TIME$")) return LOG_ECUX;
 
 	if(h[0].matches(".*ME7-Logger.*")) return LOG_ME7LOGGER;
+
+	if(h[0].matches("^LogID$")) return LOG_EVOSCAN;
 
 	return LOG_UNKNOWN;
     }
@@ -241,6 +244,13 @@ public class ECUxDataset extends Dataset {
 	    case LOG_ECUX:
 		u = ParseUnits(h);
 		this.time_ticks_per_sec = 1000;
+		break;
+	    case LOG_EVOSCAN:
+		u = new String[h.length]; // no units :/
+		for(int i=0;i<h.length;i++) {
+		    if(h[i].matches(".*RPM$")) h[i]="RPM";
+		    if(h[i].equals("LogEntrySeconds")) h[i]="TIME";
+		}
 		break;
 	    case LOG_ME7LOGGER:
 		String[] v;	// ME7 variable name
@@ -646,8 +656,8 @@ public class ECUxDataset extends Dataset {
 		    "<" + filter.minThrottle());
 	    ret=false;
 	}
-	if(boost!=null && boost.data.get(i)<0) {
-	    reasons.add("boost " + boost.data.get(i) +
+	if(zboost!=null && zboost.data.get(i)<0) {
+	    reasons.add("zboost " + zboost.data.get(i) +
 		    "<0");
 	    ret=false;
 	}

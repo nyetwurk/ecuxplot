@@ -64,6 +64,8 @@ public class AxisMenu extends JMenu {
 	item.addActionListener(new MenuListener(listener,this.getText()));
 	if(bg!=null) bg.add(item);
 	if(id.matches("RPM")) {
+	    this.add(item, 0);	// always add rpm first!
+
 	    this.add("Calc Velocity", listener, bg);
 	    this.add("Calc Acceleration (RPM/s)", listener, bg);
 	    this.add("Calc Acceleration (m/s^2)", listener, bg);
@@ -73,10 +75,6 @@ public class AxisMenu extends JMenu {
 	    this.add("Calc HP", listener, bg);
 	    this.add("Calc TQ", listener, bg);
 	    this.add("Calc Drag", listener, bg);
-
-	    // if X Axis menu, put RPM FIRST!
-	    if(bg!=null) this.add(item, 0);
-	    else this.add(item);
 
 	    addToSubmenu("Calc", new JSeparator(), false);
 
@@ -95,7 +93,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc Turbo Flow (lb/min)", listener, bg);
 		addToSubmenu("Calc", new JSeparator(), false);
 	    }
-	} else if(id.matches(".*(TargetAFR|AdaptationPartial|Injection|Fuel|Lambda).*")) {
+	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector).*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("AirFuelRatioDesired")) {
 		this.add("AirFuelRatioDesired (AFR)", listener, bg);
@@ -111,7 +109,7 @@ public class AxisMenu extends JMenu {
 		// addToSubmenu("Calc", new JSeparator(), false);
 		this.add("FuelInjectorDutyCycle", listener, bg);
 	    }
-	} else if(id.matches(".*([Bb]oost|Wastegate|Charge).*")) {
+	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		this.add("BoostPressureDesired (PSI)", listener, bg);
@@ -128,7 +126,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LDR PID", listener, bg);
 		addToSubmenu("Calc", new JSeparator(), false);
 	    }
-	} else if(id.matches("^(|Eta|Avg|Adapted)Ign.*")) {
+	} else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing).*")) {
 	    addToSubmenu("Ignition", item);
 	    if(id.matches("IgnitionTimingAngleOverall")) {
 		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
@@ -139,13 +137,13 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("EGT", item);
 	} else if(id.matches(".*(Idle|Idling).*")) {
 	    addToSubmenu("Idle", item);
-	} else if(id.matches("Knock.*")) {
+	} else if(id.matches(".*[Kk]nock.*")) {
 	    addToSubmenu("Knock", item);
 	} else if(id.matches(".*Misfire.*")) {
 	    addToSubmenu("Misfires", item);
-	} else if(id.matches("(OXS|O2SVoltage|ResistanceSensor).*")) {
+	} else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
 	    addToSubmenu("O2 Sensor(s)", item);
-	} else if(id.matches("(AccelPedal|Throttle).*")) {
+	} else if(id.matches("(AccelPedal|Throttle|TPS).*")) {
 	    addToSubmenu("Throttle", item);
 	} else if(id.matches(".*(Load|Torque).*")) {
 	    addToSubmenu("Load", item);
@@ -174,6 +172,10 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("IntakeAirTemperature")) {
 	    this.add(item);
 	    this.add("IntakeAirTemperature (C)", listener, bg);
+	} else if(id.matches(".*VV.*")) {	// EvoScan
+	    addToSubmenu("VVT", item);
+	} else if(id.matches("^Log.*")) {	// EvoScan
+	    addToSubmenu("EvoScan", item);
 	} else if(id.matches("^ME7L.*")) {
 	    addToSubmenu("ME7 Logger", item);
 	} else {
