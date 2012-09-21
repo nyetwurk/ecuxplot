@@ -27,7 +27,7 @@
 	    <fileset dir="src" includes="org/nyet/**/*.png" />
             <manifest>
                 <attribute name="Main-Class" value="${main-class}"/>
-                <attribute name="Class-Path" value="${ecuxplot_jars}"/>
+                <attribute name="Class-Path" value="${ecuxplot_jars} ${common_jars}"/>
             </manifest>
         </jar>
     </target>
