@@ -1,6 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 PROG=`readlink -m "$0" 2>/dev/null || true`
 [ -z "$PROG" ] && PROG=$0
 DIR=`dirname "$PROG"`
-exec java -Dawt.useSystemAAFontSettings=on -jar $DIR/ECUxPlot-`cat $DIR/build/version.txt`.jar "$@"
+
+for i in build/version.txt version.txt; do
+    [ -r "$DIR/$i" ] && VER=`cat "$DIR/$i"`
+done
+
+exec java -Dawt.useSystemAAFontSettings=on -jar $DIR/ECUxPlot-$VER.jar "$@"
