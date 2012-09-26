@@ -32,10 +32,16 @@ public class ECUxDataset extends Dataset {
 
 	this.pedal = get(new String []
 		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position"});
+	if (this.pedal!=null && this.pedal.data.isZero()) this.pedal=null;
+
 	this.throttle = get(new String []
-		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle", "TPS"});
+		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle"});
+	if (this.throttle!=null && this.throttle.data.isZero()) this.throttle=null;
+
 	this.gear = get(new String []
 		{"Gear", "SelectedGear"});
+	if (this.gear!=null && this.gear.data.isZero()) this.gear=null;
+
 	// look for zeitronix boost for filtering
 	this.zboost = get("Zeitronix Boost");
 	/*
@@ -250,6 +256,9 @@ public class ECUxDataset extends Dataset {
 		for(int i=0;i<h.length;i++) {
 		    if(h[i].matches(".*RPM$")) h[i]="RPM";
 		    if(h[i].equals("LogEntrySeconds")) h[i]="TIME";
+		    if(h[i].equals("TPS")) h[i]="ThrottlePlateAngle";
+		    if(h[i].equals("APP")) h[i]="AccelPedalPosition";
+		    if(h[i].equals("IAT")) h[i]="IntakeAirTemperature";
 		}
 		break;
 	    case LOG_ME7LOGGER:
@@ -681,8 +690,10 @@ public class ECUxDataset extends Dataset {
 	    }
 	}
 
-	if (!ret)
+	if (!ret) {
 	    this.lastFilterReasons = reasons;
+	    // System.out.println(reasons);
+	}
 
 	return ret;
     }
@@ -707,8 +718,10 @@ public class ECUxDataset extends Dataset {
 	    }
 	}
 
-	if (!ret)
+	if (!ret) {
 	    this.lastFilterReasons = reasons;
+	    // System.out.println(reasons);
+	}
 
 	return ret;
     }

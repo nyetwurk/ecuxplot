@@ -193,6 +193,13 @@ public class DoubleArray
 	return new DoubleArray(this._max(d.toArray()));
     }
 
+    public boolean isZero() {
+	for(int i=0;i<this.sp;i++) {
+	    if (this.array[i]!=0) return false;
+	}
+	return true;
+    }
+
     public double[] _derivative(double[] d, int window) {
         double[] out = new double[ this.sp ];
 	/*

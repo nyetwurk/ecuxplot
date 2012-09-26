@@ -143,7 +143,7 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Misfires", item);
 	} else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
 	    addToSubmenu("O2 Sensor(s)", item);
-	} else if(id.matches("(AccelPedal|Throttle|TPS).*")) {
+	} else if(id.matches(".*(Pedal|Throttle).*")) {
 	    addToSubmenu("Throttle", item);
 	} else if(id.matches(".*(Load|Torque).*")) {
 	    addToSubmenu("Load", item);
@@ -170,8 +170,10 @@ public class AxisMenu extends JMenu {
 	    this.add("Engine torque (ft-lb)", listener, bg);
 	    this.add("Engine HP", listener, bg);
 	} else if(id.matches("IntakeAirTemperature")) {
-	    this.add(item);
+	    addToSubmenu("Temperature", item);
 	    this.add("IntakeAirTemperature (C)", listener, bg);
+	} else if(id.matches(".*Temperature.*")) {
+	    addToSubmenu("Temperature", item);
 	} else if(id.matches(".*VV.*")) {	// EvoScan
 	    addToSubmenu("VVT", item);
 	} else if(id.matches("^Log.*")) {	// EvoScan
