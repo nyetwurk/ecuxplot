@@ -8,4 +8,4 @@ for i in build/version.txt version.txt; do
     [ -r "$DIR/$i" ] && VER=`cat "$DIR/$i"`
 done
 
-exec java -Dawt.useSystemAAFontSettings=on -jar $DIR/ECUxPlot-$VER.jar "$@"
+exec java -Dawt.useSystemAAFontSettings=on -jar "$DIR/ECUxPlot-$VER.jar" "$@"
