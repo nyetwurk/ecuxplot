@@ -1,6 +1,6 @@
 VERSION := 0.9
-RELEASE := 4.2
-RC :=
+RELEASE := 4.3
+RC := -rc1
 ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
 
 JCOMMON_VER := 1.0.17
@@ -129,7 +129,7 @@ install: $(INSTALL_FILES) $(PROFILES)
 	cp -a --parents $(PROFILES) $(INSTALL_DIR)
 
 tag:
-	echo git tag -a $(ECUXPLOT_VER) -m "Version $(ECUXPLOT_VER)"
+	git tag -a $(ECUXPLOT_VER) -m "Version $(ECUXPLOT_VER)"
 
 %.java: %.java.template Makefile
 	cat $< | $(GEN) > $@
