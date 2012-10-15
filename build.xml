@@ -14,7 +14,7 @@
     </target>
 
     <target name="compile" depends="prep">
-        <javac includeantruntime="false" srcdir="src" destdir="build/classes" classpathref="classpath"/>
+        <javac includeantruntime="false" srcdir="src" destdir="build/classes" classpathref="classpath" debug="on"/>
     </target>
 
     <target name="ecuxplot" depends="compile">
