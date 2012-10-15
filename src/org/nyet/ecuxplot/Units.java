@@ -54,7 +54,8 @@ public final class Units {
 
 	    {"Zeitronix TPS", "%"},
 	    {"Zeitronix AFR", "AFR"},
-	    {"Zettronix Lambda", "lambda"},
+	    {"Zeitronix Lambda", "lambda"},
+	    {"Zeitronix Time", "s"},
 	};
 
 	for(int i=0;i<legend.length;i++) {

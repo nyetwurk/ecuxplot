@@ -241,8 +241,7 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches(".*AFR$")) h[i]="Zeitronix AFR";
 		    if(h[i].matches(".*Lambda$")) h[i]="Zeitronix Lambda";
 		    if(h[i].matches(".*EGT$")) h[i]="Zeitronix EGT";
-		    // time is broken
-		    if(h[i].equals("Time")) h[i]=null;
+		    if(h[i].equals("Time")) h[i]="Zeitronix Time";
 		    if (verbose)
 			System.out.println("out: " + h[i] + " [" + u[i] + "]");
 		}

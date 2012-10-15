@@ -3,6 +3,7 @@ package org.nyet.logfile;
 import java.io.*;
 import java.lang.Math;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
 import au.com.bytecode.opencsv.*;
 
@@ -45,9 +46,21 @@ public class Dataset {
 	}
 
 	public void add(String s) {
-	    if (this.id.toString().equalsIgnoreCase("time") &&
-		s.matches("\\d{2}:\\d{2}:\\d{2}.\\d{3}")) {
-		SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss.SSS");
+	    // nuke non-printable chars
+	    final Pattern p = Pattern.compile("[^\\p{Print}]");
+	    s=p.matcher(s).replaceAll("");
+
+	    // look for time stamps, convert to seconds
+	    final Pattern p1 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}.\\d{3}");
+	    final Pattern p2 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}");
+
+	    SimpleDateFormat fmt=null;
+	    if (p1.matcher(s).matches()) {
+		fmt = new SimpleDateFormat("HH:mm:ss.SSS");
+	    } else if (p2.matcher(s).matches()) {
+		fmt = new SimpleDateFormat("HH:mm:ss");
+	    }
+	    if (fmt != null) {
 		try {
 		    Date d = fmt.parse(s);
 		    data.append(Double.valueOf(d.getTime())/1000);
