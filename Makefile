@@ -94,15 +94,15 @@ INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar mapdump.jar \
 		$(subst :, ,$(JARS)) build/version.txt README-Zeitronix.txt \
 		gpl-3.0.txt flanagan-license.txt
 
-GEN:=	sed -e 's/%VERSION/$(VERSION)/g' | \
-	sed -e 's/%RELEASE/$(RELEASE)/g' | \
-	sed -e 's/%JAVAC_MAJOR_VER/$(JAVAC_MAJOR_VER)/g' | \
-	sed -e 's/%JAVAC_MINOR_VER/$(JAVAC_MINOR_VER)/g' | \
-	sed -e 's/%ECUXPLOT_VER/$(ECUXPLOT_VER)/g' | \
-	sed -e 's/%JFREECHART_VER/$(JFREECHART_VER)/g' | \
-	sed -e 's/%JCOMMON_VER/$(JCOMMON_VER)/g' | \
-	sed -e 's/%OPENCSV_VER/$(OPENCSV_VER)/g' | \
-	sed -e 's/%COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g'
+GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
+	-e 's/%RELEASE/$(RELEASE)/g' \
+	-e 's/%JAVAC_MAJOR_VER/$(JAVAC_MAJOR_VER)/g' \
+	-e 's/%JAVAC_MINOR_VER/$(JAVAC_MINOR_VER)/g' \
+	-e 's/%ECUXPLOT_VER/$(ECUXPLOT_VER)/g' \
+	-e 's/%JFREECHART_VER/$(JFREECHART_VER)/g' \
+	-e 's/%JCOMMON_VER/$(JCOMMON_VER)/g' \
+	-e 's/%OPENCSV_VER/$(OPENCSV_VER)/g' \
+	-e 's/%COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g'
 
 include scripts/Windows.mk
 include scripts/MacOS.mk
@@ -111,13 +111,15 @@ ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
 	@rm -f $@
 	@rm -rf build/ECUxPlot
 	mkdir -p build/ECUxPlot
-	install -D -m 644 $(INSTALL_FILES) build/ECUxPlot
+	install -m 644 $(INSTALL_FILES) build/ECUxPlot
 	install ECUxPlot.sh build/ECUxPlot
-	cp -a --parents $(PROFILES) build/ECUxPlot
+	@mkdir -p build/ECUxPlot/profiles
+	(cd profiles; tar cf - .) | (cd build/ECUxPlot/profiles && tar xf -)
 	(cd build; tar czvf ../$@ ECUxPlot)
 
 install: $(INSTALL_FILES) $(PROFILES)
 	mkdir -p $(INSTALL_DIR)
+	mkdir -p $(INSTALL_DIR)/profiles
 	rm -f $(INSTALL_DIR)/ECUxPlot*.jar
 	rm -f $(INSTALL_DIR)/commons-lang3-*.jar
 	rm -f $(INSTALL_DIR)/jcommon-*.jar
@@ -126,7 +128,7 @@ install: $(INSTALL_FILES) $(PROFILES)
 	install -D -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
 	install ECUxPlot.sh $(INSTALL_DIR)
 	install mapdump.sh $(INSTALL_DIR)
-	cp -a --parents $(PROFILES) $(INSTALL_DIR)
+	(cd profiles; tar cf - .) | (cd $(INSTALL_DIR)/profiles && tar xf -)
 
 tag:
 	git tag -a $(ECUXPLOT_VER) -m "Version $(ECUXPLOT_VER)"
