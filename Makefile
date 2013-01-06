@@ -1,7 +1,6 @@
-VERSION := 0.9
-RELEASE := 4.3
-RC := -rc1
-ECUXPLOT_VER := $(VERSION)r$(RELEASE)$(RC)
+ECUXPLOT_VER := $(shell sh -c 'git describe --abbrev=4 --dirty --always')
+VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v\([^.]*\.[^.]*\)\..*/\1/')
+RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v[^.]*\.[^.]*\.\([^.]*\.[^.]*\)-.*/\1/')
 
 JCOMMON_VER := 1.0.17
 JFREECHART_VER := 1.0.14
@@ -83,10 +82,8 @@ clean: binclean
 %.csv: %.kp mapdump
 	./mapdump -r $(REFERENCE) $< > $@
 
-build/version.txt: Makefile
-	@mkdir -p build
-	@rm -f $@
-	@echo $(ECUXPLOT_VER) > $@
+build/version.txt: force
+	@echo '$(ECUXPLOT_VER)' | cmp -s - $@ || echo '$(ECUXPLOT_VER)' > $@
 
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
 
@@ -130,10 +127,11 @@ install: $(INSTALL_FILES) $(PROFILES)
 	install mapdump.sh $(INSTALL_DIR)
 	(cd profiles; tar cf - .) | (cd $(INSTALL_DIR)/profiles && tar xf -)
 
-tag:
-	git tag -a $(ECUXPLOT_VER) -m "Version $(ECUXPLOT_VER)"
+tag:	force
+	@[ -z "$(VER)" ] || git tag -a v$(VER) -m "Version v$(VER)"
 
 %.java: %.java.template Makefile
 	cat $< | $(GEN) > $@
 
 .PRECIOUS: $(VERSION_JAVA)
+.PHONY: force
