@@ -382,6 +382,8 @@ public class ECUxDataset extends Dataset {
 		DoubleArray a = super.get("RPM").data.smooth();
 		c = new Column(id, "RPM", a);
 	    }
+	} else if(id.equals("RPM - raw")) {
+	    c = new Column(id, "RPM", super.get("RPM").data);
 	} else if(id.equals("Calc Load")) {
 	    // g/sec to kg/hr
 	    DoubleArray a = super.get("MassAirFlow").data.mult(3.6);
@@ -464,6 +466,10 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray y = this.get("RPM").data;
 	    DoubleArray x = this.get("TIME").data;
 	    c = new Column(id, "RPM/s", y.derivative(x, this.MAW()).max(0));
+	} else if(id.equals("Calc Acceleration - raw (RPM/s)")) {
+	    DoubleArray y = this.get("RPM - raw").data;
+	    DoubleArray x = this.get("TIME").data;
+	    c = new Column(id, "RPM/s", y.derivative(x));
 	} else if(id.equals("Calc Acceleration (m/s^2)")) {
 	    DoubleArray y = this.get("Calc Velocity").data;
 	    DoubleArray x = this.get("TIME").data;

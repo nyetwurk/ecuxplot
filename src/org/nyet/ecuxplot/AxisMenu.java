@@ -65,9 +65,11 @@ public class AxisMenu extends JMenu {
 	if(bg!=null) bg.add(item);
 	if(id.matches("RPM")) {
 	    this.add(item, 0);	// always add rpm first!
+	    this.add("RPM - raw", listener, bg);
 
 	    this.add("Calc Velocity", listener, bg);
 	    this.add("Calc Acceleration (RPM/s)", listener, bg);
+	    this.add("Calc Acceleration - raw (RPM/s)", listener, bg);
 	    this.add("Calc Acceleration (m/s^2)", listener, bg);
 	    this.add("Calc Acceleration (g)", listener, bg);
 	    this.add("Calc WHP", listener, bg);
