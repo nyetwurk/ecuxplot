@@ -1,6 +1,6 @@
 ECUXPLOT_VER := $(shell sh -c 'git describe --abbrev=4 --dirty --always')
 VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v\([^.]*\.[^.]*\)r.*/\1/')
-RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v[^.]*\.[^.]*r\([^.]*\.[^.]*\)-.*/\1/')
+RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v[^.]*\.[^.]*r\([^.]*\.[^.]*.*\)/\1/')
 
 #versioninfo:
 #	echo ecuxplot_ver=$(ECUXPLOT_VER)
