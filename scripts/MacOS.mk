@@ -12,7 +12,7 @@ build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
 	cp -a --parents $(PROFILES) build/ECUxPlot.app/Contents/Resources/Java
 	touch build/.ECUxPlot.app.stamp
 
-build/ECUxPlot.app/Contents/%: MacOS.data/%.template Makefile
+build/ECUxPlot.app/Contents/%: MacOS.data/%.template build/version.txt Makefile scripts/MacOS.mk
 	@mkdir -p `dirname $@`
 	cat $< | $(GEN) > $@
 

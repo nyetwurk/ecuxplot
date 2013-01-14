@@ -1,6 +1,6 @@
 EXES:=build/ECUxPlot.exe build/mapdump.exe
 
-build/%.xml: %.xml.template Makefile scripts/Windows.mk
+build/%.xml: %.xml.template build/version.txt Makefile scripts/Windows.mk
 	@mkdir -p build
 	cat $< | $(GEN) > $@
 

@@ -2,6 +2,11 @@ ECUXPLOT_VER := $(shell sh -c 'git describe --abbrev=4 --dirty --always')
 VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v\([^.]*\.[^.]*\)r.*/\1/')
 RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v[^.]*\.[^.]*r\([^.]*\.[^.]*\)-.*/\1/')
 
+#versioninfo:
+#	echo ecuxplot_ver=$(ECUXPLOT_VER)
+#	echo version=$(VERSION)
+#	echo release=$(RELEASE)
+
 JCOMMON_VER := 1.0.17
 JFREECHART_VER := 1.0.14
 OPENCSV_VER := 2.3
