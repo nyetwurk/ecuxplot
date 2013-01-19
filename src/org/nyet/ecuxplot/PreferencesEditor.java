@@ -7,9 +7,11 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import java.beans.EventHandler;
-
 public class PreferencesEditor extends JPanel {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private JDialog dialog;
     private JButton jbtnOK;
     private boolean ok;

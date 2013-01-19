@@ -15,7 +15,7 @@ public class Locate {
    * @param c    a non-null class
    * @return    the URL for that class
    */
-  public static URL getUrlOfClass(Class c) {
+  public static URL getUrlOfClass(Class<?> c) {
     if(c==null) {
       throw new NullPointerException();
     }
@@ -46,7 +46,7 @@ public class Locate {
    * @return    a File object
    * @throws IOException
    */
-  public static File getClassLocation(Class c) throws IOException, FileNotFoundException {
+  public static File getClassLocation(Class<? extends Object> c) throws IOException, FileNotFoundException {
     if(c==null) {
       throw new NullPointerException();
     }
@@ -81,7 +81,7 @@ public class Locate {
     throw new FileNotFoundException(szUrl);
   }
 
-  public static File getClassDirectory(Class c) throws IOException, FileNotFoundException {
+  public static File getClassDirectory(Class<? extends Object> c) throws IOException, FileNotFoundException {
     File dir = getClassLocation(c);
     if(dir.isDirectory()) return dir;
     return dir.getParentFile();

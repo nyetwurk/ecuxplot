@@ -1,11 +1,8 @@
 package org.nyet.mappack;
 
-import java.io.*;
 import java.util.*;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 
 import org.nyet.util.MMapFile;
 
@@ -17,11 +14,10 @@ public class Parser extends MMapFile {
 
     private static final void eatNumber(ByteBuffer b, int count, int width) {
 	for (int i=0; i<count; i++) {
-	    int data;
 	    switch (width) {
-		case 1: data = b.get(); break;
-		case 2: data = b.getShort(); break;
-		case 4: data = b.getInt(); break;
+		case 1: b.get(); break;
+		case 2: b.getShort(); break;
+		case 4: b.getInt(); break;
 		default: return;
 	    }
 	}

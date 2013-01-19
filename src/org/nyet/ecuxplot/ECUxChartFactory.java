@@ -4,17 +4,13 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.renderer.xy.*;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.DefaultXYDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
-
 
 import org.nyet.logfile.Dataset;
 
@@ -151,7 +147,7 @@ public class ECUxChartFactory {
     }
 
     public static Integer[] addDataset(DefaultXYDataset d, ECUxDataset data,
-		    Comparable xkey, Dataset.Key ykey) {
+		    Comparable<?> xkey, Dataset.Key ykey) {
 	ArrayList<Integer> ret = new ArrayList<Integer>();
 	ArrayList<Dataset.Range> ranges = data.getRanges();
 	// add empty data in case we turn off filter, or we get some error
@@ -191,7 +187,7 @@ public class ECUxChartFactory {
     }
 
     // remove ALL series that match the data column tag
-    public static void removeDataset(DefaultXYDataset d, Comparable ykey) {
+    public static void removeDataset(DefaultXYDataset d, Comparable<?> ykey) {
 	if(ykey instanceof Dataset.Key) {
 	    // pull out ONLY the data column tag, and ykey is now a String.
 	    ykey = ((Dataset.Key)ykey).getString();
@@ -210,7 +206,7 @@ public class ECUxChartFactory {
     public static String [] getDatasetYkeys(DefaultXYDataset d) {
 	ArrayList<String> ret = new ArrayList<String>();
 	for(int i=0;i<d.getSeriesCount();i++) {
-	    Comparable key = d.getSeriesKey(i);
+	    Comparable<?> key = d.getSeriesKey(i);
 	    String s;
 	    if(key instanceof Dataset.Key)
 		s=((Dataset.Key)key).getString();

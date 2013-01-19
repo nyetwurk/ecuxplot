@@ -3,6 +3,10 @@ package org.nyet.mappack;
 import java.nio.ByteBuffer;
 
 public class ParserException extends Exception {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     public ByteBuffer b;
     public Object o;
     public ParserException(ByteBuffer b, String msg, Object o) {

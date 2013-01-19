@@ -3,6 +3,11 @@ package org.nyet.logfile;
 import java.util.ArrayList;
 
 public class CSVRow extends ArrayList<String> {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public String toString() {
 	return "\"" + org.nyet.util.Strings.join("\",\"", this) + "\"";
     }
@@ -19,7 +24,7 @@ public class CSVRow extends ArrayList<String> {
 	return super.add(s);
     }
 
-    public boolean add(Comparable o) {
+    public boolean add(Comparable<?> o) {
 	return add(o.toString());
     }
 

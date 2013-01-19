@@ -1,14 +1,12 @@
 package org.nyet.logfile;
 
 import java.io.*;
-import java.lang.Math;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
 import au.com.bytecode.opencsv.*;
 
 import org.nyet.util.DoubleArray;
-import org.nyet.util.Strings;
 
 public class Dataset {
     private String [] ids;
@@ -32,14 +30,14 @@ public class Dataset {
     }
 
     public class Column {
-	private Comparable id;
+	private Comparable<?> id;
 	private String units;
 	public DoubleArray data;
 
-	public Column(Comparable id, String units) {
+	public Column(Comparable<?> id, String units) {
 	    this(id, units, new DoubleArray());
 	}
-	public Column(Comparable id, String units, DoubleArray data) {
+	public Column(Comparable<?> id, String units, DoubleArray data) {
 	    this.id = id;
 	    this.units = units;
 	    this.data = data;
@@ -81,7 +79,7 @@ public class Dataset {
 	public String getUnits() { return this.units; }
     }
 
-    public class Key implements Comparable {
+    public class Key implements Comparable<Object> {
 	private String fn;
 	private String s;
 	private Integer range;
@@ -202,19 +200,19 @@ public class Dataset {
 	return (Column) this.columns.get(id);
     }
 
-    public String units(Comparable id) {
+    public String units(Comparable<?> id) {
 	final Column c = this.get(id);
 	if(c==null) return null;
 	return c.getUnits();
     }
 
-    public Column get(Comparable id) {
+    public Column get(Comparable<?> id) {
 	for(Column c : this.columns)
 	    if(id.equals(c.id)) return c;
 	return null;
     }
 
-    public boolean exists(Comparable id) {
+    public boolean exists(Comparable<?> id) {
 	if (this.get(id) == null) return false;
 	if (this.get(id).data == null) return false;
 	if (this.get(id).data.size() == 0) return false;
@@ -265,7 +263,7 @@ public class Dataset {
 	return c.data.toArray(r.start, r.end);
     }
 
-    public double[] getData(Comparable id, Range r) {
+    public double[] getData(Comparable<?> id, Range r) {
 	final Column c = this.get(id);
 	if (c==null) return null;
 	return c.data.toArray(r.start, r.end);

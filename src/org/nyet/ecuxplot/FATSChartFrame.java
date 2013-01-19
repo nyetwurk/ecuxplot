@@ -17,6 +17,10 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 
 public class FATSChartFrame extends ChartFrame implements ActionListener {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private FATSDataset dataset;
     private ECUxPlot plotFrame;
     private JTextField start;
@@ -126,31 +130,31 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 
     private java.awt.Dimension windowSize() {
 	return new java.awt.Dimension(
-	    this.plotFrame.getPreferences().getInt("FATSWindowWidth", 300),
-	    this.plotFrame.getPreferences().getInt("FATSWindowHeight", 400));
+	    ECUxPlot.getPreferences().getInt("FATSWindowWidth", 300),
+	    ECUxPlot.getPreferences().getInt("FATSWindowHeight", 400));
     }
 
     private void putWindowSize() {
-	this.plotFrame.getPreferences().putInt("FATSWindowWidth",
+	ECUxPlot.getPreferences().putInt("FATSWindowWidth",
 		this.getWidth());
-	this.plotFrame.getPreferences().putInt("FATSWindowHeight",
+	ECUxPlot.getPreferences().putInt("FATSWindowHeight",
 		this.getHeight());
     }
 
     // relative to plot frame
     private java.awt.Point windowLocation() {
 	return new java.awt.Point(
-	    this.plotFrame.getPreferences().getInt("FATSWindowX",
+	    ECUxPlot.getPreferences().getInt("FATSWindowX",
 		this.plotFrame.getWidth()),
-	    this.plotFrame.getPreferences().getInt("FATSWindowY", 0));
+	    ECUxPlot.getPreferences().getInt("FATSWindowY", 0));
     }
 
     private void putWindowLocation() {
 	Point l = this.getLocation();
 	Point pl = plotFrame.getLocation();
 	l.translate(-pl.x, -pl.y);
-	this.plotFrame.getPreferences().putInt("FATSWindowX", l.x);
-	this.plotFrame.getPreferences().putInt("FATSWindowY", l.y);
+	ECUxPlot.getPreferences().putInt("FATSWindowX", l.x);
+	ECUxPlot.getPreferences().putInt("FATSWindowY", l.y);
     }
 
     // cleanup

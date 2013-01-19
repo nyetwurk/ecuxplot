@@ -5,8 +5,8 @@ import java.awt.event.ActionEvent;
 
 public class MenuListener implements ActionListener {
     private SubActionListener listener;
-    private Comparable parentId;
-    public MenuListener(SubActionListener listener, Comparable parentId) {
+    private Comparable<?> parentId;
+    public MenuListener(SubActionListener listener, Comparable<?> parentId) {
 	super();
 	this.parentId = parentId;
 	this.listener = listener;

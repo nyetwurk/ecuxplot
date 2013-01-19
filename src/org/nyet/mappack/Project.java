@@ -18,7 +18,6 @@ public class Project {
     private HexValue[] header2 = new HexValue[3];
     public int numFolders;
     public TreeSet<Folder> folders = new TreeSet<Folder>();
-    private byte[] remaining;
     public Project(String filename, ByteBuffer b) throws ParserException {
 	this.stem = Files.stem(filename);
 	this.name = Parse.string(b);

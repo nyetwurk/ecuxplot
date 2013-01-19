@@ -2,11 +2,15 @@ package org.nyet.ecuxplot;
 
 import java.util.prefs.Preferences;
 
-import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
 public class FuelingEditor extends PreferencesEditor {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     private Fueling fueling;
 
     public JTextField MAF;

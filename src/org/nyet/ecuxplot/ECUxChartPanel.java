@@ -10,6 +10,11 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.ui.ExtensionFileFilter;
 
 public class ECUxChartPanel extends ChartPanel {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public ECUxChartPanel(JFreeChart chart) {
 	super(chart);
 	setMouseWheelEnabled(true);

@@ -3,7 +3,7 @@ package org.nyet.mappack;
 import java.util.Arrays;
 import java.nio.ByteBuffer;
 
-public class Folder implements Comparable {
+public class Folder implements Comparable<Object> {
     public int id;
     private HexValue header;
     public String name;

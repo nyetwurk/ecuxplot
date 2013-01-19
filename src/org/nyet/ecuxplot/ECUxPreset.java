@@ -1,6 +1,5 @@
 package org.nyet.ecuxplot;
 
-import java.util.TreeMap;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
@@ -62,23 +61,23 @@ public class ECUxPreset extends Preset {
 	    "Calc Boost Spool Rate (time)");
     }
 
-    public ECUxPreset(Comparable name) { super(name);}
-    public ECUxPreset(Comparable name, Comparable xkey, Comparable [] ykeys) {
+    public ECUxPreset(Comparable<?> name) { super(name);}
+    public ECUxPreset(Comparable<?> name, Comparable<?> xkey, Comparable<?>[] ykeys) {
 	this(name, xkey, ykeys, new Comparable [] {});
     }
-    public ECUxPreset(Comparable name, Comparable xkey, Comparable ykey) {
-	this(name, xkey, new Comparable [] {ykey}, new Comparable [] {});
+    public ECUxPreset(Comparable<?> name, Comparable<?> xkey, Comparable<?> ykey) {
+	this(name, xkey, new Comparable [] {ykey}, new Comparable<?>[] {});
     }
-    public ECUxPreset(Comparable name, Comparable xkey, Comparable ykey,
-	Comparable ykey2) {
-	this(name, xkey, new Comparable [] {ykey}, new Comparable [] {ykey2});
+    public ECUxPreset(Comparable<?> name, Comparable<?> xkey, Comparable<?> ykey,
+	Comparable<?> ykey2) {
+	this(name, xkey, new Comparable [] {ykey}, new Comparable<?>[] {ykey2});
     }
-    public ECUxPreset(Comparable name, Comparable xkey, Comparable [] ykeys,
-	Comparable [] ykeys2) {
+    public ECUxPreset(Comparable<?> name, Comparable<?> xkey, Comparable<?>[] ykeys,
+	Comparable<?>[] ykeys2) {
 	this(name, xkey, ykeys, ykeys2, false);
     }
-    public ECUxPreset(Comparable name, Comparable xkey, Comparable [] ykeys,
-	Comparable [] ykeys2, boolean scatter)
+    public ECUxPreset(Comparable<?> name, Comparable<?> xkey, Comparable<?>[] ykeys,
+	Comparable<?>[] ykeys2, boolean scatter)
     {
 	super(name);
 	this.xkey(xkey);
@@ -89,14 +88,14 @@ public class ECUxPreset extends Preset {
 
     // GETS
     public String tag() { return this.prefs.get("tag", this.prefs.name()); } // for Undo
-    public Comparable xkey() { return this.prefs.get("xkey", null); }
-    public Comparable[] ykeys(int which) { return this.getArray(which==0?"ykeys0":"ykeys1"); }
+    public Comparable<?> xkey() { return this.prefs.get("xkey", null); }
+    public Comparable<?>[] ykeys(int which) { return this.getArray(which==0?"ykeys0":"ykeys1"); }
     public Boolean scatter() { return this.prefs.getBoolean("scatter", false); }
 
     // PUTS
     public void tag(String tag) { this.prefs.put("tag", tag); }	// for Undo
-    public void xkey(Comparable xkey) { this.prefs.put("xkey", xkey.toString()); }
-    public void ykeys(int which, Comparable[] ykeys) { this.putArray(which==0?"ykeys0":"ykeys1", ykeys); }
+    public void xkey(Comparable<?> xkey) { this.prefs.put("xkey", xkey.toString()); }
+    public void ykeys(int which, Comparable<?>[] ykeys) { this.putArray(which==0?"ykeys0":"ykeys1", ykeys); }
     public void scatter(Boolean scatter) { this.prefs.putBoolean("scatter", scatter); }
 
     // misc

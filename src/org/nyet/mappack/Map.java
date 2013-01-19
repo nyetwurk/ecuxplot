@@ -10,9 +10,9 @@ import org.nyet.util.XmlString;
 import org.nyet.logfile.CSVRow;
 
 
-public class Map implements Comparable {
+public class Map implements Comparable<Object> {
     // Inner classes
-    private class Enm implements Comparable {
+    private class Enm implements Comparable<Object> {
 	protected int enm;
 	public String[] legend;
 	public Enm(ByteBuffer b) { enm=b.getInt(); }
@@ -109,7 +109,7 @@ public class Map implements Comparable {
 	}
     }
 
-    public class Dimension implements Comparable {
+    public class Dimension implements Comparable<Object> {
 	public int x;
 	public int y;
 	public Dimension(int xx, int yy) { x = xx; y = yy; }
@@ -790,7 +790,7 @@ public class Map implements Comparable {
 
     private String toStringXDF(ByteBuffer image) throws Exception {
 	boolean table = this.organization.isTable();
-	String out, tag;
+	String tag;
 
 	XmlString xs = new XmlString(1);
 	if (table) {

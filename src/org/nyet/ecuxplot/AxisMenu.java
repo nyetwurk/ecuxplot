@@ -20,9 +20,13 @@ import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 
 public class AxisMenu extends JMenu {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private SubActionListener listener;
     private boolean radioButton;
-    private Comparable[] initialChecked;
+    private Comparable<?>[] initialChecked;
 
     private HashMap<String, AbstractButton> members =
 	new HashMap<String, AbstractButton>();
@@ -208,11 +212,11 @@ public class AxisMenu extends JMenu {
 
     // constructors
     public AxisMenu(String text, String[] headers, SubActionListener listener,
-	boolean radioButton, Comparable[] initialChecked) {
+	boolean radioButton, Comparable<?>[] initialChecked) {
 	this(text, headers, listener, radioButton, initialChecked, -1);
     }
     public AxisMenu(String text, String[] headers, SubActionListener listener,
-	boolean radioButton, Comparable[] initialChecked, int maxItems) {
+	boolean radioButton, Comparable<?>[] initialChecked, int maxItems) {
 
 	super(text);
 
@@ -268,7 +272,7 @@ public class AxisMenu extends JMenu {
     }
 
     public AxisMenu(String text, String[] headers, SubActionListener listener,
-	boolean radioButton, Comparable initialChecked) {
+	boolean radioButton, Comparable<?> initialChecked) {
 	this(text, headers, listener, radioButton,
 	    new Comparable [] {initialChecked});
     }
@@ -311,22 +315,22 @@ public class AxisMenu extends JMenu {
 	    item.setSelected(false);
     }
 
-    public void setSelected(Comparable key) {
+    public void setSelected(Comparable<?> key) {
 	AbstractButton item = this.members.get(key);
 	if(item!=null) item.setSelected(true);
     }
 
-    public void setSelected(Comparable[] keys) {
+    public void setSelected(Comparable<?>[] keys) {
 	for(int i=0; i<keys.length; i++) {
 	    this.setSelected(keys[i]);
 	}
     }
 
-    public void setOnlySelected(Comparable[] keys) {
-	this.setOnlySelected(new HashSet<Comparable>(Arrays.asList(keys)));
+    public void setOnlySelected(Comparable<?>[] keys) {
+	this.setOnlySelected(new HashSet<Comparable<?>>(Arrays.asList(keys)));
     }
 
-    public void setOnlySelected(Set<Comparable> keys) {
+    public void setOnlySelected(Set<Comparable<?>> keys) {
 	for(String ik : this.members.keySet()) {
 	    AbstractButton item = this.members.get(ik);
 	    item.setSelected(keys.contains(ik));

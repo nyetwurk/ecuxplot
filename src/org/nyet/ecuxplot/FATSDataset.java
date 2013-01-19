@@ -7,6 +7,10 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.nyet.util.Files;
 
 public class FATSDataset extends DefaultCategoryDataset {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private int start = 4200;
     private int end = 6500;
     private TreeMap<String, ECUxDataset> fileDatasets;
@@ -68,7 +72,7 @@ public class FATSDataset extends DefaultCategoryDataset {
 	rebuild();
     }
     public int getStart() { return this.start; }
-    public int getEnd() { return this.end=end; }
+    public int getEnd() { return this.end; }
 
     public String getTitle() {
 	return this.start + "-" + this.end + " RPM";

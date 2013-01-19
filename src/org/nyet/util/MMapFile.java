@@ -16,13 +16,20 @@ public class MMapFile {
 	File file = new File(fname);
 	if(!file.exists()) throw new Exception(fname + ": no such file");
 
-	this.buf = new FileInputStream(fname).getChannel().map(
-	    FileChannel.MapMode.READ_ONLY, 0, file.length());
-	if(this.buf == null) throw new Exception("constructor failed");
+	FileInputStream fi = new FileInputStream(fname);
+	try {
+	    this.buf=fi.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+	    if(this.buf == null) {
+		if (fi!=null) fi.close();
+		throw new Exception("constructor failed");
+	    }
 
-	this.buf.order(order);
-	this.length = file.length();
-	this.mTime = file.lastModified();
+	    this.buf.order(order);
+	    this.length = file.length();
+	    this.mTime = file.lastModified();
+	} finally {
+	    if (fi!=null) fi.close();
+	}
     }
 
     public ByteBuffer getByteBuffer() throws Exception {

@@ -2,11 +2,15 @@ package org.nyet.ecuxplot;
 
 import java.util.prefs.Preferences;
 
-import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
 public class ConstantsEditor extends PreferencesEditor {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     private Constants c;
 
     public JTextField mass;

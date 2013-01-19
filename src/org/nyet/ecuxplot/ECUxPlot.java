@@ -1,13 +1,11 @@
 package org.nyet.ecuxplot;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.util.*;
 import java.util.prefs.Preferences;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 
@@ -18,9 +16,7 @@ import com.apple.eawt.*;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
 
-import org.jfree.data.time.Month;
 import org.jfree.data.xy.DefaultXYDataset;
-import org.jfree.data.xy.XYSeries;
 
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
@@ -30,6 +26,10 @@ import org.nyet.util.*;
 import org.nyet.logfile.Dataset;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     // each file loaded has an associated dataset
     private TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
     private ArrayList<String> files = new ArrayList<String>();
@@ -100,21 +100,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
     }
 
     private boolean scatter() {
-	return this.scatter(this.prefs);
+	return ECUxPlot.scatter(this.prefs);
     }
 
     private boolean showFATS() {
       return this.prefs.getBoolean("showfats", false);
     }
 
-    private Comparable xkey() {
-	final Comparable defaultXkey = new ECUxPreset("Power").xkey();
+    private Comparable<?> xkey() {
+	final Comparable<?> defaultXkey = new ECUxPreset("Power").xkey();
 	return this.prefs.get("xkey", defaultXkey.toString());
     }
 
-    private Comparable[] ykeys(int index) {
-	final Comparable[] ykeys = new ECUxPreset("Power").ykeys(0);
-	final Comparable[] ykeys2 = new ECUxPreset("Power").ykeys(1);
+    private Comparable<?>[] ykeys(int index) {
+	final Comparable<?>[] ykeys = new ECUxPreset("Power").ykeys(0);
+	final Comparable<?>[] ykeys2 = new ECUxPreset("Power").ykeys(1);
 	final String[] defaultYkeys = { Strings.join(",", ykeys), Strings.join(",", ykeys2) };
 
 	String k=this.prefs.get("ykeys"+index, defaultYkeys[index]);
@@ -132,10 +132,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.prefs.putInt("windowHeight", this.getHeight());
     }
 
-    private void prefsPutXkey(Comparable xkey) {
+    private void prefsPutXkey(Comparable<?> xkey) {
 	this.prefs.put("xkey", xkey.toString());
     }
-    private void prefsPutYkeys(int axis, Comparable [] ykeys) {
+    private void prefsPutYkeys(int axis, Comparable<?>[] ykeys) {
 	this.prefs.put("ykeys"+axis,Strings.join(",",ykeys));
     }
     private void prefsPutYkeys(int axis) {
@@ -501,7 +501,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    private String findUnits(Comparable key) {
+    private String findUnits(Comparable<?> key) {
 	ArrayList<String> units = new ArrayList<String>();
 	for(ECUxDataset d : this.fileDatasets.values()) {
 	    String u = d.units(key);
@@ -531,7 +531,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	    final org.jfree.data.xy.XYDataset dataset = plot.getDataset(axis);
 	    if(dataset!=null) {
 		for(int series=0; series<dataset.getSeriesCount(); series++) {
-		    Comparable key = dataset.getSeriesKey(series);
+		    Comparable<?> key = dataset.getSeriesKey(series);
 		    if(key==null) continue;
 		    String s;
 
@@ -643,12 +643,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	this.yAxis[axis].uncheckAll();
     }
 
-    private void editChartY(Comparable ykey, int axis, boolean add) {
+    private void editChartY(Comparable<?> ykey, int axis, boolean add) {
 	for(ECUxDataset data : this.fileDatasets.values())
 	    editChartY(data, ykey, axis, add);
     }
 
-    private void editChartY(ECUxDataset data, Comparable ykey, int axis,
+    private void editChartY(ECUxDataset data, Comparable<?> ykey, int axis,
 	boolean add) {
 	if(add && !(data.exists(ykey)) )
 	    return;
@@ -664,8 +664,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    private void addChartY(Comparable[] ykey, int axis) {
-	for(Comparable k : ykey)
+    private void addChartY(Comparable<?>[] ykey, int axis) {
+	for(Comparable<?> k : ykey)
 	    editChartY(k, axis, true);
     }
 
@@ -676,10 +676,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	p.tag(this.chartTitle());
     }
 
-    public void savePreset(Comparable name) {
+    public void savePreset(Comparable<?> name) {
 	if(this.chartPanel==null) return;
-	final ECUxPreset p = new ECUxPreset(name, this.xkey(),
-	    this.ykeys(0), this.ykeys(1), this.scatter());
+	new ECUxPreset(name, this.xkey(), this.ykeys(0), this.ykeys(1), this.scatter());
 	this.chartTitle((String)name);
 	this.prefs.put("title", (String)name);
     }
@@ -697,7 +696,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	}
     }
 
-    public void loadPreset(Comparable name) {
+    public void loadPreset(Comparable<String> name) {
 	final ECUxPreset p = new ECUxPreset(name);
 	if(p!=null) loadPreset(p);
     }
@@ -730,7 +729,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	yAxis[1].setOnlySelected(p.ykeys(1));
     }
 
-    public void actionPerformed(ActionEvent event, Comparable parentId) {
+    public void actionPerformed(ActionEvent event, Comparable<?> parentId) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	// System.out.println(source.getText() + ":" + parentId);
 	if(parentId.equals("X Axis")) {

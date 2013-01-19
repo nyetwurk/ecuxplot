@@ -5,6 +5,11 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class PIDEditor extends PreferencesEditor {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     private PID pid;
 
     private JTextField time_constant;

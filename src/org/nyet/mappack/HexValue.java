@@ -1,9 +1,8 @@
 package org.nyet.mappack;
 
-import java.util.*;
 import java.nio.ByteBuffer;
 
-public class HexValue implements Comparable {
+public class HexValue implements Comparable<Object> {
     public int v;
     public String toString() { return String.format("0x%x", v); }
     public HexValue(int vv) { this.v=vv; }

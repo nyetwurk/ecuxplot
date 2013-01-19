@@ -18,6 +18,10 @@ import org.nyet.util.GenericFileFilter;
 import org.nyet.util.Locate;
 
 public final class ProfileMenu extends JMenu {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private ECUxPlot plotFrame;
     private JMenu loadProfilesMenu;
     private JMenu saveProfilesMenu;
@@ -103,8 +107,8 @@ public final class ProfileMenu extends JMenu {
 		File pdir=new File(this.dir, event.getActionCommand());
 		File profiles[] = pdir.listFiles(new GenericFileFilter("xml"));
 		for(File p : profiles) {
-		    pm.plotFrame.getPreferences().importPreferences(new
-			FileInputStream(p));
+		    ECUxPlot.getPreferences();
+		    Preferences.importPreferences(new FileInputStream(p));
 		}
 		if(pm.plotFrame!=null) pm.plotFrame.rebuild();
 	    } catch (Exception e) {

@@ -10,7 +10,7 @@ public class Preset {
 	return Preferences.userNodeForPackage(Preset.class).node("presets");
     }
 
-    public Preset(Comparable name) {
+    public Preset(Comparable<?> name) {
 	this.prefs=getPreferences().node(name.toString());
     }
 
@@ -19,7 +19,7 @@ public class Preset {
     }
 
     // GETS
-    protected Comparable[] getArray(Comparable what) {
+    protected Comparable<?>[] getArray(Comparable<?> what) {
 	int num = this.prefs.getInt("num_" + what, 0);
 	// System.out.println(what + ":" + num);
 	String[] out = new String[num];
@@ -32,11 +32,11 @@ public class Preset {
     }
 
     // PUTS
-    protected void putArray(Comparable what, Comparable[] in) {
+    protected void putArray(Comparable<?> what, Comparable<?>[] in) {
 	int i=0;
 	this.prefs.putInt("num_" + what, in.length);
 	Preferences p = this.prefs.node(what.toString());
-	for(Comparable s : in)
+	for(Comparable<?> s : in)
 	    p.put("" + (i++), s.toString());
     }
 

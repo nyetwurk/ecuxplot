@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 
 public class Strings {
-    public static String join(String sep, Collection c) {
+    public static String join(String sep, Collection<?> c) {
 	return join(sep, c.toArray(), c.size());
     }
 

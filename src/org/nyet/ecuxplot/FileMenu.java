@@ -7,10 +7,14 @@ import java.awt.event.ActionListener;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
-import javax.swing.JCheckBox;
 import javax.swing.KeyStroke;
 
 public final class FileMenu extends JMenu {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public FileMenu(String id, ActionListener listener) {
 	super(id);
 	JMenuItem item = new JMenuItem("Open File");

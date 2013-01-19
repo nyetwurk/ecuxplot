@@ -1,7 +1,7 @@
 package org.nyet.ecuxplot;
 
 public final class Units {
-    public final static String find(Comparable id) {
+    public final static String find(Comparable<?> id) {
 	if (id == null) return null;
 	final String[][] legend = {
 	    {"AcceleratorPedalPosition", "%"},

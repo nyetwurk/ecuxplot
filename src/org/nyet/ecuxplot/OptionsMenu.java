@@ -3,7 +3,6 @@ package org.nyet.ecuxplot;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.prefs.Preferences;
 
 import java.awt.event.ActionListener;
@@ -16,6 +15,10 @@ import javax.swing.JSeparator;
 import javax.swing.JOptionPane;
 
 public final class OptionsMenu extends JMenu {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private ECUxPlot plotFrame;
     private JMenu loadPresetsMenu;
     private JMenu savePresetsMenu;
@@ -46,7 +49,7 @@ public final class OptionsMenu extends JMenu {
 	this.add(new JSeparator());
 
 	// Prefs
-        Preferences prefs = plotFrame.getPreferences();
+        Preferences prefs = ECUxPlot.getPreferences();
 
 	jcb = new JCheckBox("Scatter plot",
 		ECUxPlot.scatter(prefs));
@@ -91,9 +94,7 @@ public final class OptionsMenu extends JMenu {
 	JMenuItem jmi;
 	Boolean undoPresent = false;
 	Boolean addSeparator = false;
-	Boolean presetsPresent = false;
-	String [] keys = null;
-
+	
 	for(String s : ECUxPreset.getPresets()) {
 	    if(!s.equals("Undo")) {
 		jmi = new JMenuItem(s);

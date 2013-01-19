@@ -7,10 +7,14 @@ import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
 
 public class AboutPanel extends JPanel implements ActionListener {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public AboutPanel() {
 	this.setLayout(new BorderLayout());
 	String v = new org.nyet.util.Version().toString();

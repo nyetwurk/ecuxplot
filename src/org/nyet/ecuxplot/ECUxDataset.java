@@ -82,7 +82,6 @@ public class ECUxDataset extends Dataset {
     public int logType;
 
     private int detect(String [] h) {
-	int ret = LOG_UNKNOWN;
 	h[0]=h[0].trim();
 	if(h[0].matches("^.*day$")) return LOG_VCDS;
 	if(h[0].matches("^Filename:.*")) {
@@ -346,8 +345,8 @@ public class ECUxDataset extends Dataset {
     }
 
     // given a list of id's, find the first that exists
-    public Column get(Comparable [] id) {
-	for (Comparable k : id) {
+    public Column get(Comparable<?> [] id) {
+	for (Comparable<?> k : id) {
 	    Column ret = null;
 	    try { ret=_get(k);
 	    } catch (NullPointerException e) {
@@ -357,7 +356,7 @@ public class ECUxDataset extends Dataset {
 	return null;
     }
 
-    public Column get(Comparable id) {
+    public Column get(Comparable<?> id) {
 	try {
 	    return _get(id);
 	} catch (NullPointerException e) {
@@ -365,7 +364,7 @@ public class ECUxDataset extends Dataset {
 	}
     }
 
-    private Column _get(Comparable id) {
+    private Column _get(Comparable<?> id) {
 	Column c=null;
 	if(id.equals("Sample")) {
 	    double[] idx = new double[this.length()];
@@ -512,17 +511,20 @@ public class ECUxDataset extends Dataset {
 	    String l = "ft-lb";
 	    if(this.env.sae.enabled()) l += " (SAE)";
 	    c = new Column(id, l, value);
+	/* TODO */
+	/*
 	} else if(id.equals("Calc Drag")) {
 	    DoubleArray v = this.get("Calc Velocity").data;
 	    DoubleArray drag = this.drag(v);	// in watts
+	*/
 	} else if(id.equals("IntakeAirTemperature")) {
 	    c = super.get(id);
 	    if (c.getUnits().matches(".*C$"))
-		c = new Column(id, "\u00B0 F", this.toFahrenheit(c.data));
+		c = new Column(id, "\u00B0 F", ECUxDataset.toFahrenheit(c.data));
 	} else if(id.equals("IntakeAirTemperature (C)")) {
 	    c = super.get("IntakeAirTemperature");
 	    if (c.getUnits().matches(".*F$"))
-		c = new Column(id, "\u00B0 C", this.toCelcius(c.data));
+		c = new Column(id, "\u00B0 C", ECUxDataset.toCelcius(c.data));
 	} else if(id.equals("BoostPressureDesired (PSI)")) {
 	    DoubleArray abs = super.get("BoostPressureDesired").data;
 	    c = new Column(id, "PSI", this.toPSI(abs));
@@ -760,7 +762,7 @@ public class ECUxDataset extends Dataset {
 
 	    Dataset.Range r=ranges.get(run);
 	    double [] rpm = this.getData("RPM", r);
-	    double [] time = this.getData("TIME", r);
+	    
 	    if(rpm[0]-100>RPMStart || rpm[rpm.length-1]+100<RPMEnd)
 		throw new Exception("run " + rpm[0] + "-" + rpm[rpm.length-1] +
 			" not long enough");

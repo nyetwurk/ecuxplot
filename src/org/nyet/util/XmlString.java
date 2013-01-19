@@ -46,12 +46,13 @@ public class XmlString implements CharSequence, Appendable {
 	//return StringEscapeUtils.escapeHtml3(s);
 	//return StringEscapeUtils.escapeHtml4(s);
     }
-
+    /*
     private Appendable tagIt(String tag, int value)
     {
 	tag = escape(tag);
 	return this.append(String.format("%s>%d</%s", tag, value, tag));
     }
+    */
     private Appendable tagIt(String tag, Object value)
     {
 	tag = escape(tag);
