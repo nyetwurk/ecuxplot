@@ -58,18 +58,13 @@ GEN_PROP:=printf 'ecuxplot_jars=$(ECUXPLOT_JARS)\ncommon_jars=$(COMMON_JARS)\nta
 
 VERSION_JAVA:=src/org/nyet/util/Version.java
 
-all: $(TARGET).jar mapdump.jar build/version.txt
+all: build/version.txt
+	$(ANT) all
 
 compile: build.xml build/build.properties $(VERSION_JAVA)
 	$(ANT) compile
 
-$(TARGET).jar: compile
-	$(ANT) ecuxplot
-
-mapdump.jar: compile
-	$(ANT) mapdump
-
-run: $(TARGET).jar
+run: all
 	$(ANT) run
 
 archives: $(ARCHIVES)
@@ -147,4 +142,4 @@ build/build.properties: Makefile
 	@$(GEN_PROP) > $@
 
 .PRECIOUS: $(VERSION_JAVA)
-.PHONY: force
+.PHONY: force compile clean binclean
