@@ -54,7 +54,7 @@ INSTALLER=ECUxPlot-$(ECUXPLOT_VER)-setup.exe
 ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
 
 ANT:=ant
-GEN_PROP:=echo -e 'ecuxplot_jars=$(ECUXPLOT_JARS)\ncommon_jars=$(COMMON_JARS)\ntarget=$(TARGET)'
+GEN_PROP:=printf 'ecuxplot_jars=$(ECUXPLOT_JARS)\ncommon_jars=$(COMMON_JARS)\ntarget=$(TARGET)\n'
 
 VERSION_JAVA:=src/org/nyet/util/Version.java
 
