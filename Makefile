@@ -136,7 +136,7 @@ tag:	force
 	@echo Creating $@
 	@cat $< | $(GEN) > $@
 
-build/build.properties: Makefile
+build/build.properties: build/version.txt
 	@mkdir -p build
 	@echo Creating $@
 	@$(GEN_PROP) > $@
