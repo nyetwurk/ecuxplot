@@ -53,14 +53,14 @@ INSTALLER=ECUxPlot-$(ECUXPLOT_VER)-setup.exe
 
 ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
 
-AFLAGS:= -Decuxplot_jars="$(ECUXPLOT_JARS)" -Dcommon_jars="$(COMMON_JARS)" -Dtarget="$(TARGET)"
-ANT:=ant $(AFLAGS)
+ANT:=ant
+GEN_PROP:=echo -e 'ecuxplot_jars=$(ECUXPLOT_JARS)\ncommon_jars=$(COMMON_JARS)\ntarget=$(TARGET)'
 
 VERSION_JAVA:=src/org/nyet/util/Version.java
 
 all: $(TARGET).jar mapdump.jar build/version.txt
 
-compile: build.xml $(VERSION_JAVA)
+compile: build.xml build/build.properties $(VERSION_JAVA)
 	$(ANT) compile
 
 $(TARGET).jar: compile
@@ -88,6 +88,8 @@ clean: binclean
 	./mapdump -r $(REFERENCE) $< > $@
 
 build/version.txt: force
+	@mkdir -p build
+	@echo Creating $@
 	@echo '$(ECUXPLOT_VER)' | cmp -s - $@ || echo '$(ECUXPLOT_VER)' > $@
 
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
@@ -136,7 +138,13 @@ tag:	force
 	@[ -z "$(VER)" ] || git tag -a v$(VER) -m "Version v$(VER)"
 
 %.java: %.java.template Makefile
-	cat $< | $(GEN) > $@
+	@echo Creating $@
+	@cat $< | $(GEN) > $@
+
+build/build.properties: Makefile
+	@mkdir -p build
+	@echo Creating $@
+	@$(GEN_PROP) > $@
 
 .PRECIOUS: $(VERSION_JAVA)
 .PHONY: force
