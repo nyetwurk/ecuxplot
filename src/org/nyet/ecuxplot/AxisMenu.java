@@ -31,12 +31,14 @@ public class AxisMenu extends JMenu {
 	new HashMap<String, JMenu>();
 
     private int count=0;
+    private int maxItems=18;
     private AxisMenu more=null;
+    private AxisMenu parent=null;
 
     private void addToSubmenu(String id, JComponent item, boolean autoadd) {
 	JMenu sub = this.subMenus.get(id);
 	if(sub==null) {
-	    sub=new JMenu(id + "...");
+	    sub = new AxisMenu(id + "...", this);
 	    this.subMenus.put(id, sub);
 	    if(autoadd) this.add(sub);
 	}
@@ -44,11 +46,12 @@ public class AxisMenu extends JMenu {
     }
 
     private void addToSubmenu(String id, JComponent item) {
-	addToSubmenu(id, item, true);	// autoadd to submenu
+	// autoadd if not Calc, which is added last
+	addToSubmenu(id, item, id.equals("Calc")?false:true);
     }
 
-    private void add(String id, SubActionListener listener,
-	ButtonGroup bg) {
+    private AbstractButton makeMenuItem(String id,
+	SubActionListener listener, ButtonGroup bg) {
 	boolean checked = false;
 
 	for(int i=0;i<initialChecked.length;i++) {
@@ -63,9 +66,24 @@ public class AxisMenu extends JMenu {
 
 	item.addActionListener(new MenuListener(listener,this.getText()));
 	if(bg!=null) bg.add(item);
+
+	return item;
+    }
+
+    private void add(String id, SubActionListener listener,
+	ButtonGroup bg, int where) {
+	AbstractButton item = makeMenuItem(id, listener, bg);
+	this.add(item, where);
+    }
+
+    private void add(String id, SubActionListener listener,
+	ButtonGroup bg) {
+
+	AbstractButton item = makeMenuItem(id, listener, bg);
+
 	if(id.matches("RPM")) {
-	    this.add(item, 0);	// always add rpm first!
-	    this.add("RPM - raw", listener, bg);
+	    this.add(item, 0);	// always add rpms first!
+	    this.add("RPM - raw", listener, bg, 1);
 
 	    this.add("Calc Velocity", listener, bg);
 	    this.add("Calc Acceleration (RPM/s)", listener, bg);
@@ -78,12 +96,11 @@ public class AxisMenu extends JMenu {
 	    this.add("Calc TQ", listener, bg);
 	    this.add("Calc Drag", listener, bg);
 
-	    addToSubmenu("Calc", new JSeparator(), false);
+	    addToSubmenu("Calc", new JSeparator());
 
 	// goes before .*Load.* to catch CalcLoad
 	} else if(id.matches("^Calc .*")) {
-	    // calc is added last, do not autoadd to submenu
-	    addToSubmenu("Calc", item, false);
+	    addToSubmenu("Calc", item);
 	} else if(id.matches(".*(MAF|MassAir|AirMass).*")) {
 	    addToSubmenu("MAF", item);
 	    if(id.matches("MassAirFlow")) {
@@ -93,7 +110,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc MassAirFlow df/dt", listener, bg);
 		this.add("Calc Turbo Flow", listener, bg);
 		this.add("Calc Turbo Flow (lb/min)", listener, bg);
-		addToSubmenu("Calc", new JSeparator(), false);
+		addToSubmenu("Calc", new JSeparator());
 	    }
 	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector).*")) {
 	    addToSubmenu("Fuel", item);
@@ -108,7 +125,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc AFR", listener, bg);
 		this.add("Calc lambda", listener, bg);
 		this.add("Calc lambda error", listener, bg);
-		// addToSubmenu("Calc", new JSeparator(), false);
+		// addToSubmenu("Calc", new JSeparator());
 		this.add("FuelInjectorDutyCycle", listener, bg);
 	    }
 	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro).*")) {
@@ -126,7 +143,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LDR de/dt", listener, bg);
 		this.add("Calc LDR I e dt", listener, bg);
 		this.add("Calc LDR PID", listener, bg);
-		addToSubmenu("Calc", new JSeparator(), false);
+		addToSubmenu("Calc", new JSeparator());
 	    }
 	} else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing).*")) {
 	    addToSubmenu("Ignition", item);
@@ -192,12 +209,17 @@ public class AxisMenu extends JMenu {
     // constructors
     public AxisMenu(String text, String[] headers, SubActionListener listener,
 	boolean radioButton, Comparable[] initialChecked) {
+	this(text, headers, listener, radioButton, initialChecked, -1);
+    }
+    public AxisMenu(String text, String[] headers, SubActionListener listener,
+	boolean radioButton, Comparable[] initialChecked, int maxItems) {
 
 	super(text);
 
 	this.listener = listener;
 	this.radioButton = radioButton;
 	this.initialChecked = initialChecked;
+	if (maxItems>0) this.maxItems = maxItems;
 
 	if (headers!=null) {
 	    /* top level menu (before "more...") */
@@ -218,23 +240,21 @@ public class AxisMenu extends JMenu {
 	    // put ME7Log next
 	    JMenu me7l=subMenus.get("ME7 Logger");
 	    if(me7l!=null) {
-		this.add(new JSeparator());
-		this.add(me7l);
+		super.add(new JSeparator());
+		super.add(me7l);
 	    }
 
-	    // put calc at bottom
+	    // put calc next
 	    JMenu calc=subMenus.get("Calc");
 	    if(calc!=null) {
-		this.add(new JSeparator());
-		this.add(calc);
+		super.add(new JSeparator());
+		super.add(calc);
 	    }
-	}
 
-	for (AxisMenu me=this; me!=null; me=me.more) {
-	    // add all the "more" menu's to their parents */
-	    if (me.more!=null) {
-		me.add(new JSeparator(), true);
-		me.add(me.more, true);
+	    // put More.. next
+	    if(this.more!=null) {
+		super.add(new JSeparator());
+		super.add(this.more);
 	    }
 	}
 
@@ -246,23 +266,43 @@ public class AxisMenu extends JMenu {
 	    item.addActionListener(new MenuListener(listener,this.getText()));
 	}
     }
+
     public AxisMenu(String text, String[] headers, SubActionListener listener,
 	boolean radioButton, Comparable initialChecked) {
 	this(text, headers, listener, radioButton,
 	    new Comparable [] {initialChecked});
+    }
+
+    public AxisMenu(String id, AxisMenu parent) {
+	this(id + "...", null, parent.listener, parent.radioButton, parent.initialChecked, parent.maxItems);
+	this.parent = parent;
     }
     // end constructors
 
     public Component add(JMenu item) {return add(item, false);}
     public Component add(Component item) {return add(item, false);}
     private Component add(Component item, boolean force) {
-	// recursively cascade too many items into a "more" submenu
-	if(force || this.count++<25)
+	if (this.more==null && item instanceof JSeparator) {
+	    Component c=this.getMenuComponent(this.getMenuComponentCount()-1);
+	    if (c==null || (c instanceof JSeparator))
+		return null;
 	    return super.add(item);
+	}
 
-	if (this.more == null)
-	    this.more = new AxisMenu("More...", null, this.listener, this.radioButton, this.initialChecked);
+	// recursively cascade too many items into a "more" submenu
+	if(force || this.count++<this.maxItems) {
+	    return super.add(item);
+	}
 
+	if (this.more == null) {
+	    this.more = new AxisMenu("More...", this);
+	    // if this is root, delay add until later so its closer to the bottom
+	    if (this.parent != null) {
+		this.add(new JSeparator());
+		this.add(more, true);
+	    }
+	}
+	// will recurse until it fits
 	return this.more.add(item);
     }
 

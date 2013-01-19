@@ -655,7 +655,7 @@ public class ECUxDataset extends Dataset {
 
 	ArrayList<String> reasons = new ArrayList<String>();
 
-	if(gear!=null && Math.round(gear.data.get(i)) != filter.gear()) {
+	if(filter.gear()>=0 && gear!=null && Math.round(gear.data.get(i)) != filter.gear()) {
 	    reasons.add("gear " + Math.round(gear.data.get(i)) +
 		    "!=" + filter.gear());
 	    ret=false;
