@@ -25,7 +25,7 @@ import org.nyet.util.*;
 
 import org.nyet.logfile.Dataset;
 
-public class ECUxPlot extends ApplicationFrame implements SubActionListener {
+public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost {
     /**
      * 
      */
@@ -93,6 +93,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	setJMenuBar(this.menuBar);
 
 	setPreferredSize(size!=null?size:this.windowSize());
+	new FileDropListener(this, this);
     }
 
     public static boolean scatter(Preferences prefs) {
@@ -231,7 +232,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener {
 	WaitCursor.stopWaitCursor(this);
     }
 
-    private void loadFile(File file) { loadFile(file, false); }
+    public void loadFiles(List<File> files) {
+	WaitCursor.startWaitCursor(this);
+	for(File f : files) {
+	    _loadFile(f, false);
+	}
+	fileDatasetsChanged();
+	WaitCursor.stopWaitCursor(this);
+    }
+
+    public void loadFile(File file) { loadFile(file, false); }
     private void loadFile(File file, Boolean replace) {
 	WaitCursor.startWaitCursor(this);
 	_loadFile(file, replace);
