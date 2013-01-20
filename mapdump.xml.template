@@ -2,7 +2,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>../mapdump.jar</jar>
-  <outfile>mapdump.exe</outfile>
+  <outfile>ECUxPlot/mapdump.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>

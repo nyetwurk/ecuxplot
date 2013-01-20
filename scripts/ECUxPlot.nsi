@@ -80,10 +80,10 @@ Section "install" InstallationInfo
   File /r "profiles\*.xml"
 
   SetOutPath "$INSTDIR"
-  File "build\${MUI_FILE}.exe"
+  File "build\ECUxPlot\${MUI_FILE}.exe"
   File "${MUI_FILE}.sh"
   File "${MUI_FILE}-${VERSION}.jar"
-  File "build\mapdump.exe"
+  File "build\ECUxPlot\mapdump.exe"
   File "mapdump.jar"
   File "jcommon-${JCOMMON_VER}.jar"
   File "jfreechart-${JFREECHART_VER}.jar"
