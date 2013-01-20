@@ -1,11 +1,7 @@
 ECUXPLOT_VER := $(shell git describe --abbrev=4 --dirty --always | sed -e 's/v\(.*\)/\1/')
-VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v\([^.]*\.[^.]*\)r.*/\1/')
-RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/v[^.]*\.[^.]*r\([^.]*\.[^.]*.*\)/\1/')
-
-#versioninfo:
-#	@echo ecuxplot_ver=$(ECUXPLOT_VER)
-#	@echo version=$(VERSION)
-#	@echo release=$(RELEASE)
+VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/\([^.]*\.[^r]*\)r.*/\1/')
+RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r\([^.]*\.[^-]*\).*/\1/')
+RC      := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r[^.]*\.[^-]*\(-.*\)/\1/')
 
 JCOMMON_VER := 1.0.17
 JFREECHART_VER := 1.0.14
@@ -139,6 +135,13 @@ build/build.properties: build/version.txt
 	@mkdir -p build
 	@echo Creating $@
 	@$(GEN_PROP) > $@
+
+versioninfo:
+	@echo ecuxplot_ver=$(ECUXPLOT_VER)
+	@echo version=$(VERSION)
+	@echo release=$(RELEASE)
+	@echo rc=$(RC)
+
 
 .PRECIOUS: $(VERSION_JAVA)
 .PHONY: force compile clean binclean
