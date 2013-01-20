@@ -25,16 +25,17 @@ MAPDUMP_XML := '$(shell cygpath -w $(PWD)/build/mapdump.xml)'
 MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis)'
 
-INSTALL_DIR := '$(shell cygpath -u "C:\Program Files\ECUxPlot")'
 OPT_PRE := '/'
 else
 LAUNCH4J := /usr/local/launch4j/launch4j
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := makensis
-INSTALL_DIR := /usr/local/ecuxplot
 OPT_PRE := '-'
 endif
+
+INSTALL_DIR := /usr/local/ecuxplot
+
 RSYNC := rsync
 
 REFERENCE=data/4Z7907551R.kp
