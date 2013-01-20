@@ -1,7 +1,24 @@
-#!/bin/sh
+#!/bin/bash
 set -e
-# export LANG=en_US.iso885915
-PROG=`readlink -m "$0" 2>/dev/null || true`
+
+PROG=$(readlink -m "$0" 2>/dev/null || true)
 [ -z "$PROG" ] && PROG=$0
 DIR=`dirname "$PROG"`
-exec java -jar $DIR/mapdump.jar $@
+
+jar=$DIR/mapdump.jar
+
+args=()
+if [ ! -z $(which cygpath) ]; then
+    jar=$(cygpath -w $jar)
+    for arg in "$@"; do
+	if [ -r "$arg" ]; then
+	    args+=($(cygpath -w "$arg"))
+	else
+	    args+=($arg)
+	fi
+    done
+else
+    args=$@
+fi
+
+exec java -jar "$jar" "${args[@]}"

@@ -18,7 +18,7 @@ if [ ! -z $(which cygpath) ]; then
 	if [ -r "$arg" ]; then
 	    args+=($(cygpath -w "$arg"))
 	else
-	    args+=$arg
+	    args+=($arg)
 	fi
     done
 else
