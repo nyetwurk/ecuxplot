@@ -82,6 +82,8 @@ build/version.txt: force
 	@mkdir -p build
 	@echo '$(ECUXPLOT_VER)' | cmp -s - $@ || echo '$(ECUXPLOT_VER)' > $@
 
+$(VERSION_JAVA): build/version.txt
+
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
 
 INSTALL_FILES:= $(TARGET).jar mapdump.jar \
