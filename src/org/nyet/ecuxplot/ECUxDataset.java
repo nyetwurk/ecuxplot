@@ -419,11 +419,14 @@ public class ECUxDataset extends Dataset {
 	    final double cylinders = this.env.f.cylinders();
 	    DoubleArray a = this.get("FuelInjectorDutyCycle").data.mult(cylinders*gps/100);
 	    c = new Column(id, "g/sec", a);
+	} else if(id.equals("TargetAFRDriverRequest (AFR)")) {
+	    DoubleArray abs = super.get("TargetAFRDriverRequest").data;
+	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("AirFuelRatioDesired (AFR)")) {
 	    DoubleArray abs = super.get("AirFuelRatioDesired").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
-	} else if(id.equals("TargetAFRDriverRequest (AFR)")) {
-	    DoubleArray abs = super.get("TargetAFRDriverRequest").data;
+	} else if(id.equals("AirFuelRatioCurrent (AFR)")) {
+	    DoubleArray abs = super.get("AirFuelRatioCurrent").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("Calc AFR")) {
 	    DoubleArray a = this.get("Calc MAF").data;
