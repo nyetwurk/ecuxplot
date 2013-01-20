@@ -49,8 +49,8 @@ COMMON_JARS:=opencsv-$(OPENCSV_VER).jar commons-lang3-$(COMMONS_LANG3_VER).jar
 JARS:=$(ECUXPLOT_JARS) $(COMMON_JARS)
 
 TARGET=ECUxPlot-$(ECUXPLOT_VER)
-INSTALLER=ECUxPlot-$(ECUXPLOT_VER)-setup.exe
 
+INSTALLER=$(TARGET)-setup.exe
 ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
 
 ANT:=ant
@@ -58,14 +58,14 @@ GEN_PROP:=printf 'ecuxplot_jars=$(ECUXPLOT_JARS)\ncommon_jars=$(COMMON_JARS)\nta
 
 VERSION_JAVA:=src/org/nyet/util/Version.java
 
-all: build/version.txt
-	$(ANT) all
+all $(TARGET).jar mapdump.jar: build/version.txt
+	@$(ANT) all
 
 compile: build.xml build/build.properties $(VERSION_JAVA)
-	$(ANT) compile
+	@$(ANT) compile
 
-run: all
-	$(ANT) run
+run: $(TARGET).jar
+	@$(ANT) run
 
 archives: $(ARCHIVES)
 installer: $(INSTALLER)
@@ -84,12 +84,11 @@ clean: binclean
 
 build/version.txt: force
 	@mkdir -p build
-	@echo Creating $@
 	@echo '$(ECUXPLOT_VER)' | cmp -s - $@ || echo '$(ECUXPLOT_VER)' > $@
 
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
 
-INSTALL_FILES:= ECUxPlot-$(ECUXPLOT_VER).jar mapdump.jar \
+INSTALL_FILES:= $(TARGET).jar mapdump.jar \
 		$(subst :, ,$(JARS)) build/version.txt README-Zeitronix.txt \
 		gpl-3.0.txt flanagan-license.txt
 
@@ -106,7 +105,7 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 include scripts/Windows.mk
 include scripts/MacOS.mk
 
-ECUxPlot-$(ECUXPLOT_VER).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
+$(TARGET).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
 	@rm -f $@
 	@rm -rf build/ECUxPlot
 	mkdir -p build/ECUxPlot
