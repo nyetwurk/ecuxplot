@@ -819,7 +819,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 			} catch (Exception e) {}
 			System.exit(0);
 		    }
-		    if(args[i].equals("-h")) {
+		    if(args[i].equals("-?")) {
 			System.out.println(
 			    "usage: ECUxPlot [-p Preset] [-o OutputFile] " +
 			    "[-w width] [-h height] [LogFiles ... ]");
