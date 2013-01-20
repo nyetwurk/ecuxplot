@@ -66,7 +66,10 @@ public class mapdump {
 
     public static void main(String[] args) throws Exception
     {
-	Options opts = new Options(args);
+	Options opts=null;
+	try {
+	   opts = new Options(args);
+	} catch (Exception e) { return; }
 	Parser mp = new Parser(opts.filename);
 	ArrayList<Parser> refs = new ArrayList<Parser>();
 	ByteBuffer imagebuf=null;
