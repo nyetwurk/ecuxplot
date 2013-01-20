@@ -267,7 +267,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    this.files.add(file.getAbsolutePath());
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
-	    e.printStackTrace();
+	    // e.printStackTrace();
 	    return;
 	}
     }
