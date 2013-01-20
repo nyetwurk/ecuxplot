@@ -11,8 +11,8 @@ done
 
 jar=$DIR/ECUxPlot-$VER.jar
 
-args=()
 if [ ! -z $(which cygpath) ]; then
+    args=()
     jar=$(cygpath -w $jar)
     for arg in "$@"; do
 	if [ -r "$arg" ]; then
@@ -22,7 +22,7 @@ if [ ! -z $(which cygpath) ]; then
 	fi
     done
 else
-    args=$@
+    args=("$@")
 fi
 
 # echo exec java -Dawt.useSystemAAFontSettings=on -jar "$jar" "${args[@]}"

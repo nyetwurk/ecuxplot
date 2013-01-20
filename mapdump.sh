@@ -7,8 +7,8 @@ DIR=`dirname "$PROG"`
 
 jar=$DIR/mapdump.jar
 
-args=()
 if [ ! -z $(which cygpath) ]; then
+    args=()
     jar=$(cygpath -w $jar)
     for arg in "$@"; do
 	if [ -r "$arg" ]; then
@@ -18,7 +18,7 @@ if [ ! -z $(which cygpath) ]; then
 	fi
     done
 else
-    args=$@
+    args=("$@")
 fi
 
 exec java -jar "$jar" "${args[@]}"
