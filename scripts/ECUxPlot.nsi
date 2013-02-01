@@ -4,6 +4,8 @@
 
   !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
   !include "scripts\fileassoc.nsh"
+  !include "LogicLib.nsh"
+
   Name "ECUxPlot"
 
   !define MUI_FILE "ECUxPlot"
@@ -17,6 +19,7 @@
 ;General
 
   OutFile "${MUI_FILE}-${VERSION}-setup.exe"
+  RequestExecutionLevel admin
   ShowInstDetails "nevershow"
   ShowUninstDetails "nevershow"
   ;SetCompressor "bzip2"
@@ -24,6 +27,15 @@
   !define MUI_ICON "${MUI_FILE}.ico"
   !define MUI_UNICON "${MUI_FILE}.ico"
 
+  Function .onInit
+  UserInfo::GetAccountType
+  pop $0
+  ${If} $0 != "admin" ;Require admin rights on NT4+
+      MessageBox mb_iconstop "Administrator rights required!"
+      SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
+      Quit
+  ${EndIf}
+  FunctionEnd
 
 ;--------------------------------
 ;Folder selection page
