@@ -42,7 +42,7 @@
 
   InstallDir "$PROGRAMFILES\${MUI_FILE}"
   InstallDirRegKey HKCU "Software\${MUI_FILE}" ""
-  RequestExecutionLevel user
+  ;RequestExecutionLevel user
 
 
 ;--------------------------------

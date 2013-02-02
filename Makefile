@@ -1,4 +1,4 @@
-ECUXPLOT_VER := $(shell git describe --abbrev=4 --dirty --always | sed -e 's/v\(.*\)/\1/')
+ECUXPLOT_VER := $(shell git describe --tags --abbrev=4 --dirty --always | sed -e 's/v\(.*\)/\1/')
 VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/\([^.]*\.[^r]*\)r.*/\1/')
 RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r\([^.]*\.[^-]*\).*/\1/')
 RC      := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r[^.]*\.[^-]*\(-.*\)/\1/')
@@ -7,6 +7,10 @@ JCOMMON_VER := 1.0.17
 JFREECHART_VER := 1.0.14
 OPENCSV_VER := 2.3
 COMMONS_LANG3_VER := 3.1
+JAVA_TARGET_VER := 6
+
+# things to pass to build/build.properties
+PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVA_TARGET_VER JAVA_RT_PATH
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
@@ -14,8 +18,6 @@ JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
-space:=
-space+=
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
@@ -26,12 +28,22 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis)'
 
 OPT_PRE := '/'
+
+JAVA_RT_PATH := $(PROGRAMFILES)/Java/jre$(JAVA_TARGET_VER)
+ifdef ProgramW6432
+JAVA_RT_PATH := $(JAVA_RT_PATH);$(ProgramW6432)/Java/jre$(JAVA_TARGET_VER)
+endif
+JAVA_RT_PATH := $(subst \,/,$(JAVA_RT_PATH))
+
 else
+ARCH_x86_64 := amd64
+ARCH_i686 := i686
 LAUNCH4J := /usr/local/launch4j/launch4j
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := makensis
 OPT_PRE := '-'
+JAVA_RT_PATH = /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-$(ARCH_$(shell arch))/jre
 endif
 
 INSTALL_DIR := /usr/local/ecuxplot
@@ -51,7 +63,6 @@ INSTALLER=$(TARGET)-setup.exe
 ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
 
 ANT:=ant
-GEN_PROP:=printf 'ecuxplot_jars=$(ECUXPLOT_JARS)\ncommon_jars=$(COMMON_JARS)\ntarget=$(TARGET)\n'
 
 VERSION_JAVA:=src/org/nyet/util/Version.java
 
@@ -134,10 +145,10 @@ tag:	force
 	@echo Creating $@
 	@cat $< | $(GEN) > $@
 
-build/build.properties: build/version.txt
+build/build.properties: Makefile build/version.txt
 	@mkdir -p build
 	@echo Creating $@
-	@$(GEN_PROP) > $@
+	$(shell echo "" > $@) $(foreach V,$(PROPVARS),$(shell echo $(V)='$($V)' >> $@))
 
 versioninfo:
 	@echo ecuxplot_ver=$(ECUXPLOT_VER)
