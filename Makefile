@@ -70,7 +70,7 @@ rsync: $(ARCHIVES) $(INSTALLER)
 	$(RSYNC) $^ nyet.org:public_html/cars/files/
 
 binclean:
-	rm -f ECUxPlot*.{jar,zip,tar.gz} mapdump.jar *.exe
+	rm -f $(addprefix ECUxPlot*.,jar zip tar gz) mapdump.jar *.exe
 
 clean: binclean
 	rm -rf build

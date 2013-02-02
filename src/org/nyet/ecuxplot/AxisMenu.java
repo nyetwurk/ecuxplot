@@ -135,6 +135,19 @@ public class AxisMenu extends JMenu {
 		// addToSubmenu("Calc", new JSeparator());
 		this.add("FuelInjectorDutyCycle", listener, bg);
 	    }
+	} else if(id.matches("^Zeitronix.*")) {
+	    /* do zeitronix before boost so we get the conversions we want */
+	    if(id.matches("^Zeitronix Boost")) {
+		this.add("Zeitronix Boost (PSI)", listener, bg);
+		this.add("Calc Boost Spool Rate Zeit (RPM)", listener, bg);
+	    }
+	    if(id.matches("^Zeitronix AFR")) {
+		this.add("Zeitronix AFR (lambda)", listener, bg);
+	    }
+	    if(id.matches("^Zeitronix Lambda")) {
+		this.add("Zeitronix Lambda (AFR)", listener, bg);
+	    }
+	    addToSubmenu("Zeitronix", item);
 	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
@@ -179,18 +192,6 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("EngineLoadCorrectedSpecified")) {
 		this.add("Calc LoadSpecified correction", listener, bg);
 	    }
-	} else if(id.matches("^Zeitronix.*")) {
-	    if(id.matches("^Zeitronix Boost")) {
-		this.add("Zeitronix Boost (PSI)", listener, bg);
-		this.add("Calc Boost Spool Rate Zeit (RPM)", listener, bg);
-	    }
-	    if(id.matches("^Zeitronix AFR")) {
-		this.add("Zeitronix AFR (lambda)", listener, bg);
-	    }
-	    if(id.matches("^Zeitronix Lambda")) {
-		this.add("Zeitronix Lambda (AFR)", listener, bg);
-	    }
-	    addToSubmenu("Zeitronix", item);
 	} else if(id.matches("Engine torque")) {
 	    this.add(item);
 	    this.add("Engine torque (ft-lb)", listener, bg);
