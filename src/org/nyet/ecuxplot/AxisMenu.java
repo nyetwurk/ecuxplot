@@ -118,11 +118,14 @@ public class AxisMenu extends JMenu {
 	    }
 	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector).*")) {
 	    addToSubmenu("Fuel", item);
+	    if(id.matches("TargetAFRDriverRequest")) {
+		this.add("TargetAFRDriverRequest (AFR)", listener, bg);
+	    }
 	    if(id.matches("AirFuelRatioDesired")) {
 		this.add("AirFuelRatioDesired (AFR)", listener, bg);
 	    }
-	    if(id.matches("TargetAFRDriverRequest")) {
-		this.add("TargetAFRDriverRequest (AFR)", listener, bg);
+	    if(id.matches("AirFuelRatioCurrent")) {
+		this.add("AirFuelRatioCurrent (AFR)", listener, bg);
 	    }
 	    if(id.matches("FuelInjectorOnTime")) {
 		this.add("Calc Fuel Mass", listener, bg);
