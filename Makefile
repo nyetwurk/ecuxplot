@@ -36,14 +36,16 @@ endif
 JAVA_RT_PATH := $(subst \,/,$(JAVA_RT_PATH))
 
 else
-ARCH_x86_64 := amd64
-ARCH_i686 := i686
+#ARCH_x86_64 := amd64
+#ARCH_i686 := i386
+#UNAME_ARCH := $(ARCH_$(shell uname -m))
+DPKG_ARCH := $(shell dpkg --print-architecture)
 LAUNCH4J := /usr/local/launch4j/launch4j
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := makensis
 OPT_PRE := '-'
-JAVA_RT_PATH = /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-$(ARCH_$(shell arch))/jre
+JAVA_RT_PATH = /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-$(DPKG_ARCH)/jre
 endif
 
 INSTALL_DIR := /usr/local/ecuxplot
@@ -155,6 +157,7 @@ versioninfo:
 	@echo version=$(VERSION)
 	@echo release=$(RELEASE)
 	@echo rc=$(RC)
+	@echo JAVA_RT_PATH=$(JAVA_RT_PATH)
 
 
 .PRECIOUS: $(VERSION_JAVA)
