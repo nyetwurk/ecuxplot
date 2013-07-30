@@ -1,4 +1,4 @@
-<!-- Written Wed May 16 18:08:11 GMT 2012 -->
+<!-- Written Sun Jul 21 00:01:31 PDT 2013 -->
 <XDFFORMAT version="1.50">
   <XDFHEADER>
     <fileversion>Version 1</fileversion>
@@ -274,8 +274,6 @@
       <EMBEDDEDDATA mmedaddress="0x18A8A" mmedelementsizebits="8" mmedmajorstridebits="8" />
       <units>%</units>
       <indexcount>16</indexcount>
-      <decimalpl>0</decimalpl>
-      <outputtype>2</outputtype>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -585,6 +583,47 @@
     </MATH>
   </XDFCONSTANT>
   <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFLAFWL</title>
+    <description>Offset Lambda-Motor-Soll</description>
+    <CATEGORYMEM index="0" category="20" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x18292" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>%</units>
+      <indexcount>6</indexcount>
+      <decimalpl>3</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.750000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x18311" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>Grad C</units>
+      <indexcount>8</indexcount>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.750000 * X+ -48.000000">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x01" mmedaddress="0x18ED4" mmedelementsizebits="8" mmedrowcount="8" mmedcolcount="6" />
+      <units>-</units>
+      <decimalpl>4</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.007813 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
     <title>KFLAMKR</title>
     <description>Weighting factor for enrichment on ignition retard</description>
     <CATEGORYMEM index="0" category="20" />
@@ -628,7 +667,7 @@
   </XDFTABLE>
   <XDFTABLE uniqueid="0x0" flags="0x0">
     <title>KFLAMKRL</title>
-    <description>Enrichment on ignition retard</description>
+    <description>Enrichment on ignition retard (AFR)</description>
     <CATEGORYMEM index="0" category="20" />
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedaddress="0x100F6" mmedelementsizebits="8" mmedmajorstridebits="8" />
@@ -659,11 +698,11 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedaddress="0x18F28" mmedelementsizebits="8" mmedrowcount="6" mmedcolcount="6" />
       <units>-</units>
-      <decimalpl>4</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
-      <MATH equation="0.007813 * X">
+      <MATH equation="0.114844 * X">
         <VAR id="X" />
       </MATH>
     </XDFAXIS>
@@ -980,6 +1019,34 @@
       </MATH>
     </XDFAXIS>
   </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>FTLDIA</title>
+    <description>Factor for adaptation enable debounce time</description>
+    <CATEGORYMEM index="0" category="6" />
+    <EMBEDDEDDATA mmedaddress="0x19707" mmedelementsizebits="8" />
+    <units>-</units>
+    <decimalpl>4</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>FTLDIAP</title>
+    <description>Factor for adaptation: rapid positive tracking</description>
+    <CATEGORYMEM index="0" category="6" />
+    <EMBEDDEDDATA mmedaddress="0x19708" mmedelementsizebits="8" />
+    <units>-</units>
+    <decimalpl>4</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
   <XDFTABLE uniqueid="0x0" flags="0x0">
     <title>KFLDIOPU</title>
     <description>TV correction due to altitude effect on ambient pressure</description>
@@ -1170,6 +1237,105 @@
       <max>255.000000</max>
       <outputtype>1</outputtype>
       <MATH equation="0.640000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>NLDIAPU</title>
+    <description>RPM threshold for I-Limit adaptation</description>
+    <CATEGORYMEM index="0" category="6" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x19798" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>hPa</units>
+      <indexcount>2</indexcount>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="5.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
+      <units>-</units>
+      <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
+      <outputtype>2</outputtype>
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <LABEL index="0" value="" />
+      <MATH equation="X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedaddress="0x1979A" mmedelementsizebits="8" mmedrowcount="1" mmedcolcount="2" />
+      <units>Upm</units>
+      <decimalpl>1</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>TLDIAN</title>
+    <description>Debounce time for negative I-Adaptation tracking </description>
+    <CATEGORYMEM index="0" category="6" />
+    <EMBEDDEDDATA mmedaddress="0x197A0" mmedelementsizebits="8" />
+    <units>s</units>
+    <decimalpl>4</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.050000 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>TLDIAPN</title>
+    <description>Debounce time for negative I-Adaptation tracking</description>
+    <CATEGORYMEM index="0" category="6" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>Upm</units>
+      <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
+      <units>-</units>
+      <indexcount>1</indexcount>
+      <decimalpl>0</decimalpl>
+      <outputtype>2</outputtype>
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <LABEL index="0" value="" />
+      <MATH equation="X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedaddress="0x197A1" mmedelementsizebits="8" mmedrowcount="1" mmedcolcount="8" />
+      <units>s</units>
+      <decimalpl>4</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.050000 * X">
         <VAR id="X" />
       </MATH>
     </XDFAXIS>
@@ -3088,6 +3254,20 @@
       </MATH>
     </XDFAXIS>
   </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>ZKWLAFWL</title>
+    <description>Zeitkonstante Wichtung Offset Lambda-Motor-Soll</description>
+    <CATEGORYMEM index="0" category="20" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C3EE" mmedelementsizebits="16" />
+    <units>%</units>
+    <decimalpl>3</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.001526 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
   <XDFTABLE uniqueid="0x0" flags="0x0">
     <title>DLBTS</title>
     <description>Delta desired lambda for component protection</description>
@@ -3317,7 +3497,8 @@
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AE2" mmedelementsizebits="16" mmedmajorstridebits="16" />
       <units>U/min</units>
       <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
+      <decimalpl>0</decimalpl>
+      <outputtype>2</outputtype>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -3329,7 +3510,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D65C" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="8" />
       <units>%</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -3373,7 +3554,7 @@
     <XDFAXIS id="z">
       <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D7AE" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="10" />
       <units>%</units>
-      <decimalpl>3</decimalpl>
+      <decimalpl>2</decimalpl>
       <min>0.000000</min>
       <max>255.000000</max>
       <outputtype>1</outputtype>
@@ -4552,11 +4733,11 @@
     <CATEGORYMEM index="0" category="19" />
     <EMBEDDEDDATA mmedaddress="0x101A1" mmedelementsizebits="8" />
     <units>L/Zyl.</units>
-    <decimalpl>1</decimalpl>
+    <decimalpl>4</decimalpl>
     <datatype>0</datatype>
     <unittype>0</unittype>
     <DALINK index="0" />
-    <MATH equation="0.200000 * X">
+    <MATH equation="0.020000 * X">
       <VAR id="X" />
     </MATH>
   </XDFCONSTANT>
@@ -5156,6 +5337,36 @@
       </MATH>
     </XDFAXIS>
   </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>ESKONF1</title>
+    <description>ESKONF</description>
+    <CATEGORYMEM index="0" category="27" />
+    <EMBEDDEDDATA mmedaddress="0x10C7A" mmedelementsizebits="8" />
+    <units>-</units>
+    <outputtype>2</outputtype>
+    <decimalpl>0</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>ESKONF2</title>
+    <description>ESKONF</description>
+    <CATEGORYMEM index="0" category="27" />
+    <EMBEDDEDDATA mmedaddress="0x10C7B" mmedelementsizebits="8" />
+    <units>-</units>
+    <outputtype>2</outputtype>
+    <decimalpl>0</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
   <XDFTABLE uniqueid="0x0" flags="0x0">
     <title>KFKHFM</title>
     <description>Correction map for MAF</description>
@@ -5198,6 +5409,18 @@
       </MATH>
     </XDFAXIS>
   </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>CWBGMSZS</title>
+    <description>Codeword: BGMSZS</description>
+    <CATEGORYMEM index="0" category="27" />
+    <EMBEDDEDDATA mmedaddress="0x10D69" mmedelementsizebits="8" />
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
   <XDFCONSTANT uniqueid="0x0">
     <title>KUMSRL</title>
     <description>Conversion constant from MAF to relative charge</description>
@@ -6271,6 +6494,21 @@
       </MATH>
     </XDFAXIS>
   </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>CW_CAN_R</title>
+    <description>CAN bus receive enable</description>
+    <CATEGORYMEM index="0" category="1" />
+    <EMBEDDEDDATA mmedaddress="0x12C7A" mmedelementsizebits="8" />
+    <units>-</units>
+    <outputtype>2</outputtype>
+    <decimalpl>0</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
   <XDFTABLE uniqueid="0x0" flags="0x0">
     <title>NGALU</title>
     <description>Misfire detection: RPM deviation attenuation threshold</description>
@@ -7280,7 +7518,6 @@
       <EMBEDDEDDATA mmedaddress="0x14EE9" mmedelementsizebits="8" mmedmajorstridebits="8" />
       <units>V</units>
       <indexcount>5</indexcount>
-      <decimalpl>4</decimalpl>
       <embedinfo type="1" />
       <datatype>0</datatype>
       <unittype>0</unittype>
@@ -8897,8 +9134,8 @@
     </XDFAXIS>
   </XDFTABLE>
   <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>Axis: Unknown</title>
-    <CATEGORYMEM index="0" category="1" />
+    <title>Axis: Load KFLAMKR, KFLAMKRL, KFLAFWL</title>
+    <CATEGORYMEM index="0" category="20" />
     <XDFAXIS id="x" uniqueid="0x0">
       <EMBEDDEDDATA mmedelementsizebits="16" mmedmajorstridebits="-32" />
       <units>-</units>
