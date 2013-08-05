@@ -1,6 +1,11 @@
 package org.nyet.mappack;
 
 import java.util.*;
+import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 
 import org.nyet.util.Files;
@@ -12,41 +17,90 @@ public class Project {
     public Date mTime;
     private HexValue[] header = new HexValue[4];
     public String version;
-    private HexValue[] header1 = new HexValue[5];
+    private HexValue[] header1 = new HexValue[4];
+    private HexValue[] h77 = new HexValue[1];	// 77 33 88 11
     public int numMaps;
     public TreeSet<Map> maps;
     private HexValue[] header2 = new HexValue[3];
     public int numFolders;
     public TreeSet<Folder> folders = new TreeSet<Folder>();
-    public Project(String filename, ByteBuffer b) throws ParserException {
-	this.stem = Files.stem(filename);
+    private int kpv;
+
+    private void ParseHeader(ByteBuffer b) throws ParserException {
 	this.name = Parse.string(b);
 	Parse.buffer(b, this.header);	// unk
+
+	if (kpv == Map.INPUT_KP_v2) b.getInt();	// eat an extra 0
+
 	this.version = Parse.string(b);
 	Parse.buffer(b, this.header1);	// unk
+	if (kpv == Map.INPUT_KP_v2) b.getInt();	// eat an extra 0
 
+	Parse.buffer(b, this.h77);	// unk
+	if (kpv == Map.INPUT_KP_v2) b.get(); // eat an extra 0 byte
+    }
+
+    private static ByteBuffer is2bb(ZipInputStream in) throws IOException {
+	final int BUFSIZE=1024;
+	ByteArrayOutputStream out = new ByteArrayOutputStream(BUFSIZE);
+
+	byte[] tmp = new byte[BUFSIZE];
+
+	while (true) {
+	    int r = in.read(tmp, 0, BUFSIZE);
+	    if (r == -1) break;
+	    if (r>0) out.write(tmp,0,r);
+	}
+
+	return ByteBuffer.wrap(out.toByteArray());
+    }
+
+    private void ParseMapsZip(ByteBuffer b) throws ParserException {
+	int start = b.position();
+	int zsize = b.getInt();
+	byte[] zip = new byte[zsize];
+	b.get(zip);
+	ByteArrayInputStream bbis = new ByteArrayInputStream(zip);
+	ZipInputStream zis = new ZipInputStream(bbis);
+	try {
+	    ZipEntry ze = zis.getNextEntry();
+	    ByteBuffer bb = is2bb(zis);
+	    bb.order(ByteOrder.LITTLE_ENDIAN);
+	    bb.get();	// eat a byte
+	    ParseMaps(bb);
+	} catch (IOException e) {
+	    throw new ParserException(b, e.toString(), e);
+	}
+
+	b.position(start+zsize);
+	b.getInt(); // eat an extra 0 int
+    }
+
+    private void ParseMaps(ByteBuffer b) throws ParserException {
 	// Maps
 	this.numMaps = b.getInt();
+
 	this.maps = new TreeSet<Map>();
 	for(int i=0;i<numMaps;i++) {
 	    try {
-		this.maps.add(new Map(b));
+		Map m = new Map(i, b, this.kpv);
+		this.maps.add(m);
 	    } catch (ParserException e) {
 		throw new ParserException(e.b,
-		    String.format("error parsing map %d/%d: %s",
-			(i+1), this.numMaps, e.toString()),
-		    e.o);
+		    String.format("error parsing map %d/%d:\n  %s",
+			(i+1), this.numMaps, e.getMessage()),
+		    e.getCause(), e.o);
 	    }
 	}
+    }
 
-	Parse.buffer(b, this.header2);	// unk
-
+    private void ParseFolders(ByteBuffer b) throws ParserException {
 	// Folders
 	this.numFolders = b.getInt();
 
 	for(int i=0;i<numFolders;i++) {
 	    try {
-		Folder f = new Folder(b);
+		Folder f = new Folder(b, this.kpv);
 		if(f.id>=0 && f.id<numFolders)
 		    this.folders.add(f);
 	    } catch (ParserException e) {
@@ -65,14 +119,32 @@ public class Project {
 	    f.id=i++; // new id
 	}
 
-	// fix up map folder ids
-	for(Map m: this.maps)
-	    m.folderId=flut[m.folderId]; // old->new
+	if(this.maps!=null) {
+	    // fix up map folder ids
+	    for(Map m: this.maps) {
+		m.folderId=flut[m.folderId]; // old->new
+	    }
+	}
+    }
+
+    public Project(String filename, ByteBuffer b, int kpv) throws ParserException {
+	this.kpv = kpv;
+	this.stem = Files.stem(filename);
+
+	ParseHeader(b);
+
+	if (kpv == Map.INPUT_KP_v1) ParseMaps(b);
+	else ParseMapsZip(b);
+
+	Parse.buffer(b, this.header2);	// unk
+
+	ParseFolders(b);
 
 	// Trailing junk
 	//this.remaining = new byte[b.remaining()];
 	//Parse.buffer(b, this.remaining);	// unk
     }
+
     public String toString () {
 	String out ="project: '" + name + "': (" + version + ") - " + numMaps + " maps\n";
 	out += "  h: " + Arrays.toString(header) + "\n";
@@ -151,6 +223,7 @@ public class Project {
     }
 
     public ArrayList<Map> find(Map map) {
+	if(this.maps == null) return null;
 	ArrayList<Map> matches = new ArrayList<Map>();
 	for(Map m: this.maps)
 	    if(m.equals(map)) matches.add(m);
@@ -158,6 +231,7 @@ public class Project {
     }
 
     public ArrayList<Map> find(String id) {
+	if(this.maps == null) return null;
 	ArrayList<Map> matches = new ArrayList<Map>();
 	for(Map m: this.maps)
 	    if(m.equals(id)) matches.add(m);
@@ -165,6 +239,7 @@ public class Project {
     }
 
     public ArrayList<Map> find(HexValue v) {
+	if(this.maps == null) return null;
 	ArrayList<Map> matches = new ArrayList<Map>();
 	for(Map m: this.maps)
 	    if(m.extent[0].equals(v));

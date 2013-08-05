@@ -10,6 +10,7 @@ public class Parser extends MMapFile {
     private String signature;
     private String filename;
     private String version;
+
     public ArrayList<Project> projects;
 
     private static final void eatNumber(ByteBuffer b, int count, int width) {
@@ -25,7 +26,7 @@ public class Parser extends MMapFile {
     private static final void eatNumber(ByteBuffer b, int count) { eatNumber(b, count, 4); }
     private static final void eatNumber(ByteBuffer b) { eatNumber(b, 1); }
 
-    private static final void parseHeader(ByteBuffer b) throws Exception {
+    private static final void parseHeader(ByteBuffer b, int ver) throws Exception {
 	eatNumber(b);		// 0
 	eatNumber(b);		// 1
 	eatNumber(b);		// 49
@@ -33,8 +34,11 @@ public class Parser extends MMapFile {
 	eatNumber(b,1,2);	// 0 (short)
 	eatNumber(b);		// 2
 
-	if(b.getInt()!=-1)
-	    throw new Exception("can't find first term");
+	if(b.getInt()!=-1) {
+	    int pos = b.position();
+	    throw new Exception(HexValue.dumpHex(b, 16) +
+		": can't find term 1 @" + pos);
+	}
 
 	eatNumber(b,2);		// 0 x 2
 	eatNumber(b);		// 1
@@ -52,22 +56,65 @@ public class Parser extends MMapFile {
 	eatNumber(b,1,2);	// 0 (short)
 	eatNumber(b,1,1);	// 0 (char)
 
-	if(b.getInt()!=-1)
-	    throw new Exception("can't find second term");
+	if(b.getInt()!=-1) {
+	    int pos = b.position();
+	    throw new Exception(HexValue.dumpHex(b, 16) +
+		": can't find term 2 @" + pos);
+	}
 
-	eatNumber(b,2);		// 0 x 2
-	eatNumber(b);		// 1
-	eatNumber(b,4);		// 0 x 4
-	eatNumber(b,1,1);	// 0 (char)
-	eatNumber(b,0x14,2);	// 14 shorts 0,1,2,3 etc
-	eatNumber(b,0x10,2);	// 10 shorts 0,1,2,3 etc
+	switch(ver) {
+	    case Map.INPUT_KP_v1:
+		eatNumber(b,2);		// 0 x 2
+		eatNumber(b);		// 1
+		eatNumber(b,4);		// 0 x 4
+		eatNumber(b,1,1);	// 0 (char)
+		break;
+	    case Map.INPUT_KP_v2:
+		eatNumber(b,1,1);	// 0 (char)
+		eatNumber(b,1);		// 5
+		eatNumber(b,5);		// 0 x 5
+		String car = Parse.string(b);
+		String engine = Parse.string(b);
+		eatNumber(b,10);	// 0 x 10
+
+		if(b.getInt()!=-1) {
+		    int pos = b.position();
+		    throw new Exception(HexValue.dumpHex(b, 16) +
+			": can't find term 2a @" + pos);
+		}
+
+		eatNumber(b,1,1);	// 0 (char)
+		eatNumber(b,12);	// 0 x 12
+		String data = Parse.string(b);
+		eatNumber(b,7);	// 0 x 7
+		eatNumber(b,1);	// 9d ff ff ff
+		eatNumber(b,2);		// 0 x 2
+		eatNumber(b,1,1);	// 0 (char)
+		break;
+	}
+
+	eatNumber(b,0x14,2);	// 0x14 shorts 0,1,2,3 etc
+	eatNumber(b,0x10,2);	// 0x10 shorts 0,1,2,3 etc
 	eatNumber(b,18);	// 0 x 18
 
-	if(b.getInt()!=-1)
-	    throw new Exception("can't find third term");
+	if(b.getInt()!=-1) {
+	    int pos = b.position();
+	    throw new Exception(HexValue.dumpHex(b, 16) +
+		": can't find term 3 @" + pos);
+	}
 
 	eatNumber(b);		// 1
-	eatNumber(b);		// 0x00002844
+
+	switch(ver) {
+	    case Map.INPUT_KP_v1:
+		break;
+	    case Map.INPUT_KP_v2:
+		eatNumber(b);		// 0
+		eatNumber(b);		// 1
+		break;
+	}
+
+	eatNumber(b);		// 0xXXXXXXXX
 	eatNumber(b);		// 0
 	eatNumber(b);		// 0x42007899
 	eatNumber(b);		// 2
@@ -75,16 +122,33 @@ public class Parser extends MMapFile {
 
     public Parser (String fname) throws Exception {
 	super(fname, ByteOrder.LITTLE_ENDIAN);
+	int kp[] = new int[2];
+	int kpv;
 	ByteBuffer buf = this.getByteBuffer();
 	signature = Parse.string(buf);
-	buf.position(0x5c);
+	kp[0] = buf.getInt();
+	kp[1] = buf.getInt();
+	switch(kp[0]) {
+	    case 0x71:
+	    case 0x74:
+		kpv = Map.INPUT_KP_v1;
+		buf.position(0x5c);
+		break;
+	    case 0x124:
+		kpv = Map.INPUT_KP_v2;
+		buf.position(0x60);
+		break;
+	    default:
+		throw new Exception("Unknown kp version" + kp[0]);
+	}
+
 	filename = Parse.string(buf);
 	version = Parse.string(buf);
 
-	parseHeader(buf);
+	parseHeader(buf, kpv);
 
 	projects = new ArrayList<Project>();
-	Project p = new Project(fname, buf);
+	Project p = new Project(fname, buf, kpv);
 	p.mTime = new Date(this.mTime);
 	projects.add(p);
     }

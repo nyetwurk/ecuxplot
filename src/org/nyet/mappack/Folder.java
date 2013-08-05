@@ -5,17 +5,22 @@ import java.nio.ByteBuffer;
 
 public class Folder implements Comparable<Object> {
     public int id;
+    private int kpv;
     private HexValue header;
     public String name;
     private byte[] header1 = new byte[2];
     private HexValue header2;
+    private byte[] header3 = new byte[15];
 
-    public Folder(ByteBuffer b) throws ParserException {
+    public Folder(ByteBuffer b, int kpv) throws ParserException {
+	this.kpv = kpv;
 	this.id = b.getInt();
 	this.header = new HexValue(b);
 	this.name = Parse.string(b);
 	Parse.buffer(b, this.header1);
 	this.header2 = new HexValue(b);
+	if (kpv == Map.INPUT_KP_v2)
+	    Parse.buffer(b, this.header3);
     }
 
     private String toStringDump() {
@@ -24,6 +29,8 @@ public class Folder implements Comparable<Object> {
 	out += "   name: " + name + "\n";
 	out += "header1: " + Arrays.toString(header1) + "\n";
 	out += "header2: " + header2 + "\n";
+	if (kpv == Map.INPUT_KP_v2)
+	    out += "header3: " + Arrays.toString(header3) + "\n";
 	return out;
     }
 

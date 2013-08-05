@@ -10,11 +10,11 @@ public class Parse {
 	if(len==0) return "";
 	if(len<0) {
 	    b.reset();
-	    throw new ParserException(b, "negative len", len);
+	    throw new ParserException(b, "string: negative len", len);
 	}
 	if(len>b.limit()-b.position()) {
 	    b.reset();
-	    throw new ParserException(b, "invalid len", len);
+	    throw new ParserException(b, "string: invalid len", len);
 	}
 	byte[] buf = new byte[len];
 	b.get(buf, 0, buf.length);
@@ -22,6 +22,7 @@ public class Parse {
 	try {
 	    return new String(buf, "ISO-8859-15");
 	} catch (UnsupportedEncodingException e) {
+	    b.reset();
 	    throw new ParserException(b, e.getMessage(), buf);
 	}
     }

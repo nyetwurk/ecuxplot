@@ -68,7 +68,7 @@ public class mapdump {
     {
 	Options opts=null;
 	try {
-	   opts = new Options(args);
+	    opts = new Options(args);
 	} catch (Exception e) { return; }
 	Parser mp = new Parser(opts.filename);
 	ArrayList<Parser> refs = new ArrayList<Parser>();
@@ -105,6 +105,8 @@ public class mapdump {
 		System.out.println();
 	    }
 	    */
+	    if (p.maps==null) continue;
+
 	    for(Map m: p.maps) {
 		System.out.print(m.toString(opts.format, imagebuf));
 		if(opts.format == Map.FORMAT_CSV) {

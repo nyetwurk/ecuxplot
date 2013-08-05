@@ -225,12 +225,13 @@ public class Map implements Comparable<Object> {
 	public HexValue addr = null;
 	private int header1;
 	public int base;
-	private byte header1a;
+	private int[] header1a = new int[3];	// v2
+	private byte header2;
 	public boolean reciprocal = false;	// todo (find)
-	private byte[] header2 = new byte[3];
-	private int header3_size;
-	private int[] header3;
-	private int header4;
+	private byte[] header3 = new byte[3];
+	private int header4_size;
+	private int[] header4;
+	private int header5;
 	public HexValue signature = null;
 
 	private boolean isZ = false;
@@ -245,15 +246,17 @@ public class Map implements Comparable<Object> {
 	    header1 = b.getInt();	// unk
 	    base = b.getInt();
 	    if(!datasource.isEeprom()) base = 10;
-	    header1a = b.get();		// unk
+	    if (kpv == Map.INPUT_KP_v2)
+		Parse.buffer(b,header1a);
+	    header2 = b.get();		// unk
 	    reciprocal = b.get()==1;
 	    value.precision = b.get();
-	    Parse.buffer(b, header2);	// unk
-	    value.sign = (b.get()==1);
-	    header3_size = b.getInt();		// unk
-	    header3 = new int[header3_size/4];
 	    Parse.buffer(b, header3);	// unk
-	    header4 = b.getInt();		// unk
+	    value.sign = (b.get()==1);
+	    header4_size = b.getInt();		// unk
+	    header4 = new int[header4_size/4];
+	    Parse.buffer(b, header4);	// unk
+	    header5 = b.getInt();		// unk
 	    signature = new HexValue(b);
 
 	    // fix precision last once we have the whole Value
@@ -287,17 +290,19 @@ public class Map implements Comparable<Object> {
 	    out += "\t   ds: " + datasource + "\n";
 	    out += "\t addr: " + addr + " " + value.type + "\n";
 	    out += "\t   h1: " + header1 + "\n";
+	    if (kpv == Map.INPUT_KP_v2)
+		out += "\t *h1a: " + Arrays.toString(header1a) + "\n";
 	    out += "\t base: " + base + "\n";
-	    out += "\t  h1a: " + header1a + " (short)\n";
+	    out += "\t   h2: " + header2 + " (short)\n";
 	    out += "\tflags: ";
 	    if(reciprocal) out += "R";
 	    if(value.sign) out += "S";
 	    out += "\n";
 	    out += "\t prec: " + value.precision + " (byte)\n";
-	    out += "\t   h2: " + Arrays.toString(header2) + "\n";
-	    out += "\th3_sz: " + header3_size + "\n";
 	    out += "\t   h3: " + Arrays.toString(header3) + "\n";
-	    out += "\t   h4: " + header4 + "\n";
+	    out += "\th4_sz: " + header4_size + "\n";
+	    out += "\t   h4: " + Arrays.toString(header4) + "\n";
+	    out += "\t   h5: " + header5 + "\n";
 	    if(signature.v!=-1)
 		out += "\t  sig: " + signature + "\n";
 	    return out;
@@ -408,7 +413,10 @@ public class Map implements Comparable<Object> {
     }
 
     // Map Members
+    private int index;		// allow multiple maps with the same address
     private byte header0;
+    private int[] header0a = new int[2];//unk v2
+    private byte header0b;		//unk v2
     public String name;
     public Organization organization;
     private int header;			//unk
@@ -418,6 +426,7 @@ public class Map implements Comparable<Object> {
     public String id;
     private int header1;		// unk
     private byte header1a;		// unk
+    private int header1b;		// unk v2
     public int[] range = new int[4];
     private HexValue[] header2 = new HexValue[8];	// unk
     public boolean reciprocal;
@@ -427,7 +436,9 @@ public class Map implements Comparable<Object> {
     private int[] header3 = new int[2];	// unk
     public Value value;
     public HexValue[] extent = new HexValue[2];
-    private HexValue[] header4 = new HexValue[2];	// unk
+    private HexValue header4;	// unk
+    private int[] header4a = new int[2];// unk v2
+    private HexValue extent2;	// unk
     private int[] header5 = new int[2];	// unk
     private HexValue header6;
     private int header7;		// unk
@@ -436,17 +447,27 @@ public class Map implements Comparable<Object> {
     public Axis z_axis;
     private int header8;		// unk
     private short header8a;		// unk
-    private int[] header9 = new int[8];	// unk
-    private short header9a;		// unk
+    private HexValue[] header9 = new HexValue[5];	// unk
+    private short[] header9a = new short[7];		// unk
     private int header9b;		// unk
     private byte header9c;		// unk
     private HexValue[] header10 = new HexValue[6];// unk
     private HexValue[] header11 = new HexValue[2];// unk
     public byte[] term2 = new byte[3];
+    private int kpv;
 
     // Map Constructors
-    public Map(ByteBuffer b) throws ParserException {
+    public Map(ByteBuffer b, int kpv) throws ParserException {
+	this(0, b, kpv);
+    }
+    public Map(int index, ByteBuffer b, int kpv) throws ParserException {
+	this.index = index;
+	this.kpv = kpv;
 	header0 = b.get();		// unk
+	if (kpv == Map.INPUT_KP_v2) {
+	    Parse.buffer(b, header0a);	// unk
+	    header0b = b.get();		// unk
+	}
 	name = Parse.string(b);
 	organization = new Organization(b);
 	header = b.getInt();
@@ -457,6 +478,8 @@ public class Map implements Comparable<Object> {
 	id = Parse.string(b);
 	header1 = b.getInt();		// unk
 	header1a = b.get();		// unk
+	if (kpv == Map.INPUT_KP_v2)
+	    header1b = b.getInt();		// unk
 	Parse.buffer(b, range);
 	Parse.buffer(b, header2);	// unk
 	reciprocal = b.get()==1;
@@ -468,7 +491,10 @@ public class Map implements Comparable<Object> {
 	int precision = b.getInt();
 	value = new Value(b, vt, sign, precision);
 	Parse.buffer(b, extent);
-	Parse.buffer(b, header4);	// unk
+	header4 = new HexValue(b);
+	if (kpv == Map.INPUT_KP_v2)
+	    Parse.buffer(b, header4a);	// unk
+	extent2 = new HexValue(b);
 	Parse.buffer(b, header5);	// unk
 	header6 = new HexValue(b);
 	header7 = b.getInt();
@@ -477,14 +503,13 @@ public class Map implements Comparable<Object> {
 	header8 = b.getInt();		// unk
 	header8a = b.getShort();	// unk
 	Parse.buffer(b, header9);	// unk
-	header9a = b.getShort();	// unk
+	Parse.buffer(b, header9a);	// unk
 	header9b = b.getInt();		// unk
 	header9c = b.get();		// unk
 	Parse.buffer(b, header10);	// unk
 	Parse.buffer(b, header11);	// unk
 	b.get(term2);
 	z_axis = new Axis(this.value, this);
-	// System.out.println(this);
     }
 
     // generate a 1d map for an axis
@@ -531,13 +556,19 @@ public class Map implements Comparable<Object> {
 	this.size.x = tmp;
     }
 
+    public static final int INPUT_KP_v1 = 1;
+    public static final int INPUT_KP_v2 = 2;
+
     public static final int FORMAT_DUMP = 0;
     public static final int FORMAT_CSV = 1;
     public static final int FORMAT_OLD_XDF = 2;
     public static final int FORMAT_XDF = 3;
+
     public static final boolean XDF_Pedantic = true;
     public static final int XDF_MaxDigits = 6;	// tunerpro doesn't like > 6 digits
     public static final String XDF_LBL = "\t%06d %-17s=";
+
+    public String toString() { return this.toStringDump(); }
     public String toString(int format, ByteBuffer image)
 	throws Exception {
 	switch(format) {
@@ -823,6 +854,10 @@ public class Map implements Comparable<Object> {
 
     public String toStringDump() {
 	String out = "   h0: " + header0 + "\n";
+	if (this.kpv == Map.INPUT_KP_v2) {
+	    out += " *h0a: " + Arrays.toString(header0a) + "\n";
+	    out += " *h0b: " + header0b + "\n";
+	}
 	out += "  map: " + name + " [" + id + "] " + value.type + "\n";
 	out += "  org: " + organization + "\n";
 	out += "    h: " + header + "\n";
@@ -831,6 +866,8 @@ public class Map implements Comparable<Object> {
 	out += "fdrId: " + folderId + "\n";
 	out += "   h1: " + header1 + "\n";
 	out += "  h1a: " + header1a + " (byte)\n";
+	if (this.kpv == Map.INPUT_KP_v2)
+	    out += " *h1b: " + header1b + "\n";
 	out += "range: " + range[0] + "-" + range[2]+ "\n";
 	out += "   h2: " + Arrays.toString(header2) + "\n";
 	out += "flags: ";
@@ -844,7 +881,10 @@ public class Map implements Comparable<Object> {
 	out += " prec: " + value.precision + "\n";
 	out += "value: " + value + "\n";
 	out += " addr: " + Arrays.toString(extent) + "\n";
-	out += "   h4: " + Arrays.toString(header4) + "\n";
+	out += "   h4: " + header4 + "\n";
+	if (this.kpv == Map.INPUT_KP_v2)
+	    out += " *h4a: " + Arrays.toString(header4a) + "\n";
+	out += "addr?: " + extent2 + "\n";	//??
 	out += "   h5: " + Arrays.toString(header5) + "\n";
 	out += "   h6: " + header6 + "\n";
 	out += "   h7: " + header7 + "\n";
@@ -853,7 +893,7 @@ public class Map implements Comparable<Object> {
 	out += "   h8: " + header8 + "\n";
 	out += "  h8a: " + header8a + " (short)\n";
 	out += "   h9: " + Arrays.toString(header9) + "\n";
-	out += "  h9a: " + header9a + " (short)\n";
+	out += "  h9a: " + Arrays.toString(header9a) + " (shorts)\n";
 	out += "  h9b: " + header9b + "\n";
 	out += "  h9c: " + header9c + " (byte)\n";
 	out += "  h10: " + Arrays.toString(header10) + "\n";
@@ -862,11 +902,19 @@ public class Map implements Comparable<Object> {
 	return out;
     }
 
-    public String toString() {
-	return "" + this.extent[0].v;
-    }
-
+    // Sort by map address and index
     public int compareTo(Object o) {
-	return this.toString().compareTo(o.toString());
+	Map them = (Map)o;
+	int ret;
+	if (true) {
+	    // new (correct) compare
+	    ret=this.extent[0].v-them.extent[0].v;
+	} else {
+	    // old (broken) compare
+	    String me = Integer.toString(this.extent[0].v);
+	    String th = Integer.toString(them.extent[0].v);
+	    ret = me.compareTo(th);
+	}
+	return (ret==0)?this.index - them.index:ret;
     }
 }
