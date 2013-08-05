@@ -28,7 +28,7 @@
 	    target="${JAVA_TARGET_VER}"
 	    includeantruntime="false"
 	    classpathref="classpath"
-	    debug="off" 
+	    debug="on"
 	    bootclasspath="${bootclass.path}"
 	/>
     </target>
