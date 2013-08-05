@@ -232,7 +232,7 @@ public class Map implements Comparable<Object> {
 	private int header4_size;
 	private int[] header4;
 	private int header5;
-	public int term;
+	public HexValue signature = null;
 
 	private boolean isZ = false;
 
@@ -257,7 +257,8 @@ public class Map implements Comparable<Object> {
 	    header4 = new int[header4_size/4];
 	    Parse.buffer(b, header4);	// unk
 	    header5 = b.getInt();		// unk
-	    term = b.getInt();
+	    signature = new HexValue(b);
+
 	    // fix precision last once we have the whole Value
 	    value.limitPrecision(XDF_MaxDigits);
 
@@ -282,7 +283,6 @@ public class Map implements Comparable<Object> {
 
 	    // set flag so we know this is a z axis
 	    isZ = true;
-	    term = -1;
 	}
 
 	public String toString() {
@@ -303,7 +303,8 @@ public class Map implements Comparable<Object> {
 	    out += "\th4_sz: " + header4_size + "\n";
 	    out += "\t   h4: " + Arrays.toString(header4) + "\n";
 	    out += "\t   h5: " + header5 + "\n";
-	    out += "\t term: " + term + "\n";
+	    if(signature!=null && signature.v!=-1)
+		out += "\t  sig: " + signature + "\n";
 	    return out;
 	}
 
