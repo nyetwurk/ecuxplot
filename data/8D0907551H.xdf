@@ -1,4 +1,4 @@
-<!-- Written Sat Jul 20 23:47:27 PDT 2013 -->
+<!-- Written Sun Aug 04 21:47:26 PDT 2013 -->
 <XDFFORMAT version="1.50">
   <XDFHEADER>
     <fileversion>Version 1</fileversion>
@@ -363,6 +363,20 @@
   <XDFCONSTANT uniqueid="0x0">
     <title>FRKAP_0_A</title>
     <description>(FRKAP_0_A)Faktor relative Kraftstoffmasse f&#252;r Applikation 0</description>
+    <CATEGORYMEM index="0" category="1" />
+    <EMBEDDEDDATA mmedaddress="0x1C000" mmedelementsizebits="8" />
+    <units>-</units>
+    <decimalpl>4</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>FRKAP_1_A</title>
+    <description>(FRKAP_1_A)Faktor relative Kraftstoffmasse f&#252;r Applikation 1</description>
     <CATEGORYMEM index="0" category="1" />
     <EMBEDDEDDATA mmedaddress="0x1C000" mmedelementsizebits="8" />
     <units>-</units>
