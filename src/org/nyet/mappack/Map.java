@@ -87,9 +87,9 @@ public class Map implements Comparable<Object> {
     private class DataSource extends Enm {
 	private final String[] l = {
 	    "1,2,3",		// 0
-	    "Eprom",		// 1
-	    "Eprom, add",		// 2
-	    "Eprom, subtract",	// 3
+	    "EEPROM",		// 1
+	    "EEPROM, add",		// 2
+	    "EEPROM, subtract",	// 3
 	    "Free editable"		// 4
 	};
 
@@ -232,7 +232,7 @@ public class Map implements Comparable<Object> {
 	private int header4_size;
 	private int[] header4;
 	private int header5;
-	public HexValue signature = null;
+	public int term;
 
 	private boolean isZ = false;
 
@@ -257,8 +257,7 @@ public class Map implements Comparable<Object> {
 	    header4 = new int[header4_size/4];
 	    Parse.buffer(b, header4);	// unk
 	    header5 = b.getInt();		// unk
-	    signature = new HexValue(b);
-
+	    term = b.getInt();
 	    // fix precision last once we have the whole Value
 	    value.limitPrecision(XDF_MaxDigits);
 
@@ -283,6 +282,7 @@ public class Map implements Comparable<Object> {
 
 	    // set flag so we know this is a z axis
 	    isZ = true;
+	    term = -1;
 	}
 
 	public String toString() {
@@ -303,8 +303,7 @@ public class Map implements Comparable<Object> {
 	    out += "\th4_sz: " + header4_size + "\n";
 	    out += "\t   h4: " + Arrays.toString(header4) + "\n";
 	    out += "\t   h5: " + header5 + "\n";
-	    if(signature.v!=-1)
-		out += "\t  sig: " + signature + "\n";
+	    out += "\t term: " + term + "\n";
 	    return out;
 	}
 
@@ -412,10 +411,20 @@ public class Map implements Comparable<Object> {
 	}
     }
 
+    static private String DebugBB(ByteBuffer bb, String where) {
+	return DebugBB(bb, 16, where);
+    }
+    static private String DebugBB(ByteBuffer bb, int len, String where) {
+	String out = String.format("%s: %d (0x%x): %s",
+	    where, bb.position(), bb.position(), HexValue.dumpHex(bb, len));
+	System.out.println(out);
+	return out;
+    }
     // Map Members
     private int index;		// allow multiple maps with the same address
     private byte header0;
-    private int[] header0a = new int[2];//unk v2
+    private int header0a;		//unk v2
+    public String comment;		// v2
     private byte header0b;		//unk v2
     public String name;
     public Organization organization;
@@ -463,9 +472,12 @@ public class Map implements Comparable<Object> {
     public Map(int index, ByteBuffer b, int kpv) throws ParserException {
 	this.index = index;
 	this.kpv = kpv;
+
+
 	header0 = b.get();		// unk
 	if (kpv == Map.INPUT_KP_v2) {
-	    Parse.buffer(b, header0a);	// unk
+	    header0a = b.getInt();	// -1
+	    comment = Parse.string(b);
 	    header0b = b.get();		// unk
 	}
 	name = Parse.string(b);
@@ -476,6 +488,7 @@ public class Map implements Comparable<Object> {
 	base = b.getInt();
 	folderId = b.getInt();
 	id = Parse.string(b);
+	//System.out.println(id);
 	header1 = b.getInt();		// unk
 	header1a = b.get();		// unk
 	if (kpv == Map.INPUT_KP_v2)
@@ -510,6 +523,10 @@ public class Map implements Comparable<Object> {
 	Parse.buffer(b, header11);	// unk
 	b.get(term2);
 	z_axis = new Axis(this.value, this);
+
+	if(term2[0] != 1 || term2[1] != 1 /* || term2[2] != 1 */)
+	    throw new ParserException(b, "unexpected term2:" +
+		Arrays.toString(term2), this);
     }
 
     // generate a 1d map for an axis
@@ -853,9 +870,11 @@ public class Map implements Comparable<Object> {
     }
 
     public String toStringDump() {
-	String out = "   h0: " + header0 + "\n";
+	String out = "index: " + index + "\n";
+	out += "   h0: " + header0 + "\n";
 	if (this.kpv == Map.INPUT_KP_v2) {
-	    out += " *h0a: " + Arrays.toString(header0a) + "\n";
+	    out += " *h0a: " + header0a + "\n";
+	    out += " *cmt: " + comment + "\n";
 	    out += " *h0b: " + header0b + "\n";
 	}
 	out += "  map: " + name + " [" + id + "] " + value.type + "\n";
@@ -864,6 +883,7 @@ public class Map implements Comparable<Object> {
 	out += "   ha: " + headera + "\n";
 	out += " base: " + base + "\n";
 	out += "fdrId: " + folderId + "\n";
+	out += "   id: " + id + "\n";
 	out += "   h1: " + header1 + "\n";
 	out += "  h1a: " + header1a + " (byte)\n";
 	if (this.kpv == Map.INPUT_KP_v2)
@@ -898,7 +918,8 @@ public class Map implements Comparable<Object> {
 	out += "  h9c: " + header9c + " (byte)\n";
 	out += "  h10: " + Arrays.toString(header10) + "\n";
 	out += "  h11: " + Arrays.toString(header11) + "\n";
-	out += " term2: " + Arrays.toString(term2) + "\n";
+	out += "term2: " + Arrays.toString(term2) + "\n";
+	out += "zaxis: " + z_axis + "\n";
 	return out;
     }
 
