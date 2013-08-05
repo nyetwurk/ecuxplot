@@ -1,4 +1,4 @@
-<!-- Written Sun Aug 04 21:47:26 PDT 2013 -->
+<!-- Written Sun Aug 04 21:57:17 PDT 2013 -->
 <XDFFORMAT version="1.50">
   <XDFHEADER>
     <fileversion>Version 1</fileversion>
@@ -18,918 +18,6 @@
     <CATEGORY index="0x7" name="Throttle Cut " />
     <CATEGORY index="0x8" name="Vehicle Speed And Rev Limiters" />
   </XDFHEADER>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>KFLF</title>
-    <description>(KFLF) Lambda At Part Throttle</description>
-    <CATEGORYMEM index="0" category="4" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x18A35" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>%</units>
-      <indexcount>16</indexcount>
-      <decimalpl>3</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.750000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x18A29" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>12</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedaddress="0x18A45" mmedelementsizebits="8" mmedrowcount="12" mmedcolcount="16" />
-      <units>-</units>
-      <decimalpl>4</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.007813 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>KFLBTS</title>
-    <description>(KFLBTS) Lambda For Component Protection</description>
-    <CATEGORYMEM index="0" category="4" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x18252" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>%</units>
-      <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x182B3" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>12</indexcount>
-      <decimalpl>3</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.750000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedaddress="0x1908C" mmedelementsizebits="8" mmedrowcount="12" mmedcolcount="16" />
-      <units>-</units>
-      <decimalpl>4</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.007813 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>LDIATA</title>
-    <description>(LDIATA) LDR I-Regulator Limit As A Function Of IAT</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x1010C" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>Grad C</units>
-      <indexcount>8</indexcount>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.750000 * X+ -48.000000">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>1</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x01" mmedaddress="0x19657" mmedelementsizebits="8" mmedrowcount="1" mmedcolcount="8" />
-      <units>%</units>
-      <decimalpl>3</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.640000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>KFLDHBN</title>
-    <description>(KFLDHBN) Boost Pressure Limit(Max. Pressure Ratio)</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x1010C" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>Grad C</units>
-      <indexcount>8</indexcount>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.750000 * X+ -48.000000">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>8</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedaddress="0x196DF" mmedelementsizebits="8" mmedrowcount="8" mmedcolcount="8" />
-      <units>-</units>
-      <decimalpl>4</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.001563 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>KFLDRAPP</title>
-    <description>(KFLDRAPP) Map for LDR-Applicatioin Without MD-Coordination</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x19741" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>% PED</units>
-      <indexcount>8</indexcount>
-      <decimalpl>3</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.392157 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x19739" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>8</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedaddress="0x19749" mmedelementsizebits="8" mmedrowcount="8" mmedcolcount="8" />
-      <units>%</units>
-      <decimalpl>3</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.390625 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>NLLM</title>
-    <description>(NLLM) Idle RPM</description>
-    <CATEGORYMEM index="0" category="6" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x182FF" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>Grad C</units>
-      <indexcount>6</indexcount>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.750000 * X+ -48.000000">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x19739" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>1</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedaddress="0x19945" mmedelementsizebits="8" mmedrowcount="1" mmedcolcount="6" />
-      <units>RPM</units>
-      <decimalpl>1</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="10.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>KVB</title>
-    <description>(KVB) Constant Fuel Injector Size (For Consumption)</description>
-    <CATEGORYMEM index="0" category="4" />
-    <EMBEDDEDDATA mmedaddress="0x1A37C" mmedelementsizebits="8" />
-    <units>cm^3/min</units>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="3.046875 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>FRLFSDP</title>
-    <description>(FRLFSDP) Injection Correction for RLFS</description>
-    <CATEGORYMEM index="0" category="4" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1BF2C" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>hPa</units>
-      <indexcount>11</indexcount>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.078125 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AEC" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>RPM</units>
-      <indexcount>1</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.250000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BF42" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="11" />
-      <units>-</units>
-      <decimalpl>5</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.000031 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>TABGBTS</title>
-    <description>(TABGBTS) EGT Threshold for Component Protection</description>
-    <CATEGORYMEM index="0" category="4" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BFE4" mmedelementsizebits="16" />
-    <units>Grad C</units>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.019531 * X+ -50.000000">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>TABGSS</title>
-    <description>(TABGSS) Desired EGT for EGT Regulation Bank 1</description>
-    <CATEGORYMEM index="0" category="4" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BFFC" mmedelementsizebits="16" />
-    <units>Grad C</units>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.019531 * X+ -50.000000">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>TABGSS2</title>
-    <description>(TABGSS2) Desired EGT for EGT Regulation Bank 2</description>
-    <CATEGORYMEM index="0" category="4" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BFFE" mmedelementsizebits="16" />
-    <units>Grad C</units>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.019531 * X+ -50.000000">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>FRKAP_0_A</title>
-    <description>(FRKAP_0_A)Faktor relative Kraftstoffmasse f&#252;r Applikation 0</description>
-    <CATEGORYMEM index="0" category="1" />
-    <EMBEDDEDDATA mmedaddress="0x1C000" mmedelementsizebits="8" />
-    <units>-</units>
-    <decimalpl>4</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.007813 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>FRKAP_1_A</title>
-    <description>(FRKAP_1_A)Faktor relative Kraftstoffmasse f&#252;r Applikation 1</description>
-    <CATEGORYMEM index="0" category="1" />
-    <EMBEDDEDDATA mmedaddress="0x1C000" mmedelementsizebits="8" />
-    <units>-</units>
-    <decimalpl>4</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.007813 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>FKKVS</title>
-    <description>(FKKVS) Korrekturfaktor Kraftstoffversorgungssystem</description>
-    <CATEGORYMEM index="0" category="1" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C012" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>ms</units>
-      <indexcount>16</indexcount>
-      <decimalpl>3</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.002667 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x1C002" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C032" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="16" />
-      <units>-</units>
-      <decimalpl>5</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.000031 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>KRKTE</title>
-    <description>(KRKTE) Conversion Of Relative Fuel Mass On Effective Injection</description>
-    <CATEGORYMEM index="0" category="4" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C23C" mmedelementsizebits="16" />
-    <units>ms/%</units>
-    <decimalpl>5</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.000111 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>LAMFA</title>
-    <description>(LAMFA) Drivers Wish Lambda</description>
-    <CATEGORYMEM index="0" category="4" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C24E" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>%</units>
-      <indexcount>6</indexcount>
-      <decimalpl>3</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.003052 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x1C23E" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>15</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedaddress="0x1C25A" mmedelementsizebits="8" mmedrowcount="15" mmedcolcount="6" />
-      <units>-</units>
-      <decimalpl>4</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.007813 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>TDATSO</title>
-    <description>(TDATSO) Upper Boundry Of EGT Model For Diagnosing EGT</description>
-    <CATEGORYMEM index="0" category="4" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C36E" mmedelementsizebits="16" />
-    <units>Grad C</units>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.019531 * X+ -50.000000">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>KFLDIMX</title>
-    <description>(KFLDIMX) Kennfeld LDR I-Reglerbegrenzung</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B0E" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>hPa(MAP)</units>
-      <indexcount>8</indexcount>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.039063 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12ACA" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>RPM</units>
-      <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.250000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D4D2" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="8" />
-      <units>%</units>
-      <decimalpl>3</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.005000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>KFLDRL</title>
-    <description>(KFLDRL) Map For Linearization Of Boost Pressure = f(TV) (Boost Limit/N75)</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1D832" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>TPS</units>
-      <indexcount>10</indexcount>
-      <decimalpl>3</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.005000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12ACA" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>RPM</units>
-      <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.250000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1D624" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="10" />
-      <units>Corrected N75 duty cycle</units>
-      <decimalpl>3</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.005000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>KFLDRQ2</title>
-    <description>(KFLDRQ2) LDR PID Q2 (Differential)</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x10070" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>hPa</units>
-      <indexcount>4</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="10.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>8</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D764" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="4" />
-      <units>%/100hPa</units>
-      <decimalpl>2</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.050000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>LDRQ0DY</title>
-    <description>(LDRQ0DY) Boost Pressure Adjustment Parameters Q0 (P1)</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x100B1" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>1</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D7CE" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
-      <units>%/100hPa</units>
-      <decimalpl>2</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.050000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>LDRQ0S</title>
-    <description>(LDRQ0S) LDR PID Q0 In Static Operation (Proportional)</description>
-    <CATEGORYMEM index="0" category="7" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D7EE" mmedelementsizebits="16" />
-    <units>%/100Hpa</units>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.050000 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>LDRQ1DY</title>
-    <description>(LDRQ1DY) Reglerparameter Q1 PID-Regler im Dynamikbetrieb (Integrationsbeiwert) (P)</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x100B1" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>1</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D7F0" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
-      <units>%/100Hpa</units>
-      <decimalpl>2</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.050000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>LDRQ1ST</title>
-    <description>(LDRQ1ST) LDR PID Q1 In Static Operation (Integral)</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x100B1" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>1</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D810" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
-      <units>%/100Hpa</units>
-      <decimalpl>2</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.050000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>KFTARX</title>
-    <description>(KFTARX) IAT Compensation for Maximum Specified Load </description>
-    <CATEGORYMEM index="0" category="4" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x1010C" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>Grad C</units>
-      <indexcount>8</indexcount>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.750000 * X+ -48.000000">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12A9E" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>RPM</units>
-      <indexcount>8</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.250000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DA48" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
-      <units>-</units>
-      <decimalpl>5</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.000031 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFTABLE uniqueid="0x0" flags="0x0">
-    <title>LDRXN</title>
-    <description>(LDRXN) Maximum Fueling - Boost Pressure (Boost Request? or Limit?)</description>
-    <CATEGORYMEM index="0" category="7" />
-    <XDFAXIS id="x" uniqueid="0x0">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DB4A" mmedelementsizebits="16" mmedmajorstridebits="16" />
-      <units>RPM</units>
-      <indexcount>16</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="0.250000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="y" uniqueid="0x0">
-      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
-      <units>RPM</units>
-      <indexcount>1</indexcount>
-      <decimalpl>1</decimalpl>
-      <embedinfo type="1" />
-      <datatype>0</datatype>
-      <unittype>0</unittype>
-      <DALINK index="0" />
-      <MATH equation="40.000000 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-    <XDFAXIS id="z">
-      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DB6A" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
-      <units>%</units>
-      <decimalpl>2</decimalpl>
-      <min>0.000000</min>
-      <max>255.000000</max>
-      <outputtype>1</outputtype>
-      <MATH equation="0.023438 * X">
-        <VAR id="X" />
-      </MATH>
-    </XDFAXIS>
-  </XDFTABLE>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>NLLM</title>
-    <description>(NLLM) Engine Idle Limit</description>
-    <CATEGORYMEM index="0" category="9" />
-    <EMBEDDEDDATA mmedaddress="0x1DC2A" mmedelementsizebits="8" />
-    <units>RPM</units>
-    <decimalpl>1</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="10.000000 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>VAVMXNIV</title>
-    <description>(VAVMXNIV) Maximum Speed For Activation VMAX Limit By Level Control</description>
-    <CATEGORYMEM index="0" category="9" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2C6" mmedelementsizebits="16" />
-    <units>Km/h</units>
-    <decimalpl>3</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.007813 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>VAVMXPNG</title>
-    <description>(VAVMXPNG) Maximum Speed For Activation Of VMAX Limit By Plan?</description>
-    <CATEGORYMEM index="0" category="9" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2C8" mmedelementsizebits="16" />
-    <units>Km/h</units>
-    <decimalpl>3</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.007813 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>VMAXNB</title>
-    <description>(VMAXNB) Maximum Speed During Normal Operation</description>
-    <CATEGORYMEM index="0" category="9" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2CA" mmedelementsizebits="16" />
-    <units>Km/h</units>
-    <decimalpl>3</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.007813 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>VMAXNIV</title>
-    <description>(VMAXNIV) Maximum Allowable Speed Limit By Level Control</description>
-    <CATEGORYMEM index="0" category="9" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2CC" mmedelementsizebits="16" />
-    <units>Km/h</units>
-    <decimalpl>3</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.007813 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
-  <XDFCONSTANT uniqueid="0x0">
-    <title>VMAXPNG</title>
-    <description>(VMAXPNG) Maximum Allowable Speed Limit By Plan?</description>
-    <CATEGORYMEM index="0" category="9" />
-    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2CE" mmedelementsizebits="16" />
-    <units>Km/h</units>
-    <decimalpl>3</decimalpl>
-    <datatype>0</datatype>
-    <unittype>0</unittype>
-    <DALINK index="0" />
-    <MATH equation="0.007813 * X">
-      <VAR id="X" />
-    </MATH>
-  </XDFCONSTANT>
   <XDFTABLE uniqueid="0x0" flags="0x0">
     <title>Codewords:</title>
     <CATEGORYMEM index="0" category="2" />
@@ -2260,6 +1348,918 @@
     <unittype>0</unittype>
     <DALINK index="0" />
     <MATH equation="X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFLF</title>
+    <description>(KFLF) Lambda At Part Throttle</description>
+    <CATEGORYMEM index="0" category="4" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x18A35" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>%</units>
+      <indexcount>16</indexcount>
+      <decimalpl>3</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.750000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x18A29" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>12</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedaddress="0x18A45" mmedelementsizebits="8" mmedrowcount="12" mmedcolcount="16" />
+      <units>-</units>
+      <decimalpl>4</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.007813 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFLBTS</title>
+    <description>(KFLBTS) Lambda For Component Protection</description>
+    <CATEGORYMEM index="0" category="4" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x18252" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>%</units>
+      <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x182B3" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>12</indexcount>
+      <decimalpl>3</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.750000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedaddress="0x1908C" mmedelementsizebits="8" mmedrowcount="12" mmedcolcount="16" />
+      <units>-</units>
+      <decimalpl>4</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.007813 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>LDIATA</title>
+    <description>(LDIATA) LDR I-Regulator Limit As A Function Of IAT</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x1010C" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>Grad C</units>
+      <indexcount>8</indexcount>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.750000 * X+ -48.000000">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>1</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x01" mmedaddress="0x19657" mmedelementsizebits="8" mmedrowcount="1" mmedcolcount="8" />
+      <units>%</units>
+      <decimalpl>3</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.640000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFLDHBN</title>
+    <description>(KFLDHBN) Boost Pressure Limit(Max. Pressure Ratio)</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x1010C" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>Grad C</units>
+      <indexcount>8</indexcount>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.750000 * X+ -48.000000">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedaddress="0x196DF" mmedelementsizebits="8" mmedrowcount="8" mmedcolcount="8" />
+      <units>-</units>
+      <decimalpl>4</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.001563 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFLDRAPP</title>
+    <description>(KFLDRAPP) Map for LDR-Applicatioin Without MD-Coordination</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x19741" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>% PED</units>
+      <indexcount>8</indexcount>
+      <decimalpl>3</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.392157 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x19739" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedaddress="0x19749" mmedelementsizebits="8" mmedrowcount="8" mmedcolcount="8" />
+      <units>%</units>
+      <decimalpl>3</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.390625 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>NLLM</title>
+    <description>(NLLM) Idle RPM</description>
+    <CATEGORYMEM index="0" category="6" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x182FF" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>Grad C</units>
+      <indexcount>6</indexcount>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.750000 * X+ -48.000000">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x19739" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>1</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedaddress="0x19945" mmedelementsizebits="8" mmedrowcount="1" mmedcolcount="6" />
+      <units>RPM</units>
+      <decimalpl>1</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="10.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>KVB</title>
+    <description>(KVB) Constant Fuel Injector Size (For Consumption)</description>
+    <CATEGORYMEM index="0" category="4" />
+    <EMBEDDEDDATA mmedaddress="0x1A37C" mmedelementsizebits="8" />
+    <units>cm^3/min</units>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="3.046875 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>FRLFSDP</title>
+    <description>(FRLFSDP) Injection Correction for RLFS</description>
+    <CATEGORYMEM index="0" category="4" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1BF2C" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>hPa</units>
+      <indexcount>11</indexcount>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.078125 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12AEC" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>RPM</units>
+      <indexcount>1</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.250000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BF42" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="11" />
+      <units>-</units>
+      <decimalpl>5</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.000031 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>TABGBTS</title>
+    <description>(TABGBTS) EGT Threshold for Component Protection</description>
+    <CATEGORYMEM index="0" category="4" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BFE4" mmedelementsizebits="16" />
+    <units>Grad C</units>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.019531 * X+ -50.000000">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>TABGSS</title>
+    <description>(TABGSS) Desired EGT for EGT Regulation Bank 1</description>
+    <CATEGORYMEM index="0" category="4" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BFFC" mmedelementsizebits="16" />
+    <units>Grad C</units>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.019531 * X+ -50.000000">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>TABGSS2</title>
+    <description>(TABGSS2) Desired EGT for EGT Regulation Bank 2</description>
+    <CATEGORYMEM index="0" category="4" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1BFFE" mmedelementsizebits="16" />
+    <units>Grad C</units>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.019531 * X+ -50.000000">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>FRKAP_0_A</title>
+    <description>(FRKAP_0_A)Faktor relative Kraftstoffmasse f&#252;r Applikation 0</description>
+    <CATEGORYMEM index="0" category="1" />
+    <EMBEDDEDDATA mmedaddress="0x1C000" mmedelementsizebits="8" />
+    <units>-</units>
+    <decimalpl>4</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>FRKAP_1_A</title>
+    <description>(FRKAP_1_A)Faktor relative Kraftstoffmasse f&#252;r Applikation 1</description>
+    <CATEGORYMEM index="0" category="1" />
+    <EMBEDDEDDATA mmedaddress="0x1C000" mmedelementsizebits="8" />
+    <units>-</units>
+    <decimalpl>4</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>FKKVS</title>
+    <description>(FKKVS) Korrekturfaktor Kraftstoffversorgungssystem</description>
+    <CATEGORYMEM index="0" category="1" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C012" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>ms</units>
+      <indexcount>16</indexcount>
+      <decimalpl>3</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.002667 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x1C002" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C032" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="16" />
+      <units>-</units>
+      <decimalpl>5</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.000031 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>KRKTE</title>
+    <description>(KRKTE) Conversion Of Relative Fuel Mass On Effective Injection</description>
+    <CATEGORYMEM index="0" category="4" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C23C" mmedelementsizebits="16" />
+    <units>ms/%</units>
+    <decimalpl>5</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.000111 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>LAMFA</title>
+    <description>(LAMFA) Drivers Wish Lambda</description>
+    <CATEGORYMEM index="0" category="4" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C24E" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>%</units>
+      <indexcount>6</indexcount>
+      <decimalpl>3</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.003052 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x1C23E" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>15</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedaddress="0x1C25A" mmedelementsizebits="8" mmedrowcount="15" mmedcolcount="6" />
+      <units>-</units>
+      <decimalpl>4</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.007813 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>TDATSO</title>
+    <description>(TDATSO) Upper Boundry Of EGT Model For Diagnosing EGT</description>
+    <CATEGORYMEM index="0" category="4" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1C36E" mmedelementsizebits="16" />
+    <units>Grad C</units>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.019531 * X+ -50.000000">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFLDIMX</title>
+    <description>(KFLDIMX) Kennfeld LDR I-Reglerbegrenzung</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12B0E" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>hPa(MAP)</units>
+      <indexcount>8</indexcount>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.039063 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12ACA" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>RPM</units>
+      <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.250000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D4D2" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="8" />
+      <units>%</units>
+      <decimalpl>3</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.005000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFLDRL</title>
+    <description>(KFLDRL) Map For Linearization Of Boost Pressure = f(TV) (Boost Limit/N75)</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1D832" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>TPS</units>
+      <indexcount>10</indexcount>
+      <decimalpl>3</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.005000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12ACA" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>RPM</units>
+      <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.250000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x03" mmedaddress="0x1D624" mmedelementsizebits="16" mmedrowcount="16" mmedcolcount="10" />
+      <units>Corrected N75 duty cycle</units>
+      <decimalpl>3</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.005000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFLDRQ2</title>
+    <description>(KFLDRQ2) LDR PID Q2 (Differential)</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10070" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>hPa</units>
+      <indexcount>4</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="10.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D764" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="4" />
+      <units>%/100hPa</units>
+      <decimalpl>2</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.050000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>LDRQ0DY</title>
+    <description>(LDRQ0DY) Boost Pressure Adjustment Parameters Q0 (P1)</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x100B1" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>1</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D7CE" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
+      <units>%/100hPa</units>
+      <decimalpl>2</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.050000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>LDRQ0S</title>
+    <description>(LDRQ0S) LDR PID Q0 In Static Operation (Proportional)</description>
+    <CATEGORYMEM index="0" category="7" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D7EE" mmedelementsizebits="16" />
+    <units>%/100Hpa</units>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.050000 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>LDRQ1DY</title>
+    <description>(LDRQ1DY) Reglerparameter Q1 PID-Regler im Dynamikbetrieb (Integrationsbeiwert) (P)</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x100B1" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>1</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D7F0" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
+      <units>%/100Hpa</units>
+      <decimalpl>2</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.050000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>LDRQ1ST</title>
+    <description>(LDRQ1ST) LDR PID Q1 In Static Operation (Integral)</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x100B1" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>1</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1D810" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
+      <units>%/100Hpa</units>
+      <decimalpl>2</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.050000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>KFTARX</title>
+    <description>(KFTARX) IAT Compensation for Maximum Specified Load </description>
+    <CATEGORYMEM index="0" category="4" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x1010C" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>Grad C</units>
+      <indexcount>8</indexcount>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.750000 * X+ -48.000000">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x12A9E" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>RPM</units>
+      <indexcount>8</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.250000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DA48" mmedelementsizebits="16" mmedrowcount="8" mmedcolcount="8" />
+      <units>-</units>
+      <decimalpl>5</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.000031 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFTABLE uniqueid="0x0" flags="0x0">
+    <title>LDRXN</title>
+    <description>(LDRXN) Maximum Fueling - Boost Pressure (Boost Request? or Limit?)</description>
+    <CATEGORYMEM index="0" category="7" />
+    <XDFAXIS id="x" uniqueid="0x0">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DB4A" mmedelementsizebits="16" mmedmajorstridebits="16" />
+      <units>RPM</units>
+      <indexcount>16</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="0.250000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="y" uniqueid="0x0">
+      <EMBEDDEDDATA mmedaddress="0x10085" mmedelementsizebits="8" mmedmajorstridebits="8" />
+      <units>RPM</units>
+      <indexcount>1</indexcount>
+      <decimalpl>1</decimalpl>
+      <embedinfo type="1" />
+      <datatype>0</datatype>
+      <unittype>0</unittype>
+      <DALINK index="0" />
+      <MATH equation="40.000000 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+    <XDFAXIS id="z">
+      <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1DB6A" mmedelementsizebits="16" mmedrowcount="1" mmedcolcount="16" />
+      <units>%</units>
+      <decimalpl>2</decimalpl>
+      <min>0.000000</min>
+      <max>255.000000</max>
+      <outputtype>1</outputtype>
+      <MATH equation="0.023438 * X">
+        <VAR id="X" />
+      </MATH>
+    </XDFAXIS>
+  </XDFTABLE>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>NLLM</title>
+    <description>(NLLM) Engine Idle Limit</description>
+    <CATEGORYMEM index="0" category="9" />
+    <EMBEDDEDDATA mmedaddress="0x1DC2A" mmedelementsizebits="8" />
+    <units>RPM</units>
+    <decimalpl>1</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="10.000000 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>VAVMXNIV</title>
+    <description>(VAVMXNIV) Maximum Speed For Activation VMAX Limit By Level Control</description>
+    <CATEGORYMEM index="0" category="9" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2C6" mmedelementsizebits="16" />
+    <units>Km/h</units>
+    <decimalpl>3</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>VAVMXPNG</title>
+    <description>(VAVMXPNG) Maximum Speed For Activation Of VMAX Limit By Plan?</description>
+    <CATEGORYMEM index="0" category="9" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2C8" mmedelementsizebits="16" />
+    <units>Km/h</units>
+    <decimalpl>3</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>VMAXNB</title>
+    <description>(VMAXNB) Maximum Speed During Normal Operation</description>
+    <CATEGORYMEM index="0" category="9" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2CA" mmedelementsizebits="16" />
+    <units>Km/h</units>
+    <decimalpl>3</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>VMAXNIV</title>
+    <description>(VMAXNIV) Maximum Allowable Speed Limit By Level Control</description>
+    <CATEGORYMEM index="0" category="9" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2CC" mmedelementsizebits="16" />
+    <units>Km/h</units>
+    <decimalpl>3</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
+      <VAR id="X" />
+    </MATH>
+  </XDFCONSTANT>
+  <XDFCONSTANT uniqueid="0x0">
+    <title>VMAXPNG</title>
+    <description>(VMAXPNG) Maximum Allowable Speed Limit By Plan?</description>
+    <CATEGORYMEM index="0" category="9" />
+    <EMBEDDEDDATA mmedtypeflags="0x02" mmedaddress="0x1E2CE" mmedelementsizebits="16" />
+    <units>Km/h</units>
+    <decimalpl>3</decimalpl>
+    <datatype>0</datatype>
+    <unittype>0</unittype>
+    <DALINK index="0" />
+    <MATH equation="0.007813 * X">
       <VAR id="X" />
     </MATH>
   </XDFCONSTANT>
