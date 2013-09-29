@@ -14,6 +14,8 @@ PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVA_TARGET_VER JAVA_RT_PATH
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
+JAVAC := '$(shell which javac)'
+JAVAC_DIR := "$(shell dirname $(JAVAC))/.."
 JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1 \2/')
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
@@ -29,6 +31,7 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 
 OPT_PRE := '/'
 
+JAVA_HOME ?= $(shell cygpath -w $(JAVAC_DIR))
 JAVA_RT_PATH := $(PROGRAMFILES)/Java/jre$(JAVA_TARGET_VER)
 ifdef ProgramW6432
 JAVA_RT_PATH := $(JAVA_RT_PATH);$(ProgramW6432)/Java/jre$(JAVA_TARGET_VER)
@@ -45,7 +48,8 @@ ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := makensis
 OPT_PRE := '-'
-JAVA_RT_PATH = /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-$(DPKG_ARCH)/jre
+JAVA_HOME ?= $(JAVAC_DIR)
+JAVA_RT_PATH := /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-$(DPKG_ARCH)/jre
 endif
 
 INSTALL_DIR := /usr/local/ecuxplot
@@ -157,8 +161,9 @@ versioninfo:
 	@echo version=$(VERSION)
 	@echo release=$(RELEASE)
 	@echo rc=$(RC)
-	@echo JAVA_RT_PATH=$(JAVA_RT_PATH)
+	@echo 'JAVA_HOME=$(JAVA_HOME)'
+	@echo 'JAVA_RT_PATH=$(JAVA_RT_PATH)'
 
-
+export JAVA_HOME
 .PRECIOUS: $(VERSION_JAVA)
 .PHONY: force compile clean binclean
