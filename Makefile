@@ -14,8 +14,8 @@ PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVA_TARGET_VER JAVA_RT_PATH
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
-JAVAC := '$(shell which javac)'
-JAVAC_DIR := "$(shell dirname $(JAVAC))/.."
+JAVAC := $(shell readlink -e "$(shell which javac)")
+JAVAC_DIR := $(shell dirname "$(JAVAC)")/..
 JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1 \2/')
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
