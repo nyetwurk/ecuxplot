@@ -1,6 +1,6 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
-  <headerType>gui</headerType>
+  <headerType>console</headerType>
   <jar>../mapdump.jar</jar>
   <outfile>ECUxPlot/mapdump.exe</outfile>
   <errTitle></errTitle>
