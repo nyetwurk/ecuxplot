@@ -145,7 +145,13 @@ install: $(INSTALL_FILES) $(PROFILES)
 	(cd profiles; tar cf - .) | (cd $(INSTALL_DIR)/profiles && tar xf -)
 
 tag:	force
-	@[ -z "$(VER)" ] || git tag -a v$(VER) -m "Version v$(VER)"
+	@if [ -z $(VER) ]; then \
+	    echo "usage: 'make tag VER=1.1r1.1'"; \
+	    echo "Existing tags:"; \
+	    git tag; \
+	    false; \
+	fi
+	git tag -a v$(VER) -m "Version v$(VER)"
 
 %.java: %.java.template Makefile
 	@echo Creating $@
