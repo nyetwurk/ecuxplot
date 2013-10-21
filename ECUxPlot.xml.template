@@ -2,7 +2,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>../ECUxPlot-%ECUXPLOT_VER.jar</jar>
-  <outfile>ECUxPlot/ECUxPlot.exe</outfile>
+  <outfile>ECUxPlot.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>

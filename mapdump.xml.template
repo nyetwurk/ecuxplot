@@ -1,11 +1,10 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>console</headerType>
-  <jar>../mapdump.jar</jar>
-  <outfile>ECUxPlot/mapdump.exe</outfile>
+  <jar>mapdump.jar</jar>
+  <outfile>mapdump.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
-  <chdir>.</chdir>
   <priority>normal</priority>
   <downloadUrl>http://java.com/download</downloadUrl>
   <supportUrl></supportUrl>
