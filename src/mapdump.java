@@ -14,7 +14,7 @@ public class mapdump {
 	int format = Map.FORMAT_CSV;
 	public Options(String[] args) throws Exception {
 	    if(args.length<1) {
-		System.out.print(Options.Usage());
+		System.err.print(Options.Usage());
 		throw new Exception("invalid args");
 	    }
 	    int i;
@@ -40,15 +40,15 @@ public class mapdump {
 		}
 	    }
 	    if (this.filename == null) {
-		System.out.print(Options.Usage());
+		System.err.print(Options.Usage());
 		throw new Exception("You must specify an input filename");
 	    }
 	    if (this.format == Map.FORMAT_OLD_XDF && image == null) {
-		System.out.print(Options.Usage());
+		System.err.print(Options.Usage());
 		throw new Exception("-o requires -i <image.bin> to detect image size");
 	    }
 	    if (this.format == Map.FORMAT_XDF && image == null) {
-		System.out.print(Options.Usage());
+		System.err.print(Options.Usage());
 		throw new Exception("-x requires -i <image.bin> to detect image size");
 	    }
 	}
