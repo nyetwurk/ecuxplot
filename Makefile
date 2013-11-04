@@ -7,6 +7,7 @@ JCOMMON_VER := 1.0.17
 JFREECHART_VER := 1.0.14
 OPENCSV_VER := 2.3
 COMMONS_LANG3_VER := 3.1
+COMMONS_CLI_VER := 1.2
 JAVA_TARGET_VER := 6
 
 # things to pass to build/build.properties
@@ -58,8 +59,17 @@ RSYNC := rsync
 
 REFERENCE=data/4Z7907551R.kp
 
-ECUXPLOT_JARS:=jcommon-$(JCOMMON_VER).jar jfreechart-$(JFREECHART_VER).jar applib.jar flanagan.jar AppleJavaExtensions.jar
-COMMON_JARS:=opencsv-$(OPENCSV_VER).jar commons-lang3-$(COMMONS_LANG3_VER).jar
+ECUXPLOT_JARS := \
+    jcommon-$(JCOMMON_VER).jar \
+    jfreechart-$(JFREECHART_VER).jar \
+    applib.jar \
+    flanagan.jar \
+    AppleJavaExtensions.jar
+
+COMMON_JARS := \
+    opencsv-$(OPENCSV_VER).jar \
+    commons-lang3-$(COMMONS_LANG3_VER).jar \
+    commons-cli-$(COMMONS_CLI_VER).jar
 
 JARS:=$(ECUXPLOT_JARS) $(COMMON_JARS)
 
@@ -116,7 +126,8 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 	-e 's/%JFREECHART_VER/$(JFREECHART_VER)/g' \
 	-e 's/%JCOMMON_VER/$(JCOMMON_VER)/g' \
 	-e 's/%OPENCSV_VER/$(OPENCSV_VER)/g' \
-	-e 's/%COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g'
+	-e 's/%COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g' \
+	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g'
 
 include scripts/Windows.mk
 include scripts/MacOS.mk

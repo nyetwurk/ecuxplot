@@ -418,7 +418,7 @@ public class Map implements Comparable<Object> {
     static private String DebugBB(ByteBuffer bb, int len, String where) {
 	String out = String.format("%s: %d (0x%x): %s",
 	    where, bb.position(), bb.position(), HexValue.dumpHex(bb, len));
-	System.out.println(out);
+	System.err.println(out);
 	return out;
     }
     // Map Members
@@ -489,7 +489,6 @@ public class Map implements Comparable<Object> {
 	base = b.getInt();
 	folderId = b.getInt();
 	id = Parse.string(b);
-	//System.out.println(id);
 	header1 = b.getInt();		// unk
 	header1a = b.get();		// unk
 	if (kpv == Map.INPUT_KP_v2)

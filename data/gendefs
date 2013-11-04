@@ -5,11 +5,11 @@ for source in $*; do
     stem=`echo $dest | cut -d - -f 1`
     if [ -r $source ]; then
 	echo "generating csv"
-	echo ./mapdump -r 4Z7907551R.kp -r 8D0907551F.kp -r 8D0907551G.kp -i $stem.bin $source
-	../mapdump.sh -r 4Z7907551R.kp -r 8D0907551F.kp -r 8D0907551G.kp -i $stem.bin $source > $dest.csv
+	echo ./mapdump -r 4Z7907551R.kp 8D0907551F.kp 8D0907551G.kp -i $stem.bin $source $dest.csv
+	../mapdump.sh -r 4Z7907551R.kp 8D0907551F.kp 8D0907551G.kp -i $stem.bin $source $dest.csv
 	echo "generating xdf"
-	echo ./mapdump -i $stem.bin -x $source
-	../mapdump.sh -i $stem.bin -x $source > $dest.xdf
+	echo ./mapdump -i $stem.bin -x $source $dest.xdf
+	../mapdump.sh -i $stem.bin -x $source $dest.xdf
     else
 	echo "can't read $source"
     fi

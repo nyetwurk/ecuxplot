@@ -101,6 +101,7 @@ Section "install" InstallationInfo
   File "jfreechart-${JFREECHART_VER}.jar"
   File "opencsv-${OPENCSV_VER}.jar"
   File "commons-lang3-${COMMONS_LANG3_VER}.jar"
+  File "commons-cli${COMMONS_CLI_VER}.jar"
   File "applib.jar"
   File "flanagan.jar"
   File "AppleJavaExtensions.jar"
