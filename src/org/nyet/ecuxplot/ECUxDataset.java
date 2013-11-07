@@ -266,7 +266,6 @@ public class ECUxDataset extends Dataset {
 		    if (v==null) {
 			throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log");
 		    }
-		    System.out.println(v.length);
 		} while (v.length<1 || !v[0].equals("TimeStamp"));
 
 		if (v==null || v.length<1)
