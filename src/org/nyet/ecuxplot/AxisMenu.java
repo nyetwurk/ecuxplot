@@ -127,13 +127,19 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("AirFuelRatioCurrent")) {
 		this.add("AirFuelRatioCurrent (AFR)", listener, bg);
 	    }
-	    if(id.matches("FuelInjectorOnTime")) {
+	    if(id.matches("FuelInjectorOnTime")) {	// ti
+		this.add("FuelInjectorDutyCycle", listener, bg);
+	    }
+	    if(id.matches("EffFuelInjectonTime")) {	// te
+		this.add("EffFuelInjectorDutyCycle", listener, bg);
 		this.add("Calc Fuel Mass", listener, bg);
 		this.add("Calc AFR", listener, bg);
 		this.add("Calc lambda", listener, bg);
 		this.add("Calc lambda error", listener, bg);
 		// addToSubmenu("Calc", new JSeparator());
-		this.add("FuelInjectorDutyCycle", listener, bg);
+	    }
+	    if(id.matches("EffFuelInjectonTimeBank2")) {	// te
+		this.add("EffFuelInjectorDutyCycleBank2", listener, bg);
 	    }
 	} else if(id.matches("^Zeitronix.*")) {
 	    /* do zeitronix before boost so we get the conversions we want */
