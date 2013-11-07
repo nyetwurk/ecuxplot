@@ -283,8 +283,8 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches("^BoostPressureSpecified$")) h[i]="BoostPressureDesired";
 		    if(h[i].matches("^AtmosphericPressure$")) h[i]="BaroPressure";
 		    if(h[i].matches("^AirFuelRatioRequired$")) h[i]="AirFuelRatioDesired";
-		    if(h[i].matches("^InjectionTime$")) h[i]="FuelInjectorOnTime";
-		    if(h[i].matches("^InjectionTimeBank2$")) h[i]="FuelInjectorOnTimeBank2";
+		    if(h[i].matches("^InjectionTime$")) h[i]="EffFuelInjectonTime";	// is this te or ti? Assume te?
+		    if(h[i].matches("^InjectionTimeBank2$")) h[i]="EffFuelInjectonTimeBank2";	// is this te or ti? Assume te?
 		    if(h[i].length()==0) {
 			v[i]=v[i].trim();
 		        if(v[i].length()>0) h[i]="ME7L " + v[i];
@@ -413,11 +413,16 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc Turbo Flow (lb/min)")) {
 	    DoubleArray a = this.get("Calc MAF").data;
 	    c = new Column(id, "lb/min", a.div(7.55*this.env.f.turbos()));
-	} else if(id.equals("Calc Fuel Mass")) {
+	} else if(id.equals("Calc Fuel Mass")) {	// based on te
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
 	    final double gps = this.env.f.injector()*gps_per_ccmin;
 	    final double cylinders = this.env.f.cylinders();
-	    DoubleArray a = this.get("FuelInjectorDutyCycle").data.mult(cylinders*gps/100);
+	    Column bank1 = this.get("EffFuelInjectorDutyCycle");
+	    Column bank2 = this.get("EffFuelInjectorDutyCycleBank2");
+	    DoubleArray duty = bank1.data;
+	    /* average two duties for overall mass */
+	    if (bank2!=null) duty = duty.add(bank2.data).div(2);
+	    DoubleArray a = duty.mult(cylinders*gps/100);
 	    c = new Column(id, "g/sec", a);
 	} else if(id.equals("TargetAFRDriverRequest (AFR)")) {
 	    DoubleArray abs = super.get("TargetAFRDriverRequest").data;
@@ -442,7 +447,19 @@ public class ECUxDataset extends Dataset {
 		max(-25).min(25));
 
 	} else if(id.equals("FuelInjectorDutyCycle")) {
-	    DoubleArray a = super.get("FuelInjectorOnTime").data.
+	    DoubleArray a = super.get("FuelInjectorOnTime").data.	/* ti */
+		div(60*1000);	/* assumes injector on time is in ms */
+
+	    DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
+	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
+	} else if(id.equals("EffFuelInjectorDutyCycle")) {		/* te */
+	    DoubleArray a = super.get("EffFuelInjectionTime").data.
+		div(60*1000);	/* assumes injector on time is in ms */
+
+	    DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
+	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
+	} else if(id.equals("EffFuelInjectorDutyCycleBank2")) {		/* te */
+	    DoubleArray a = super.get("EffFuelInjectionTimeBank2").data.
 		div(60*1000);	/* assumes injector on time is in ms */
 
 	    DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
