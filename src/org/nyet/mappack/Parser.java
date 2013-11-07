@@ -135,11 +135,12 @@ public class Parser extends MMapFile {
 		buf.position(0x5c);
 		break;
 	    case 0x124:
+	    case 0x149:
 		kpv = Map.INPUT_KP_v2;
 		buf.position(0x60);
 		break;
 	    default:
-		throw new Exception("Unknown kp version" + kp[0]);
+		throw new Exception("Unknown kp version " + kp[0]);
 	}
 
 	filename = Parse.string(buf);

@@ -127,7 +127,7 @@ public class ECUxDataset extends Dataset {
         do {
 	    h = reader.readNext();
 	    if (h==null)
-		throw new Exception(this.getFileId() + ": read failed");
+		throw new Exception(this.getFileId() + ": read failed parsing CSV headers");
 	    if (verbose)
 		for(int i=0;i<h.length;i++)
 		    System.out.println("h[" + i + "]: " + h[i]);
@@ -224,7 +224,7 @@ public class ECUxDataset extends Dataset {
 		    do {
 			h = reader.readNext(); // headers
 			if (h==null)
-			    throw new Exception(this.getFileId() + ": read failed");
+			    throw new Exception(this.getFileId() + ": read failed parsing zeitronix log");
 		    } while (h.length<=1);
 		}
 		// otherwise, the user gave us a zeit log with no header,
@@ -263,12 +263,14 @@ public class ECUxDataset extends Dataset {
 		String[] v;	// ME7 variable name
 		do {
 		    v = reader.readNext();
-		    if (v==null)
-			throw new Exception(this.getFileId() + ": read failed");
+		    if (v==null) {
+			throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log");
+		    }
+		    System.out.println(v.length);
 		} while (v.length<1 || !v[0].equals("TimeStamp"));
 
 		if (v==null || v.length<1)
-		    throw new Exception(this.getFileId() + ": read failed");
+		    throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log");
 
 		u = reader.readNext();
 		for(int i=0;i<u.length;i++) {
