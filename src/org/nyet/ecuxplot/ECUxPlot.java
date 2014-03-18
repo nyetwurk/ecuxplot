@@ -472,6 +472,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	} else if(source.getText().equals("Filter data")) {
 	    this.filter.enabled(source.isSelected());
 	    rebuild();
+	} else if(source.getText().equals("Show all ranges")) {
+	    this.filter.showAllRanges(source.isSelected());
+	    rebuild();
+	} else if(source.getText().equals("Next range...")) {
+	    filter.currentRange++;
+	    rebuild();
+	} else if(source.getText().equals("Previous range...")) {
+	    if(filter.currentRange > 0) {
+	        filter.currentRange--;
+	    }
+	    rebuild();
 	} else if(source.getText().equals("Configure filter...")) {
 	    if(this.fe == null) this.fe =
 		new FilterEditor(this.prefs, this.filter);
@@ -608,7 +619,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 	/* returns the series indicies of the dataset we just added */
 	Integer[] series =
-	    ECUxChartFactory.addDataset(d, data, this.xkey(), ykey);
+	    ECUxChartFactory.addDataset(d, data, this.xkey(), ykey, filter);
 
 	/* set the color for those series */
 	ECUxChartFactory.setAxisPaint(this.chartPanel.getChart(), axis,

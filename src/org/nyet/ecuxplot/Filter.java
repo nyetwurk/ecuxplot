@@ -6,6 +6,7 @@ public class Filter {
     public static final String PREFS_TAG = "filter";
 
     private static final boolean defaultEnabled = true;
+    private static final boolean defaultShowAllRanges = true;
     private static final boolean defaultMonotonicRPM = true;
     private static final int defaultMonotonicRPMfuzz = 100;
     private static final int defaultMinRPM = 2500;
@@ -33,6 +34,19 @@ public class Filter {
     }
     public void enabled(boolean val) {
 	this.prefs.putBoolean("enabled", val);
+    }
+
+    public int currentRange = 0;
+
+    public static boolean showAllRanges(Preferences prefs) {
+    return prefs.node(PREFS_TAG).getBoolean("showAllRanges", defaultShowAllRanges);
+    }
+
+    public boolean showAllRanges() {
+    return this.prefs.getBoolean("showAllRanges", defaultShowAllRanges);
+    }
+    public void showAllRanges(boolean val) {
+    this.prefs.putBoolean("showAllRanges", val);
     }
 
     public boolean monotonicRPM() {
