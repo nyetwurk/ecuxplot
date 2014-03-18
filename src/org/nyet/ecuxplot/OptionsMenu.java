@@ -24,6 +24,9 @@ public final class OptionsMenu extends JMenu {
     private JMenu savePresetsMenu;
     private JMenu deletePresetsMenu;
 
+    private JMenu nextRangeMenu;
+    private JMenu previousRangeMenu;
+    
     public OptionsMenu(String id, ECUxPlot plotFrame) {
 	super(id);
 	this.plotFrame=plotFrame;
@@ -56,10 +59,21 @@ public final class OptionsMenu extends JMenu {
 	jcb.addActionListener(plotFrame);
 	this.add(jcb);
 
+	this.add(new JSeparator());
 	jcb = new JCheckBox("Filter data", Filter.enabled(prefs));
 	jcb.addActionListener(plotFrame);
 	this.add(jcb);
-
+	jcb = new JCheckBox("Show all ranges", Filter.showAllRanges(prefs));
+	jcb.addActionListener(plotFrame);
+    this.add(jcb);
+	jmi = new JMenuItem("Next range...");
+	jmi.addActionListener(plotFrame);
+	this.add(jmi);
+	jmi = new JMenuItem("Previous range...");
+	jmi.addActionListener(plotFrame);
+	this.add(jmi);
+    this.add(new JSeparator());
+	
 	jcb = new JCheckBox("Apply SAE", SAE.enabled(prefs));
 	jcb.addActionListener(plotFrame);
 	this.add(jcb);
