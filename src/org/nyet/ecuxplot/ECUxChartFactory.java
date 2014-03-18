@@ -161,9 +161,8 @@ public class ECUxChartFactory {
 	    return ret.toArray(new Integer[0]);
 	}
 		
-	if(filter.currentRange >= ranges.size())
-	{
-		filter.currentRange = data.getRanges().size() - 1;
+	if(filter.currentRange >= ranges.size()) {
+	    filter.currentRange = data.getRanges().size() - 1;
 	}
 	boolean showAllRanges = filter.showAllRanges();
 	for(int	i = (showAllRanges ? 0 : filter.currentRange); 

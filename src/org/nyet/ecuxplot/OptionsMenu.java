@@ -65,14 +65,14 @@ public final class OptionsMenu extends JMenu {
 	this.add(jcb);
 	jcb = new JCheckBox("Show all ranges", Filter.showAllRanges(prefs));
 	jcb.addActionListener(plotFrame);
-    this.add(jcb);
+        this.add(jcb);
 	jmi = new JMenuItem("Next range...");
 	jmi.addActionListener(plotFrame);
 	this.add(jmi);
 	jmi = new JMenuItem("Previous range...");
 	jmi.addActionListener(plotFrame);
 	this.add(jmi);
-    this.add(new JSeparator());
+        this.add(new JSeparator());
 	
 	jcb = new JCheckBox("Apply SAE", SAE.enabled(prefs));
 	jcb.addActionListener(plotFrame);

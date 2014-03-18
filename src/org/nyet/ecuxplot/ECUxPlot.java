@@ -476,17 +476,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    this.filter.showAllRanges(source.isSelected());
 	    rebuild();
 	} else if(source.getText().equals("Next range...")) {
-		filter.currentRange++;
-		rebuild();
+	    filter.currentRange++;
+	    rebuild();
 	} else if(source.getText().equals("Previous range...")) {
 	    if(filter.currentRange > 0) {
-	    filter.currentRange--;
+	        filter.currentRange--;
 	    }
 	    rebuild();	
-	} 
-	
-	
-	else if(source.getText().equals("Configure filter...")) {
+	} else if(source.getText().equals("Configure filter...")) {
 	    if(this.fe == null) this.fe =
 		new FilterEditor(this.prefs, this.filter);
 	    this.fe.showDialog(this, "Filter");
