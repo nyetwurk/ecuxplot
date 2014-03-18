@@ -17,7 +17,7 @@ public class AboutPanel extends JPanel implements ActionListener {
 
     public AboutPanel() {
 	this.setLayout(new BorderLayout());
-	String v = new org.nyet.util.Version().toString();
+	String v = "some version";// new org.nyet.util.Version().toString();
 	this.add(new JLabel(v), BorderLayout.EAST);
 
 	JButton icon = new JButton(new ImageIcon(getClass().getResource(

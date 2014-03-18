@@ -147,19 +147,27 @@ public class ECUxChartFactory {
     }
 
     public static Integer[] addDataset(DefaultXYDataset d, ECUxDataset data,
-		    Comparable<?> xkey, Dataset.Key ykey) {
+		    Comparable<?> xkey, Dataset.Key ykey, Filter filter) {
 	ArrayList<Integer> ret = new ArrayList<Integer>();
 	ArrayList<Dataset.Range> ranges = data.getRanges();
 	// add empty data in case we turn off filter, or we get some error
 	double[][] empty = {{},{}};
 	if(ranges.size()==0) {
+		filter.currentRange = 0;
 	    Dataset.Key key = data.new Key(ykey);
 	    key.hideRange();
 	    d.addSeries(key, empty);
 	    ret.add(d.indexOf(key));
 	    return ret.toArray(new Integer[0]);
 	}
-	for(int i=0;i<ranges.size();i++) {
+		
+	if(filter.currentRange >= ranges.size()) {
+	    filter.currentRange = data.getRanges().size() - 1;
+	}
+	boolean showAllRanges = filter.showAllRanges();
+	for(int	i = (showAllRanges ? 0 : filter.currentRange); 
+	        i < (showAllRanges ? ranges.size() : filter.currentRange + 1);
+	        i++) {
 	    Dataset.Key key = data.new Key(ykey, i);
 	    if(ranges.size()==1) key.hideRange();
 	    else key.showRange();

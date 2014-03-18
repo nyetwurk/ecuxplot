@@ -6,6 +6,7 @@ public class Filter {
     public static final String PREFS_TAG = "filter";
 
     private static final boolean defaultEnabled = true;
+    private static final boolean defaultShowAllRanges = true;
     private static final boolean defaultMonotonicRPM = true;
     private static final int defaultMonotonicRPMfuzz = 100;
     private static final int defaultMinRPM = 2500;
@@ -16,8 +17,8 @@ public class Filter {
     private static final int defaultGear = 3;
     private static final int defaultMinPoints = 5;
     private static final int defaultHPTQMAW = 5; // hp/tq moving average window
-    private static final int defaultZeitMAW = 30; // zeitronix MAW
-
+    private static final int defaultZeitMAW = 30; // zeitronix MAW 
+    
     private Preferences prefs;
 
     public Filter (Preferences prefs) {
@@ -27,12 +28,25 @@ public class Filter {
     public static boolean enabled(Preferences prefs) {
 	return prefs.node(PREFS_TAG).getBoolean("enabled", defaultEnabled);
     }
-
+ 
     public boolean enabled() {
 	return this.prefs.getBoolean("enabled", defaultEnabled);
     }
     public void enabled(boolean val) {
 	this.prefs.putBoolean("enabled", val);
+    }    
+
+    public int currentRange = 0;  
+    
+    public static boolean showAllRanges(Preferences prefs) {
+    return prefs.node(PREFS_TAG).getBoolean("showAllRanges", defaultShowAllRanges);
+    }
+    
+    public boolean showAllRanges() {
+    return this.prefs.getBoolean("showAllRanges", defaultShowAllRanges);
+    }
+    public void showAllRanges(boolean val) {
+    this.prefs.putBoolean("showAllRanges", val);
     }
 
     public boolean monotonicRPM() {
