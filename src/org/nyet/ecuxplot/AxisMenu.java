@@ -24,7 +24,7 @@ public class AxisMenu extends JMenu {
      * 
      */
 	
-	public static boolean thisIsATest = false;
+	public static boolean thisIsATest1234 = false;
     private static final long serialVersionUID = 1L;
     private SubActionListener listener;
     private boolean radioButton;
