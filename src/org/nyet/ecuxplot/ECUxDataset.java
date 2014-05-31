@@ -135,6 +135,9 @@ public class ECUxDataset extends Dataset {
 
 	int log_detected = detect(h);
 
+	if (verbose)
+	    System.out.printf("Detected %d based on \"%s\"\n", log_detected, h[0]);
+
 	/*
 	  passed     detected
 	  DETECT       all ok
@@ -225,7 +228,7 @@ public class ECUxDataset extends Dataset {
 			h = reader.readNext(); // headers
 			if (h==null)
 			    throw new Exception(this.getFileId() + ": read failed parsing zeitronix log");
-		    } while (h.length<=1);
+		    } while (h.length<=1 || h[0].trim().length() == 0);
 		}
 		// otherwise, the user gave us a zeit log with no header,
 		// but asked us to treat it like a zeit log.
@@ -260,24 +263,47 @@ public class ECUxDataset extends Dataset {
 		}
 		break;
 	    case LOG_ME7LOGGER:
+		/* VARS */
 		String[] v;	// ME7 variable name
 		do {
 		    v = reader.readNext();
 		    if (v==null) {
-			throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log");
+			throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log variables");
 		    }
 		} while (v.length<1 || !v[0].equals("TimeStamp"));
 
 		if (v==null || v.length<1)
-		    throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log");
+		    throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log variables");
 
-		u = reader.readNext();
+		/* UNITS */
+		do {
+		    u = reader.readNext();
+		    if (u==null) {
+			throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log units");
+		    }
+		} while (u.length<1 || u[0].trim().length() == 0);
+
+		if (u==null || u.length<1)
+		    throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log units");
+
+		/* process units */
 		for(int i=0;i<u.length;i++) {
 		    u[i]=u[i].trim();
 		    if(u[i].matches("^mbar$")) u[i]="mBar";
 		}
 
-		h = reader.readNext();
+		/* ALIASES */
+		do {
+		    h = reader.readNext();
+		    if (h==null) {
+			throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log aliases");
+		    }
+		} while (h.length<1 || h[0].trim().length() == 0);
+
+		if (h==null || h.length<1)
+		    throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log aliases");
+
+		/* process aliases */
 		for(int i=0;i<h.length;i++) {
 		    h[i]=h[i].trim();
 		    if(h[i].matches("^Engine[Ss]peed.*")) h[i]="RPM";
@@ -309,7 +335,7 @@ public class ECUxDataset extends Dataset {
 		}
 		break;
 	}
-	for(int i=0;i<h.length;i++) {
+	for(int i=0;i<h.length && i<u.length;i++) {
 	    if(u[i]==null || u[i].length()==0)
 		u[i]=Units.find(h[i]);
 	}

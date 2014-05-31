@@ -176,15 +176,18 @@ public class Dataset {
 	final CSVReader reader = new CSVReader(new FileReader(filename));
 	ParseHeaders(reader);
 	for(int i=0;i<this.ids.length;i++)
-	    this.columns.add(new Column(this.ids[i], this.units[i]));
+	    this.columns.add(new Column(this.ids[i],
+		i<this.units.length?this.units[i]:""));
 
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
-	    for(int i=0;i<nextLine.length;i++) {
-		if (this.columns.size() > i)
-		    this.columns.get(i).add(nextLine[i]);
+	    if (nextLine.length>0 && nextLine[0].trim().length()>0) {
+		for(int i=0;i<nextLine.length;i++) {
+		    if (this.columns.size() > i)
+			this.columns.get(i).add(nextLine[i]);
+		}
+		this.rows++;
 	    }
-	    this.rows++;
 	}
 	buildRanges();
     }
@@ -193,7 +196,9 @@ public class Dataset {
 
     public void ParseHeaders(CSVReader reader) throws Exception {
 	this.ids = reader.readNext();
-	this.units = new String[ids.length];
+	if (this.ids.length>0 && this.ids[0].trim().length()>0) {
+	    this.units = new String[ids.length];
+	}
     }
 
     public Column get(int id) {
