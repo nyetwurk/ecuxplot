@@ -251,6 +251,18 @@ public class ECUxDataset extends Dataset {
 	    case LOG_ECUX:
 		u = ParseUnits(h);
 		this.time_ticks_per_sec = 1000;
+
+		/* process aliases */
+		for(int i=0;i<h.length;i++) {
+		    h[i]=h[i].trim();
+		    if(h[i].matches("^BstActual$")) h[i]="BoostPressureActual";
+		    if(h[i].matches("^BstDesired$")) h[i]="BoostPressureDesired";
+		}
+
+		if (verbose)
+		    for(int i=0;i<h.length;i++)
+			System.out.println("out: " + h[i] + " [" + u[i] + "]");
+
 		break;
 	    case LOG_EVOSCAN:
 		u = new String[h.length]; // no units :/
