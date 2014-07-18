@@ -702,6 +702,20 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "K", cs.div(s));
 /*****************************************************************************/
 	}
+
+	if(c==null) {
+	    /* Calc True Timing */
+	    if (id.toString().endsWith(" (ms)")) {
+		String s = id.toString();
+		s = s.substring(0, s.length()-5);
+		Column t = this.get(s);
+		if (t!=null) {
+		    DoubleArray r = this.get("RPM").data;
+		    c = new Column(id, "(ms)", t.data.div(r.mult(.006)));
+		}
+	    }
+	}
+
 	if(c!=null) {
 	    this.getColumns().add(c);
 	    return c;

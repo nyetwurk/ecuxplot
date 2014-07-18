@@ -49,14 +49,17 @@ public class Dataset {
 	    s=p.matcher(s).replaceAll("");
 
 	    // look for time stamps, convert to seconds
-	    final Pattern p1 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}.\\d{3}");
+	    final Pattern p1 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}.\\d{1,3}");
 	    final Pattern p2 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}");
+	    final Pattern p3 = Pattern.compile("\\d{2}:\\d{2}.\\d{1,3}");
 
 	    SimpleDateFormat fmt=null;
 	    if (p1.matcher(s).matches()) {
 		fmt = new SimpleDateFormat("HH:mm:ss.SSS");
 	    } else if (p2.matcher(s).matches()) {
 		fmt = new SimpleDateFormat("HH:mm:ss");
+	    } else if (p3.matcher(s).matches()) {
+		fmt = new SimpleDateFormat("mm:ss.SSS");
 	    }
 	    if (fmt != null) {
 		try {

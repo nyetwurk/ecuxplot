@@ -176,6 +176,8 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("IgnitionTimingAngleOverall")) {
 		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
 	    }
+	    AbstractButton titem = makeMenuItem(id + " (ms)", listener, bg);
+	    addToSubmenu("TrueTiming", titem, true);
 	} else if(id.matches("(Cat|MainCat).*")) {
 	    addToSubmenu("Cats", item);
 	} else if(id.matches(".*EGT.*")) {
