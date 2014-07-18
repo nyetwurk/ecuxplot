@@ -176,8 +176,14 @@ public class Dataset {
 	this.fileId = org.nyet.util.Files.filename(filename);
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
-	final CSVReader reader = new CSVReader(new FileReader(filename));
-	ParseHeaders(reader);
+	CSVReader reader = new CSVReader(new FileReader(filename));
+	try {
+	    ParseHeaders(reader);
+	} catch ( Exception e ) {
+	    /* try semicolon separated */
+	    reader = new CSVReader(new FileReader(filename), ';');
+	    ParseHeaders(reader);
+	}
 	for(int i=0;i<this.ids.length;i++)
 	    this.columns.add(new Column(this.ids[i],
 		i<this.units.length?this.units[i]:""));
