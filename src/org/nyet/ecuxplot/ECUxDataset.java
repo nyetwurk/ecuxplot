@@ -31,7 +31,7 @@ public class ECUxDataset extends Dataset {
 	this.filter = filter;
 
 	this.pedal = get(new String []
-		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position"});
+		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position", "Pedal Position"});
 	if (this.pedal!=null && this.pedal.data.isZero()) this.pedal=null;
 
 	this.throttle = get(new String []
@@ -39,7 +39,7 @@ public class ECUxDataset extends Dataset {
 	if (this.throttle!=null && this.throttle.data.isZero()) this.throttle=null;
 
 	this.gear = get(new String []
-		{"Gear", "SelectedGear"});
+		{"Gear", "SelectedGear", "Engaged Gear"});
 	if (this.gear!=null && this.gear.data.isZero()) this.gear=null;
 
 	// look for zeitronix boost for filtering
@@ -79,6 +79,7 @@ public class ECUxDataset extends Dataset {
     public static final int LOG_ZEITRONIX = 3;
     public static final int LOG_ME7LOGGER = 4;
     public static final int LOG_EVOSCAN = 5;
+    public static final int LOG_VOLVOLOGGER = 6;
     public int logType;
 
     private int detect(String [] h) {
@@ -96,6 +97,8 @@ public class ECUxDataset extends Dataset {
 
 	if(h[0].matches("^LogID$")) return LOG_EVOSCAN;
 
+	if(h[0].matches("^Time \\(sec\\)$")) return LOG_VOLVOLOGGER;
+
 	return LOG_UNKNOWN;
     }
 
@@ -104,7 +107,7 @@ public class ECUxDataset extends Dataset {
 	for(int i=0;i<h.length;i++) {
 	    h[i]=h[i].trim();
 	    final Pattern unitsRegEx =
-		Pattern.compile("([\\w\\s]+)\\(([\\w\\s].*)\\)");
+		Pattern.compile("([\\S\\s]+)\\(([\\S\\s].*)\\)");
 	    Matcher matcher = unitsRegEx.matcher(h[i]);
 	    if(matcher.find()) {
 		h[i]=matcher.group(1);
@@ -149,6 +152,9 @@ public class ECUxDataset extends Dataset {
 	}
 
 	int log_use = (log_req==LOG_DETECT)?log_detected:log_req;
+
+	if (verbose)
+	    System.out.printf("Using %d\n", log_use);
 
 	this.time_ticks_per_sec = 1;
 	switch(log_use) {
@@ -333,6 +339,35 @@ public class ECUxDataset extends Dataset {
 		if (verbose)
 		    for(int i=0;i<h.length;i++)
 			System.out.println("out: " + h[i] + " [" + u[i] + "]");
+		break;
+	    case LOG_VOLVOLOGGER:
+		u = new String[h.length];
+		v = new String[h.length];
+		final Pattern unitsRegEx =
+		    Pattern.compile("([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)");
+		for(int i=0;i<h.length;i++) {
+		    System.out.printf("%s\n", h[i]);
+		    h[i]=h[i].trim();
+		    Matcher matcher = unitsRegEx.matcher(h[i]);
+		    if (matcher.find()) {
+			h[i]=matcher.group(1).trim();
+			u[i]=matcher.group(2).trim();
+			v[i]=matcher.group(3).trim();
+			if(h[i].length()==0) {
+			    if(v[i].length()>0) h[i]="ME7L " + v[i];
+			}
+		    }
+		    if(h[i].matches("^Time$")) h[i]="TIME";
+		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
+		    if(h[i].matches("^Actual Boost Pressure$")) h[i]="BoostPressureActual";
+		    if(h[i].matches("^Desired Boost Pressure$")) h[i]="BoostPressureDesired";
+		    if(h[i].matches("^Mass Air Flow$")) h[i]="MAF";
+		}
+
+		if (verbose)
+		    for(int i=0;i<h.length;i++)
+			System.out.printf("out: \"%s\" \"%s\" \"%s\"\n", h[i], u[i], v[i]);
+
 		break;
 	    default:
 		u = ParseUnits(h);
@@ -835,7 +870,7 @@ public class ECUxDataset extends Dataset {
 
 	    Dataset.Range r=ranges.get(run);
 	    double [] rpm = this.getData("RPM", r);
-	    
+
 	    if(rpm[0]-100>RPMStart || rpm[rpm.length-1]+100<RPMEnd)
 		throw new Exception("run " + rpm[0] + "-" + rpm[rpm.length-1] +
 			" not long enough");

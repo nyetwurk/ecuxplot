@@ -105,7 +105,7 @@ public class AxisMenu extends JMenu {
 	// goes before .*Load.* to catch CalcLoad
 	} else if(id.matches("^Calc .*")) {
 	    addToSubmenu("Calc", item);
-	} else if(id.matches(".*(MAF|MassAir|AirMass).*")) {
+	} else if(id.matches(".*(MAF|MassAir|AirMass|Mass Air Flow).*")) {
 	    addToSubmenu("MAF", item);
 	    if(id.matches("MassAirFlow")) {
 		this.add("Calc Load", listener, bg);
@@ -154,7 +154,7 @@ public class AxisMenu extends JMenu {
 		this.add("Zeitronix Lambda (AFR)", listener, bg);
 	    }
 	    addToSubmenu("Zeitronix", item);
-	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro).*")) {
+	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Pressure).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		this.add("BoostPressureDesired (PSI)", listener, bg);
@@ -171,7 +171,10 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LDR PID", listener, bg);
 		addToSubmenu("Calc", new JSeparator());
 	    }
-	} else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing).*")) {
+	/* do this before Timing so we don't match Throttle Angle */
+	} else if(id.matches(".*(Pedal|Throttle).*")) {
+	    addToSubmenu("Throttle", item);
+	} else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing|Angle).*")) {
 	    addToSubmenu("Ignition", item);
 	    if(id.matches("IgnitionTimingAngleOverall")) {
 		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
@@ -190,8 +193,6 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Misfires", item);
 	} else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
 	    addToSubmenu("O2 Sensor(s)", item);
-	} else if(id.matches(".*(Pedal|Throttle).*")) {
-	    addToSubmenu("Throttle", item);
 	} else if(id.matches(".*(Load|Torque).*")) {
 	    addToSubmenu("Load", item);
 	    if(id.matches("EngineLoadDesired")) {
