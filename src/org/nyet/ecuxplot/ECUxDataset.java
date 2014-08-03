@@ -97,7 +97,7 @@ public class ECUxDataset extends Dataset {
 
 	if(h[0].matches("^LogID$")) return LOG_EVOSCAN;
 
-	if(h[0].matches("^Time \\(sec\\)$")) return LOG_VOLVOLOGGER;
+	if(h[0].matches("^Time\\s*\\(sec\\)$")) return LOG_VOLVOLOGGER;
 
 	return LOG_UNKNOWN;
     }
@@ -346,7 +346,6 @@ public class ECUxDataset extends Dataset {
 		final Pattern unitsRegEx =
 		    Pattern.compile("([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)");
 		for(int i=0;i<h.length;i++) {
-		    System.out.printf("%s\n", h[i]);
 		    h[i]=h[i].trim();
 		    Matcher matcher = unitsRegEx.matcher(h[i]);
 		    if (matcher.find()) {
@@ -359,7 +358,7 @@ public class ECUxDataset extends Dataset {
 		    }
 		    if(h[i].matches("^Time$")) h[i]="TIME";
 		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
-		    if(h[i].matches("^Actual Boost Pressure$")) h[i]="BoostPressureActual";
+		    if(h[i].matches("^(Actual )?Boost Pressure$")) h[i]="BoostPressureActual";
 		    if(h[i].matches("^Desired Boost Pressure$")) h[i]="BoostPressureDesired";
 		    if(h[i].matches("^Mass Air Flow$")) h[i]="MAF";
 		}

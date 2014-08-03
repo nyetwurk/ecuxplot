@@ -9,12 +9,12 @@ public class Filter {
     private static final boolean defaultShowAllRanges = true;
     private static final boolean defaultMonotonicRPM = true;
     private static final int defaultMonotonicRPMfuzz = 100;
-    private static final int defaultMinRPM = 2500;
+    private static final int defaultMinRPM = 2000;
     private static final int defaultMaxRPM = 8000;
-    private static final int defaultMinRPMRange = 2000;
+    private static final int defaultMinRPMRange = 1200;
     private static final int defaultMinPedal = 95;
     private static final int defaultMinThrottle = 50;
-    private static final int defaultGear = 3;
+    private static final int defaultGear = -1;
     private static final int defaultMinPoints = 5;
     private static final int defaultHPTQMAW = 5; // hp/tq moving average window
     private static final int defaultZeitMAW = 30; // zeitronix MAW
