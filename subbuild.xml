@@ -15,11 +15,18 @@
     </target>
 
     <target name="compile">
-	<path id="java-rt.path" path="${JAVA_RT_PATH}"/>
-
-	<pathconvert property="bootclass.path" refid="java-rt.path">
-            <globmapper from="*" to="*/lib/rt.jar"/>
-        </pathconvert>
+	<fail message="Can't find JRE${JAVA_TARGET_VER} rt.jar!">
+	    <condition>
+		<or>
+		    <equals arg1="${JAVA_RT_PATH}" arg2=""/>
+		    <not>
+			<isset property="JAVA_RT_PATH"/>
+		    </not>
+		</or>
+	    </condition>
+	</fail>
+	<available file="${JAVA_RT_PATH}" property="rt.jar.ok"/>
+	<fail message="Can't find ${JAVA_RT_PATH}!" unless="rt.jar.ok"/>
 
 	<javac
 	    srcdir="src"
@@ -29,7 +36,7 @@
 	    includeantruntime="false"
 	    classpathref="classpath"
 	    debug="on"
-	    bootclasspath="${bootclass.path}"
+	    bootclasspath="${JAVA_RT_PATH}"
 	/>
     </target>
 

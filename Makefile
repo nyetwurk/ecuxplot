@@ -33,24 +33,22 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 OPT_PRE := '/'
 
 JAVA_HOME ?= $(shell cygpath -w $(JAVAC_DIR))
-JAVA_RT_PATH := $(PROGRAMFILES)/Java/jre$(JAVA_TARGET_VER)
-ifdef ProgramW6432
-JAVA_RT_PATH := $(JAVA_RT_PATH);$(ProgramW6432)/Java/jre$(JAVA_TARGET_VER)
-endif
-JAVA_RT_PATH := $(subst \,/,$(JAVA_RT_PATH))
-
+JAVA_RT=Java/jre$(JAVA_TARGET_VER)/lib/rt.jar
+JAVA_RT32 := C:/Program\ Files\ (x86)/$(JAVA_RT)
+JAVA_RT64 := C:/Program\ Files/$(JAVA_RT)
+JAVA_RT_PATH := $(wildcard $(JAVA_RT32) $(JAVA_RT64))
 else
 #ARCH_x86_64 := amd64
 #ARCH_i686 := i386
 #UNAME_ARCH := $(ARCH_$(shell uname -m))
-DPKG_ARCH := $(shell dpkg --print-architecture)
+#DPKG_ARCH := $(shell dpkg --print-architecture)
 LAUNCH4J := /usr/local/launch4j/launch4j
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := makensis
 OPT_PRE := '-'
 JAVA_HOME ?= $(JAVAC_DIR)
-JAVA_RT_PATH := /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-$(DPKG_ARCH)/jre
+JAVA_RT_PATH := $(wildcard /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-*/jre/lib/rt.jar)
 endif
 
 INSTALL_DIR := /usr/local/ecuxplot
