@@ -130,16 +130,16 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("FuelInjectorOnTime")) {	// ti
 		this.add("FuelInjectorDutyCycle", listener, bg);
 	    }
-	    if(id.matches("EffFuelInjectonTime")) {	// te
-		this.add("EffFuelInjectorDutyCycle", listener, bg);
+	    if(id.matches("EffInjectionTime")) {	// te
+		this.add("EffInjectorDutyCycle", listener, bg);
 		this.add("Calc Fuel Mass", listener, bg);
 		this.add("Calc AFR", listener, bg);
 		this.add("Calc lambda", listener, bg);
 		this.add("Calc lambda error", listener, bg);
 		// addToSubmenu("Calc", new JSeparator());
 	    }
-	    if(id.matches("EffFuelInjectonTimeBank2")) {	// te
-		this.add("EffFuelInjectorDutyCycleBank2", listener, bg);
+	    if(id.matches("EffInjectionTimeBank2")) {	// te
+		this.add("EffInjectorDutyCycleBank2", listener, bg);
 	    }
 	} else if(id.matches("^Zeitronix.*")) {
 	    /* do zeitronix before boost so we get the conversions we want */

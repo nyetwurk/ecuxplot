@@ -328,8 +328,8 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches("^BoostPressureSpecified$")) h[i]="BoostPressureDesired";
 		    if(h[i].matches("^AtmosphericPressure$")) h[i]="BaroPressure";
 		    if(h[i].matches("^AirFuelRatioRequired$")) h[i]="AirFuelRatioDesired";
-		    if(h[i].matches("^InjectionTime$")) h[i]="EffFuelInjectonTime";	// is this te or ti? Assume te?
-		    if(h[i].matches("^InjectionTimeBank2$")) h[i]="EffFuelInjectonTimeBank2";	// is this te or ti? Assume te?
+		    if(h[i].matches("^InjectionTime$")) h[i]="EffInjectionTime";	// is this te or ti? Assume te?
+		    if(h[i].matches("^InjectionTimeBank2$")) h[i]="EffInjectionTimeBank2";	// is this te or ti? Assume te?
 		    if(h[i].length()==0) {
 			v[i]=v[i].trim();
 		        if(v[i].length()>0) h[i]="ME7L " + v[i];
@@ -490,8 +490,8 @@ public class ECUxDataset extends Dataset {
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
 	    final double gps = this.env.f.injector()*gps_per_ccmin;
 	    final double cylinders = this.env.f.cylinders();
-	    Column bank1 = this.get("EffFuelInjectorDutyCycle");
-	    Column bank2 = this.get("EffFuelInjectorDutyCycleBank2");
+	    Column bank1 = this.get("EffInjectorDutyCycle");
+	    Column bank2 = this.get("EffInjectorDutyCycleBank2");
 	    DoubleArray duty = bank1.data;
 	    /* average two duties for overall mass */
 	    if (bank2!=null) duty = duty.add(bank2.data).div(2);
@@ -525,14 +525,14 @@ public class ECUxDataset extends Dataset {
 
 	    DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
 	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
-	} else if(id.equals("EffFuelInjectorDutyCycle")) {		/* te */
-	    DoubleArray a = super.get("EffFuelInjectionTime").data.
+	} else if(id.equals("EffInjectorDutyCycle")) {		/* te */
+	    DoubleArray a = super.get("EffInjectionTime").data.
 		div(60*1000);	/* assumes injector on time is in ms */
 
 	    DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
 	    c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
-	} else if(id.equals("EffFuelInjectorDutyCycleBank2")) {		/* te */
-	    DoubleArray a = super.get("EffFuelInjectionTimeBank2").data.
+	} else if(id.equals("EffInjectorDutyCycleBank2")) {		/* te */
+	    DoubleArray a = super.get("EffInjectionTimeBank2").data.
 		div(60*1000);	/* assumes injector on time is in ms */
 
 	    DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
