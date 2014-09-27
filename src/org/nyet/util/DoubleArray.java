@@ -101,7 +101,7 @@ public class DoubleArray
 
     public double[] _func(TransferFunction f, double[] d) {
         double[] out = new double[ sp ];
-	for(int i=0;i<this.sp;i++) {
+	for(int i=0;i<this.sp && i<d.length;i++) {
 	    out[i]=f.f(this.array[i], d[i]);
 	}
 	return out;
@@ -184,7 +184,7 @@ public class DoubleArray
 
     public double[] _max(double[] d) {
         double[] out = new double[ sp ];
-	for(int i=0;i<this.sp;i++) {
+	for(int i=0;i<this.sp && i<d.length;i++) {
 	    out[i]=Math.max(this.array[i],d[i]);
 	}
 	return out;
@@ -286,7 +286,7 @@ public class DoubleArray
     public double[] _splineDerivative(double[] d) {
         double[] out = new double[ sp ];
 	Spline spl = this.spline(d);
-        for(int i=0;i<this.sp;i++) {
+        for(int i=0;i<this.sp && i<d.length;i++) {
 	    out[i]=spl.value(d[i], 1);
 	}
 	return out;
