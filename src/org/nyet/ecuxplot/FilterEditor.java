@@ -29,7 +29,7 @@ public class FilterEditor extends PreferencesEditor {
     }
 
     private static final String [][] pairs = {
-	{"Gear", "gear"},
+	{"Gear (-1 to ignore)", "gear"},
 	{"Minimum RPM", "minRPM"},
 	{"Maximum RPM", "maxRPM"},
 	{"Minimum RPM range of run", "minRPMRange"},
