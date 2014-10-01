@@ -35,7 +35,7 @@ public class ECUxDataset extends Dataset {
 	if (this.pedal!=null && this.pedal.data.isZero()) this.pedal=null;
 
 	this.throttle = get(new String []
-		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle"});
+		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle", "TPS"});
 	if (this.throttle!=null && this.throttle.data.isZero()) this.throttle=null;
 
 	this.gear = get(new String []
