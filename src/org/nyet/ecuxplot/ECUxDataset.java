@@ -552,10 +552,15 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "HP", value);
 /*****************************************************************************/
 	} else if(id.equals("Calc Velocity")) {
-	    final double mph_per_mps = 2.23693629;
-	    DoubleArray v = this.get("RPM").data;
-	    c = new Column(id, "m/s", v.div(this.env.c.rpm_per_mph()).
-		div(mph_per_mps));
+	    Column v = this.get("VehicleSpeed");
+	    if (v!=null) {
+		c = new Column(id, "m/s", v.data.mult(1000.0/60.0/60.0));
+	    } else {
+		final double mph_per_mps = 2.23693629;
+		DoubleArray rpm = this.get("RPM").data;
+		c = new Column(id, "m/s", rpm.div(this.env.c.rpm_per_mph()).
+		    div(mph_per_mps));
+	    }
 	} else if(id.equals("Calc Acceleration (RPM/s)")) {
 	    DoubleArray y = this.get("RPM").data;
 	    DoubleArray x = this.get("TIME").data;
