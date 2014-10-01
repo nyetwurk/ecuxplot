@@ -32,7 +32,7 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 
 OPT_PRE := '/'
 
-JAVA_HOME ?= $(shell cygpath -w $(JAVAC_DIR))
+JAVA_HOME ?= $(shell cygpath -w "$(JAVAC_DIR)")
 JAVA_RT=Java/jre$(JAVA_TARGET_VER)/lib/rt.jar
 JAVA_RT32 := C:/Program\ Files\ (x86)/$(JAVA_RT)
 JAVA_RT64 := C:/Program\ Files/$(JAVA_RT)
@@ -176,6 +176,7 @@ versioninfo:
 	@echo version=$(VERSION)
 	@echo release=$(RELEASE)
 	@echo rc=$(RC)
+	@echo 'JAVAC=$(JAVAC)'
 	@echo 'JAVA_HOME=$(JAVA_HOME)'
 	@echo 'JAVA_RT_PATH=$(JAVA_RT_PATH)'
 

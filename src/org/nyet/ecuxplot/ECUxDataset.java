@@ -35,7 +35,7 @@ public class ECUxDataset extends Dataset {
 	if (this.pedal!=null && this.pedal.data.isZero()) this.pedal=null;
 
 	this.throttle = get(new String []
-		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle"});
+		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle", "TPS"});
 	if (this.throttle!=null && this.throttle.data.isZero()) this.throttle=null;
 
 	this.gear = get(new String []
@@ -84,7 +84,8 @@ public class ECUxDataset extends Dataset {
 
     private int detect(String [] h) {
 	h[0]=h[0].trim();
-	if(h[0].matches("^.*day$")) return LOG_VCDS;
+	if(h[0].matches("VCDS")) return LOG_VCDS;
+	if(h[0].matches("^.*(day|tag)$")) return LOG_VCDS;
 	if(h[0].matches("^Filename:.*")) {
 	    if(Files.extension(h[0]).equals("zto") ||
 	       Files.extension(h[0]).equals("zdl") ||
@@ -198,7 +199,7 @@ public class ECUxDataset extends Dataset {
 		    h2[i]=(h2[i]!=null)?h2[i].trim():"";
 		    u[i]=(u[i]!=null)?u[i].trim():"";
 		    if (verbose)
-			System.out.println("in: '" + h[i] +"': '" + h2[i] + "' [" + u[i] + "]");
+			System.out.printf("in %d (g:h:h2:[u]): '%s' '%s' [%s]\n", i, g[i], h[i], h2[i], u[i]);
 		    // g=TIME and h=STAMP means this is a TIME column
 		    if(g[i].equals("TIME") && h[i].equals("STAMP")) {
 			g[i]="";
@@ -209,8 +210,9 @@ public class ECUxDataset extends Dataset {
 		    // concat h1 and h2 if both are non zero length
 		    if(h[i].length()>0 && h2[i].length()>0)  h[i]+=" ";
 		    h[i]+=h2[i];
+		    if(h[i].matches("^Zeit$")) h[i]="TIME";
 		    // remap engine speed to "RPM'
-		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
+		    if(h[i].matches("^(Engine [Ss]peed|Motordrehzahl).*")) h[i]="RPM";
 		    // ignore weird letter case for throttle angle
 		    if(h[i].matches("^Throttle [Aa]ngle.*")) h[i]="Throttle Angle";
 		    // ignore weird spacing for MAF
@@ -223,7 +225,7 @@ public class ECUxDataset extends Dataset {
 		    if(g[i].matches("^Group 24.*") && h[i].equals("Accelerator position"))
 			h[i]=("Accelerator position (G024)");
 		    if (verbose)
-			System.out.println("out:'" + h[i] +"': '" + h2[i] + "' [" + u[i] + "]");
+			System.out.printf("out %d (g:h:h2:[u]): '%s' '%s' [%s]\n", i, g[i], h[i], h2[i], u[i]);
 		}
 		break;
 	    case LOG_ZEITRONIX:
