@@ -108,6 +108,7 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches(".*(MAF|MassAir|AirMass|Mass Air Flow).*")) {
 	    addToSubmenu("MAF", item);
 	    if(id.matches("MassAirFlow")) {
+		this.add("MassAirFlow (kg/hr)", listener, bg);
 		this.add("Calc Load", listener, bg);
 		this.add("Calc Load Corrected", listener, bg);
 		this.add("Calc MAF", listener, bg);
