@@ -56,21 +56,23 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private Env env;
     private Filter filter;
 
+    private int verbose = 0;
     private boolean exitOnClose = true;
 
     // List of open plots
     private ArrayList<ECUxPlot> plotlist = null;
 
     // Constructor
-    public ECUxPlot(final String title, java.awt.Dimension size, boolean exitOnClose) { this(title, size, null, exitOnClose); }
-    public ECUxPlot(final String title, ArrayList<ECUxPlot> plotlist) { this(title, null, plotlist, false); }
-    public ECUxPlot(final String title, java.awt.Dimension size, ArrayList<ECUxPlot> plotlist, boolean exitOnClose) {
+    public ECUxPlot(final String title, java.awt.Dimension size, boolean exitOnClose, int verbose) { this(title, size, null, exitOnClose, verbose); }
+    public ECUxPlot(final String title, ArrayList<ECUxPlot> plotlist) { this(title, null, plotlist, false, 0); }
+    public ECUxPlot(final String title, java.awt.Dimension size, ArrayList<ECUxPlot> plotlist, boolean exitOnClose, int verbose) {
         super(title);
 
 	this.plotlist = (plotlist!=null)?plotlist:new ArrayList<ECUxPlot>();
 	this.plotlist.add(this);
 
 	this.exitOnClose=exitOnClose;
+	this.verbose=verbose;
 	WindowUtilities.setNativeLookAndFeel();
 	this.menuBar = new JMenuBar();
 
@@ -242,13 +244,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     public void loadFile(File file) { loadFile(file, false); }
-    private void loadFile(File file, Boolean replace) {
+    private void loadFile(File file, boolean replace) {
 	WaitCursor.startWaitCursor(this);
 	_loadFile(file, replace);
 	fileDatasetsChanged();
 	WaitCursor.stopWaitCursor(this);
     }
-    private void _loadFile(File file, Boolean replace) {
+    private void _loadFile(File file, boolean replace) {
 	try {
 	    // replacing, nuke all the currently loaded datasets
 	    if(replace) this.nuke();
@@ -261,7 +263,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    }
 
 	    ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
-		    this.env, this.filter);
+		    this.env, this.filter, this.verbose);
 
 	    this.fileDatasets.put(file.getName(), data);
 	    this.files.add(file.getAbsolutePath());
@@ -272,7 +274,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	}
     }
 
-    public void setMyVisible(Boolean b) {
+    public void setMyVisible(boolean b) {
 	super.setVisible(b);
 	if(this.fatsFrame==null) return;
 	if(!this.filter.enabled()) b=false;
@@ -362,7 +364,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		JOptionPane.showMessageDialog(this, "No charts to export");
 		return;
 	    }
-	    Boolean ok = false;
+	    boolean ok = false;
 	    for (ECUxPlot p: this.plotlist) {
 		if(p.chartPanel != null) {
 		    ok = true;
@@ -452,7 +454,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    }
 	    int ret = fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
-		Boolean replace =
+		boolean replace =
 		    source.getText().equals("Open File")?true:false;
 
 		WaitCursor.startWaitCursor(this);
@@ -807,12 +809,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	public File output = null;
 	public java.awt.Dimension size = null;
 	public ArrayList<String> files = new ArrayList<String>();
+	public int verbose = 0;
 
 	public Options(String[] args) {
 	    int width = -1, height = -1;
 	    for(int i=0; i<args.length; i++) {
 		if(args[i].charAt(0) == '-') {
-		    if(i<args.length-1) {
+		    if(args[i].equals("-v"))
+			this.verbose++;
+		    else if(i<args.length-1) {
 			if(args[i].equals("-p"))
 			    this.preset = args[i+1];
 			else if(args[i].equals("-o"))
@@ -821,7 +826,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 			    width = Integer.valueOf(args[i+1]);
 			else if(args[i].equals("-h"))
 			    height = Integer.valueOf(args[i+1]);
-			i++;
+			i++;	// all above take an arg
 		    }
 		    if(args[i].equals("-l")) {
 			try {
@@ -832,7 +837,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    }
 		    if(args[i].equals("-?")) {
 			System.out.println(
-			    "usage: ECUxPlot [-p Preset] [-o OutputFile] " +
+			    "usage: ECUxPlot [-v] [-p Preset] [-o OutputFile] " +
 			    "[-w width] [-h height] [LogFiles ... ]");
 			System.out.println("       ECUxPlot -l (list presets)");
 			System.out.println("       ECUxPlot -? (show usage)");
@@ -851,7 +856,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		final Options o = new Options(args);
 
 		// exit on close
-		final ECUxPlot plot = new ECUxPlot("ECUxPlot", o.size, true);
+		final ECUxPlot plot = new ECUxPlot("ECUxPlot", o.size, true, o.verbose);
 		final Application app = Application.getApplication();
 
 		if(app!=null) {

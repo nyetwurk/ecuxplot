@@ -1,6 +1,7 @@
 package org.nyet.ecuxplot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -23,9 +24,9 @@ public class ECUxDataset extends Dataset {
     public double samples_per_sec=0;
     private CubicSpline [] splines;	// rpm vs time splines
 
-    public ECUxDataset(String filename, Env env, Filter filter)
+    public ECUxDataset(String filename, Env env, Filter filter, int verbose)
 	    throws Exception {
-	super(filename);
+	super(filename, verbose);
 
 	this.env = env;
 	this.filter = filter;
@@ -119,27 +120,29 @@ public class ECUxDataset extends Dataset {
 	return u;
     }
     public void ParseHeaders(CSVReader reader) throws Exception {
-	ParseHeaders(reader, LOG_DETECT);
+	ParseHeaders(reader, LOG_DETECT, 0);
     }
-    public void ParseHeaders(CSVReader reader, int log_req)
+    public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
+	ParseHeaders(reader, LOG_DETECT, verbose);
+    }
+    public void ParseHeaders(CSVReader reader, int log_req, int verbose)
 	    throws Exception {
-	boolean verbose = false;
 	if (log_req<0)
 	    throw new Exception(this.getFileId() + ": invalid log_req" + log_req);
-	String [] h,u;
+	String [] h,u,v=null;
 
         do {
 	    h = reader.readNext();
 	    if (h==null)
 		throw new Exception(this.getFileId() + ": read failed parsing CSV headers");
-	    if (verbose)
+	    if (verbose>0)
 		for(int i=0;i<h.length;i++)
 		    System.out.println("h[" + i + "]: " + h[i]);
 	} while (h.length<1 || h[0].trim().length() == 0 || h[0].trim().matches("^#.+"));
 
 	int log_detected = detect(h);
 
-	if (verbose)
+	if (verbose>0)
 	    System.out.printf("Detected %d based on \"%s\"\n", log_detected, h[0]);
 
 	/*
@@ -154,7 +157,7 @@ public class ECUxDataset extends Dataset {
 
 	int log_use = (log_req==LOG_DETECT)?log_detected:log_req;
 
-	if (verbose)
+	if (verbose>0)
 	    System.out.printf("Using %d\n", log_use);
 
 	this.time_ticks_per_sec = 1;
@@ -169,7 +172,7 @@ public class ECUxDataset extends Dataset {
 		h2 = reader.readNext();	// 6: headers 2 or units or headers
 		u = reader.readNext();	// 7: units
 
-		if (verbose)
+		if (verbose>0)
 		    System.out.println("in e:"
 			+ e.length + ", b:" + b.length + ", g:" + g.length + ", h:"
 			+ h.length + ", h2:" + h2.length + ", u:" + u.length);
@@ -188,7 +191,7 @@ public class ECUxDataset extends Dataset {
 		    g=newg;
 		}
 
-		if (verbose)
+		if (verbose>0)
 		    System.out.println("out e:"
 			+ e.length + ", b:" + b.length + ", g:" + g.length + ", h:"
 			+ h.length + ", h2:" + h2.length + ", u:" + u.length);
@@ -198,7 +201,7 @@ public class ECUxDataset extends Dataset {
 		    h[i]=(h[i]!=null)?h[i].trim():"";
 		    h2[i]=(h2[i]!=null)?h2[i].trim():"";
 		    u[i]=(u[i]!=null)?u[i].trim():"";
-		    if (verbose)
+		    if (verbose>0)
 			System.out.printf("in %d (g:h:h2:[u]): '%s' '%s' [%s]\n", i, g[i], h[i], h2[i], u[i]);
 		    // g=TIME and h=STAMP means this is a TIME column
 		    if(g[i].equals("TIME") && h[i].equals("STAMP")) {
@@ -224,7 +227,7 @@ public class ECUxDataset extends Dataset {
 		    // blacklist Group 24 Accelerator position, it has max of 80%?
 		    if(g[i].matches("^Group 24.*") && h[i].equals("Accelerator position"))
 			h[i]=("Accelerator position (G024)");
-		    if (verbose)
+		    if (verbose>0)
 			System.out.printf("out %d (g:h:h2:[u]): '%s' '%s' [%s]\n", i, g[i], h[i], h2[i], u[i]);
 		}
 		break;
@@ -243,7 +246,7 @@ public class ECUxDataset extends Dataset {
 
 		u = ParseUnits(h);
 		for(int i=0;i<h.length;i++) {
-		    if (verbose)
+		    if (verbose>0)
 			System.out.println("in : " + h[i] + " [" + u[i] + "]");
 		    if(h[i].matches(".*RPM$")) h[i]="RPM";
 		    if(h[i].matches(".*Boost$")) h[i]="Zeitronix Boost";
@@ -252,8 +255,6 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches(".*Lambda$")) h[i]="Zeitronix Lambda";
 		    if(h[i].matches(".*EGT$")) h[i]="Zeitronix EGT";
 		    if(h[i].equals("Time")) h[i]="Zeitronix Time";
-		    if (verbose)
-			System.out.println("out: " + h[i] + " [" + u[i] + "]");
 		}
 		break;
 	    case LOG_ECUX:
@@ -266,10 +267,6 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches("^BstActual$")) h[i]="BoostPressureActual";
 		    if(h[i].matches("^BstDesired$")) h[i]="BoostPressureDesired";
 		}
-
-		if (verbose)
-		    for(int i=0;i<h.length;i++)
-			System.out.println("out: " + h[i] + " [" + u[i] + "]");
 
 		break;
 	    case LOG_EVOSCAN:
@@ -284,7 +281,6 @@ public class ECUxDataset extends Dataset {
 		break;
 	    case LOG_ME7LOGGER:
 		/* VARS */
-		String[] v;	// ME7 variable name
 		do {
 		    v = reader.readNext();
 		    if (v==null) {
@@ -306,12 +302,6 @@ public class ECUxDataset extends Dataset {
 		if (u==null || u.length<1)
 		    throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log units");
 
-		/* process units */
-		for(int i=0;i<u.length;i++) {
-		    u[i]=u[i].trim();
-		    if(u[i].matches("^mbar$")) u[i]="mBar";
-		}
-
 		/* ALIASES */
 		do {
 		    h = reader.readNext();
@@ -323,6 +313,22 @@ public class ECUxDataset extends Dataset {
 		if (h==null || h.length<1)
 		    throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log aliases");
 
+		if (verbose>0)
+		    for(int i=0;i<h.length;i++)
+			System.out.printf("in: '%s' (%s) [%s]\n", v[i], h[i], u[i]);
+
+		/* process variables */
+		for(int i=0;i<v.length;i++) {
+		    v[i]=v[i].trim();
+		}
+
+		/* process units */
+		for(int i=0;i<u.length;i++) {
+		    u[i]=u[i].trim();
+		    if(u[i].matches("^mbar$")) u[i]="mBar";
+		    if(u[i].matches("^-$")) u[i]="";
+		}
+
 		/* process aliases */
 		for(int i=0;i<h.length;i++) {
 		    h[i]=h[i].trim();
@@ -333,14 +339,10 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches("^InjectionTime$")) h[i]="EffInjectionTime";	// is this te or ti? Assume te?
 		    if(h[i].matches("^InjectionTimeBank2$")) h[i]="EffInjectionTimeBank2";	// is this te or ti? Assume te?
 		    if(h[i].length()==0) {
-			v[i]=v[i].trim();
 		        if(v[i].length()>0) h[i]="ME7L " + v[i];
 		    }
 		}
 
-		if (verbose)
-		    for(int i=0;i<h.length;i++)
-			System.out.println("out: " + h[i] + " [" + u[i] + "]");
 		break;
 	    case LOG_VOLVOLOGGER:
 		u = new String[h.length];
@@ -365,28 +367,43 @@ public class ECUxDataset extends Dataset {
 		    if(h[i].matches("^Mass Air Flow$")) h[i]="MAF";
 		}
 
-		if (verbose)
-		    for(int i=0;i<h.length;i++)
-			System.out.printf("out: \"%s\" \"%s\" \"%s\"\n", h[i], u[i], v[i]);
-
 		break;
 	    default:
 		u = ParseUnits(h);
 		for(int i=0;i<h.length;i++) {
-		    if (verbose)
+		    if (verbose>0)
 			System.out.println("in : " + h[i] + " [" + u[i] + "]");
 		    if(h[i].matches("^Time$")) h[i]="TIME";
 		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
 		    if(h[i].matches("^Mass air flow$")) h[i]="MassAirFlow";
-		    if (verbose)
-			System.out.println("out: " + h[i] + " [" + u[i] + "]");
 		}
 		break;
 	}
-	for(int i=0;i<h.length && i<u.length;i++) {
-	    if(u[i]==null || u[i].length()==0)
-		u[i]=Units.find(h[i]);
+
+	if(u.length<h.length) {
+	    u = Arrays.copyOf(u, h.length);
 	}
+
+	for(int i=0;i<h.length;i++) {
+	    if(u[i]==null || u[i].length()==0) {
+		u[i]=Units.find(h[i]);
+		if (verbose>0 && (u[i]==null || u[i].length()==0)) {
+		    System.out.println("Can't find units for " + h[i]);
+		}
+	    }
+	}
+
+	if (verbose>0) {
+	    for(int i=0;i<h.length;i++) {
+		if (v!=null && i<v.length) {
+		    System.out.printf("out: '%s' (%s) [%s]\n", h[i], v[i], u[i]);
+		} else {
+		    System.out.printf("out: '%s' [%s]\n", h[i], u[i]);
+		}
+	    }
+	}
+	//System.exit(0);
+
 	this.logType=log_use;
 	this.setIds(h);
 	this.setUnits(u);

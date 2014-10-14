@@ -172,17 +172,17 @@ public class Dataset {
 	}
     }
 
-    public Dataset(String filename) throws Exception {
+    public Dataset(String filename, int verbose) throws Exception {
 	this.fileId = org.nyet.util.Files.filename(filename);
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
 	CSVReader reader = new CSVReader(new FileReader(filename));
 	try {
-	    ParseHeaders(reader);
+	    ParseHeaders(reader, verbose);
 	} catch ( Exception e ) {
 	    /* try semicolon separated */
 	    reader = new CSVReader(new FileReader(filename), ';');
-	    ParseHeaders(reader);
+	    ParseHeaders(reader, verbose);
 	}
 	for(int i=0;i<this.ids.length;i++)
 	    this.columns.add(new Column(this.ids[i],
@@ -203,7 +203,7 @@ public class Dataset {
 
     public ArrayList<Column> getColumns() {return this.columns;}
 
-    public void ParseHeaders(CSVReader reader) throws Exception {
+    public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
 	this.ids = reader.readNext();
 	if (this.ids.length>0 && this.ids[0].trim().length()>0) {
 	    this.units = new String[ids.length];
