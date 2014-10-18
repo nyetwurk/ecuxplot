@@ -149,6 +149,28 @@ public class DoubleArray
 	return new DoubleArray(this._func(fPow, d));
     }
 
+    public double[] _ident(double x) {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=x;
+	}
+	return out;
+    }
+    public DoubleArray ident(double x) {
+	return new DoubleArray(this._ident(x));
+    }
+
+    public double[] _inverse() {
+        double[] out = new double[ sp ];
+	for(int i=0;i<this.sp;i++) {
+	    out[i]=(array[i]==0)?0:1/array[i];
+	}
+	return out;
+    }
+    public DoubleArray inverse() {
+	return new DoubleArray(this._inverse());
+    }
+
     public double[] _abs() {
         double[] out = new double[ sp ];
 	for(int i=0;i<this.sp;i++) {

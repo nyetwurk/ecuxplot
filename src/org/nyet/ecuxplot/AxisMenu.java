@@ -83,6 +83,8 @@ public class AxisMenu extends JMenu {
     private void add(String id, SubActionListener listener,
 	ButtonGroup bg) {
 
+	if (this.members.containsKey(id)) return;
+
 	AbstractButton item = makeMenuItem(id, listener, bg);
 
 	if(id.matches("RPM")) {
@@ -196,7 +198,7 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("O2 Sensor(s)", item);
 	} else if(id.matches(".*(Load|Torque).*")) {
 	    addToSubmenu("Load", item);
-	    if(id.matches("EngineLoadRequested")) {
+	    if(id.matches("EngineLoad(Requested|Corrected)")) {
 		this.add("Calc SimBoostPressureDesired", listener, bg);
 		this.add("Calc LoadSpecified correction", listener, bg);
 	    }
@@ -207,6 +209,7 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("IntakeAirTemperature")) {
 	    addToSubmenu("Temperature", item);
 	    this.add("IntakeAirTemperature (C)", listener, bg);
+	    this.add("Calc ftbr", listener, bg);
 	    this.add("Calc SimBoostIATCorrection", listener, bg);
 	} else if(id.matches(".*Temperature.*")) {
 	    addToSubmenu("Temperature", item);

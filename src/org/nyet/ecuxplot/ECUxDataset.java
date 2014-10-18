@@ -682,30 +682,65 @@ public class ECUxDataset extends Dataset {
 	    } catch (Exception e) {
 		c = new Column(id, "PR", act.div(1013));
 	    }
-	} else if(id.equals("Calc SimBoostIATCorrection")) {
-	    DoubleArray temp = this.get("IntakeAirTemperature (C)").data;
-	    c = new Column(id, "", temp.add(274.15).div(274.15)); // 0C
-	    //c = new Column(id, "", temp.add(274.15).div(298.15)); // 25C
-	    //c = new Column(id, "", temp.add(673.425).div(731.334)); // FWFTBRTA
-	} else if(id.equals("Calc SimBoostPressureDesired")) {
-	    DoubleArray load = super.get("EngineLoadRequested").data;
-	    // fupsrl=0.1037 (from KFURL)
-	    DoubleArray boost = load.div(0.1037);
+	} else if(id.equals("Calc ftbr")) {
+	    DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
+	    // evtmod, KFFWTBR=0.02
+	    // DoubleArray evtmod = tans.add((tans.mult(-1).add(tmot)).mult(0.02));
+	    DoubleArray tmot=tans.ident(95);
 	    try {
-		DoubleArray cor = this.get("Calc SimBoostIATCorrection").data;
-		boost = boost.mult(cor);
+		tmot = this.get("CoolantTemperature").data;
 	    } catch (Exception e) {}
 
-	    // pirg = KFPRG * fho = 70 * (pu/1013)
-	    // boost = boost.add(70*ambient/1013);
-	    boost = boost.add(200);
+	    // linear fit to stock FWFTBRTA
+	    DoubleArray fwft = tans.add(673.425).div(731.334);
+
+	    // ftbr=273/(tans+273) * fwft
+	    c = new Column(id, "", tans.ident(273).div(tans.add(273)).mult(fwft));
+	} else if(id.equals("Calc SimBoostIATCorrection")) {
+	    DoubleArray ftbr = this.get("Calc ftbr").data;
+	    c = new Column(id, "", ftbr.inverse());
+	} else if(id.equals("Calc SimBoostPressureDesired")) {
+	    boolean SY_BDE = true;
+	    DoubleArray load;
 
 	    try {
-		DoubleArray ambient = super.get("BaroPressure").data;
-		c = new Column(id, "mBar", boost.max(ambient));
+		load = super.get("EngineLoadRequested").data; // rlsol
 	    } catch (Exception e) {
-		c = new Column(id, "mBar", boost.max(1000));
+		load = super.get("EngineLoadCorrected").data; // rlmax
 	    }
+
+	    if (!SY_BDE) {
+		//load = load.sub(rlr);
+		load = load.max(0);	// rlfgs
+		//load = load.add(rlr);
+	    }
+
+	    DoubleArray ambient = load.ident(1013); // pu
+	    try {
+		ambient	= super.get("BaroPressure").data;
+	    } catch (Exception e) { }
+
+
+            DoubleArray fupsrl = load.ident(0.1037); // KFURL
+	    try {
+		DoubleArray ftbr = this.get("Calc ftbr").data;
+		fupsrl = fupsrl.mult(ftbr);
+	    } catch (Exception e) {}
+
+	    DoubleArray boost = load.div(fupsrl);
+
+	    if (SY_BDE) {
+		// pirg = fho * KFPRG = (pu/1013) * 70
+		boost = boost.add(ambient.mult(70.0/1013.0));
+	    }
+
+	    // fpbrkds from KFPBRK/KFPBRKNW
+	    //boost = boost.div(1.016);	// pssol
+
+	    // vplsspls from KFVPDKSD/KFVPDKSDSE
+	    //boost = boost.div(1.016);
+
+	    c = new Column(id, "mBar", boost.max(ambient));
 	} else if(id.equals("Calc Boost Spool Rate (RPM)")) {
 	    DoubleArray abs = super.get("BoostPressureActual").data.smooth();
 	    DoubleArray rpm = this.get("RPM").data;
