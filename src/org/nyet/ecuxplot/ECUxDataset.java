@@ -334,6 +334,7 @@ public class ECUxDataset extends Dataset {
 		    h[i]=h[i].trim();
 		    if(h[i].matches("^Engine[Ss]peed.*")) h[i]="RPM";
 		    if(h[i].matches("^BoostPressureSpecified$")) h[i]="BoostPressureDesired";
+		    if(h[i].matches("^EngineLoadCorrectedSpecified$")) h[i]="EngineLoadCorrected";
 		    if(h[i].matches("^AtmosphericPressure$")) h[i]="BaroPressure";
 		    if(h[i].matches("^AirFuelRatioRequired$")) h[i]="AirFuelRatioDesired";
 		    if(h[i].matches("^InjectionTime$")) h[i]="EffInjectionTime";	// is this te or ti? Assume te?
@@ -681,10 +682,25 @@ public class ECUxDataset extends Dataset {
 	    } catch (Exception e) {
 		c = new Column(id, "PR", act.div(1013));
 	    }
+	} else if(id.equals("Calc SimBoostIATCorrection")) {
+	    DoubleArray temp = this.get("IntakeAirTemperature (C)").data;
+	    //c = new Column(id, "", temp.add(274.15).div(274.15)); // 0C
+	    //c = new Column(id, "", temp.add(274.15).div(298.15)); // 25C
+	    c = new Column(id, "", temp.add(673.425).div(731.334)); // FWFTBRTA
 	} else if(id.equals("Calc SimBoostPressureDesired")) {
-	    DoubleArray ambient = super.get("BaroPressure").data;
-	    DoubleArray load = super.get("EngineLoadDesired").data;
-	    c = new Column(id, "mBar", load.mult(10).add(300).max(ambient));
+	    DoubleArray load = super.get("EngineLoadRequested").data;
+	    // fupsrl=10.7 (from KFURL), pirg=300?
+	    DoubleArray boost = load.mult(10.7).add(300);
+	    try {
+		DoubleArray cor = this.get("Calc SimBoostIATCorrection").data;
+		boost = boost.mult(cor);
+	    } catch (Exception e) { }
+	    try {
+		DoubleArray ambient = super.get("BaroPressure").data;
+		c = new Column(id, "mBar", boost.max(ambient));
+	    } catch (Exception e) {
+		c = new Column(id, "mBar", boost.max(1000));
+	    }
 	} else if(id.equals("Calc Boost Spool Rate (RPM)")) {
 	    DoubleArray abs = super.get("BoostPressureActual").data.smooth();
 	    DoubleArray rpm = this.get("RPM").data;
@@ -759,7 +775,7 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "\u00B0", out);
 /*****************************************************************************/
 	} else if(id.equals("Calc LoadSpecified correction")) {
-	    DoubleArray cs = super.get("EngineLoadCorrectedSpecified").data;
+	    DoubleArray cs = super.get("EngineLoadCorrected").data;
 	    DoubleArray s = super.get("EngineLoadSpecified").data;
 	    c = new Column(id, "K", cs.div(s));
 /*****************************************************************************/

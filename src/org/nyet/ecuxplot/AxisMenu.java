@@ -196,10 +196,8 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("O2 Sensor(s)", item);
 	} else if(id.matches(".*(Load|Torque).*")) {
 	    addToSubmenu("Load", item);
-	    if(id.matches("EngineLoadDesired")) {
+	    if(id.matches("EngineLoadRequested")) {
 		this.add("Calc SimBoostPressureDesired", listener, bg);
-	    }
-	    if(id.matches("EngineLoadCorrectedSpecified")) {
 		this.add("Calc LoadSpecified correction", listener, bg);
 	    }
 	} else if(id.matches("Engine torque")) {
@@ -209,6 +207,7 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("IntakeAirTemperature")) {
 	    addToSubmenu("Temperature", item);
 	    this.add("IntakeAirTemperature (C)", listener, bg);
+	    this.add("Calc SimBoostIATCorrection", listener, bg);
 	} else if(id.matches(".*Temperature.*")) {
 	    addToSubmenu("Temperature", item);
 	} else if(id.matches(".*VV.*")) {	// EvoScan
