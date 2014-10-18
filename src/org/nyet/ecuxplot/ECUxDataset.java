@@ -684,17 +684,22 @@ public class ECUxDataset extends Dataset {
 	    }
 	} else if(id.equals("Calc SimBoostIATCorrection")) {
 	    DoubleArray temp = this.get("IntakeAirTemperature (C)").data;
-	    //c = new Column(id, "", temp.add(274.15).div(274.15)); // 0C
+	    c = new Column(id, "", temp.add(274.15).div(274.15)); // 0C
 	    //c = new Column(id, "", temp.add(274.15).div(298.15)); // 25C
-	    c = new Column(id, "", temp.add(673.425).div(731.334)); // FWFTBRTA
+	    //c = new Column(id, "", temp.add(673.425).div(731.334)); // FWFTBRTA
 	} else if(id.equals("Calc SimBoostPressureDesired")) {
 	    DoubleArray load = super.get("EngineLoadRequested").data;
-	    // fupsrl=10.7 (from KFURL), pirg=300?
-	    DoubleArray boost = load.mult(10.7).add(300);
+	    // fupsrl=0.1037 (from KFURL)
+	    DoubleArray boost = load.div(0.1037);
 	    try {
 		DoubleArray cor = this.get("Calc SimBoostIATCorrection").data;
 		boost = boost.mult(cor);
-	    } catch (Exception e) { }
+	    } catch (Exception e) {}
+
+	    // pirg = KFPRG * fho = 70 * (pu/1013)
+	    // boost = boost.add(70*ambient/1013);
+	    boost = boost.add(200);
+
 	    try {
 		DoubleArray ambient = super.get("BaroPressure").data;
 		c = new Column(id, "mBar", boost.max(ambient));
