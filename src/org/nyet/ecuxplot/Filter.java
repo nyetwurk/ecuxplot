@@ -13,7 +13,7 @@ public class Filter {
     private static final int defaultMaxRPM = 8000;
     private static final int defaultMinRPMRange = 1200;
     private static final int defaultMinPedal = 95;
-    private static final int defaultMinThrottle = 50;
+    private static final int defaultMinThrottle = 40;	// allow for bad throttle cut
     private static final int defaultGear = -1;
     private static final int defaultMinPoints = 5;
     private static final int defaultHPTQMAW = 5; // hp/tq moving average window

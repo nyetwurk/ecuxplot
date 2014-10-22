@@ -17,6 +17,7 @@ public class FilterEditor extends PreferencesEditor {
     public JTextField minRPM;
     public JTextField maxRPM;
     public JTextField minRPMRange;
+    public JTextField monotonicRPMfuzz;
     public JTextField minPedal;
     public JTextField minThrottle;
     public JTextField minPoints;
@@ -33,6 +34,7 @@ public class FilterEditor extends PreferencesEditor {
 	{"Minimum RPM", "minRPM"},
 	{"Maximum RPM", "maxRPM"},
 	{"Minimum RPM range of run", "minRPMRange"},
+	{"RPM fuzz tolerance", "monotonicRPMfuzz"},
 	{"Minimum Pedal", "minPedal"},
 	{"Minimum Throttle", "minThrottle"},
 	{"Minimum Points", "minPoints"},
