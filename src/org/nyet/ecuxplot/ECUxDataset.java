@@ -574,7 +574,8 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "HP", value);
 /*****************************************************************************/
 	} else if(id.equals("Calc Velocity")) {
-	    Column v = this.get("VehicleSpeed");
+	    // TODO: make a user adjustable checkbox for this
+	    Column v = null; // this.get("VehicleSpeed");
 	    if (v!=null) {
 		c = new Column(id, "m/s", v.data.mult(1000.0/60.0/60.0));
 	    } else {

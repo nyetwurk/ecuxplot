@@ -157,7 +157,14 @@ public class AxisMenu extends JMenu {
 		this.add("Zeitronix Lambda (AFR)", listener, bg);
 	    }
 	    addToSubmenu("Zeitronix", item);
-	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Pressure).*")) {
+	} else if(id.matches(".*(Load|Torque|ChargeLimit.*Protection).*")) {
+	    // before Boost so we catch ChargeLimit*Protection before Charge
+	    addToSubmenu("Load", item);
+	    if(id.matches("EngineLoad(Requested|Corrected)")) {
+		this.add("Calc SimBoostPressureDesired", listener, bg);
+		this.add("Calc LoadSpecified correction", listener, bg);
+	    }
+	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Pressure|PID).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		this.add("BoostPressureDesired (PSI)", listener, bg);
@@ -196,12 +203,6 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Misfires", item);
 	} else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
 	    addToSubmenu("O2 Sensor(s)", item);
-	} else if(id.matches(".*(Load|Torque).*")) {
-	    addToSubmenu("Load", item);
-	    if(id.matches("EngineLoad(Requested|Corrected)")) {
-		this.add("Calc SimBoostPressureDesired", listener, bg);
-		this.add("Calc LoadSpecified correction", listener, bg);
-	    }
 	} else if(id.matches("Engine torque")) {
 	    this.add(item);
 	    this.add("Engine torque (ft-lb)", listener, bg);
