@@ -692,9 +692,16 @@ public class ECUxDataset extends Dataset {
 	    } catch (Exception e) {}
 
 	    // linear fit to stock FWFTBRTA
+	    // fwtf = (tans+637.425)/731.334
+
 	    DoubleArray fwft = tans.add(673.425).div(731.334);
 
-	    // ftbr=273/(tans+273) * fwft
+	    // ftbr = 273/(tans+273) * fwft
+	    
+	    //    (tans+637.425)      273
+	    //    -------------- *  -------
+	    //      (tans+273)      731.334
+
 	    c = new Column(id, "", tans.ident(273).div(tans.add(273)).mult(fwft));
 	} else if(id.equals("Calc SimBoostIATCorrection")) {
 	    DoubleArray ftbr = this.get("Calc ftbr").data;
