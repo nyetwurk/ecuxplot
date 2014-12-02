@@ -683,15 +683,20 @@ public class ECUxDataset extends Dataset {
 	    } catch (Exception e) {
 		c = new Column(id, "PR", act.div(1013));
 	    }
-	} else if(id.equals("Calc ftbr")) {
+	} else if(id.equals("Calc evtmod")) {
 	    DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
-	    // evtmod, KFFWTBR=0.02
-	    // DoubleArray evtmod = tans.add((tans.mult(-1).add(tmot)).mult(0.02));
-	    DoubleArray tmot=tans.ident(95);
+	    DoubleArray tmot = tans.ident(95);
 	    try {
 		tmot = this.get("CoolantTemperature").data;
 	    } catch (Exception e) {}
 
+	    // KFFWTBR=0.02
+	    // evtmod = tans + (tmot-tans)*KFFWTBR
+	    DoubleArray evtmod = tans.add((tmot.sub(tans)).mult(0.02));
+	    c = new Column(id, "\u00B0 C", evtmod);
+	} else if(id.equals("Calc ftbr")) {
+	    DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
+	    DoubleArray evtmod = this.get("Calc evtmod").data;
 	    // linear fit to stock FWFTBRTA
 	    // fwtf = (tans+637.425)/731.334
 
@@ -703,13 +708,16 @@ public class ECUxDataset extends Dataset {
 	    //    -------------- *  -------
 	    //      (tans+273)      731.334
 
-	    c = new Column(id, "", tans.ident(273).div(tans.add(273)).mult(fwft));
+	    // ftbr=273/(evtmod-273) * fwft
+	    c = new Column(id, "", evtmod.ident(273).div(evtmod.add(273)).mult(fwft));
 	} else if(id.equals("Calc SimBoostIATCorrection")) {
 	    DoubleArray ftbr = this.get("Calc ftbr").data;
 	    c = new Column(id, "", ftbr.inverse());
 	} else if(id.equals("Calc SimBoostPressureDesired")) {
-	    boolean SY_BDE = true;
+	    boolean SY_BDE = false;
+	    boolean SY_AGR = true;
 	    DoubleArray load;
+	    DoubleArray ps;
 
 	    try {
 		load = super.get("EngineLoadRequested").data; // rlsol
@@ -717,36 +725,53 @@ public class ECUxDataset extends Dataset {
 		load = super.get("EngineLoadCorrected").data; // rlmax
 	    }
 
-	    if (!SY_BDE) {
-		//load = load.sub(rlr);
-		load = load.max(0);	// rlfgs
-		//load = load.add(rlr);
+	    try {
+		ps = super.get("ME7L ps_w").data;
+	    } catch (Exception e) {
+		ps = super.get("BoostPressureActual").data;
 	    }
 
-	    DoubleArray ambient = load.ident(1013); // pu
+	    DoubleArray ambient = ps.ident(1013); // pu
 	    try {
 		ambient	= super.get("BaroPressure").data;
 	    } catch (Exception e) { }
 
-
             DoubleArray fupsrl = load.ident(0.1037); // KFURL
 	    try {
 		DoubleArray ftbr = this.get("Calc ftbr").data;
+		// fupsrl = KFURL * ftbr
 		fupsrl = fupsrl.mult(ftbr);
 	    } catch (Exception e) {}
+
+	    // pirg = fho * KFPRG = (pu/1013) * 70
+	    DoubleArray pirg = ambient.mult(70/1013.0);
+
+	    if (!SY_BDE) {
+		//load = load.sub(rlr);
+		load = load.max(0);	// rlfgs
+		if (SY_AGR) {
+		    // pbr = ps * fpbrkds
+		    // rfges = (pbr-pirg).max(0)*fupsrl
+		    DoubleArray rfges = (ps.mult(1.106)).sub(pirg).max(0).mult(fupsrl);
+		    // psagr = 250??
+		    // rfagr = rfges * psagr/ps
+		    // load = rlfgs + rfagr;
+		    load = load.add(rfges.mult(250).div(ps));
+		}
+		//load = load.add(rlr);
+	    }
 
 	    DoubleArray boost = load.div(fupsrl);
 
 	    if (SY_BDE) {
-		// pirg = fho * KFPRG = (pu/1013) * 70
-		boost = boost.add(ambient.mult(70.0/1013.0));
+		boost = boost.add(pirg);
 	    }
 
 	    // fpbrkds from KFPBRK/KFPBRKNW
-	    //boost = boost.div(1.016);	// pssol
+	    boost = boost.div(1.016);	// pssol
 
 	    // vplsspls from KFVPDKSD/KFVPDKSDSE
-	    //boost = boost.div(1.016);
+	    boost = boost.div(1.016);	// plsol
 
 	    c = new Column(id, "mBar", boost.max(ambient));
 	} else if(id.equals("Calc Boost Spool Rate (RPM)")) {

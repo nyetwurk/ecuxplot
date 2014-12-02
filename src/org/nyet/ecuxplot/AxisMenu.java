@@ -210,6 +210,7 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("IntakeAirTemperature")) {
 	    addToSubmenu("Temperature", item);
 	    this.add("IntakeAirTemperature (C)", listener, bg);
+	    this.add("Calc evtmod", listener, bg);
 	    this.add("Calc ftbr", listener, bg);
 	    this.add("Calc SimBoostIATCorrection", listener, bg);
 	} else if(id.matches(".*Temperature.*")) {
