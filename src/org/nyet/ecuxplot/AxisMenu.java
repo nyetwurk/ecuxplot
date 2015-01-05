@@ -179,6 +179,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LDR de/dt", listener, bg);
 		this.add("Calc LDR I e dt", listener, bg);
 		this.add("Calc LDR PID", listener, bg);
+		this.add("Calc pspvds", listener, bg);
 		addToSubmenu("Calc", new JSeparator());
 	    }
 	/* do this before Timing so we don't match Throttle Angle */

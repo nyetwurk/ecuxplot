@@ -827,6 +827,10 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray I = this.get("Calc LDR I e dt").data.mult(env.pid.I);
 	    DoubleArray D = this.get("Calc LDR de/dt").data.func(fD,E);
 	    c = new Column(id, "%", P.add(I).add(D).max(0).min(95));
+	} else if(id.equals("Calc pspvds")) {
+	    DoubleArray ps_w = super.get("ME7L ps_w").data;
+	    DoubleArray pvdkds = super.get("BoostPressureActual").data;
+	    c = new Column(id,"",ps_w.div(pvdkds));
 /*****************************************************************************/
 	} else if(id.equals("IgnitionTimingAngleOverallDesired")) {
 	    DoubleArray averetard = null;
