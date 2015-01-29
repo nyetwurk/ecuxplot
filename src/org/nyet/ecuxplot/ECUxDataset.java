@@ -406,8 +406,13 @@ public class ECUxDataset extends Dataset {
 	//System.exit(0);
 
 	this.logType=log_use;
-	this.setIds(h);
-	this.setUnits(u);
+	DatasetId [] ids = new DatasetId[h.length];
+	for(int i=0; i<h.length; i++) {
+	    ids[i] = new DatasetId(h[i]);
+	    if(i<v.length) ids[i].id2 = v[i];
+	    if(i<u.length) ids[i].unit = u[i];
+	}
+	this.setIds(ids);
     }
 
     private DoubleArray drag (DoubleArray v) {
@@ -703,7 +708,7 @@ public class ECUxDataset extends Dataset {
 	    DoubleArray fwft = tans.add(673.425).div(731.334);
 
 	    // ftbr = 273/(tans+273) * fwft
-	    
+
 	    //    (tans+637.425)      273
 	    //    -------------- *  -------
 	    //      (tans+273)      731.334

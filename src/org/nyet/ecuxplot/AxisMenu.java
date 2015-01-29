@@ -19,6 +19,8 @@ import javax.swing.ButtonGroup;
 import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 
+import org.nyet.logfile.Dataset.DatasetId;
+
 public class AxisMenu extends JMenu {
     /**
      * 
@@ -54,7 +56,7 @@ public class AxisMenu extends JMenu {
 	addToSubmenu(id, item, id.equals("Calc")?false:true);
     }
 
-    private AbstractButton makeMenuItem(String id,
+    private AbstractButton makeMenuItem(String id, String tip,
 	SubActionListener listener, ButtonGroup bg) {
 	boolean checked = false;
 
@@ -68,6 +70,8 @@ public class AxisMenu extends JMenu {
 	AbstractButton item = (bg==null)?new JCheckBox(id, checked):
 	    new JRadioButtonMenuItem(id, checked);
 
+	if(tip!=null) item.setToolTipText(tip);
+
 	item.addActionListener(new MenuListener(listener,this.getText()));
 	if(bg!=null) bg.add(item);
 
@@ -76,16 +80,26 @@ public class AxisMenu extends JMenu {
 
     private void add(String id, SubActionListener listener,
 	ButtonGroup bg, int where) {
-	AbstractButton item = makeMenuItem(id, listener, bg);
+	this.add(id, null, listener, bg, where);
+    }
+
+    private void add(String id, String tip, SubActionListener listener,
+	ButtonGroup bg, int where) {
+	AbstractButton item = makeMenuItem(id, tip, listener, bg);
 	this.add(item, where);
     }
 
     private void add(String id, SubActionListener listener,
 	ButtonGroup bg) {
+	this.add(id, null, listener, bg);
+    }
+
+    private void add(String id, String tip, SubActionListener listener,
+	ButtonGroup bg) {
 
 	if (this.members.containsKey(id)) return;
 
-	AbstractButton item = makeMenuItem(id, listener, bg);
+	AbstractButton item = makeMenuItem(id, tip, listener, bg);
 
 	if(id.matches("RPM")) {
 	    this.add(item, 0);	// always add rpms first!
@@ -190,7 +204,7 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("IgnitionTimingAngleOverall")) {
 		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
 	    }
-	    AbstractButton titem = makeMenuItem(id + " (ms)", listener, bg);
+	    AbstractButton titem = makeMenuItem(id + " (ms)", tip, listener, bg);
 	    addToSubmenu("TrueTiming", titem, true);
 	} else if(id.matches("(Cat|MainCat).*")) {
 	    addToSubmenu("Cats", item);
@@ -230,11 +244,11 @@ public class AxisMenu extends JMenu {
     }
 
     // constructors
-    public AxisMenu(String text, String[] headers, SubActionListener listener,
+    public AxisMenu(String text, DatasetId[] ids, SubActionListener listener,
 	boolean radioButton, Comparable<?>[] initialChecked) {
-	this(text, headers, listener, radioButton, initialChecked, -1);
+	this(text, ids, listener, radioButton, initialChecked, -1);
     }
-    public AxisMenu(String text, String[] headers, SubActionListener listener,
+    public AxisMenu(String text, DatasetId[] ids, SubActionListener listener,
 	boolean radioButton, Comparable<?>[] initialChecked, int maxItems) {
 
 	super(text);
@@ -244,7 +258,7 @@ public class AxisMenu extends JMenu {
 	this.initialChecked = initialChecked;
 	if (maxItems>0) this.maxItems = maxItems;
 
-	if (headers!=null) {
+	if (ids!=null) {
 	    /* top level menu (before "more...") */
 	    ButtonGroup bg = null;
 	    if(radioButton) {
@@ -253,10 +267,10 @@ public class AxisMenu extends JMenu {
 		this.add(new JSeparator());
 	    }
 
-	    for(int i=0;i<headers.length;i++) {
-		if(headers[i] == null) continue;
-		if(headers[i].length()>0 && !this.members.containsKey(headers[i])) {
-		    this.add(headers[i], listener, bg);
+	    for(int i=0;i<ids.length;i++) {
+		if(ids[i] == null) continue;
+		if(ids[i].id.length()>0 && !this.members.containsKey(ids[i].id)) {
+		    this.add(ids[i].id, ids[i].id2, listener, bg);
 		}
 	    }
 
@@ -282,7 +296,7 @@ public class AxisMenu extends JMenu {
 	}
 
 	// add "Remove all" to top level menu
-	if(headers!=null && !radioButton) {
+	if(ids!=null && !radioButton) {
 	    super.add(new JSeparator());
 	    JMenuItem item=new JMenuItem("Remove all");
 	    super.add(item);
@@ -290,9 +304,9 @@ public class AxisMenu extends JMenu {
 	}
     }
 
-    public AxisMenu(String text, String[] headers, SubActionListener listener,
+    public AxisMenu(String text, DatasetId[] ids, SubActionListener listener,
 	boolean radioButton, Comparable<?> initialChecked) {
-	this(text, headers, listener, radioButton,
+	this(text, ids, listener, radioButton,
 	    new Comparable [] {initialChecked});
     }
 

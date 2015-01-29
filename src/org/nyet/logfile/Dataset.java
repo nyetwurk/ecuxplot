@@ -9,8 +9,27 @@ import au.com.bytecode.opencsv.*;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
-    private String [] ids;
-    private String [] units;
+    public class DatasetId implements Comparable {
+	public String id;
+	public String id2;
+	public String unit;
+
+	public int compareTo(Object o) {
+	    DatasetId id = (DatasetId) o;
+	    return this.id.compareTo(id.id);
+	}
+
+	public String toString() { return this.id; }
+	public DatasetId(String s) { this.id=s; }
+	public DatasetId(String s, String id2, String unit) {
+	    this.id=s; this.id2=id2; this.unit=unit;
+	}
+	public boolean equals(Comparable o) {
+	    return this.id.equals(o.toString());
+	}
+    }
+
+    private DatasetId[] ids;
     private String fileId;
     private ArrayList<Column> columns;
     private ArrayList<Range> range_cache = new ArrayList<Range>();
@@ -30,16 +49,26 @@ public class Dataset {
     }
 
     public class Column {
-	private Comparable<?> id;
-	private String units;
+	private DatasetId id;
 	public DoubleArray data;
 
 	public Column(Comparable<?> id, String units) {
-	    this(id, units, new DoubleArray());
+	    this(id, null, units, new DoubleArray());
 	}
 	public Column(Comparable<?> id, String units, DoubleArray data) {
+	    this(id, null, units, data);
+	}
+	public Column(Comparable<?> id, String id2, String units) {
+	    this(id, id2, units, new DoubleArray());
+	}
+	public Column(Comparable<?> id, String id2, String units,
+	    DoubleArray data) {
+	    this.id = new DatasetId(id.toString(), id2, units);
+	    this.data = data;
+	}
+
+	public Column(DatasetId id, DoubleArray data) {
 	    this.id = id;
-	    this.units = units;
 	    this.data = data;
 	}
 
@@ -77,9 +106,16 @@ public class Dataset {
 
 	public String getId() {
 	    if(this.id==null) return null;
-	    return this.id.toString();
+	    return this.id.id;
 	}
-	public String getUnits() { return this.units; }
+	public String getId2() {
+	    if(this.id==null) return null;
+	    return this.id.id2;
+	}
+	public String getUnits() {
+	    if(this.id==null) return null;
+	    return this.id.unit;
+	}
     }
 
     public class Key implements Comparable<Object> {
@@ -185,8 +221,9 @@ public class Dataset {
 	    ParseHeaders(reader, verbose);
 	}
 	for(int i=0;i<this.ids.length;i++)
-	    this.columns.add(new Column(this.ids[i],
-		i<this.units.length?this.units[i]:""));
+	    this.columns.add(new Column(this.ids[i].id,
+		this.ids[i].id2,
+		this.ids[i].unit));
 
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
@@ -204,9 +241,12 @@ public class Dataset {
     public ArrayList<Column> getColumns() {return this.columns;}
 
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
-	this.ids = reader.readNext();
-	if (this.ids.length>0 && this.ids[0].trim().length()>0) {
-	    this.units = new String[ids.length];
+	String [] line = reader.readNext();
+	if (line.length>0 && line[0].trim().length()>0) {
+	    this.ids = new DatasetId[line.length];
+	    for(int i=0;i<line.length;i++) {
+		this.ids[i].id = line[i];
+	    }
 	}
     }
 
@@ -222,7 +262,7 @@ public class Dataset {
 
     public Column get(Comparable<?> id) {
 	for(Column c : this.columns)
-	    if(id.equals(c.id)) return c;
+	    if(id.equals(c.id.id)) return c;
 	return null;
     }
 
@@ -285,10 +325,8 @@ public class Dataset {
 
     public String getFileId() { return this.fileId; }
 
-    public String [] getIds() { return this.ids; }
-    public void setIds(String [] ids) { this.ids=ids; }
-    public String [] getUnits() { return this.units; }
-    public void setUnits(String [] units) { this.units=units; }
+    public DatasetId [] getIds() { return this.ids; }
+    public void setIds(DatasetId [] ids) { this.ids=ids; }
 
     public ArrayList<String> getLastFilterReasons() { return this.lastFilterReasons; }
     public int length() { return this.rows; }

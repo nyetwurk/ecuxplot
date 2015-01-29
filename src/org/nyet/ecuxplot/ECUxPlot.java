@@ -24,6 +24,7 @@ import org.jfree.ui.RefineryUtilities;
 import org.nyet.util.*;
 
 import org.nyet.logfile.Dataset;
+import org.nyet.logfile.Dataset.DatasetId;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost {
     /**
@@ -67,6 +68,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     public ECUxPlot(final String title, ArrayList<ECUxPlot> plotlist) { this(title, null, plotlist, false, 0); }
     public ECUxPlot(final String title, java.awt.Dimension size, ArrayList<ECUxPlot> plotlist, boolean exitOnClose, int verbose) {
         super(title);
+	ToolTipManager.sharedInstance().setInitialDelay(0);
+	ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
 
 	this.plotlist = (plotlist!=null)?plotlist:new ArrayList<ECUxPlot>();
 	this.plotlist.add(this);
@@ -166,29 +169,29 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	// Add all the data we just finished loading fom the files
 	addChartYFromPrefs();
 
-	// merge headers using a TreeSet - only add new headers
+	// merge ids using a TreeSet - only add new headers
 	// note that TreeSet keeps us sorted!
-	TreeSet<String> hset = new TreeSet<String>();
+	TreeSet<DatasetId> hset = new TreeSet<DatasetId>();
 	for(ECUxDataset d : this.fileDatasets.values()) {
-	    for(String s : d.getIds())
+	    for(DatasetId s : d.getIds())
 		if(s!=null) hset.add(s);
 	}
-	String [] headers = hset.toArray(new String[0]);
-	if(headers.length<=0) return;
+	DatasetId [] ids = hset.toArray(new DatasetId[0]);
+	if(ids.length<=0) return;
 
 	// rebuild the axis menus
 	if(this.xAxis!=null) this.menuBar.remove(this.xAxis);
 	if(this.yAxis[0]!=null) this.menuBar.remove(this.yAxis[0]);
 	if(this.yAxis[1]!=null) this.menuBar.remove(this.yAxis[1]);
 
-	this.xAxis = new AxisMenu("X Axis", headers, this, true, this.xkey());
+	this.xAxis = new AxisMenu("X Axis", ids, this, true, this.xkey());
 	this.menuBar.add(xAxis, 3);
 
-	this.yAxis[0] = new AxisMenu("Y Axis", headers, this, false,
+	this.yAxis[0] = new AxisMenu("Y Axis", ids, this, false,
 	    this.ykeys(0));
 	this.menuBar.add(yAxis[0], 4);
 
-	this.yAxis[1] = new AxisMenu("Y Axis2", headers, this, false,
+	this.yAxis[1] = new AxisMenu("Y Axis2", ids, this, false,
 	    this.ykeys(1));
 	this.menuBar.add(yAxis[1], 5);
 
