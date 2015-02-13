@@ -227,12 +227,16 @@ public class Dataset {
 
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
-	    if (nextLine.length>0 && nextLine[0].trim().length()>0) {
+	    if (nextLine.length>0) {
+		boolean gotone=false;
 		for(int i=0;i<nextLine.length;i++) {
-		    if (this.columns.size() > i)
+ 		    if (nextLine[i].trim().length()>0
+			&& this.columns.size() > i) {
 			this.columns.get(i).add(nextLine[i]);
+			gotone=true;
+		    }
 		}
-		this.rows++;
+		if (gotone) this.rows++;
 	    }
 	}
 	buildRanges();

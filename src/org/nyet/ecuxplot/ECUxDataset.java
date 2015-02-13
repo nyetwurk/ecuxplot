@@ -386,7 +386,7 @@ public class ECUxDataset extends Dataset {
 	}
 
 	for(int i=0;i<h.length;i++) {
-	    if(u[i]==null || u[i].length()==0) {
+	    if(h[i].length()>0 && (u[i]==null || u[i].length()==0)) {
 		u[i]=Units.find(h[i]);
 		if (verbose>0 && (u[i]==null || u[i].length()==0)) {
 		    System.out.println("Can't find units for " + h[i]);
@@ -409,8 +409,8 @@ public class ECUxDataset extends Dataset {
 	DatasetId [] ids = new DatasetId[h.length];
 	for(int i=0; i<h.length; i++) {
 	    ids[i] = new DatasetId(h[i]);
-	    if(i<v.length) ids[i].id2 = v[i];
-	    if(i<u.length) ids[i].unit = u[i];
+	    if(v!=null && i<v.length) ids[i].id2 = v[i];
+	    if(u!=null && i<u.length) ids[i].unit = u[i];
 	}
 	this.setIds(ids);
     }
