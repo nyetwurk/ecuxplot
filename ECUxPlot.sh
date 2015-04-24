@@ -25,5 +25,5 @@ else
     args=("$@")
 fi
 
-# echo exec java -Dawt.useSystemAAFontSettings=on -jar "$jar" "${args[@]}"
-exec java -Dawt.useSystemAAFontSettings=on -jar "$jar" "${args[@]}"
+# echo exec java -jar "$jar" "${args[@]}"
+exec java -jar "$jar" "${args[@]}"
