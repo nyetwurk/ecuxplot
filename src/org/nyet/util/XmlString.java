@@ -42,7 +42,7 @@ public class XmlString implements CharSequence, Appendable {
     // Methods
     private String escape(String s)
     {
-	return this.lt.translate(StringEscapeUtils.escapeXml(s));
+	return this.lt.translate(StringEscapeUtils.escapeXml11(s));
 	//return StringEscapeUtils.escapeHtml3(s);
 	//return StringEscapeUtils.escapeHtml4(s);
     }

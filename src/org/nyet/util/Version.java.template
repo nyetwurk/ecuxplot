@@ -3,7 +3,7 @@ package org.nyet.util;
 import java.util.ArrayList;
 
 public class Version extends ArrayList<Object> {
-
+    private static final long serialVersionUID = %ECUXPLOT_UID;
     public static final String ECUxPlot="%ECUXPLOT_VER";
     public static final String JFreeChart="%JFREECHART_VER";
     public static final String JCommon="%JCOMMON_VER";

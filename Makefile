@@ -1,3 +1,4 @@
+ECUXPLOT_UID := 20150620L
 ECUXPLOT_VER := $(shell git describe --tags --abbrev=4 --dirty --always | sed -e 's/v\(.*\)/\1/')
 VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/\([^.]*\.[^r]*\)r.*/\1/')
 RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r\([^.]*\.[^-]*\).*/\1/')
@@ -6,8 +7,8 @@ RC      := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r[^.]*\.[^-]*\(-
 JCOMMON_VER := 1.0.17
 JFREECHART_VER := 1.0.14
 OPENCSV_VER := 2.3
-COMMONS_LANG3_VER := 3.1
-COMMONS_CLI_VER := 1.2
+COMMONS_CLI_VER := 1.3.1
+COMMONS_LANG3_VER := 3.4
 JAVA_TARGET_VER := 6
 
 # things to pass to build/build.properties
@@ -120,6 +121,7 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 	-e 's/%RELEASE/$(RELEASE)/g' \
 	-e 's/%JAVAC_MAJOR_VER/$(JAVAC_MAJOR_VER)/g' \
 	-e 's/%JAVAC_MINOR_VER/$(JAVAC_MINOR_VER)/g' \
+	-e 's/%ECUXPLOT_UID/$(ECUXPLOT_UID)/g' \
 	-e 's/%ECUXPLOT_VER/$(ECUXPLOT_VER)/g' \
 	-e 's/%JFREECHART_VER/$(JFREECHART_VER)/g' \
 	-e 's/%JCOMMON_VER/$(JCOMMON_VER)/g' \

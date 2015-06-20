@@ -27,7 +27,7 @@ public class FileDropListener implements DropTargetListener {
     public FileDropListener(FileDropHost fileDropHost, Component dropTargetComponent) {
 
         this.fileDropHost = fileDropHost;
-        this.dropTarget = new DropTarget(dropTargetComponent, this);
+        this.setDropTarget(new DropTarget(dropTargetComponent, this));
 
     }
 
@@ -153,4 +153,14 @@ public class FileDropListener implements DropTargetListener {
     @Override
     public void dropActionChanged(DropTargetDragEvent arg0) {
     }
+
+
+public DropTarget getDropTarget() {
+	return dropTarget;
+}
+
+
+public void setDropTarget(DropTarget dropTarget) {
+	this.dropTarget = dropTarget;
+}
 }

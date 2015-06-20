@@ -24,9 +24,6 @@ public final class OptionsMenu extends JMenu {
     private JMenu savePresetsMenu;
     private JMenu deletePresetsMenu;
 
-    private JMenu nextRangeMenu;
-    private JMenu previousRangeMenu;
-
     public OptionsMenu(String id, ECUxPlot plotFrame) {
 	super(id);
 	this.plotFrame=plotFrame;

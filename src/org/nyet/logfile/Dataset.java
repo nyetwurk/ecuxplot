@@ -4,12 +4,13 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
+
 import au.com.bytecode.opencsv.*;
 
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
-    public class DatasetId implements Comparable {
+    public class DatasetId implements Comparable<Object> {
 	public String id;
 	public String id2;
 	public String unit;
@@ -24,7 +25,7 @@ public class Dataset {
 	public DatasetId(String s, String id2, String unit) {
 	    this.id=s; this.id2=id2; this.unit=unit;
 	}
-	public boolean equals(Comparable o) {
+	public boolean equals(Comparable<?> o) {
 	    return this.id.equals(o.toString());
 	}
     }

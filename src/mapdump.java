@@ -8,11 +8,10 @@ import java.io.PrintWriter;
 import java.io.PrintStream;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
 
@@ -21,7 +20,7 @@ import org.nyet.util.*;
 
 public class mapdump {
     private static class MapDumpOptions extends Options {
-
+	private static final long serialVersionUID = 20150620L;
 	String input = null;
 	PrintStream output = System.out;
 	String[] refs = new String[0];
@@ -29,14 +28,15 @@ public class mapdump {
 	int format = Map.FORMAT_CSV;
 
 	public MapDumpOptions() {
-	    Option r = OptionBuilder.withArgName("maps.kp [...]").hasArg().hasOptionalArgs()
-		.withDescription(
+	    Option r = Option.builder("r").argName("maps.kp [...]").hasArg()
+		.hasArgs()
+		.desc(
 		    "Annotate with descriptions from matching maps also in these mappacks (ignored if -x is used)")
-		.create('r');
-	    Option i = OptionBuilder.withArgName("image.bin").hasArg()
-		.withDescription(
+		.build();
+	    Option i = Option.builder("i").argName("image.bin").hasArg()
+		.desc(
 		    "Generate min/max columns and image size based on this image")
-		.create('i');
+		.build();
 
 	    Option d = new Option("d", "Generate raw dump");
 	    Option o = new Option("o", "Generate old xdf (requires -i <image.bin>)");
@@ -51,7 +51,7 @@ public class mapdump {
 	}
 
 	public void Parse(String args[]) throws ParseException {
-	    CommandLineParser parser = new BasicParser(); 
+	    CommandLineParser parser = new DefaultParser();
 	    CommandLine line = parser.parse(this, args);
 
 	    if (line.hasOption('r')) {
