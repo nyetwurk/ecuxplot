@@ -73,7 +73,9 @@ public class Parser extends MMapFile {
 		eatNumber(b,1,1);	// 0 (char)
 		eatNumber(b,1);		// 5
 		eatNumber(b,5);		// 0 x 5
+		@SuppressWarnings("unused")
 		String car = Parse.string(b);
+		@SuppressWarnings("unused")
 		String engine = Parse.string(b);
 		eatNumber(b,10);	// 0 x 10
 
@@ -85,6 +87,7 @@ public class Parser extends MMapFile {
 
 		eatNumber(b,1,1);	// 0 (char)
 		eatNumber(b,12);	// 0 x 12
+		@SuppressWarnings("unused")
 		String data = Parse.string(b);
 		eatNumber(b,7);	// 0 x 7
 		eatNumber(b,1);	// 9d ff ff ff

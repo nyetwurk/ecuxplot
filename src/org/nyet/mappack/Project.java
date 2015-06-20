@@ -63,6 +63,7 @@ public class Project {
 	ByteArrayInputStream bbis = new ByteArrayInputStream(zip);
 	ZipInputStream zis = new ZipInputStream(bbis);
 	try {
+	    @SuppressWarnings("unused")
 	    ZipEntry ze = zis.getNextEntry();
 	    ByteBuffer bb = is2bb(zis);
 	    bb.order(ByteOrder.LITTLE_ENDIAN);

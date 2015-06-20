@@ -580,10 +580,10 @@ public class ECUxDataset extends Dataset {
 /*****************************************************************************/
 	} else if(id.equals("Calc Velocity")) {
 	    // TODO: make a user adjustable checkbox for this
-	    Column v = null; // this.get("VehicleSpeed");
+	    /* Column v = this.get("VehicleSpeed");
 	    if (v!=null) {
 		c = new Column(id, "m/s", v.data.mult(1000.0/60.0/60.0));
-	    } else {
+	    } else */{
 		final double mph_per_mps = 2.23693629;
 		DoubleArray rpm = this.get("RPM").data;
 		c = new Column(id, "m/s", rpm.div(this.env.c.rpm_per_mph()).

@@ -412,6 +412,7 @@ public class Map implements Comparable<Object> {
 	}
     }
 
+    @SuppressWarnings("unused")
     static private String DebugBB(ByteBuffer bb, String where) {
 	return DebugBB(bb, 16, where);
     }
@@ -630,7 +631,8 @@ public class Map implements Comparable<Object> {
 	return Strings.join(",", out);
     }
 
-    private String toStringOldXDF(ByteBuffer image) throws Exception {
+    @SuppressWarnings("unused")
+private String toStringOldXDF(ByteBuffer image) throws Exception {
 	boolean table = this.organization.isTable();
 	boolean oneD = this.organization.is1D() || this.size.y<=1;
 	String out = table?"%%TABLE%%\n":"%%CONSTANT%%\n";
@@ -924,6 +926,7 @@ public class Map implements Comparable<Object> {
     }
 
     // Sort by map address and index
+    @SuppressWarnings("unused")
     public int compareTo(Object o) {
 	Map them = (Map)o;
 	int ret;
