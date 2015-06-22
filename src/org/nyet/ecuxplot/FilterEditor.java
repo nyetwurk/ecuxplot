@@ -7,7 +7,7 @@ import javax.swing.*;
 
 public class FilterEditor extends PreferencesEditor {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

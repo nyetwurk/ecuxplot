@@ -419,7 +419,7 @@ public class ECUxDataset extends Dataset {
 
 	final double rho=1.293;	// kg/m^3 air, standard density
 
-	DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.c.Cd() * 
+	DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.c.Cd() *
 	    this.env.c.FA());
 
 	DoubleArray rollingDrag = v.mult(this.env.c.rolling_drag() *
@@ -986,26 +986,26 @@ public class ECUxDataset extends Dataset {
     }
 
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
-	    ArrayList<Dataset.Range> ranges = this.getRanges();
-	    if(run<0 || run>=ranges.size())
-		throw new Exception("no run found");
+	ArrayList<Dataset.Range> ranges = this.getRanges();
+	if(run<0 || run>=ranges.size())
+	    throw new Exception("no run found");
 
-	    if(splines[run]==null)
-		throw new Exception("run interpolation failed");
+	if(splines[run]==null)
+	    throw new Exception("run interpolation failed");
 
-	    Dataset.Range r=ranges.get(run);
-	    double [] rpm = this.getData("RPM", r);
+	Dataset.Range r=ranges.get(run);
+	double [] rpm = this.getData("RPM", r);
 
-	    if(rpm[0]-100>RPMStart || rpm[rpm.length-1]+100<RPMEnd)
-		throw new Exception("run " + rpm[0] + "-" + rpm[rpm.length-1] +
-			" not long enough");
+	if(rpm[0]-100>RPMStart || rpm[rpm.length-1]+100<RPMEnd)
+	    throw new Exception("run " + rpm[0] + "-" + rpm[rpm.length-1] +
+		    " not long enough");
 
-	    double et = splines[run].interpolate(RPMEnd) -
+	double et = splines[run].interpolate(RPMEnd) -
 		splines[run].interpolate(RPMStart);
-	    if(et<=0)
-		throw new Exception("don't cross the streams");
+	if(et<=0)
+	    throw new Exception("don't cross the streams");
 
-	    return et;
+	return et;
     }
 
     public double[] calcFATS(int RPMStart, int RPMEnd) {
@@ -1024,4 +1024,5 @@ public class ECUxDataset extends Dataset {
     // public void setFilter(Filter f) { this.filter=f; }
     public Env getEnv() { return this.env; }
     //public void setEnv(Env e) { this.env=e; }
+    public boolean useId2() { return this.env.prefs.getBoolean("altnames", false); }
 }

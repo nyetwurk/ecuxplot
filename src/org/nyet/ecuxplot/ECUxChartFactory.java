@@ -154,7 +154,7 @@ public class ECUxChartFactory {
 	double[][] empty = {{},{}};
 	if(ranges.size()==0) {
 	    filter.currentRange = 0;
-	    Dataset.Key key = data.new Key(ykey);
+	    Dataset.Key key = data.new Key(ykey, data);
 	    key.hideRange();
 	    d.addSeries(key, empty);
 	    ret.add(d.indexOf(key));
@@ -168,7 +168,7 @@ public class ECUxChartFactory {
 	for(int	i = (showAllRanges ? 0 : filter.currentRange);
 	        i < (showAllRanges ? ranges.size() : filter.currentRange + 1);
 	        i++) {
-	    Dataset.Key key = data.new Key(ykey, i);
+	    Dataset.Key key = data.new Key(ykey, i, data);
 	    if(ranges.size()==1) key.hideRange();
 	    else key.showRange();
 

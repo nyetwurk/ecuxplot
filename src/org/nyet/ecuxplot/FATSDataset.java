@@ -8,7 +8,7 @@ import org.nyet.util.Files;
 
 public class FATSDataset extends DefaultCategoryDataset {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private int start = 4200;
@@ -57,7 +57,7 @@ public class FATSDataset extends DefaultCategoryDataset {
 	}
     }
 
-    // helpers	
+    // helpers
     public void removeValue(ECUxDataset data) {
 	for(int i=0;i<data.getRanges().size();i++)
 	    removeValue(data, i);

@@ -6,7 +6,7 @@ import javax.swing.*;
 
 public class PIDEditor extends PreferencesEditor {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

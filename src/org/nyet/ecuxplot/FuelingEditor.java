@@ -7,7 +7,7 @@ import javax.swing.*;
 
 public class FuelingEditor extends PreferencesEditor {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

@@ -7,7 +7,7 @@ import javax.swing.JMenuItem;
 
 public final class HelpMenu extends JMenu {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

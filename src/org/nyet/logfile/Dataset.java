@@ -117,6 +117,9 @@ public class Dataset {
 	    if(this.id==null) return null;
 	    return this.id.unit;
 	}
+	public String getLabel(boolean id2) {
+	    return (id2 && this.id.id2!=null)?this.id.id2:this.id.id;
+	}
     }
 
     public class Key implements Comparable<Object> {
@@ -124,39 +127,52 @@ public class Dataset {
 	private String s;
 	private Integer range;
 	private BitSet flags;
-
+	private Dataset data_cache; // dataset cache
+	private DatasetId id_cache; // id cache
+/*
 	public Key (String fn, String s, int range, BitSet flags) {
 	    this.fn=fn;
 	    this.s=s;
-	    this.range=new Integer(range);
+	    this.range=range;
 	    this.flags=flags;
 	}
-
-	public Key (Key k) {
+*/
+	public Key (Key k, int range, Dataset data) {
 	    this.fn=k.fn;
-	    this.s= new String(k.s);
-	    this.range=k.range;
-	    this.flags=k.flags;
-	}
-
-	public Key (Key k, int range) {
-	    this.fn=k.fn;
+	    if (this.fn==null) this.fn = data.getFileId();
 	    this.s= new String(k.s);
 	    this.range=range;
+	    this.data_cache = data;
 	    this.flags=k.flags;
+	    data.get(this); //initialize id cache
+	}
+	
+	public Key (Key k, Dataset data) {
+	    this (k, 0, data);
 	}
 
-	public Key (String fn, String s, int range) {
-	    this(fn, s, range, new BitSet(2));
+	public Key (String s, Dataset data) {
+	    this.fn = data.getFileId();
+	    this.s=s;
+	    this.data_cache = data;
+	    this.range=0;
+	    this.flags=new BitSet(2);
+	    data.get(this); // initialize cache
 	}
 
-	public Key (String fn, String s) {
-	    this(fn, s, 0, new BitSet(2));
+	/*
+	 * public Key (String fn, String s, int range) { this(fn, s, range, new
+	 * BitSet(2)); }
+	 * 
+	 * public Key (String fn, String s) { this(fn, s, 0, new BitSet(2)); }
+	 */
+	private boolean useId2() {
+	    return (this.data_cache != null && this.data_cache.useId2()
+		    && this.id_cache != null && this.id_cache.id2 != null);
 	}
-
-
+	
 	public String toString() {
-	    String ret = this.s;
+	    String ret = this.useId2()?this.id_cache.id2:this.s;
 
 	    // don't skip file name, add to beginning
 	    if(!this.flags.get(0))
@@ -175,10 +191,11 @@ public class Dataset {
 	public void showRange() { this.flags.clear(1); }
 
 	public String getFilename() { return this.fn; }
+	public String getId2()	{ return (this.id_cache!=null && this.id_cache.id2!=null)?this.id_cache.id2:this.s; }
 	public String getString() { return this.s; }
 	public Integer getRange() { return this.range; }
 	public void setRange(int r) { this.range=r; }
-
+	
 	public int compareTo(Object o) {
 	    if(o instanceof Key) {
 		final Key k = (Key)o;
@@ -259,18 +276,40 @@ public class Dataset {
 	return (Column) this.columns.get(id);
     }
 
+    public Column get(Dataset.Key key) {
+	Column c = this.get((Comparable<?>)key);
+	
+	if(c!=null) key.id_cache = c.id; // cache column id
+
+	return c;
+    }
+    
+    public Column get(Comparable<?> id) {
+	for(Column c : this.columns) {
+	    if(id.equals(c.id.id))
+		return c;
+	}	
+	return null;
+    }
+
     public String units(Comparable<?> id) {
 	final Column c = this.get(id);
 	if(c==null) return null;
 	return c.getUnits();
     }
 
-    public Column get(Comparable<?> id) {
-	for(Column c : this.columns)
-	    if(id.equals(c.id.id)) return c;
-	return null;
+    public String id2(Comparable<?> id) {
+	final Column c = this.get(id);
+	if(c==null) return null;
+	return c.getId2();
     }
-
+    
+    public String getLabel(Comparable<?> id, boolean altnames) {
+	final Column c = this.get(id);
+	if(c==null) return null;
+	return c.getLabel(altnames);
+    }
+    
     public boolean exists(Comparable<?> id) {
 	if (this.get(id) == null) return false;
 	if (this.get(id).data == null) return false;
@@ -335,4 +374,5 @@ public class Dataset {
 
     public ArrayList<String> getLastFilterReasons() { return this.lastFilterReasons; }
     public int length() { return this.rows; }
+    public boolean useId2() { return false; }
 }

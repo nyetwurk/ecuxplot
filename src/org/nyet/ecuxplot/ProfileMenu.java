@@ -19,7 +19,7 @@ import org.nyet.util.Locate;
 
 public final class ProfileMenu extends JMenu {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private ECUxPlot plotFrame;
@@ -54,6 +54,11 @@ public final class ProfileMenu extends JMenu {
 	    // Add static profiles
 	    dir=new File(Locate.getClassDirectory(this),
 		"profiles");
+
+	    // Try CWD if no profile dir in the Class directory (running in debugger)
+	    if (!dir.isDirectory()) {
+		dir=new File("profiles");
+	    }
 	} catch (Exception e) {
 	    ProfileMenu pm = ProfileMenu.this;
 	    JOptionPane.showMessageDialog(pm.plotFrame, e.toString());
@@ -61,41 +66,46 @@ public final class ProfileMenu extends JMenu {
 	    return;
 	};
 
-	LoadProfileAction lpa = new LoadProfileAction(dir);
-	for(File p : dir.listFiles()) {
-	    if(p.isDirectory() && !p.getName().startsWith(".")) {
-		// do not add static profiles to "save" menu
-		JMenuItem jmi = new JMenuItem(p.getName());
-		jmi.addActionListener(lpa);
-		this.loadProfilesMenu.add(jmi);
-	    }
-	}
-	// Add custom profiles
-	dir=new File(Locate.getDataDirectory("ECUxPlot"),
-	    "profiles");
-	SaveProfileAction spa = new SaveProfileAction(dir);
-	File profiles[] = dir.listFiles();
-	if(profiles!=null && profiles.length>0) {
-	    // add separator to load menu (divide static from custom)
-	    this.loadProfilesMenu.add(new JSeparator());
-	    lpa = new LoadProfileAction(dir);
-	    for(File p : profiles) {
+	if (dir.isDirectory()) {
+	    LoadProfileAction lpa = new LoadProfileAction(dir);
+	    for(File p : dir.listFiles()) {
 		if(p.isDirectory() && !p.getName().startsWith(".")) {
-		    // add both static and custom items
+		    // do not add static profiles to "save" menu
 		    JMenuItem jmi = new JMenuItem(p.getName());
 		    jmi.addActionListener(lpa);
 		    this.loadProfilesMenu.add(jmi);
-		    jmi = new JMenuItem(p.getName());
-		    jmi.addActionListener(spa);
-		    this.saveProfilesMenu.add(jmi);
 		}
 	    }
-	    // add separator to save menu (divide custom from new)
-	    this.saveProfilesMenu.add(new JSeparator());
 	}
-	JMenuItem jmi = new JMenuItem("New Profile...");
-	jmi.addActionListener(spa);
-	this.saveProfilesMenu.add(jmi);
+
+	// Add custom profiles
+	dir=new File(Locate.getDataDirectory("ECUxPlot"),
+		"profiles");
+	if (dir.isDirectory()) {
+	    SaveProfileAction spa = new SaveProfileAction(dir);
+	    File profiles[] = dir.listFiles();
+	    if(profiles!=null && profiles.length>0) {
+		// add separator to load menu (divide static from custom)
+		this.loadProfilesMenu.add(new JSeparator());
+		LoadProfileAction lpa = new LoadProfileAction(dir);
+		for(File p : profiles) {
+		    if(p.isDirectory() && !p.getName().startsWith(".")) {
+			// add both static and custom items
+			JMenuItem jmi = new JMenuItem(p.getName());
+			jmi.addActionListener(lpa);
+			this.loadProfilesMenu.add(jmi);
+			jmi = new JMenuItem(p.getName());
+			jmi.addActionListener(spa);
+			this.saveProfilesMenu.add(jmi);
+		    }
+		}
+		// add separator to save menu (divide custom from new)
+		this.saveProfilesMenu.add(new JSeparator());
+	    }
+	    JMenuItem jmi = new JMenuItem("New Profile...");
+	    jmi.addActionListener(spa);
+	    this.saveProfilesMenu.add(jmi);
+	}
     }
 
     private class LoadProfileAction implements ActionListener {

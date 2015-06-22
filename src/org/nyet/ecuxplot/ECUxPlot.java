@@ -28,7 +28,7 @@ import org.nyet.logfile.Dataset.DatasetId;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     // each file loaded has an associated dataset
@@ -468,6 +468,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		this.prefs.put("chooserDir",
 		    fc.getCurrentDirectory().toString());
 	    }
+	} else if(source.getText().equals("Use alternate column names")) {
+	    boolean s = source.isSelected();
+	    this.prefs.putBoolean("altnames", s);
+	    // rebuild title and labels
+	    this.updateXAxisLabel();
+	    this.updatePlotTitleAndYAxisLabels();
 	} else if(source.getText().equals("Scatter plot")) {
 	    boolean s = source.isSelected();
 	    this.prefs.putBoolean("scatter", s);
@@ -561,9 +567,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    if(key==null) continue;
 		    String s;
 
-		    if(key instanceof Dataset.Key)
-			s = ((Dataset.Key)key).getString();
-		    else
+		    if(key instanceof Dataset.Key) {
+			Dataset.Key k = (Dataset.Key)key;
+			s = prefs.getBoolean("altnames", false)?k.getId2():k.getString();
+		    } else
 			s = key.toString();
 
 		    // construct title array
@@ -590,6 +597,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	if(this.chartPanel!=null)
 	    updateXAxisLabel(this.chartPanel.getChart().getXYPlot());
     }
+
     private void updateXAxisLabel(XYPlot plot) {
 	// find x axis label. just pick first one that has units we can use
 	String label = "";
@@ -597,7 +605,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    if(data.get(this.xkey())!=null) {
 		String units = data.units(this.xkey());
 		if(units != null) {
-		    label = this.xkey().toString();
+		    label =
+			data.getLabel(this.xkey(), prefs.getBoolean("altnames", false));
 		    if(label.indexOf(units)==-1)
 			label += " ("+units+")";
 		    break;
@@ -681,8 +690,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
 	if(add) {
-	    Dataset.Key key = data.new Key(data.getFileId(),
-		    ykey.toString());
+	    Dataset.Key key = data.new Key(ykey.toString(), data);
 	    if(this.fileDatasets.size()==1) key.hideFilename();
 	    addDataset(axis, pds, key);
 	} else {

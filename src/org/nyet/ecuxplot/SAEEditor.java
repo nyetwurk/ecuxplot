@@ -7,7 +7,7 @@ import javax.swing.*;
 
 public class SAEEditor extends PreferencesEditor {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

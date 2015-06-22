@@ -7,7 +7,7 @@ import javax.swing.*;
 
 public class ConstantsEditor extends PreferencesEditor {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

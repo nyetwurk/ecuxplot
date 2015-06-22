@@ -9,7 +9,7 @@ import javax.swing.*;
 
 public class PreferencesEditor extends JPanel {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private JDialog dialog;

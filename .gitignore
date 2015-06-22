@@ -1,8 +1,9 @@
-build
 *.class
 *.exe
 *.swp
 *.tmp
+.metadata
+build
 ECUxPlot*.jar
 ECUxPlot*.tar.gz
 mapdump.jar

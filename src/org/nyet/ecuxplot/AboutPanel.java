@@ -11,7 +11,7 @@ import javax.swing.ImageIcon;
 
 public class AboutPanel extends JPanel implements ActionListener {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

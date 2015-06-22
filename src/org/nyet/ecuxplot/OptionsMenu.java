@@ -50,7 +50,10 @@ public final class OptionsMenu extends JMenu {
 
 	// Prefs
 	Preferences prefs = ECUxPlot.getPreferences();
-
+	jcb = new JCheckBox("Use alternate column names",
+		prefs.getBoolean("altnames", false));
+	jcb.addActionListener(plotFrame);
+	this.add(jcb);
 	jcb = new JCheckBox("Scatter plot",
 		ECUxPlot.scatter(prefs));
 	jcb.addActionListener(plotFrame);

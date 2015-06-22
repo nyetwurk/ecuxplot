@@ -18,7 +18,7 @@ import org.jfree.chart.renderer.category.BarRenderer;
 
 public class FATSChartFrame extends ChartFrame implements ActionListener {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private FATSDataset dataset;
