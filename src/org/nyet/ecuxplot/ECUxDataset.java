@@ -31,16 +31,13 @@ public class ECUxDataset extends Dataset {
 	this.env = env;
 	this.filter = filter;
 
-	this.pedal = get(new String []
-		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position", "Pedal Position"});
+	this.pedal = get(Loggers.pedalnames);
 	if (this.pedal!=null && this.pedal.data.isZero()) this.pedal=null;
 
-	this.throttle = get(new String []
-		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle", "TPS"});
+	this.throttle = get(Loggers.throttlenames);
 	if (this.throttle!=null && this.throttle.data.isZero()) this.throttle=null;
 
-	this.gear = get(new String []
-		{"Gear", "SelectedGear", "Engaged Gear"});
+	this.gear = get(Loggers.gearnames);
 	if (this.gear!=null && this.gear.data.isZero()) this.gear=null;
 
 	// look for zeitronix boost for filtering
@@ -72,36 +69,25 @@ public class ECUxDataset extends Dataset {
 	return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.HPTQMAW());
     }
 
-    private static final int LOG_UNKNOWN = -2;
-    public static final int LOG_ERR = -1;
-    public static final int LOG_DETECT = 0;
-    public static final int LOG_ECUX = 1;
-    public static final int LOG_VCDS = 2;
-    public static final int LOG_ZEITRONIX = 3;
-    public static final int LOG_ME7LOGGER = 4;
-    public static final int LOG_EVOSCAN = 5;
-    public static final int LOG_VOLVOLOGGER = 6;
-    public int logType;
-
     private int detect(String [] h) {
 	h[0]=h[0].trim();
-	if(h[0].matches("VCDS")) return LOG_VCDS;
-	if(h[0].matches("^.*(day|tag)$")) return LOG_VCDS;
+	if(h[0].matches("VCDS")) return Loggers.LOG_VCDS;
+	if(h[0].matches("^.*(day|tag)$")) return Loggers.LOG_VCDS;
 	if(h[0].matches("^Filename:.*")) {
 	    if(Files.extension(h[0]).equals("zto") ||
 	       Files.extension(h[0]).equals("zdl") ||
 		h[0].matches(".*<unnamed file>$"))
-	    return LOG_ZEITRONIX;
+	    return Loggers.LOG_ZEITRONIX;
 	}
-	if(h[0].matches("^TIME$")) return LOG_ECUX;
+	if(h[0].matches("^TIME$")) return Loggers.LOG_ECUX;
 
-	if(h[0].matches(".*ME7-Logger.*")) return LOG_ME7LOGGER;
+	if(h[0].matches(".*ME7-Logger.*")) return Loggers.LOG_ME7LOGGER;
 
-	if(h[0].matches("^LogID$")) return LOG_EVOSCAN;
+	if(h[0].matches("^LogID$")) return Loggers.LOG_EVOSCAN;
 
-	if(h[0].matches("^Time\\s*\\(sec\\)$")) return LOG_VOLVOLOGGER;
+	if(h[0].matches("^Time\\s*\\(sec\\)$")) return Loggers.LOG_VOLVOLOGGER;
 
-	return LOG_UNKNOWN;
+	return Loggers.LOG_UNKNOWN;
     }
 
     private String [] ParseUnits(String [] h) {
@@ -120,10 +106,10 @@ public class ECUxDataset extends Dataset {
 	return u;
     }
     public void ParseHeaders(CSVReader reader) throws Exception {
-	ParseHeaders(reader, LOG_DETECT, 0);
+	ParseHeaders(reader, Loggers.LOG_DETECT, 0);
     }
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
-	ParseHeaders(reader, LOG_DETECT, verbose);
+	ParseHeaders(reader, Loggers.LOG_DETECT, verbose);
     }
     public void ParseHeaders(CSVReader reader, int log_req, int verbose)
 	    throws Exception {
@@ -150,19 +136,19 @@ public class ECUxDataset extends Dataset {
 	  DETECT       all ok
 	  not DETECT   DETECT and equals ok
 	*/
-	if(log_req != LOG_DETECT && log_detected != LOG_UNKNOWN) {
+	if(log_req != Loggers.LOG_DETECT && log_detected != Loggers.LOG_UNKNOWN) {
             if(log_req != log_detected)
 		throw new Exception(log_req + "!=" + log_detected);
 	}
 
-	int log_use = (log_req==LOG_DETECT)?log_detected:log_req;
+	int log_use = (log_req==Loggers.LOG_DETECT)?log_detected:log_req;
 
 	if (verbose>0)
 	    System.out.printf("Using %d\n", log_use);
 
 	this.time_ticks_per_sec = 1;
 	switch(log_use) {
-	    case LOG_VCDS:
+	    case Loggers.LOG_VCDS:
 		String[] e,b,g,h2;
 					// 1: date read already during detect
 		e = reader.readNext();	// 2: ECU type
@@ -213,26 +199,23 @@ public class ECUxDataset extends Dataset {
 		    // concat h1 and h2 if both are non zero length
 		    if(h[i].length()>0 && h2[i].length()>0)  h[i]+=" ";
 		    h[i]+=h2[i];
-		    if(h[i].matches("^Zeit$")) h[i]="TIME";
-		    // remap engine speed to "RPM'
-		    if(h[i].matches("^(Engine [Ss]peed|Motordrehzahl).*")) h[i]="RPM";
-		    // ignore weird letter case for throttle angle
-		    if(h[i].matches("^Throttle [Aa]ngle.*")) h[i]="Throttle Angle";
-		    // ignore weird spacing for MAF
-		    if(h[i].matches("^Mass [Aa]ir [Ff]low.*")) h[i]="MassAirFlow";
-		    if(h[i].matches("^Mass Flow$")) h[i]="MassAirFlow";
-		    if(h[i].matches("^Ign timing.*")) h[i]="Ignition Timing Angle";
 		    // copy header from u if this h is empty
 		    if(h[i].length()==0) h[i]=u[i];
+		}
+
+		Loggers.processAliases(h, log_use);
+
+		for(int i=0;i<h.length;i++) {
 		    // blacklist Group 24 Accelerator position, it has max of 80%?
 		    if(g[i].matches("^Group 24.*") && h[i].equals("Accelerator position"))
 			h[i]=("Accelerator position (G024)");
 		    if (verbose>0)
 			System.out.printf("out %d (g:h:h2:[u]): '%s' '%s' [%s]\n", i, g[i], h[i], h2[i], u[i]);
 		}
+
 		break;
-	    case LOG_ZEITRONIX:
-		if (log_detected == LOG_ZEITRONIX) {
+	    case Loggers.LOG_ZEITRONIX:
+		if (log_detected == Loggers.LOG_ZEITRONIX) {
 		    // we detected zeitronix header, strip it
 		    reader.readNext();     // Date exported
 		    do {
@@ -245,41 +228,28 @@ public class ECUxDataset extends Dataset {
 		// but asked us to treat it like a zeit log.
 
 		u = ParseUnits(h);
+
+		Loggers.processAliases(h, log_use);
+
+		// prepend Zeitronix
 		for(int i=0;i<h.length;i++) {
-		    if (verbose>0)
-			System.out.println("in : " + h[i] + " [" + u[i] + "]");
-		    if(h[i].matches(".*RPM$")) h[i]="RPM";
-		    if(h[i].matches(".*Boost$")) h[i]="Zeitronix Boost";
-		    if(h[i].matches(".*TPS$")) h[i]="Zeitronix TPS";
-		    if(h[i].matches(".*AFR$")) h[i]="Zeitronix AFR";
-		    if(h[i].matches(".*Lambda$")) h[i]="Zeitronix Lambda";
-		    if(h[i].matches(".*EGT$")) h[i]="Zeitronix EGT";
-		    if(h[i].equals("Time")) h[i]="Zeitronix Time";
+		    if (!h[i].equals("RPM")) h[i] = "Zeitronix" + h[i];
 		}
 		break;
-	    case LOG_ECUX:
+	    case Loggers.LOG_ECUX:
 		u = ParseUnits(h);
 		this.time_ticks_per_sec = 1000;
 
-		/* process aliases */
-		for(int i=0;i<h.length;i++) {
-		    h[i]=h[i].trim();
-		    if(h[i].matches("^BstActual$")) h[i]="BoostPressureActual";
-		    if(h[i].matches("^BstDesired$")) h[i]="BoostPressureDesired";
-		}
+		Loggers.processAliases(h, log_use);
 
 		break;
-	    case LOG_EVOSCAN:
+	    case Loggers.LOG_EVOSCAN:
 		u = new String[h.length]; // no units :/
-		for(int i=0;i<h.length;i++) {
-		    if(h[i].matches(".*RPM$")) h[i]="RPM";
-		    if(h[i].equals("LogEntrySeconds")) h[i]="TIME";
-		    if(h[i].equals("TPS")) h[i]="ThrottlePlateAngle";
-		    if(h[i].equals("APP")) h[i]="AccelPedalPosition";
-		    if(h[i].equals("IAT")) h[i]="IntakeAirTemperature";
-		}
+
+		Loggers.processAliases(h, log_use);
+
 		break;
-	    case LOG_ME7LOGGER:
+	    case Loggers.LOG_ME7LOGGER:
 		/* VARS */
 		do {
 		    v = reader.readNext();
@@ -329,23 +299,17 @@ public class ECUxDataset extends Dataset {
 		    if(u[i].matches("^-$")) u[i]="";
 		}
 
-		/* process aliases */
+		Loggers.processAliases(h, log_use);
+
+		/* prepend ME7L tag */
 		for(int i=0;i<h.length;i++) {
-		    h[i]=h[i].trim();
-		    if(h[i].matches("^Engine[Ss]peed.*")) h[i]="RPM";
-		    if(h[i].matches("^BoostPressureSpecified$")) h[i]="BoostPressureDesired";
-		    if(h[i].matches("^EngineLoadCorrectedSpecified$")) h[i]="EngineLoadCorrected";
-		    if(h[i].matches("^AtmosphericPressure$")) h[i]="BaroPressure";
-		    if(h[i].matches("^AirFuelRatioRequired$")) h[i]="AirFuelRatioDesired";
-		    if(h[i].matches("^InjectionTime$")) h[i]="EffInjectionTime";	// is this te or ti? Assume te?
-		    if(h[i].matches("^InjectionTimeBank2$")) h[i]="EffInjectionTimeBank2";	// is this te or ti? Assume te?
 		    if(h[i].length()==0) {
 		        if(v[i].length()>0) h[i]="ME7L " + v[i];
 		    }
 		}
 
 		break;
-	    case LOG_VOLVOLOGGER:
+	    case Loggers.LOG_VOLVOLOGGER:
 		u = new String[h.length];
 		v = new String[h.length];
 		final Pattern unitsRegEx =
@@ -361,12 +325,9 @@ public class ECUxDataset extends Dataset {
 			    if(v[i].length()>0) h[i]="ME7L " + v[i];
 			}
 		    }
-		    if(h[i].matches("^Time$")) h[i]="TIME";
-		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
-		    if(h[i].matches("^(Actual )?Boost Pressure$")) h[i]="BoostPressureActual";
-		    if(h[i].matches("^Desired Boost Pressure$")) h[i]="BoostPressureDesired";
-		    if(h[i].matches("^Mass Air Flow$")) h[i]="MAF";
 		}
+
+		Loggers.processAliases(h, log_use);
 
 		break;
 	    default:
@@ -374,10 +335,10 @@ public class ECUxDataset extends Dataset {
 		for(int i=0;i<h.length;i++) {
 		    if (verbose>0)
 			System.out.println("in : " + h[i] + " [" + u[i] + "]");
-		    if(h[i].matches("^Time$")) h[i]="TIME";
-		    if(h[i].matches("^Engine [Ss]peed.*")) h[i]="RPM";
-		    if(h[i].matches("^Mass air flow$")) h[i]="MassAirFlow";
 		}
+
+		Loggers.processAliases(h);
+
 		break;
 	}
 
@@ -405,7 +366,6 @@ public class ECUxDataset extends Dataset {
 	}
 	//System.exit(0);
 
-	this.logType=log_use;
 	DatasetId [] ids = new DatasetId[h.length];
 	for(int i=0; i<h.length; i++) {
 	    ids[i] = new DatasetId(h[i]);
@@ -416,7 +376,6 @@ public class ECUxDataset extends Dataset {
     }
 
     private DoubleArray drag (DoubleArray v) {
-
 	final double rho=1.293;	// kg/m^3 air, standard density
 
 	DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.c.Cd() *
@@ -1021,7 +980,7 @@ public class ECUxDataset extends Dataset {
     }
 
     public Filter getFilter() { return this.filter; }
-    // public void setFilter(Filter f) { this.filter=f; }
+    //public void setFilter(Filter f) { this.filter=f; }
     public Env getEnv() { return this.env; }
     //public void setEnv(Env e) { this.env=e; }
     public boolean useId2() { return this.env.prefs.getBoolean("altnames", false); }
