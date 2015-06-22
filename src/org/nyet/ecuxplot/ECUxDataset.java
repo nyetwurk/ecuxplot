@@ -12,7 +12,7 @@ import flanagan.interpolation.CubicSpline;
 
 import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
-import org.nyet.util.Files;
+import org.nyet.ecuxplot.Loggers.LoggerType;
 
 public class ECUxDataset extends Dataset {
     private Column rpm, pedal, throttle, gear, zboost;
@@ -69,27 +69,6 @@ public class ECUxDataset extends Dataset {
 	return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.HPTQMAW());
     }
 
-    private int detect(String [] h) {
-	h[0]=h[0].trim();
-	if(h[0].matches("VCDS")) return Loggers.LOG_VCDS;
-	if(h[0].matches("^.*(day|tag)$")) return Loggers.LOG_VCDS;
-	if(h[0].matches("^Filename:.*")) {
-	    if(Files.extension(h[0]).equals("zto") ||
-	       Files.extension(h[0]).equals("zdl") ||
-		h[0].matches(".*<unnamed file>$"))
-	    return Loggers.LOG_ZEITRONIX;
-	}
-	if(h[0].matches("^TIME$")) return Loggers.LOG_ECUX;
-
-	if(h[0].matches(".*ME7-Logger.*")) return Loggers.LOG_ME7LOGGER;
-
-	if(h[0].matches("^LogID$")) return Loggers.LOG_EVOSCAN;
-
-	if(h[0].matches("^Time\\s*\\(sec\\)$")) return Loggers.LOG_VOLVOLOGGER;
-
-	return Loggers.LOG_UNKNOWN;
-    }
-
     private String [] ParseUnits(String [] h) {
 	String [] u = new String[h.length];
 	for(int i=0;i<h.length;i++) {
@@ -106,15 +85,14 @@ public class ECUxDataset extends Dataset {
 	return u;
     }
     public void ParseHeaders(CSVReader reader) throws Exception {
-	ParseHeaders(reader, Loggers.LOG_DETECT, 0);
+	ParseHeaders(reader, LoggerType.LOG_DETECT, 0);
     }
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
-	ParseHeaders(reader, Loggers.LOG_DETECT, verbose);
+	ParseHeaders(reader, LoggerType.LOG_DETECT, verbose);
     }
-    public void ParseHeaders(CSVReader reader, int log_req, int verbose)
+    public void ParseHeaders(CSVReader reader, LoggerType log_req, int verbose)
 	    throws Exception {
-	if (log_req<0)
-	    throw new Exception(this.getFileId() + ": invalid log_req" + log_req);
+
 	String [] h,u,v=null;
 
         do {
@@ -126,7 +104,7 @@ public class ECUxDataset extends Dataset {
 		    System.out.println("h[" + i + "]: " + h[i]);
 	} while (h.length<1 || h[0].trim().length() == 0 || h[0].trim().matches("^#.+"));
 
-	int log_detected = detect(h);
+	LoggerType log_detected = Loggers.detect(h);
 
 	if (verbose>0)
 	    System.out.printf("Detected %d based on \"%s\"\n", log_detected, h[0]);
@@ -136,19 +114,19 @@ public class ECUxDataset extends Dataset {
 	  DETECT       all ok
 	  not DETECT   DETECT and equals ok
 	*/
-	if(log_req != Loggers.LOG_DETECT && log_detected != Loggers.LOG_UNKNOWN) {
+	if(log_req != LoggerType.LOG_DETECT && log_detected != LoggerType.LOG_ERR) {
             if(log_req != log_detected)
 		throw new Exception(log_req + "!=" + log_detected);
 	}
 
-	int log_use = (log_req==Loggers.LOG_DETECT)?log_detected:log_req;
+	LoggerType log_use = (log_req==LoggerType.LOG_DETECT)?log_detected:log_req;
 
 	if (verbose>0)
 	    System.out.printf("Using %d\n", log_use);
 
 	this.time_ticks_per_sec = 1;
 	switch(log_use) {
-	    case Loggers.LOG_VCDS:
+	    case LOG_VCDS:
 		String[] e,b,g,h2;
 					// 1: date read already during detect
 		e = reader.readNext();	// 2: ECU type
@@ -214,8 +192,8 @@ public class ECUxDataset extends Dataset {
 		}
 
 		break;
-	    case Loggers.LOG_ZEITRONIX:
-		if (log_detected == Loggers.LOG_ZEITRONIX) {
+	    case LOG_ZEITRONIX:
+		if (log_detected == LoggerType.LOG_ZEITRONIX) {
 		    // we detected zeitronix header, strip it
 		    reader.readNext();     // Date exported
 		    do {
@@ -236,20 +214,20 @@ public class ECUxDataset extends Dataset {
 		    if (!h[i].equals("RPM")) h[i] = "Zeitronix" + h[i];
 		}
 		break;
-	    case Loggers.LOG_ECUX:
+	    case LOG_ECUX:
 		u = ParseUnits(h);
 		this.time_ticks_per_sec = 1000;
 
 		Loggers.processAliases(h, log_use);
 
 		break;
-	    case Loggers.LOG_EVOSCAN:
+	    case LOG_EVOSCAN:
 		u = new String[h.length]; // no units :/
 
 		Loggers.processAliases(h, log_use);
 
 		break;
-	    case Loggers.LOG_ME7LOGGER:
+	    case LOG_ME7LOGGER:
 		/* VARS */
 		do {
 		    v = reader.readNext();
@@ -309,7 +287,7 @@ public class ECUxDataset extends Dataset {
 		}
 
 		break;
-	    case Loggers.LOG_VOLVOLOGGER:
+	    case LOG_VOLVOLOGGER:
 		u = new String[h.length];
 		v = new String[h.length];
 		final Pattern unitsRegEx =

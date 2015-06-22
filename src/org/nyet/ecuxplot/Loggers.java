@@ -1,15 +1,20 @@
 package org.nyet.ecuxplot;
 
+import org.nyet.util.Files;
+
 public class Loggers {
-    public static final int LOG_UNKNOWN = -2;
-    public static final int LOG_ERR = -1;
-    public static final int LOG_DETECT = 0;
-    public static final int LOG_ECUX = 1;
-    public static final int LOG_VCDS = 2;
-    public static final int LOG_ZEITRONIX = 3;
-    public static final int LOG_ME7LOGGER = 4;
-    public static final int LOG_EVOSCAN = 5;
-    public static final int LOG_VOLVOLOGGER = 6;
+
+    public static enum LoggerType {
+	LOG_UNKNOWN,
+	LOG_ERR,
+	LOG_DETECT,
+	LOG_ECUX,
+	LOG_VCDS,
+	LOG_ZEITRONIX,
+	LOG_ME7LOGGER,
+	LOG_EVOSCAN,
+	LOG_VOLVOLOGGER
+    }
 
     public static final String[] pedalnames = new String []
 		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position", "Pedal Position"};
@@ -76,7 +81,7 @@ public class Loggers {
 	{"^Mass air flow$", "MassAirFlow"}
     };
 
-    private static String[][] which(int logger) {
+    private static String[][] which(LoggerType logger) {
 	switch(logger) {
 	    case LOG_ECUX: return ECUX_aliases;
 	    case LOG_VCDS: return VCDS_aliases;
@@ -88,7 +93,7 @@ public class Loggers {
 	}
     }
 
-    public static void processAliases(String[] h, int logger) {
+    public static void processAliases(String[] h, LoggerType logger) {
 	processAliases(h, which(logger));
     }
 
@@ -104,4 +109,25 @@ public class Loggers {
 	    }
 	}
     }
+
+    public static LoggerType detect(String[] h) {
+ 	h[0]=h[0].trim();
+ 	if(h[0].matches("VCDS")) return LoggerType.LOG_VCDS;
+ 	if(h[0].matches("^.*(day|tag)$")) return LoggerType.LOG_VCDS;
+ 	if(h[0].matches("^Filename:.*")) {
+ 	    if(Files.extension(h[0]).equals("zto") ||
+ 	       Files.extension(h[0]).equals("zdl") ||
+ 		h[0].matches(".*<unnamed file>$"))
+ 	    return LoggerType.LOG_ZEITRONIX;
+ 	}
+ 	if(h[0].matches("^TIME$")) return LoggerType.LOG_ECUX;
+
+ 	if(h[0].matches(".*ME7-Logger.*")) return LoggerType.LOG_ME7LOGGER;
+
+ 	if(h[0].matches("^LogID$")) return LoggerType.LOG_EVOSCAN;
+
+ 	if(h[0].matches("^Time\\s*\\(sec\\)$")) return LoggerType.LOG_VOLVOLOGGER;
+
+ 	return LoggerType.LOG_UNKNOWN;
+     }
 }
