@@ -87,6 +87,7 @@ public class ECUxDataset extends Dataset {
     public void ParseHeaders(CSVReader reader) throws Exception {
 	ParseHeaders(reader, LoggerType.LOG_DETECT, 0);
     }
+    @Override
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
 	ParseHeaders(reader, LoggerType.LOG_DETECT, verbose);
     }
@@ -391,6 +392,7 @@ public class ECUxDataset extends Dataset {
 	return null;
     }
 
+    @Override
     public Column get(Comparable<?> id) {
 	try {
 	    return _get(id);
@@ -749,6 +751,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Calc LDR PID")) {
 	    final DoubleArray.TransferFunction fP =
 		new DoubleArray.TransferFunction() {
+		    @Override
 		    public final double f(double x, double y) {
 			if(Math.abs(x)<env.pid.P_deadband/100) return 0;
 			return x*env.pid.P;
@@ -756,6 +759,7 @@ public class ECUxDataset extends Dataset {
 	    };
 	    final DoubleArray.TransferFunction fD =
 		new DoubleArray.TransferFunction() {
+		    @Override
 		    public final double f(double x, double y) {
 			y=Math.abs(y);
 			if(y<3) return x*env.pid.D[0];
@@ -820,6 +824,7 @@ public class ECUxDataset extends Dataset {
 	return super.get(id);
     }
 
+    @Override
     protected boolean dataValid(int i) {
 	boolean ret = true;
 	if(this.filter==null) return ret;
@@ -875,6 +880,7 @@ public class ECUxDataset extends Dataset {
 	return ret;
     }
 
+    @Override
     protected boolean rangeValid(Range r) {
 	boolean ret = true;
 	if(this.filter==null) return ret;
@@ -903,6 +909,7 @@ public class ECUxDataset extends Dataset {
 	return ret;
     }
 
+    @Override
     public void buildRanges() {
 	super.buildRanges();
         ArrayList<Dataset.Range> ranges = this.getRanges();
@@ -961,5 +968,6 @@ public class ECUxDataset extends Dataset {
     //public void setFilter(Filter f) { this.filter=f; }
     public Env getEnv() { return this.env; }
     //public void setEnv(Env e) { this.env=e; }
+    @Override
     public boolean useId2() { return this.env.prefs.getBoolean("altnames", false); }
 }

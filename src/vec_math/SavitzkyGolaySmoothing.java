@@ -128,6 +128,7 @@ public class SavitzkyGolaySmoothing extends LinearSmoothing
 	}
     }
 
+    @Override
     protected void setType()
     {
 	type = FIR;

@@ -15,11 +15,13 @@ public class Dataset {
 	public String id2;
 	public String unit;
 
+	@Override
 	public int compareTo(Object o) {
 	    DatasetId id = (DatasetId) o;
 	    return this.id.compareTo(id.id);
 	}
 
+	@Override
 	public String toString() { return this.id; }
 	public DatasetId(String s) { this.id=s; }
 	public DatasetId(String s, String id2, String unit) {
@@ -44,6 +46,7 @@ public class Dataset {
 	public Range(int s) { this(s,s); }
 	public Range() { this(0,0); }
 	public int size() { return this.end-this.start+1; }
+	@Override
 	public String toString() {
 	    return String.format("[%d:%d]", start, end);
 	}
@@ -171,6 +174,7 @@ public class Dataset {
 		    && this.id_cache != null && this.id_cache.id2 != null);
 	}
 	
+	@Override
 	public String toString() {
 	    String ret = this.useId2()?this.id_cache.id2:this.s;
 
@@ -196,6 +200,7 @@ public class Dataset {
 	public Integer getRange() { return this.range; }
 	public void setRange(int r) { this.range=r; }
 	
+	@Override
 	public int compareTo(Object o) {
 	    if(o instanceof Key) {
 		final Key k = (Key)o;
@@ -210,6 +215,7 @@ public class Dataset {
 	    }
 	    throw new ClassCastException("Not a Key or a String!");
 	}
+	@Override
 	public boolean equals(Object o) {
 	    if(o==null) return false;
 	    if(o instanceof Key) {
@@ -220,7 +226,7 @@ public class Dataset {
 	    }
 	    // if passed a string, only check the "s" portion
 	    if(o instanceof String) {
-		return this.s.equals((String)o);
+		return this.s.equals(o);
 	    }
 	    throw new ClassCastException(o + ": Not a Key or a String!");
 	}
@@ -273,7 +279,7 @@ public class Dataset {
     }
 
     public Column get(int id) {
-	return (Column) this.columns.get(id);
+	return this.columns.get(id);
     }
 
     public Column get(Dataset.Key key) {

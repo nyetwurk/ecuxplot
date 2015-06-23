@@ -1,10 +1,10 @@
 package org.nyet.ecuxplot;
 
 import java.lang.reflect.*;
-
 import java.util.prefs.Preferences;
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 
 public class PreferencesEditor extends JPanel {
@@ -56,7 +56,7 @@ public class PreferencesEditor extends JPanel {
 
     protected void addPairs(String [][] pairs, int [] fieldSizes) {
         for(int i=0;i<pairs.length; i++) {
-            this.prefsPanel.add(new JLabel(pairs[i][0], JLabel.TRAILING));
+            this.prefsPanel.add(new JLabel(pairs[i][0], SwingConstants.TRAILING));
             try {
 		Field fld = this.getClass().getField(pairs[i][1]);
 		Container tf;
@@ -100,6 +100,7 @@ public class PreferencesEditor extends JPanel {
 
 	this.jbtnOK = new JButton("OK");
 	this.jbtnOK.addActionListener(new ActionListener() {
+	    @Override
 	    public void actionPerformed(ActionEvent event) {
 		ok = true;
 		Process(event);
@@ -111,6 +112,7 @@ public class PreferencesEditor extends JPanel {
 	panel.add(Box.createHorizontalGlue());
 	JButton jbtn = new JButton("Apply");
 	jbtn.addActionListener(new ActionListener() {
+	    @Override
 	    public void actionPerformed(ActionEvent event) {
 		ok = true;
 		Process(event);
@@ -122,6 +124,7 @@ public class PreferencesEditor extends JPanel {
 	    panel.add(Box.createHorizontalGlue());
 	    jbtn = new JButton("Defaults");
 	    jbtn.addActionListener(new ActionListener() {
+		@Override
 		public void actionPerformed(ActionEvent event) {
 		    setDefaults();
 		}
@@ -132,6 +135,7 @@ public class PreferencesEditor extends JPanel {
 	panel.add(Box.createHorizontalGlue());
 	jbtn = new JButton("Cancel");
 	jbtn.addActionListener(new ActionListener() {
+	    @Override
 	    public void actionPerformed(ActionEvent event) {
 		ok = false;
 		dialog.setVisible(false);

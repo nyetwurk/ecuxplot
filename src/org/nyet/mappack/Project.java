@@ -146,6 +146,7 @@ public class Project {
 	//Parse.buffer(b, this.remaining);	// unk
     }
 
+    @Override
     public String toString () {
 	String out ="project: '" + name + "': (" + version + ") - " + numMaps + " maps\n";
 	out += "  h: " + Arrays.toString(header) + "\n";

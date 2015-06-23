@@ -32,9 +32,13 @@ public class XmlString implements CharSequence, Appendable {
     public XmlString(int i, String s) { this(); this.indent(i); this.append(s); }
 
     // CharSequence methods
+    @Override
     public String toString() { return this.buf.toString(); }
+    @Override
     public char charAt(int index) { return this.buf.charAt(index); }
+    @Override
     public int length() { return this.buf.length(); }
+    @Override
     public CharSequence subSequence(int start, int end) {
 	return this.buf.subSequence(start, end);
     }
@@ -60,8 +64,11 @@ public class XmlString implements CharSequence, Appendable {
 	return this.append(String.format("%s>%s</%s", tag, v, tag));
     }
 
+    @Override
     public Appendable append(char c) { return this.buf.append(c); }
+    @Override
     public Appendable append(CharSequence cs, int start, int end) { return this.append(cs.subSequence(start,end)); }
+    @Override
     public Appendable append(CharSequence cs) { return this.append(cs.toString()); }
     public Appendable append(String s) {
 	this.doIndent();

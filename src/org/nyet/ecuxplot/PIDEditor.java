@@ -2,6 +2,7 @@ package org.nyet.ecuxplot;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 
 public class PIDEditor extends PreferencesEditor {
@@ -22,6 +23,7 @@ public class PIDEditor extends PreferencesEditor {
     private JTextField D2; // 500
     private JTextField D3; // 700
 
+    @Override
     protected void Process(ActionEvent event) {
 	this.pid.time_constant = Double.valueOf(this.time_constant.getText());
 	this.pid.P_deadband = Double.valueOf(this.P_deadband.getText());
@@ -40,27 +42,27 @@ public class PIDEditor extends PreferencesEditor {
 
 	JPanel pp = this.getPrefsPanel();
 
-	pp.add(new JLabel(" Time constant (s)", JLabel.TRAILING));
+	pp.add(new JLabel(" Time constant (s)", SwingConstants.TRAILING));
 	this.time_constant = new JTextField(10);
 	pp.add(this.time_constant);
 
-	pp.add(new JLabel(" P deadband (mBar)", JLabel.TRAILING));
+	pp.add(new JLabel(" P deadband (mBar)", SwingConstants.TRAILING));
 	this.P_deadband = new JTextField(10);
 	pp.add(this.P_deadband);
 
-	pp.add(new JLabel(" I limiter (%)", JLabel.TRAILING));
+	pp.add(new JLabel(" I limiter (%)", SwingConstants.TRAILING));
 	this.I_limit = new JTextField(10);
 	pp.add(this.I_limit);
 
-	pp.add(new JLabel(" P (%/100mBar)", JLabel.TRAILING));
+	pp.add(new JLabel(" P (%/100mBar)", SwingConstants.TRAILING));
 	this.P = new JTextField(10);
 	pp.add(this.P);
 
-	pp.add(new JLabel(" I (%/100mBar)", JLabel.TRAILING));
+	pp.add(new JLabel(" I (%/100mBar)", SwingConstants.TRAILING));
 	this.I = new JTextField(10);
 	pp.add(this.I);
 
-	pp.add(new JLabel(" D (%/100mBar)", JLabel.TRAILING));
+	pp.add(new JLabel(" D (%/100mBar)", SwingConstants.TRAILING));
 
 	JPanel pd = new JPanel();
 	pd.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
@@ -79,6 +81,7 @@ public class PIDEditor extends PreferencesEditor {
 		6, 2, 6, 6, 6, 6);
     }
 
+    @Override
     public void updateDialog() {
 	this.time_constant.setText("" + this.pid.time_constant);
 	this.P_deadband.setText("" + this.pid.P_deadband);

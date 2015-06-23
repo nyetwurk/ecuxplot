@@ -47,6 +47,7 @@ public class MapData {
     public long getMaximum() { return this.maximum & widthmask; }
     public long getMinimum() { return this.minimum & widthmask; }
     public Double[][] get() { return this.data; }
+    @Override
     public String toString() {
 	String[] rows = new String[data.length];
 	for(int i=0;i<data.length;i++) {

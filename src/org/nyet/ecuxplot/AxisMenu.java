@@ -317,6 +317,7 @@ public class AxisMenu extends JMenu {
     // end constructors
 
     public Component add(JMenu item) {return add(item, false);}
+    @Override
     public Component add(Component item) {return add(item, false);}
     private Component add(Component item, boolean force) {
 	if (this.more==null && item instanceof JSeparator) {

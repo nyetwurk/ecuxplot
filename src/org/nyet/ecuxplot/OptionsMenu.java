@@ -150,6 +150,7 @@ public final class OptionsMenu extends JMenu {
     }
 
     private class LoadPresetAction implements ActionListener {
+	@Override
 	public void actionPerformed(ActionEvent event) {
 	    String s = event.getActionCommand();
 	    if(!s.equals("Undo")) {
@@ -163,6 +164,7 @@ public final class OptionsMenu extends JMenu {
     }
 
     private class LoadAllPresetsAction implements ActionListener {
+	@Override
 	public void actionPerformed(ActionEvent event) {
 	    ArrayList<String> list = new
 		ArrayList<String>(Arrays.asList(ECUxPreset.getPresets()));
@@ -179,6 +181,7 @@ public final class OptionsMenu extends JMenu {
 	    ""
 	);
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 	    String s = event.getActionCommand();
 	    if(s.equals("Restore Defaults")) {
@@ -207,6 +210,7 @@ public final class OptionsMenu extends JMenu {
     }
 
     private class DeletePresetAction implements ActionListener {
+	@Override
 	public void actionPerformed(ActionEvent event) {
 	    String s = event.getActionCommand();
 	    try {

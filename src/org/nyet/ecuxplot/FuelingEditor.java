@@ -20,6 +20,7 @@ public class FuelingEditor extends PreferencesEditor {
     public JTextField cylinders;
     public JTextField turbos;
 
+    @Override
     protected void Process(ActionEvent event) {
 	this.fueling.MAF(Double.valueOf(this.MAF.getText()));
 	updateMAFCorrection();
@@ -53,6 +54,7 @@ public class FuelingEditor extends PreferencesEditor {
 	this.MAFCorrection.setText(getMAFCorrection());
     }
 
+    @Override
     public void updateDialog() {
 	this.MAF.setText("" + this.fueling.MAF());
 	updateMAFCorrection();

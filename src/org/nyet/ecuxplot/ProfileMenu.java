@@ -111,6 +111,7 @@ public final class ProfileMenu extends JMenu {
     private class LoadProfileAction implements ActionListener {
 	private File dir;
 	public LoadProfileAction(File dir) {this.dir=dir;}
+	@Override
 	public void actionPerformed(ActionEvent event) {
 	    ProfileMenu pm = ProfileMenu.this;
 	    try {
@@ -131,6 +132,7 @@ public final class ProfileMenu extends JMenu {
     private class SaveProfileAction implements ActionListener {
 	private File dir;
 	public SaveProfileAction(File dir) {this.dir=dir;}
+	@Override
 	public void actionPerformed(ActionEvent event) {
 	    String prof = event.getActionCommand();
 	    boolean make = false;

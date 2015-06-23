@@ -27,6 +27,7 @@ public class ConstantsEditor extends PreferencesEditor {
 	{"Driveline loss (%)", "driveline_loss"},
     };
 
+    @Override
     protected void Process(ActionEvent event) {
 	processPairs(this.c, pairs, Double.class);
 	// override using string method
@@ -39,6 +40,7 @@ public class ConstantsEditor extends PreferencesEditor {
 	this.c = c;
     }
 
+    @Override
     public void updateDialog() {
 	updateDialog(this.c, pairs);
 	// override using string method

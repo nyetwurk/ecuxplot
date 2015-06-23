@@ -55,6 +55,7 @@ public class FileDropListener implements DropTargetListener {
      * http://stackoverflow.com/questions/1697936/java-drag-and-drop-on-mac-os-x
      * Only mildly refactored.
      */
+    @Override
     public void drop(DropTargetDropEvent dropEvent) {
         try {
 

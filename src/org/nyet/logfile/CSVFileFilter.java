@@ -3,6 +3,7 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
 public class CSVFileFilter extends FileFilter {
+    @Override
     public String getDescription() {return "CSV Files";};
     public static String getExtension(File f) {
        String ext = null;
@@ -14,6 +15,7 @@ public class CSVFileFilter extends FileFilter {
 	}
 	return ext;
     }
+    @Override
     public boolean accept(File f) {
 	if(f.isDirectory())
 	    return true;

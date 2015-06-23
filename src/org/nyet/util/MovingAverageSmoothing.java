@@ -15,5 +15,6 @@ public class MovingAverageSmoothing extends LinearSmoothing
 	setType();
     }
 
+    @Override
     protected void setType() { this.type = FIR; }
 }

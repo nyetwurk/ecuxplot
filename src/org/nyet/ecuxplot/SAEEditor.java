@@ -18,6 +18,7 @@ public class SAEEditor extends PreferencesEditor {
     public JTextField humidity;
     public JLabel correction;
 
+    @Override
     protected void Process(ActionEvent event) {
 	this.s.temperature(Double.valueOf(this.temperature.getText()));
 	this.s.altitude(Double.valueOf(this.altitude.getText()));
@@ -46,6 +47,7 @@ public class SAEEditor extends PreferencesEditor {
 	this.correction.setText(getCorrection());
     }
 
+    @Override
     public void updateDialog() {
 	this.temperature.setText("" + this.s.temperature());
 	this.altitude.setText("" + this.s.altitude());

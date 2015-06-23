@@ -117,6 +117,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	this.dataset.clear();
     }
 
+    @Override
     public void actionPerformed(ActionEvent event) {
 	if(event.getActionCommand().equals("Apply")) {
 	    this.dataset.setStart(Integer.valueOf(this.start.getText()));
@@ -158,6 +159,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     }
 
     // cleanup
+    @Override
     public void dispose() {
 	putWindowSize();
 	putWindowLocation();

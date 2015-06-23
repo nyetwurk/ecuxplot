@@ -157,6 +157,7 @@ public class Parser extends MMapFile {
 	projects.add(p);
     }
 
+    @Override
     public String toString() {
 	String out="signature: " + signature + "\n";
 	out += "filename: " + filename + "\n";

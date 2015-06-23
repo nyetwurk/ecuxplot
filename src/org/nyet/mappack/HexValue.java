@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 
 public class HexValue implements Comparable<Object> {
     public int v;
+    @Override
     public String toString() { return String.format("0x%x", v); }
     public HexValue(int vv) { this.v=vv; }
     public HexValue(ByteBuffer b) { this.v = b.getInt(); }
@@ -23,6 +24,7 @@ public class HexValue implements Comparable<Object> {
 
     public boolean equals(HexValue v) { return (v.v==this.v); }
     public boolean equals(int v) { return (v==this.v); }
+    @Override
     public int compareTo(Object o) {
 	return (new Integer(v).compareTo(((HexValue)o).v));
     }

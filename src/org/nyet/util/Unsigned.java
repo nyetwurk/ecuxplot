@@ -40,7 +40,7 @@ public class Unsigned {
     // ---------------------------------------------------------------
 
     public static long getUnsignedInt (ByteBuffer bb) {
-	    return ((long)bb.getInt() & 0xffffffffL);
+	    return (bb.getInt() & 0xffffffffL);
     }
 
     public static void putUnsignedInt (ByteBuffer bb, long val) {
@@ -48,7 +48,7 @@ public class Unsigned {
     }
 
     public static long getUnsignedInt (ByteBuffer bb, int position) {
-	    return ((long)bb.getInt (position) & 0xffffffffL);
+	    return (bb.getInt (position) & 0xffffffffL);
     }
 
     public static void putUnsignedInt (ByteBuffer bb, int position, long val) {

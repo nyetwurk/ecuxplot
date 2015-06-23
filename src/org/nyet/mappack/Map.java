@@ -17,11 +17,13 @@ public class Map implements Comparable<Object> {
 	public String[] legend;
 	public Enm(ByteBuffer b) { enm=b.getInt(); }
 	public Enm(int enm) { this.enm=enm; }
+	@Override
 	public String toString() {
 	    if(enm<0 || enm>legend.length-1)
 		return String.format("(len %d) %x", legend.length, enm);
 	    return legend[enm];
 	}
+	@Override
 	public int compareTo(Object o) {
 	    return (new Integer(enm).compareTo(((Enm)o).enm));
 	}
@@ -114,7 +116,9 @@ public class Map implements Comparable<Object> {
 	public int y;
 	public Dimension(int xx, int yy) { x = xx; y = yy; }
 	public Dimension(ByteBuffer b) { x = b.getInt(); y = b.getInt(); }
+	@Override
 	public String toString() { return x + "x" + y; }
+	@Override
 	public int compareTo(Object o) {
 	    return (new Integer(areaOf())).compareTo(((Dimension)o).areaOf());
 	}
@@ -131,6 +135,7 @@ public class Map implements Comparable<Object> {
 	public int precision=0;
 	public boolean sign=false;
 
+	@Override
 	public String toString() {
 	    return "(" + description + ")/" + units + " -  f/o: " + factor + "/" + offset;
 	}
@@ -285,6 +290,7 @@ public class Map implements Comparable<Object> {
 	    isZ = true;
 	}
 
+	@Override
 	public String toString() {
 	    String out = super.toString() + "\n";
 	    out += "\t   ds: " + datasource + "\n";
@@ -586,6 +592,7 @@ public class Map implements Comparable<Object> {
     public static final int XDF_MaxDigits = 6;	// tunerpro doesn't like > 6 digits
     public static final String XDF_LBL = "\t%06d %-17s=";
 
+    @Override
     public String toString() { return this.toStringDump(); }
     public String toString(int format, ByteBuffer image)
 	throws Exception {
@@ -926,6 +933,7 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
     }
 
     // Sort by map address and index
+    @Override
     @SuppressWarnings("unused")
     public int compareTo(Object o) {
 	Map them = (Map)o;

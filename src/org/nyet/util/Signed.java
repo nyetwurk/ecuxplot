@@ -40,7 +40,7 @@ public class Signed {
     // ---------------------------------------------------------------
 
     public static long getSignedInt (ByteBuffer bb) {
-	    return ((long)bb.getInt() & 0xffffffffL);
+	    return (bb.getInt() & 0xffffffffL);
     }
 
     public static void putSignedInt (ByteBuffer bb, long val) {
@@ -48,7 +48,7 @@ public class Signed {
     }
 
     public static long getSignedInt (ByteBuffer bb, int position) {
-	    return ((long)bb.getInt (position) & 0xffffffffL);
+	    return (bb.getInt (position) & 0xffffffffL);
     }
 
     public static void putSignedInt (ByteBuffer bb, int position, long val) {

@@ -42,5 +42,6 @@ public class Preset {
 
     // misc
     protected String name() { return this.prefs.name(); }
+    @Override
     public String toString() { return this.prefs.name(); }
 }

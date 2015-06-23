@@ -24,6 +24,7 @@ public class FilterEditor extends PreferencesEditor {
     public JTextField HPTQMAW;
     public JTextField ZeitMAW;
 
+    @Override
     protected void Process(ActionEvent event) {
 	processPairs(this.filter, pairs, Integer.class);
 	super.Process(event);
@@ -47,6 +48,7 @@ public class FilterEditor extends PreferencesEditor {
 	this.filter = filter;
     }
 
+    @Override
     public void updateDialog()
     {
 	updateDialog(this.filter, pairs);

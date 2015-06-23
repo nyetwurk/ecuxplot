@@ -8,6 +8,7 @@ public class CSVRow extends ArrayList<String> {
      */
     private static final long serialVersionUID = 1L;
 
+    @Override
     public String toString() {
 	return "\"" + org.nyet.util.Strings.join("\",\"", this) + "\"";
     }
@@ -19,6 +20,7 @@ public class CSVRow extends ArrayList<String> {
 	}
     }
 
+    @Override
     public boolean add(String s) {
 	if (s.length()==0) s="-";
 	return super.add(s);

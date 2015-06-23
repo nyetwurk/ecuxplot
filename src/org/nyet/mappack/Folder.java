@@ -41,8 +41,10 @@ public class Folder implements Comparable<Object> {
 	}
     }
 
+    @Override
     public String toString() { return this.name; };
 
+    @Override
     public int compareTo(Object o) {
 	if (this.name.equals(o.toString())) return 0;
 	if (this.name.equals("My maps")) return -1;

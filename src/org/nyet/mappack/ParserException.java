@@ -25,6 +25,7 @@ public class ParserException extends Exception {
 	this.o=o;
     }
 
+    @Override
     public String getMessage()
     {
 	return String.format("%s: obj=%s @ 0x%x(%d):\n  %s", super.getMessage(),

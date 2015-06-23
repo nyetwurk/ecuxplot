@@ -35,6 +35,7 @@ public class ECUxPreset extends Preset {
 	return p;
     }
 
+    @Override
     public Preferences getPreferences() {
         return getPreferencesStatic();
     }
@@ -99,6 +100,7 @@ public class ECUxPreset extends Preset {
     public void scatter(Boolean scatter) { this.prefs.putBoolean("scatter", scatter); }
 
     // misc
+    @Override
     public String toString() {
 	return this.prefs.name() + ": \"" +
 	    this.xkey() + "\" vs \"" +

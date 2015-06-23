@@ -114,6 +114,7 @@ public class DoubleArray
     }
 
     private static TransferFunction fAdd = new TransferFunction() {
+	@Override
 	public final double f(double x, double y) {
 	    return x+y;
     }};
@@ -121,6 +122,7 @@ public class DoubleArray
     public DoubleArray add(DoubleArray d) { return func(fAdd, d); }
 
     private static TransferFunction fSub = new TransferFunction() {
+	@Override
 	public final double f(double x, double y) {
 	    return x-y;
     }};
@@ -128,6 +130,7 @@ public class DoubleArray
     public DoubleArray sub(DoubleArray d) { return func(fSub, d); }
 
     private static TransferFunction fMult = new TransferFunction() {
+	@Override
 	public final double f(double x, double y) {
 	    return x*y;
     }};
@@ -135,6 +138,7 @@ public class DoubleArray
     public DoubleArray mult(DoubleArray d) { return func(fMult, d.toArray()); }
 
     private static TransferFunction fDiv = new TransferFunction() {
+	@Override
 	public final double f(double x, double y) {
 	    return x/y;
     }};
@@ -142,6 +146,7 @@ public class DoubleArray
     public DoubleArray div(DoubleArray d) { return func(fDiv, d); }
 
     private static TransferFunction fPow = new TransferFunction() {
+	@Override
 	public final double f(double x, double y) {
 	    return Math.pow(x,y);
     }};

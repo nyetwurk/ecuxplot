@@ -37,6 +37,7 @@ public class AboutPanel extends JPanel implements ActionListener {
 	this.add(url, BorderLayout.SOUTH);
     }
 
+    @Override
     public void actionPerformed(ActionEvent event) {
 	if("Homepage".equals(event.getActionCommand())) {
 	    final String url = "http://nyet.org/cars/ECUxPlot";

@@ -20,6 +20,7 @@ public class GenericFileFilter extends FileFilter implements java.io.FileFilter 
 	this.allowDir=false;
     }
 
+    @Override
     public String getDescription() {return this.description;};
     public static String getExtension(File f) {
        String ext = null;
@@ -31,6 +32,7 @@ public class GenericFileFilter extends FileFilter implements java.io.FileFilter 
 	}
 	return ext;
     }
+    @Override
     public boolean accept(File f) {
 	if(f.isDirectory())
 	    return this.allowDir;

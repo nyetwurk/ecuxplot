@@ -237,6 +237,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	WaitCursor.stopWaitCursor(this);
     }
 
+    @Override
     public void loadFiles(List<File> files) {
 	WaitCursor.startWaitCursor(this);
 	for(File f : files) {
@@ -246,6 +247,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	WaitCursor.stopWaitCursor(this);
     }
 
+    @Override
     public void loadFile(File file) { loadFile(file, false); }
     private void loadFile(File file, boolean replace) {
 	WaitCursor.startWaitCursor(this);
@@ -347,6 +349,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	return where;
     }
 
+    @Override
     public void actionPerformed(ActionEvent event) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	if(source.getText().equals("Quit")) {
@@ -763,6 +766,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	yAxis[1].setOnlySelected(p.ykeys(1));
     }
 
+    @Override
     public void actionPerformed(ActionEvent event, Comparable<?> parentId) {
 	AbstractButton source = (AbstractButton) (event.getSource());
 	// System.out.println(source.getText() + ":" + parentId);
@@ -788,6 +792,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	} catch (Exception e) {}
     }
 
+    @Override
     public void windowClosing(java.awt.event.WindowEvent we) {
 	if(exitOnClose) exitApp();
     }
@@ -863,6 +868,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
+	    @Override
 	    public void run() {
 		final Options o = new Options(args);
 
@@ -872,10 +878,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 		if(app!=null) {
 		    app.addApplicationListener(new ApplicationAdapter() {
+			@Override
 			public void handleOpenFile(ApplicationEvent evt) {
 			    final String file = evt.getFilename();
 			    plot.loadFile(new File(file));
 			}
+			@Override
 			public void handleQuit(ApplicationEvent evt) {
 			    plot.prefsPutWindowSize();
 			    evt.setHandled(true);
