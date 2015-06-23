@@ -19,7 +19,7 @@ public class Filter {
     private static final int defaultHPTQMAW = 5; // hp/tq moving average window
     private static final int defaultZeitMAW = 30; // zeitronix MAW
 
-    private Preferences prefs;
+    private final Preferences prefs;
 
     public Filter (Preferences prefs) {
 	this.prefs = prefs.node(PREFS_TAG);

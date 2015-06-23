@@ -13,7 +13,7 @@ public class Constants {
     private static final double defaultStatic_loss=0;
     private static final double defaultDriveline_loss=.25;
 
-    private Preferences prefs;
+    private final Preferences prefs;
 
     public Constants(Preferences prefs) {
 	this.prefs = prefs.node(PREFS_TAG);

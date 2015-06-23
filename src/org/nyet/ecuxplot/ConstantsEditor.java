@@ -11,7 +11,7 @@ public class ConstantsEditor extends PreferencesEditor {
      */
     private static final long serialVersionUID = 1L;
 
-    private Constants c;
+    private final Constants c;
 
     public JTextField mass;
     public JTextField rpm_per_mph;

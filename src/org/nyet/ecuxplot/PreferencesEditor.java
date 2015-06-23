@@ -13,23 +13,23 @@ public class PreferencesEditor extends JPanel {
      */
     private static final long serialVersionUID = 1L;
     private JDialog dialog;
-    private JButton jbtnOK;
+    private final JButton jbtnOK;
     private boolean ok;
     private ECUxPlot eplot;
 
-    private JPanel prefsPanel;
+    private final JPanel prefsPanel;
 
-    private Preferences prefs;
+    private final Preferences prefs;
 
     protected void Process(ActionEvent event) {
-	if(eplot!=null) eplot.rebuild();
+	if(this.eplot!=null) this.eplot.rebuild();
     }
 
     private void setDefaults() {
 	if(this.prefs!=null) {
 	    try { this.prefs.clear(); }
-	    catch (Exception e) { }
-	    if(eplot!=null) eplot.rebuild();
+	    catch (final Exception e) { }
+	    if(this.eplot!=null) this.eplot.rebuild();
 	    updateDialog();
 	}
     }
@@ -40,15 +40,15 @@ public class PreferencesEditor extends JPanel {
 
     // set settings from the contents of the text fields
     protected void processPairs(Object o, String [][] pairs, Class<?> c) {
-        for(int i=0;i<pairs.length; i++) {
+        for (final String[] pair : pairs) {
 	    try {
 		// o."method"("class".valueOf(this."field".getText()));
-		Method m = o.getClass().getMethod(pairs[i][1], c);
-		Method convert = c.getMethod("valueOf", String.class);
-		Field fld = this.getClass().getField(pairs[i][1]);
-		JTextField f = (JTextField) fld.get(this);
+		final Method m = o.getClass().getMethod(pair[1], c);
+		final Method convert = c.getMethod("valueOf", String.class);
+		final Field fld = this.getClass().getField(pair[1]);
+		final JTextField f = (JTextField) fld.get(this);
 		m.invoke(o, convert.invoke(null,f.getText()));
-	    } catch (Exception e) {
+	    } catch (final Exception e) {
 		e.printStackTrace();
 	    }
 	}
@@ -58,7 +58,7 @@ public class PreferencesEditor extends JPanel {
         for(int i=0;i<pairs.length; i++) {
             this.prefsPanel.add(new JLabel(pairs[i][0], SwingConstants.TRAILING));
             try {
-		Field fld = this.getClass().getField(pairs[i][1]);
+		final Field fld = this.getClass().getField(pairs[i][1]);
 		Container tf;
 		if(fieldSizes == null || fieldSizes.length<i+1)
 		    tf = new JTextField(10);
@@ -68,7 +68,7 @@ public class PreferencesEditor extends JPanel {
 		    tf = new JLabel("");
                 fld.set(this, tf);
                 this.prefsPanel.add(tf);
-            } catch (Exception e) {
+            } catch (final Exception e) {
 		e.printStackTrace();
             }
         }
@@ -93,7 +93,7 @@ public class PreferencesEditor extends JPanel {
 		pairs.length, 2, 6, 6, 6, 6);
 	}
 
-	JPanel panel = new JPanel();
+	final JPanel panel = new JPanel();
 
 	panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
 	panel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
@@ -102,9 +102,9 @@ public class PreferencesEditor extends JPanel {
 	this.jbtnOK.addActionListener(new ActionListener() {
 	    @Override
 	    public void actionPerformed(ActionEvent event) {
-		ok = true;
+		PreferencesEditor.this.ok = true;
 		Process(event);
-		dialog.setVisible(false);
+		PreferencesEditor.this.dialog.setVisible(false);
 	    }
 	});
 	panel.add(this.jbtnOK);
@@ -114,7 +114,7 @@ public class PreferencesEditor extends JPanel {
 	jbtn.addActionListener(new ActionListener() {
 	    @Override
 	    public void actionPerformed(ActionEvent event) {
-		ok = true;
+		PreferencesEditor.this.ok = true;
 		Process(event);
 	    }
 	});
@@ -137,8 +137,8 @@ public class PreferencesEditor extends JPanel {
 	jbtn.addActionListener(new ActionListener() {
 	    @Override
 	    public void actionPerformed(ActionEvent event) {
-		ok = false;
-		dialog.setVisible(false);
+		PreferencesEditor.this.ok = false;
+		PreferencesEditor.this.dialog.setVisible(false);
 	    }
 	});
 	panel.add(jbtn);
@@ -149,14 +149,14 @@ public class PreferencesEditor extends JPanel {
     // set the text fields according to what the current settings are
     protected void updateDialog() { }
     protected void updateDialog(Object o, String [][] pairs) {
-        for(int i=0;i<pairs.length; i++) {
+        for (final String[] pair : pairs) {
 	    try {
 		// o."field".setText("" + o."method"())
-		Field fld = this.getClass().getField(pairs[i][1]);
-		JTextField f = (JTextField) fld.get(this);
-		Method m = o.getClass().getMethod(pairs[i][1]);
+		final Field fld = this.getClass().getField(pair[1]);
+		final JTextField f = (JTextField) fld.get(this);
+		final Method m = o.getClass().getMethod(pair[1]);
 		f.setText("" + m.invoke(o));
-	    } catch (Exception e) {
+	    } catch (final Exception e) {
 		e.printStackTrace();
 	    }
 	}
@@ -172,20 +172,20 @@ public class PreferencesEditor extends JPanel {
 	    getAncestorOfClass(Frame.class, parent);
 
 	if(this.dialog == null || this.dialog.getOwner() != owner) {
-	    if(owner instanceof ECUxPlot) eplot = (ECUxPlot)owner;
+	    if(owner instanceof ECUxPlot) this.eplot = (ECUxPlot)owner;
 
 	    this.dialog = new JDialog(owner);
 	    this.dialog.add(this);
 	    this.dialog.getRootPane().setDefaultButton(this.jbtnOK);
 	    this.dialog.pack();
-	    Point where = owner.getLocation();
+	    final Point where = owner.getLocation();
 	    where.translate(20,20);
 	    this.dialog.setLocation(where);
 	    this.dialog.setResizable(false);
 	}
 	this.dialog.setTitle(title);
 	this.dialog.setVisible(true);
-	return ok;
+	return this.ok;
     }
 
     public JPanel getPrefsPanel() { return this.prefsPanel; }

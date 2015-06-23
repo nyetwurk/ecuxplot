@@ -14,7 +14,7 @@ public class WaitCursor implements Cursors {
   }
 
   public static void startWaitCursor(JComponent component) {
-    RootPaneContainer root =
+    final RootPaneContainer root =
       ((RootPaneContainer) component.getTopLevelAncestor());
     startWaitCursor(root);
   }
@@ -34,7 +34,7 @@ public class WaitCursor implements Cursors {
   }
 
   public static void stopWaitCursor(JComponent component) {
-    RootPaneContainer root =
+    final RootPaneContainer root =
       ((RootPaneContainer) component.getTopLevelAncestor());
     stopWaitCursor(root);
   }

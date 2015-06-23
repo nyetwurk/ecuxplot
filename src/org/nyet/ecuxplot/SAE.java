@@ -11,7 +11,7 @@ public class SAE {
     private static final double defaultAltitude = 196;
     private static final double defaultHumidity = 0;
 
-    private Preferences prefs;
+    private final Preferences prefs;
 
     public SAE(Preferences prefs) {
 	this.prefs = prefs.node(PREFS_TAG);
@@ -63,8 +63,8 @@ public class SAE {
     }
 
     public double correction() {
-	double Pv = this.humidity()/100.0 * vaporpressure();
-	double Pd = drypressure()-Pv;
+	final double Pv = this.humidity()/100.0 * vaporpressure();
+	final double Pd = drypressure()-Pv;
 	return 1.180 * ( (990/Pd) *
 			 Math.pow((this.temperature()+273)/298,.5)
 			) - 0.18;

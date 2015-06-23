@@ -41,8 +41,8 @@ public abstract class LinearSmoothing extends Object
     protected LinearSmoothing ()
     {
 	super();
-	cn = null;
-	dn = null;
+	this.cn = null;
+	this.dn = null;
     }
 
     /**
@@ -60,9 +60,9 @@ public abstract class LinearSmoothing extends Object
     */
     public int getType()
     {
-	if (type == FIR)
+	if (this.type == FIR)
 	    return FIR;
-	if (type == IIR)
+	if (this.type == IIR)
 	    return IIR;
 	throw new IllegalArgumentException("Not initialized");
     }
@@ -74,7 +74,7 @@ public abstract class LinearSmoothing extends Object
     */
     public boolean isValid()
     {
-	return (cn != null || dn != null);
+	return (this.cn != null || this.dn != null);
     }
 
     /**
@@ -84,10 +84,10 @@ public abstract class LinearSmoothing extends Object
     */
     public int getNk()
     {
-	if (cn == null)
+	if (this.cn == null)
 	    return 0;
 	else
-	    return nk;
+	    return this.nk;
     }
 
     /**
@@ -98,10 +98,10 @@ public abstract class LinearSmoothing extends Object
     */
     public int getNj()
     {
-	if (dn == null)
+	if (this.dn == null)
 	    return 0;
 	else
-	    return nj;
+	    return this.nj;
     }
 
     /**
@@ -111,10 +111,10 @@ public abstract class LinearSmoothing extends Object
     */
     public int getM()
     {
-	if (cn == null)
+	if (this.cn == null)
 	    return 0;
 	else
-	    return cn.length;
+	    return this.cn.length;
     }
 
     /**
@@ -124,10 +124,10 @@ public abstract class LinearSmoothing extends Object
     */
     public int getN()
     {
-	if (dn == null)
+	if (this.dn == null)
 	    return 0;
 	else
-	    return dn.length;
+	    return this.dn.length;
     }
 
 
@@ -157,26 +157,26 @@ public abstract class LinearSmoothing extends Object
     public double smoothAt(double[] input, double[] output, int ix, int ox)
     {
 	// System.out.println("input="+input.length+", nk="+nk+", cn.length="+cn.length+", ix="+ix+", ox="+ox);
-	if (cn != null &&
-	    (input == null || ix+nk<0 || ix+nk+cn.length>input.length))
+	if (this.cn != null &&
+	    (input == null || ix+this.nk<0 || ix+this.nk+this.cn.length>input.length))
 	    throw new IllegalArgumentException("Cannot filter from input "+ix+": "+
-		(ix+nk) + ":"+ (ix+nk) +":"+ cn.length + ":" + input.length);
-	if (dn != null &&
-	    (output== null || ox+nj<0 || ox+nj+dn.length>output.length))
+		(ix+this.nk) + ":"+ (ix+this.nk) +":"+ this.cn.length + ":" + input.length);
+	if (this.dn != null &&
+	    (output== null || ox+this.nj<0 || ox+this.nj+this.dn.length>output.length))
 	    throw new IllegalArgumentException("Cannot filter to output "+ox+": "+
-		(ox+nk) + ":"+ (ox+nk) +":"+ cn.length + ":" + output.length);
+		(ox+this.nk) + ":"+ (ox+this.nk) +":"+ this.cn.length + ":" + output.length);
 
 	int i1;
 	double ret = 0.;
 
-	if (cn != null) {
-	    for (i1 = 0; i1 != cn.length; i1 ++)
-		ret += cn[i1]*input[i1+nk+ix];
+	if (this.cn != null) {
+	    for (i1 = 0; i1 != this.cn.length; i1 ++)
+		ret += this.cn[i1]*input[i1+this.nk+ix];
 	}
 
-	if (dn != null) {
-	    for (i1 = 0; i1 != dn.length; i1 ++)
-		ret += dn[i1]*output[i1+nj+ox];
+	if (this.dn != null) {
+	    for (i1 = 0; i1 != this.dn.length; i1 ++)
+		ret += this.dn[i1]*output[i1+this.nj+ox];
 	}
 
 	return ret;
@@ -199,17 +199,17 @@ public abstract class LinearSmoothing extends Object
     public double[] smoothAll(double[] input, int start, int end)
     {
 	// System.out.println("input="+input.length+", nk="+nk+", cn.length="+cn.length+", start="+start+", end="+end);
-	if (cn != null && (start+nk < 0 || end+nk+cn.length > input.length))
+	if (this.cn != null && (start+this.nk < 0 || end+this.nk+this.cn.length > input.length))
 	    throw new IllegalArgumentException("Cannot filter cn set: " +
-		(start+nk) + ":"+ (end+nk) +":"+ cn.length + ":" + input.length);
+		(start+this.nk) + ":"+ (end+this.nk) +":"+ this.cn.length + ":" + input.length);
 
 	double[] output = null;
 
-	if (type == IIR) {
+	if (this.type == IIR) {
 	    output = new double[input.length];
-	    if (dn != null && (start+nj < 0 || end+nj+dn.length > output.length))
+	    if (this.dn != null && (start+this.nj < 0 || end+this.nj+this.dn.length > output.length))
 		throw new IllegalArgumentException("Cannot filter dn set: " +
-		    (start+nj) + ":"+ (end+nj) +":"+ dn.length + ":" + output.length);
+		    (start+this.nj) + ":"+ (end+this.nj) +":"+ this.dn.length + ":" + output.length);
 
 	    System.arraycopy(input, 0, output, 0, input.length);
 	}
@@ -220,14 +220,14 @@ public abstract class LinearSmoothing extends Object
 	    throw new IllegalArgumentException("Cannot filter cn set: " +
 		(start) + ">"+ (end));
 
-	double[] ret = new double[end-start+1];
+	final double[] ret = new double[end-start+1];
 	double maxoff = 0.;
 
 
 	do {
 	    for (i1 = 0; i1 < ret.length; i1++)
 		ret[i1] = smoothAt(input, output, start+i1, start+i1);
-	    if (type != IIR || dn.length <= -nj)
+	    if (this.type != IIR || this.dn.length <= -this.nj)
 		return ret;
 	    for (i1 = 0; i1 < ret.length; i1++) {
 		if (Math.abs(output[i1+start] - ret[i1])/
@@ -243,10 +243,10 @@ public abstract class LinearSmoothing extends Object
     public double[] smoothAll(double[] input)
     {
 	// System.out.println("input="+input.length+", nk="+nk);
-	double[] a = smoothAll(input, -nk, input.length+nk-1);
-	double[] output = input.clone();
+	final double[] a = smoothAll(input, -this.nk, input.length+this.nk-1);
+	final double[] output = input.clone();
 	//double[] output = new double[input.length];
-	System.arraycopy(a, 0, output, -nk, a.length);
+	System.arraycopy(a, 0, output, -this.nk, a.length);
 
 	return output;
     }

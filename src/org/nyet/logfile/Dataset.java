@@ -17,7 +17,7 @@ public class Dataset {
 
 	@Override
 	public int compareTo(Object o) {
-	    DatasetId id = (DatasetId) o;
+	    final DatasetId id = (DatasetId) o;
 	    return this.id.compareTo(id.id);
 	}
 
@@ -33,8 +33,8 @@ public class Dataset {
     }
 
     private DatasetId[] ids;
-    private String fileId;
-    private ArrayList<Column> columns;
+    private final String fileId;
+    private final ArrayList<Column> columns;
     private ArrayList<Range> range_cache = new ArrayList<Range>();
     private int rows;
     protected ArrayList<String> lastFilterReasons = new ArrayList<String>();
@@ -48,12 +48,12 @@ public class Dataset {
 	public int size() { return this.end-this.start+1; }
 	@Override
 	public String toString() {
-	    return String.format("[%d:%d]", start, end);
+	    return String.format("[%d:%d]", this.start, this.end);
 	}
     }
 
     public class Column {
-	private DatasetId id;
+	private final DatasetId id;
 	public DoubleArray data;
 
 	public Column(Comparable<?> id, String units) {
@@ -96,14 +96,14 @@ public class Dataset {
 	    }
 	    if (fmt != null) {
 		try {
-		    Date d = fmt.parse(s);
-		    data.append(Double.valueOf(d.getTime())/1000);
-		} catch (Exception e) {
+		    final Date d = fmt.parse(s);
+		    this.data.append(Double.valueOf(d.getTime())/1000);
+		} catch (final Exception e) {
 		}
 	    } else {
 		try {
-		    data.append(Double.valueOf(s));
-		} catch (Exception e) {
+		    this.data.append(Double.valueOf(s));
+		} catch (final Exception e) {
 		}
 	    }
 	}
@@ -127,10 +127,10 @@ public class Dataset {
 
     public class Key implements Comparable<Object> {
 	private String fn;
-	private String s;
+	private final String s;
 	private Integer range;
-	private BitSet flags;
-	private Dataset data_cache; // dataset cache
+	private final BitSet flags;
+	private final Dataset data_cache; // dataset cache
 	private DatasetId id_cache; // id cache
 /*
 	public Key (String fn, String s, int range, BitSet flags) {
@@ -149,7 +149,7 @@ public class Dataset {
 	    this.flags=k.flags;
 	    data.get(this); //initialize id cache
 	}
-	
+
 	public Key (Key k, Dataset data) {
 	    this (k, 0, data);
 	}
@@ -166,14 +166,14 @@ public class Dataset {
 	/*
 	 * public Key (String fn, String s, int range) { this(fn, s, range, new
 	 * BitSet(2)); }
-	 * 
+	 *
 	 * public Key (String fn, String s) { this(fn, s, 0, new BitSet(2)); }
 	 */
 	private boolean useId2() {
 	    return (this.data_cache != null && this.data_cache.useId2()
 		    && this.id_cache != null && this.id_cache.id2 != null);
 	}
-	
+
 	@Override
 	public String toString() {
 	    String ret = this.useId2()?this.id_cache.id2:this.s;
@@ -199,7 +199,7 @@ public class Dataset {
 	public String getString() { return this.s; }
 	public Integer getRange() { return this.range; }
 	public void setRange(int r) { this.range=r; }
-	
+
 	@Override
 	public int compareTo(Object o) {
 	    if(o instanceof Key) {
@@ -239,15 +239,15 @@ public class Dataset {
 	CSVReader reader = new CSVReader(new FileReader(filename));
 	try {
 	    ParseHeaders(reader, verbose);
-	} catch ( Exception e ) {
+	} catch ( final Exception e ) {
 	    /* try semicolon separated */
 	    reader = new CSVReader(new FileReader(filename), ';');
 	    ParseHeaders(reader, verbose);
 	}
-	for(int i=0;i<this.ids.length;i++)
-	    this.columns.add(new Column(this.ids[i].id,
-		this.ids[i].id2,
-		this.ids[i].unit));
+	for (final DatasetId id : this.ids)
+	    this.columns.add(new Column(id.id,
+		id.id2,
+		id.unit));
 
 	String [] nextLine;
 	while((nextLine = reader.readNext()) != null) {
@@ -269,7 +269,7 @@ public class Dataset {
     public ArrayList<Column> getColumns() {return this.columns;}
 
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
-	String [] line = reader.readNext();
+	final String [] line = reader.readNext();
 	if (line.length>0 && line[0].trim().length()>0) {
 	    this.ids = new DatasetId[line.length];
 	    for(int i=0;i<line.length;i++) {
@@ -283,18 +283,18 @@ public class Dataset {
     }
 
     public Column get(Dataset.Key key) {
-	Column c = this.get((Comparable<?>)key);
-	
+	final Column c = this.get((Comparable<?>)key);
+
 	if(c!=null) key.id_cache = c.id; // cache column id
 
 	return c;
     }
-    
+
     public Column get(Comparable<?> id) {
-	for(Column c : this.columns) {
+	for(final Column c : this.columns) {
 	    if(id.equals(c.id.id))
 		return c;
-	}	
+	}
 	return null;
     }
 
@@ -309,13 +309,13 @@ public class Dataset {
 	if(c==null) return null;
 	return c.getId2();
     }
-    
+
     public String getLabel(Comparable<?> id, boolean altnames) {
 	final Column c = this.get(id);
 	if(c==null) return null;
 	return c.getLabel(altnames);
     }
-    
+
     public boolean exists(Comparable<?> id) {
 	if (this.get(id) == null) return false;
 	if (this.get(id).data == null) return false;

@@ -16,7 +16,7 @@ public class WindowUtilities {
   public static void setNativeLookAndFeel() {
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch(Exception e) {
+    } catch(final Exception e) {
       System.out.println("Error setting native LAF: " + e);
     }
   }
@@ -24,7 +24,7 @@ public class WindowUtilities {
   public static void setJavaLookAndFeel() {
     try {
       UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-    } catch(Exception e) {
+    } catch(final Exception e) {
       System.out.println("Error setting Java LAF: " + e);
     }
   }
@@ -32,7 +32,7 @@ public class WindowUtilities {
    public static void setMotifLookAndFeel() {
     try {
       UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-    } catch(Exception e) {
+    } catch(final Exception e) {
       System.out.println("Error setting Motif LAF: " + e);
     }
   }
@@ -46,7 +46,7 @@ public class WindowUtilities {
                                     int height,
                                     String title,
                                     Color bgColor) {
-    JFrame frame = new JFrame(title);
+    final JFrame frame = new JFrame(title);
     frame.setBackground(bgColor);
     content.setBackground(bgColor);
     frame.setSize(width, height);

@@ -12,15 +12,15 @@ public class ECUxPreset extends Preset {
 	String[] names = null;
 	boolean ret=false;
 	try { names = prefs.childrenNames(); }
-	catch (Exception e) { return false; }
-	for (String s : names) {
-	    Preferences n = prefs.node(s);
+	catch (final Exception e) { return false; }
+	for (final String s : names) {
+	    final Preferences n = prefs.node(s);
 	    try {
 		if (n.nodeExists("ykeys") || n.nodeExists("ykeys2")) {
 		    n.removeNode();
 		    ret=true;
 		}
-	    } catch (Exception e) {}
+	    } catch (final Exception e) {}
 	}
 	if (ret) {
 	    createDefaultECUxPresets();
@@ -30,7 +30,7 @@ public class ECUxPreset extends Preset {
     }
 
     public static Preferences getPreferencesStatic() {
-	Preferences p=Preferences.userNodeForPackage(ECUxPlot.class).node("presets");
+	final Preferences p=Preferences.userNodeForPackage(ECUxPlot.class).node("presets");
 	detectOldPrefs(p);
 	return p;
     }
@@ -111,7 +111,7 @@ public class ECUxPreset extends Preset {
 	String [] ret = null;
 	for(int i=0; i<2; i++) {
 	    try { ret = getPreferencesStatic().childrenNames();
-	    } catch (Exception e) { }
+	    } catch (final Exception e) { }
 	    if (ret!=null && ret.length>0) return ret;
 	    ECUxPreset.createDefaultECUxPresets();
 	}

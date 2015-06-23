@@ -20,10 +20,10 @@ public class Preset {
 
     // GETS
     protected Comparable<?>[] getArray(Comparable<?> what) {
-	int num = this.prefs.getInt("num_" + what, 0);
+	final int num = this.prefs.getInt("num_" + what, 0);
 	// System.out.println(what + ":" + num);
-	String[] out = new String[num];
-	Preferences p = this.prefs.node(what.toString());
+	final String[] out = new String[num];
+	final Preferences p = this.prefs.node(what.toString());
 	for(int i=0; i<num; i++) {
 	    out[i] = p.get("" + i, "");
 	    // System.out.println(what + ":" + i + ":" + out[i]);
@@ -35,8 +35,8 @@ public class Preset {
     protected void putArray(Comparable<?> what, Comparable<?>[] in) {
 	int i=0;
 	this.prefs.putInt("num_" + what, in.length);
-	Preferences p = this.prefs.node(what.toString());
-	for(Comparable<?> s : in)
+	final Preferences p = this.prefs.node(what.toString());
+	for(final Comparable<?> s : in)
 	    p.put("" + (i++), s.toString());
     }
 

@@ -22,7 +22,7 @@ public class BrowserLaunch {
 		browse.invoke(desktop, (new java.net.URI(url)));
 		return;
 	    }
-	} catch (Exception e) {
+	} catch (final Exception e) {
 	}
 	fallback(url);
     }
@@ -53,7 +53,7 @@ public class BrowserLaunch {
 		else
 		    Runtime.getRuntime().exec(new String[] {browser, url});
 	    }
-        } catch (Exception e) {
+        } catch (final Exception e) {
 	    JOptionPane.showMessageDialog(null,
 		errMsg + ":\n" + e.getLocalizedMessage());
 	}

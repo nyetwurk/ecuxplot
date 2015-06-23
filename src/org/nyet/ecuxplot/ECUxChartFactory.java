@@ -11,7 +11,6 @@ import org.jfree.chart.renderer.xy.*;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.DefaultXYDataset;
-
 import org.nyet.logfile.Dataset;
 
 public class ECUxChartFactory {
@@ -103,12 +102,12 @@ public class ECUxChartFactory {
 	axis = axis%colors.length;
 
 	// find index of ykey in the ykeys list to get a unique base color
-	String[] list = getDatasetYkeys(d);
+	final String[] list = getDatasetYkeys(d);
         int yki;
 	for (yki=0;yki<list.length;yki++)
 	    if (list[yki].equals(ykey.getString())) break;
 
-	Color color=colors[axis][yki%(colors[axis].length)];
+	final Color color=colors[axis][yki%(colors[axis].length)];
 
 	// make a variety of dark/light colors based on yki
 	int i;
@@ -142,19 +141,19 @@ public class ECUxChartFactory {
 	    )
         };
 
-	for(int i=0; i<series.length; i++)
-	    renderer.setSeriesStroke(series[i], strokes[index%strokes.length]);
+	for (final Integer serie : series)
+	    renderer.setSeriesStroke(serie, strokes[index%strokes.length]);
     }
 
     public static Integer[] addDataset(DefaultXYDataset d, ECUxDataset data,
 		    Comparable<?> xkey, Dataset.Key ykey, Filter filter) {
-	ArrayList<Integer> ret = new ArrayList<Integer>();
-	ArrayList<Dataset.Range> ranges = data.getRanges();
+	final ArrayList<Integer> ret = new ArrayList<Integer>();
+	final ArrayList<Dataset.Range> ranges = data.getRanges();
 	// add empty data in case we turn off filter, or we get some error
-	double[][] empty = {{},{}};
+	final double[][] empty = {{},{}};
 	if(ranges.size()==0) {
 	    filter.currentRange = 0;
-	    Dataset.Key key = data.new Key(ykey, data);
+	    final Dataset.Key key = data.new Key(ykey, data);
 	    key.hideRange();
 	    d.addSeries(key, empty);
 	    ret.add(d.indexOf(key));
@@ -164,22 +163,22 @@ public class ECUxChartFactory {
 	if(filter.currentRange >= ranges.size()) {
 	    filter.currentRange = data.getRanges().size() - 1;
 	}
-	boolean showAllRanges = filter.showAllRanges();
+	final boolean showAllRanges = filter.showAllRanges();
 	for(int	i = (showAllRanges ? 0 : filter.currentRange);
 	        i < (showAllRanges ? ranges.size() : filter.currentRange + 1);
 	        i++) {
-	    Dataset.Key key = data.new Key(ykey, i, data);
+	    final Dataset.Key key = data.new Key(ykey, i, data);
 	    if(ranges.size()==1) key.hideRange();
 	    else key.showRange();
 
-	    Dataset.Range r=ranges.get(i);
+	    final Dataset.Range r=ranges.get(i);
 	    try {
-		double [][] s = new double [][]{
+		final double [][] s = new double [][]{
 		    data.getData(xkey, r),
 		    data.getData(ykey, r)};
 		d.addSeries(key, s);
 		ret.add(d.indexOf(key));
-	    } catch (Exception e){
+	    } catch (final Exception e){
 		d.addSeries(key, empty);
 		ret.add(d.indexOf(key));
 	    }
@@ -212,9 +211,9 @@ public class ECUxChartFactory {
     }
 
     public static String [] getDatasetYkeys(DefaultXYDataset d) {
-	ArrayList<String> ret = new ArrayList<String>();
+	final ArrayList<String> ret = new ArrayList<String>();
 	for(int i=0;i<d.getSeriesCount();i++) {
-	    Comparable<?> key = d.getSeriesKey(i);
+	    final Comparable<?> key = d.getSeriesKey(i);
 	    String s;
 	    if(key instanceof Dataset.Key)
 		s=((Dataset.Key)key).getString();

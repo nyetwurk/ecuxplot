@@ -12,15 +12,15 @@ import org.apache.commons.lang3.text.translate.LookupTranslator;
 
 public class XmlString implements CharSequence, Appendable {
     // Members
-    private StringBuffer buf=new StringBuffer();
+    private final StringBuffer buf=new StringBuffer();
     private int ShiftWidth=2;
     private int Indent=0;
     private static final String EOL="\n";
-    private LookupTranslator lt;
+    private final LookupTranslator lt;
 
     // Constructors
     public XmlString() {
-	String[][] sb = new String[128][2];
+	final String[][] sb = new String[128][2];
 	for(char i=0; i<128; i++) {
 	    sb[i][0] = String.format("%c",i+128);
 	    sb[i][1] = "&#" + (i+128) + ";";
@@ -60,7 +60,7 @@ public class XmlString implements CharSequence, Appendable {
     private Appendable tagIt(String tag, Object value)
     {
 	tag = escape(tag);
-	String v = escape(value.toString());
+	final String v = escape(value.toString());
 	return this.append(String.format("%s>%s</%s", tag, v, tag));
     }
 
@@ -85,9 +85,9 @@ public class XmlString implements CharSequence, Appendable {
     public Appendable append(String tag, Map<String, Object> attrs) {
 	this.doIndent();
 	this.buf.append(String.format("<%s", escape(tag)));
-	for (Map.Entry<String, Object> e: attrs.entrySet()) {
-	    String k = escape(e.getKey());
-	    String v = escape(e.getValue().toString());
+	for (final Map.Entry<String, Object> e: attrs.entrySet()) {
+	    final String k = escape(e.getKey());
+	    final String v = escape(e.getValue().toString());
 	    this.buf.append(String.format(" %s=\"%s\"", k, v));
 	}
 	return this.buf.append(" />" + EOL);
@@ -95,7 +95,7 @@ public class XmlString implements CharSequence, Appendable {
 
     private Appendable doIndent() {
 	if (this.Indent>0)
-	    this.buf.append(String.format("%" + (this.ShiftWidth*Indent) + "s", " "));
+	    this.buf.append(String.format("%" + (this.ShiftWidth*this.Indent) + "s", " "));
 	return this.buf;
     }
 
@@ -103,6 +103,6 @@ public class XmlString implements CharSequence, Appendable {
     public void shiftWidth(int sw) { this.ShiftWidth = sw; }
 
     public int indent() { return this.Indent++; }
-    public int indent(int i) { int ret = this.Indent; this.Indent+=i; return ret; }
+    public int indent(int i) { final int ret = this.Indent; this.Indent+=i; return ret; }
     public int unindent() { return this.Indent--; }
 }

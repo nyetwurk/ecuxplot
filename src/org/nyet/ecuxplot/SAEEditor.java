@@ -11,7 +11,7 @@ public class SAEEditor extends PreferencesEditor {
      */
     private static final long serialVersionUID = 1L;
 
-    private SAE s;
+    private final SAE s;
 
     public JTextField temperature;
     public JTextField altitude;

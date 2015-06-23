@@ -3,9 +3,9 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
 public class GenericFileFilter extends FileFilter implements java.io.FileFilter {
-    private String ext;
-    private String description;
-    private boolean allowDir;
+    private final String ext;
+    private final String description;
+    private final boolean allowDir;
 
     public GenericFileFilter (String ext, String desc) {
 	super();
@@ -24,8 +24,8 @@ public class GenericFileFilter extends FileFilter implements java.io.FileFilter 
     public String getDescription() {return this.description;};
     public static String getExtension(File f) {
        String ext = null;
-	String s = f.getName();
-	int i = s.lastIndexOf('.');
+	final String s = f.getName();
+	final int i = s.lastIndexOf('.');
 
 	if (i > 0 &&  i < s.length() - 1) {
 	    ext = s.substring(i+1).toLowerCase();
@@ -36,7 +36,7 @@ public class GenericFileFilter extends FileFilter implements java.io.FileFilter 
     public boolean accept(File f) {
 	if(f.isDirectory())
 	    return this.allowDir;
-	String extension = getExtension(f);
+	final String extension = getExtension(f);
 	if(extension != null)
 	    if(extension.equals(this.ext)) return true;
 

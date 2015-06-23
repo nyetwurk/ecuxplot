@@ -19,13 +19,13 @@ public class Locate {
     if(c==null) {
       throw new NullPointerException();
     }
-    String className = c.getName();
-    String resourceName = className.replace('.', '/') + ".class";
+    final String className = c.getName();
+    final String resourceName = className.replace('.', '/') + ".class";
     ClassLoader classLoader = c.getClassLoader();
     if(classLoader==null) {
       classLoader = ClassLoader.getSystemClassLoader();
     }
-    URL url = classLoader.getResource(resourceName);
+    final URL url = classLoader.getResource(resourceName);
     return url;
   }
 
@@ -51,29 +51,29 @@ public class Locate {
       throw new NullPointerException();
     }
 
-    String className = c.getName();
-    String resourceName = className.replace('.', '/') + ".class";
+    final String className = c.getName();
+    final String resourceName = className.replace('.', '/') + ".class";
     ClassLoader classLoader = c.getClassLoader();
     if(classLoader==null) {
       classLoader = ClassLoader.getSystemClassLoader();
     }
-    URL url = classLoader.getResource(resourceName);
+    final URL url = classLoader.getResource(resourceName);
 
     String szUrl = url.toString();
     if(szUrl.startsWith("jar:file:")) {
       try {
         szUrl = szUrl.substring("jar:".length(), szUrl.lastIndexOf("!"));
-        URI uri = new URI(szUrl);
+        final URI uri = new URI(szUrl);
         return new File(uri);
-      } catch(URISyntaxException e) {
+      } catch(final URISyntaxException e) {
         throw new IOException(e.toString());
       }
     } else if(szUrl.startsWith("file:")) {
       try {
         szUrl = szUrl.substring(0, szUrl.length() - resourceName.length());
-        URI uri = new URI(szUrl);
+        final URI uri = new URI(szUrl);
         return new File(uri);
-      } catch(URISyntaxException e) {
+      } catch(final URISyntaxException e) {
         throw new IOException(e.toString());
       }
     }
@@ -82,7 +82,7 @@ public class Locate {
   }
 
   public static File getClassDirectory(Class<? extends Object> c) throws IOException, FileNotFoundException {
-    File dir = getClassLocation(c);
+    final File dir = getClassLocation(c);
     if(dir.isDirectory()) return dir;
     return dir.getParentFile();
   }

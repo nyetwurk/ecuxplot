@@ -104,7 +104,7 @@ public class Loggers {
     public static void processAliases(String[] h, String[][] a) {
 	for(int i=0;i<h.length;i++) {
 	    h[i]=h[i].trim();
-	    for (String [] s: a) {
+	    for (final String [] s: a) {
 		if (h[i].matches(s[0])) h[i]=s[1];
 	    }
 	}

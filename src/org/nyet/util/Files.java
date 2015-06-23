@@ -2,17 +2,17 @@ package org.nyet.util;
 
 public class Files {
     public static String dirname(String s) {
-	String [] a = s.split("\\"+java.io.File.separator);
+	final String [] a = s.split("\\"+java.io.File.separator);
 	return Strings.join(java.io.File.separator, a, a.length-1);
     }
 
     public static String filename(String s) {
-	String [] a = s.split("\\"+java.io.File.separator);
+	final String [] a = s.split("\\"+java.io.File.separator);
 	return a[a.length-1];
     }
 
     public static String stem(String s) {
-	String [] a = s.split("\\.");
+	final String [] a = s.split("\\.");
 	return Strings.join(".", a, a.length-1);
     }
 
@@ -21,7 +21,7 @@ public class Files {
     }
 
     public static String extension(String s) {
-	String [] a = s.split("\\.");
+	final String [] a = s.split("\\.");
 	return a[a.length-1];
     }
 
@@ -33,13 +33,13 @@ public class Files {
 			new String[] {"a","b","c","d.foo"})
 		};
 	}
-	for(int i=0;i<a.length;i++) {
-	    System.out.println("in " + a[i]);
-	    System.out.println(" dirname " +dirname(a[i]));
-	    System.out.println(" filename " +filename(a[i]));
-	    System.out.println(" stem " +stem(a[i]));
-	    System.out.println(" extension " +extension(a[i]));
-	    System.out.println(" stem/file " +filenameStem(a[i]));
+	for (final String element : a) {
+	    System.out.println("in " + element);
+	    System.out.println(" dirname " +dirname(element));
+	    System.out.println(" filename " +filename(element));
+	    System.out.println(" stem " +stem(element));
+	    System.out.println(" extension " +extension(element));
+	    System.out.println(" stem/file " +filenameStem(element));
 	}
     }
 };

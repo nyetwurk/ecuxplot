@@ -19,9 +19,9 @@ public class FileDropListener implements DropTargetListener {
 
     private DataFlavor Linux = null;
     private DataFlavor Windows = null;
-    
+
     private DropTarget dropTarget;
-    private FileDropHost fileDropHost;
+    private final FileDropHost fileDropHost;
 
 
     public FileDropListener(FileDropHost fileDropHost, Component dropTargetComponent) {
@@ -35,7 +35,7 @@ public class FileDropListener implements DropTargetListener {
     @Override
     public void dragEnter(DropTargetDragEvent event) {
 
-        int action = event.getDropAction();
+        final int action = event.getDropAction();
         event.acceptDrag(action);
     }
 
@@ -59,7 +59,7 @@ public class FileDropListener implements DropTargetListener {
     public void drop(DropTargetDropEvent dropEvent) {
         try {
 
-            Transferable droppedItem = dropEvent.getTransferable();
+            final Transferable droppedItem = dropEvent.getTransferable();
             DataFlavor[] droppedItemFlavors = droppedItem.getTransferDataFlavors();
 
             droppedItemFlavors = (droppedItemFlavors.length == 0) ? dropEvent.getCurrentDataFlavors() : droppedItemFlavors;
@@ -70,37 +70,37 @@ public class FileDropListener implements DropTargetListener {
             // In which case use the 1st available flavor
             flavor = (flavor == null) ? droppedItemFlavors[0] : flavor;
 
-            Linux = new DataFlavor("text/uri-list;class=java.io.Reader");
-            Windows = DataFlavor.javaFileListFlavor;
+            this.Linux = new DataFlavor("text/uri-list;class=java.io.Reader");
+            this.Windows = DataFlavor.javaFileListFlavor;
 
             handleDrop(dropEvent, droppedItem, flavor);
-            
+
         }
-        
-        catch (ArrayIndexOutOfBoundsException e) {
+
+        catch (final ArrayIndexOutOfBoundsException e) {
             System.err.println("DnD not initalized properly, please try again.");
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println(e.getMessage());
-        } catch (UnsupportedFlavorException e) {
+        } catch (final UnsupportedFlavorException e) {
             System.err.println(e.getMessage());
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             System.err.println(e.getMessage());
         }
     }
 
 
-    private void handleDrop(DropTargetDropEvent dropEvent, 
+    private void handleDrop(DropTargetDropEvent dropEvent,
             Transferable droppedItem, DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        
+
         // On Linux (and OS X) file DnD is a reader
-        if (flavor.equals(Linux)) {
+        if (flavor.equals(this.Linux)) {
 
             acceptLinuxDrop(dropEvent, droppedItem, flavor);
 
         }
 
         // On Windows file DnD is a file list
-        else if (flavor.equals(Windows)) {
+        else if (flavor.equals(this.Windows)) {
 
             acceptWindowsDrop(dropEvent, droppedItem, flavor);
 
@@ -110,33 +110,34 @@ public class FileDropListener implements DropTargetListener {
             dropEvent.rejectDrop();
 
         }
-        
+
     }
 
 
-    private void acceptWindowsDrop(DropTargetDropEvent dropTargetEvent, 
+    private void acceptWindowsDrop(DropTargetDropEvent dropTargetEvent,
             Transferable droppedItem, DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        
+
         dropTargetEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
         @SuppressWarnings("unchecked")
+	final
         List<File> list = (List<File>) droppedItem.getTransferData(flavor);
         dropTargetEvent.dropComplete(true);
 
         if (list.size() == 1) {
             // System.out.println("File Dragged: " + list.get(0));
-            fileDropHost.loadFile(new File(list.get(0).toString()));
+            this.fileDropHost.loadFile(new File(list.get(0).toString()));
         } else {
-	    fileDropHost.loadFiles(list);
+	    this.fileDropHost.loadFiles(list);
 	}
-        
+
     }
 
 
-    private void acceptLinuxDrop(DropTargetDropEvent dropTargetEvent, 
+    private void acceptLinuxDrop(DropTargetDropEvent dropTargetEvent,
             Transferable tr, DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         dropTargetEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 
-        BufferedReader read = new BufferedReader(flavor.getReaderForText(tr));
+        final BufferedReader read = new BufferedReader(flavor.getReaderForText(tr));
         // Remove 'file://' from file name
         String fileName = read.readLine().substring(7).replace("%20", " ");
         // Remove 'localhost' from OS X file names
@@ -147,8 +148,8 @@ public class FileDropListener implements DropTargetListener {
 
         dropTargetEvent.dropComplete(true);
         // System.out.println("File Dragged:" + fileName);
-        
-        fileDropHost.loadFile(new File(fileName));
+
+        this.fileDropHost.loadFile(new File(fileName));
     }
 
     @Override
@@ -157,7 +158,7 @@ public class FileDropListener implements DropTargetListener {
 
 
 public DropTarget getDropTarget() {
-	return dropTarget;
+	return this.dropTarget;
 }
 
 

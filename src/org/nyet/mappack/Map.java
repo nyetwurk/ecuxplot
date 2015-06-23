@@ -1,13 +1,12 @@
 package org.nyet.mappack;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.nio.ByteBuffer;
-
-import org.nyet.util.Strings;
-import org.nyet.util.XmlString;
 
 import org.nyet.logfile.CSVRow;
+import org.nyet.util.Strings;
+import org.nyet.util.XmlString;
 
 
 public class Map implements Comparable<Object> {
@@ -15,17 +14,17 @@ public class Map implements Comparable<Object> {
     private class Enm implements Comparable<Object> {
 	protected int enm;
 	public String[] legend;
-	public Enm(ByteBuffer b) { enm=b.getInt(); }
+	public Enm(ByteBuffer b) { this.enm=b.getInt(); }
 	public Enm(int enm) { this.enm=enm; }
 	@Override
 	public String toString() {
-	    if(enm<0 || enm>legend.length-1)
-		return String.format("(len %d) %x", legend.length, enm);
-	    return legend[enm];
+	    if(this.enm<0 || this.enm>this.legend.length-1)
+		return String.format("(len %d) %x", this.legend.length, this.enm);
+	    return this.legend[this.enm];
 	}
 	@Override
 	public int compareTo(Object o) {
-	    return (new Integer(enm).compareTo(((Enm)o).enm));
+	    return (new Integer(this.enm).compareTo(((Enm)o).enm));
 	}
     }
 
@@ -40,7 +39,7 @@ public class Map implements Comparable<Object> {
 		"Twodimensional",	// 4
 		"2d Inverse"		// 5
 	    };
-	    legend = l;
+	    this.legend = l;
 	}
 	public boolean isTable() {
 	    return this.enm>2 && this.enm<6;
@@ -68,16 +67,16 @@ public class Map implements Comparable<Object> {
 		"32 BitFloat (HiLoHiLo)",	// 6
 		"32 BitFloat (LoHiLoHi)"	// 7
 	    };
-	    legend = l;
+	    this.legend = l;
 	    switch(this.enm) {
-		case 1: width=1; break;
+		case 1: this.width=1; break;
 		case 2:
-		case 3: width=2; break;
+		case 3: this.width=2; break;
 		case 4:
 		case 5:
 		case 6:
-		case 7: width=4; break;
-		default: width=0;
+		case 7: this.width=4; break;
+		default: this.width=0;
 	    }
 	}
 	public boolean isLE() {
@@ -97,11 +96,11 @@ public class Map implements Comparable<Object> {
 
 	public DataSource(ByteBuffer b) {
 	    super(b);
-	    legend = l;
+	    this.legend = this.l;
 	}
 	public DataSource() {
 	    super(1);	// eeprom is default
-	    legend = l;
+	    this.legend = this.l;
 	}
 	public boolean isEeprom() {
 	    return this.enm>0 && this.enm<4;
@@ -114,10 +113,10 @@ public class Map implements Comparable<Object> {
     public class Dimension implements Comparable<Object> {
 	public int x;
 	public int y;
-	public Dimension(int xx, int yy) { x = xx; y = yy; }
-	public Dimension(ByteBuffer b) { x = b.getInt(); y = b.getInt(); }
+	public Dimension(int xx, int yy) { this.x = xx; this.y = yy; }
+	public Dimension(ByteBuffer b) { this.x = b.getInt(); this.y = b.getInt(); }
 	@Override
-	public String toString() { return x + "x" + y; }
+	public String toString() { return this.x + "x" + this.y; }
 	@Override
 	public int compareTo(Object o) {
 	    return (new Integer(areaOf())).compareTo(((Dimension)o).areaOf());
@@ -137,27 +136,27 @@ public class Map implements Comparable<Object> {
 
 	@Override
 	public String toString() {
-	    return "(" + description + ")/" + units + " -  f/o: " + factor + "/" + offset;
+	    return "(" + this.description + ")/" + this.units + " -  f/o: " + this.factor + "/" + this.offset;
 	}
 
 	// should only be called by derived classes
 	protected Value(ByteBuffer b) throws ParserException {
-	    description = Parse.string(b);
-	    units = Parse.string(b);
-	    factor = b.getDouble();
-	    offset = b.getDouble();
+	    this.description = Parse.string(b);
+	    this.units = Parse.string(b);
+	    this.factor = b.getDouble();
+	    this.offset = b.getDouble();
 	    // can't check precision until Valuetype, sign, precision are filled in
 	}
 
 	public Value(ByteBuffer b, ValueType vt, boolean s, int p) throws ParserException {
 	    this(b);
-	    type = vt;
-	    sign = s;
-	    precision = p;
+	    this.type = vt;
+	    this.sign = s;
+	    this.precision = p;
 	    limitPrecision(XDF_MaxDigits);
 	}
 
-	public double convert(double in) { return in*factor+offset; }
+	public double convert(double in) { return in*this.factor+this.offset; }
 
 	public String eqOldXDF (int off, String tag) {
 	    String out="";
@@ -191,16 +190,16 @@ public class Map implements Comparable<Object> {
 	}
 
 	protected int limitPrecision(int maxDigits) {
-	    int width = this.sign?(this.type.width()*8)-1:this.type.width()*8;
+	    final int width = this.sign?(this.type.width()*8)-1:this.type.width()*8;
 
 	    // get maximum possible value
-	    double max = convert(((1<<width)-1));
+	    final double max = convert(((1<<width)-1));
 
 	    // digits left of decimal
-	    int intdigits = (int)(Math.floor(Math.log10(max))+1);
+	    final int intdigits = (int)(Math.floor(Math.log10(max))+1);
 
 	    // 99 = 2 digits, 100 = 3 digits
-	    int digits = this.precision + intdigits;
+	    final int digits = this.precision + intdigits;
 
 	    if (digits>maxDigits)
 		this.precision = maxDigits>intdigits?maxDigits - intdigits:0;
@@ -221,7 +220,7 @@ public class Map implements Comparable<Object> {
     private class Axis {
         // passed
 	private String name;
-	private int size;
+	private final int size;
 	private Dimension z_size;	/* for z axis - rows/cols */
 
 	// parsed
@@ -230,10 +229,10 @@ public class Map implements Comparable<Object> {
 	public HexValue addr = null;
 	private int header1;
 	public int base;
-	private int[] header1a = new int[3];	// v2
+	private final int[] header1a = new int[3];	// v2
 	private byte header2;
 	public boolean reciprocal = false;	// todo (find)
-	private byte[] header3 = new byte[3];
+	private final byte[] header3 = new byte[3];
 	private int header4_size;
 	private int[] header4;
 	private int header5;
@@ -242,90 +241,90 @@ public class Map implements Comparable<Object> {
 	private boolean isZ = false;
 
 	public Axis(ByteBuffer b, String n, int s) throws ParserException {
-	    value = new Value(b);
-	    datasource = new DataSource(b);
+	    this.value = new Value(b);
+	    this.datasource = new DataSource(b);
 	    // always read addr, so we advance pointer regardless of datasource
-	    addr = new HexValue(b);
-	    if(!datasource.isEeprom()) addr = null;
-	    value.type = new ValueType(b);
-	    header1 = b.getInt();	// unk
-	    base = b.getInt();
-	    if(!datasource.isEeprom()) base = 10;
-	    if (kpv == Map.INPUT_KP_v2)
-		Parse.buffer(b,header1a);
-	    header2 = b.get();		// unk
-	    reciprocal = b.get()==1;
-	    value.precision = b.get();
-	    Parse.buffer(b, header3);	// unk
-	    value.sign = (b.get()==1);
-	    header4_size = b.getInt();		// unk
-	    header4 = new int[header4_size/4];
-	    Parse.buffer(b, header4);	// unk
-	    header5 = b.getInt();		// unk
-	    signature = new HexValue(b);
+	    this.addr = new HexValue(b);
+	    if(!this.datasource.isEeprom()) this.addr = null;
+	    this.value.type = new ValueType(b);
+	    this.header1 = b.getInt();	// unk
+	    this.base = b.getInt();
+	    if(!this.datasource.isEeprom()) this.base = 10;
+	    if (Map.this.kpv == Map.INPUT_KP_v2)
+		Parse.buffer(b,this.header1a);
+	    this.header2 = b.get();		// unk
+	    this.reciprocal = b.get()==1;
+	    this.value.precision = b.get();
+	    Parse.buffer(b, this.header3);	// unk
+	    this.value.sign = (b.get()==1);
+	    this.header4_size = b.getInt();		// unk
+	    this.header4 = new int[this.header4_size/4];
+	    Parse.buffer(b, this.header4);	// unk
+	    this.header5 = b.getInt();		// unk
+	    this.signature = new HexValue(b);
 
 	    // fix precision last once we have the whole Value
-	    value.limitPrecision(XDF_MaxDigits);
+	    this.value.limitPrecision(XDF_MaxDigits);
 
 	    // passed in through constructor call
-	    name = n;
-	    size = s;
+	    this.name = n;
+	    this.size = s;
 	}
 
 	public Axis(Value v, Map m) {
 	    // normally parsed, in this case, we get it from parent Map
-	    value = v;
-	    datasource = new DataSource();
-	    addr = m.extent[0];
-	    base = m.base;
+	    this.value = v;
+	    this.datasource = new DataSource();
+	    this.addr = m.extent[0];
+	    this.base = m.base;
 
 	    // fill in by hand
-	    name = "z";
-	    size = 0;
+	    this.name = "z";
+	    this.size = 0;
 
 	    // get from parent Map
-	    z_size = m.size;
+	    this.z_size = m.size;
 
 	    // set flag so we know this is a z axis
-	    isZ = true;
+	    this.isZ = true;
 	}
 
 	@Override
 	public String toString() {
 	    String out = super.toString() + "\n";
-	    out += "\t   ds: " + datasource + "\n";
-	    out += "\t addr: " + addr + " " + value.type + "\n";
-	    out += "\t   h1: " + header1 + "\n";
-	    if (kpv == Map.INPUT_KP_v2)
-		out += "\t *h1a: " + Arrays.toString(header1a) + "\n";
-	    out += "\t base: " + base + "\n";
-	    out += "\t   h2: " + header2 + " (short)\n";
+	    out += "\t   ds: " + this.datasource + "\n";
+	    out += "\t addr: " + this.addr + " " + this.value.type + "\n";
+	    out += "\t   h1: " + this.header1 + "\n";
+	    if (Map.this.kpv == Map.INPUT_KP_v2)
+		out += "\t *h1a: " + Arrays.toString(this.header1a) + "\n";
+	    out += "\t base: " + this.base + "\n";
+	    out += "\t   h2: " + this.header2 + " (short)\n";
 	    out += "\tflags: ";
-	    if(reciprocal) out += "R";
-	    if(value.sign) out += "S";
+	    if(this.reciprocal) out += "R";
+	    if(this.value.sign) out += "S";
 	    out += "\n";
-	    out += "\t prec: " + value.precision + " (byte)\n";
-	    out += "\t   h3: " + Arrays.toString(header3) + "\n";
-	    out += "\th4_sz: " + header4_size + "\n";
-	    out += "\t   h4: " + Arrays.toString(header4) + "\n";
-	    out += "\t   h5: " + header5 + "\n";
-	    if(signature!=null && signature.v!=-1)
-		out += "\t  sig: " + signature + "\n";
+	    out += "\t prec: " + this.value.precision + " (byte)\n";
+	    out += "\t   h3: " + Arrays.toString(this.header3) + "\n";
+	    out += "\th4_sz: " + this.header4_size + "\n";
+	    out += "\t   h4: " + Arrays.toString(this.header4) + "\n";
+	    out += "\t   h5: " + this.header5 + "\n";
+	    if(this.signature!=null && this.signature.v!=-1)
+		out += "\t  sig: " + this.signature + "\n";
 	    return out;
 	}
 
 	// Axis.toXDF()
 	public String toXDF(XmlString xs) {
-	    int xsAt=xs.length();
+	    final int xsAt=xs.length();
 
-	    if (!isZ)
+	    if (!this.isZ)
 		xs.append("XDFAXIS id=\"" + this.name + "\" uniqueid=\"0x0\"");
 	    else
 		xs.append("XDFAXIS id=\"" + this.name + "\"");
 
 	    xs.indent();
 
-	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	    final LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 	    if(this.datasource.isOrdinal()) {
 		m.put("mmedelementsizebits",16);
 		m.put("mmedmajorstridebits",-32);
@@ -354,10 +353,10 @@ public class Map implements Comparable<Object> {
 		m.put("mmedaddress",String.format("0x%X", this.addr.v));
 		m.put("mmedelementsizebits", this.value.type.width()*8);
 
-		if (isZ) {
-		    m.put("mmedrowcount", z_size.y);
-		    if (z_size.x>1)
-			m.put("mmedcolcount", z_size.x);
+		if (this.isZ) {
+		    m.put("mmedrowcount", this.z_size.y);
+		    if (this.z_size.x>1)
+			m.put("mmedcolcount", this.z_size.x);
 		} else {
 		    // weird. tunerpro puts mmedcolcount here sometimes, but not always
 		    /*
@@ -370,13 +369,13 @@ public class Map implements Comparable<Object> {
 
 		xs.append("units",this.value.units);
 
-		if (!isZ)
+		if (!this.isZ)
 		    xs.append("indexcount",this.size);
 
-		if(this.value.precision!=2 || (XDF_Pedantic && isZ))
+		if(this.value.precision!=2 || (XDF_Pedantic && this.isZ))
 		    xs.append("decimalpl",this.value.precision);
 
-		if (XDF_Pedantic && isZ) {
+		if (XDF_Pedantic && this.isZ) {
 		    xs.append("min","0.000000");
 		    // if (this.value.type.width()==1)
 			xs.append("max","255.000000");
@@ -386,10 +385,10 @@ public class Map implements Comparable<Object> {
 
 		xs.append("outputtype",this.value.outputtypeXDF(this.base));
 
-		if (!isZ)
+		if (!this.isZ)
 		    xs.append("embedinfo type=\"1\" /");
 
-		if (XDF_Pedantic && !isZ) {
+		if (XDF_Pedantic && !this.isZ) {
 			xs.append("datatype", 0);
 			xs.append("unittype", 0);
 			xs.append("DALINK index=\"0\" /");
@@ -403,14 +402,14 @@ public class Map implements Comparable<Object> {
 	}
 
 	private void genLabelsXDF(XmlString xs) {
-	    LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	    final LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 	    for(int i=0; i<this.size; i++) {
 		m.put("index",i);
 		// wow. don't ask.
 		if ((this.size==1 && !XDF_Pedantic) || (XDF_Pedantic && i==0 && this.value.precision==0))
 		    m.put("value","");
 		else
-		    m.put("value",String.format("%." + this.value.precision + "f",value.convert(i)));
+		    m.put("value",String.format("%." + this.value.precision + "f",this.value.convert(i)));
 		xs.append("LABEL",m);
 	    }
 	    if (XDF_Pedantic)
@@ -418,16 +417,6 @@ public class Map implements Comparable<Object> {
 	}
     }
 
-    @SuppressWarnings("unused")
-    static private String DebugBB(ByteBuffer bb, String where) {
-	return DebugBB(bb, 16, where);
-    }
-    static private String DebugBB(ByteBuffer bb, int len, String where) {
-	String out = String.format("%s: %d (0x%x): %s",
-	    where, bb.position(), bb.position(), HexValue.dumpHex(bb, len));
-	System.err.println(out);
-	return out;
-    }
     // Map Members
     private int index;		// allow multiple maps with the same address
     private byte header0;
@@ -445,18 +434,18 @@ public class Map implements Comparable<Object> {
     private byte header1a;		// unk
     private int header1b;		// unk v2
     public int[] range = new int[4];
-    private HexValue[] header2 = new HexValue[8];	// unk
+    private final HexValue[] header2 = new HexValue[8];	// unk
     public boolean reciprocal;
     public boolean difference;
     public boolean percent;
     public Dimension size;
-    private int[] header3 = new int[2];	// unk
+    private final int[] header3 = new int[2];	// unk
     public Value value;
     public HexValue[] extent = new HexValue[2];
     private HexValue header4;	// unk
-    private int[] header4a = new int[2];// unk v2
+    private final int[] header4a = new int[2];// unk v2
     private HexValue extent2;	// unk
-    private int[] header5 = new int[2];	// unk
+    private final int[] header5 = new int[2];	// unk
     private HexValue header6;
     private int header7;		// unk
     public Axis x_axis;
@@ -464,12 +453,12 @@ public class Map implements Comparable<Object> {
     public Axis z_axis;
     private int header8;		// unk
     private short header8a;		// unk
-    private HexValue[] header9 = new HexValue[5];	// unk
-    private short[] header9a = new short[7];		// unk
+    private final HexValue[] header9 = new HexValue[5];	// unk
+    private final short[] header9a = new short[7];		// unk
     private int header9b;		// unk
     private byte header9c;		// unk
-    private HexValue[] header10 = new HexValue[6];// unk
-    private HexValue[] header11 = new HexValue[2];// unk
+    private final HexValue[] header10 = new HexValue[6];// unk
+    private final HexValue[] header11 = new HexValue[2];// unk
     public byte[] term2 = new byte[3];
     private int kpv;
 
@@ -482,58 +471,58 @@ public class Map implements Comparable<Object> {
 	this.kpv = kpv;
 
 
-	header0 = b.get();		// unk
+	this.header0 = b.get();		// unk
 	if (kpv == Map.INPUT_KP_v2) {
-	    header0a = b.getInt();	// -1
-	    comment = Parse.string(b);
-	    header0b = b.get();		// unk
+	    this.header0a = b.getInt();	// -1
+	    this.comment = Parse.string(b);
+	    this.header0b = b.get();		// unk
 	}
-	name = Parse.string(b);
-	organization = new Organization(b);
-	header = b.getInt();
-	ValueType vt = new ValueType(b);
-	header = b.getInt();
-	base = b.getInt();
-	folderId = b.getInt();
-	id = Parse.string(b);
-	header1 = b.getInt();		// unk
-	header1a = b.get();		// unk
+	this.name = Parse.string(b);
+	this.organization = new Organization(b);
+	this.header = b.getInt();
+	final ValueType vt = new ValueType(b);
+	this.header = b.getInt();
+	this.base = b.getInt();
+	this.folderId = b.getInt();
+	this.id = Parse.string(b);
+	this.header1 = b.getInt();		// unk
+	this.header1a = b.get();		// unk
 	if (kpv == Map.INPUT_KP_v2)
-	    header1b = b.getInt();		// unk
-	Parse.buffer(b, range);
-	Parse.buffer(b, header2);	// unk
-	reciprocal = b.get()==1;
-	boolean sign = (b.get()==1);
-	difference = b.get()==1;
-	percent = b.get()==1;
-	size = new Dimension(b);
-	Parse.buffer(b, header3);	// unk
-	int precision = b.getInt();
-	value = new Value(b, vt, sign, precision);
-	Parse.buffer(b, extent);
-	header4 = new HexValue(b);
+	    this.header1b = b.getInt();		// unk
+	Parse.buffer(b, this.range);
+	Parse.buffer(b, this.header2);	// unk
+	this.reciprocal = b.get()==1;
+	final boolean sign = (b.get()==1);
+	this.difference = b.get()==1;
+	this.percent = b.get()==1;
+	this.size = new Dimension(b);
+	Parse.buffer(b, this.header3);	// unk
+	final int precision = b.getInt();
+	this.value = new Value(b, vt, sign, precision);
+	Parse.buffer(b, this.extent);
+	this.header4 = new HexValue(b);
 	if (kpv == Map.INPUT_KP_v2)
-	    Parse.buffer(b, header4a);	// unk
-	extent2 = new HexValue(b);
-	Parse.buffer(b, header5);	// unk
-	header6 = new HexValue(b);
-	header7 = b.getInt();
-	x_axis = new Axis(b, "x", size.x);
-	y_axis = new Axis(b, "y", size.y);
-	header8 = b.getInt();		// unk
-	header8a = b.getShort();	// unk
-	Parse.buffer(b, header9);	// unk
-	Parse.buffer(b, header9a);	// unk
-	header9b = b.getInt();		// unk
-	header9c = b.get();		// unk
-	Parse.buffer(b, header10);	// unk
-	Parse.buffer(b, header11);	// unk
-	b.get(term2);
-	z_axis = new Axis(this.value, this);
+	    Parse.buffer(b, this.header4a);	// unk
+	this.extent2 = new HexValue(b);
+	Parse.buffer(b, this.header5);	// unk
+	this.header6 = new HexValue(b);
+	this.header7 = b.getInt();
+	this.x_axis = new Axis(b, "x", this.size.x);
+	this.y_axis = new Axis(b, "y", this.size.y);
+	this.header8 = b.getInt();		// unk
+	this.header8a = b.getShort();	// unk
+	Parse.buffer(b, this.header9);	// unk
+	Parse.buffer(b, this.header9a);	// unk
+	this.header9b = b.getInt();		// unk
+	this.header9c = b.get();		// unk
+	Parse.buffer(b, this.header10);	// unk
+	Parse.buffer(b, this.header11);	// unk
+	b.get(this.term2);
+	this.z_axis = new Axis(this.value, this);
 
-	if(term2[0] != 1 || term2[1] != 1 /* || term2[2] != 1 */)
+	if(this.term2[0] != 1 || this.term2[1] != 1 /* || term2[2] != 1 */)
 	    throw new ParserException(b, "unexpected term2:" +
-		Arrays.toString(term2), this);
+		Arrays.toString(this.term2), this);
     }
 
     // generate a 1d map for an axis
@@ -556,7 +545,7 @@ public class Map implements Comparable<Object> {
     }
 
     public boolean equals(Map map) {
-	String stem=map.id.split("[? ]")[0];
+	final String stem=map.id.split("[? ]")[0];
 	if(stem.length()==0) return false;
 	return equals(stem);
     }
@@ -568,14 +557,14 @@ public class Map implements Comparable<Object> {
 
     // swap x and y; tunerpro crashes on Cols > 256
     private void swapXY() {
-	Axis tmpa = this.y_axis;
+	final Axis tmpa = this.y_axis;
 	this.y_axis = this.x_axis;
 	this.x_axis = tmpa;
 
 	this.x_axis.name = "x";
 	this.y_axis.name = "y";
 
-	int tmp = this.size.y;
+	final int tmp = this.size.y;
 	this.size.y = this.size.x;
 	this.size.x = tmp;
     }
@@ -606,7 +595,7 @@ public class Map implements Comparable<Object> {
     }
 
     private String toStringCSV(ByteBuffer image) throws Exception {
-	CSVRow row = new CSVRow();
+	final CSVRow row = new CSVRow();
 	row.add(this.id);
 	row.add(this.extent[0]);
 	row.add(this.name);
@@ -620,7 +609,7 @@ public class Map implements Comparable<Object> {
 	row.add(this.x_axis.value.factor);
 	row.add(this.y_axis.value.factor);
 	if(image!=null && image.limit()>0) {
-	    MapData mapdata = new MapData(this, image);
+	    final MapData mapdata = new MapData(this, image);
 	    row.add(mapdata.getMinimumValue());
 	    row.add(mapdata.getMaximumValue());
 	    row.add(String.format("0x%x", mapdata.getMinimum()));
@@ -633,18 +622,18 @@ public class Map implements Comparable<Object> {
     }
 
     private static String ordinalArray(int len) {
-	Integer out[] = new Integer[len];
+	final Integer out[] = new Integer[len];
 	for(int i=0;i<len;i++) out[i]=i+1;
 	return Strings.join(",", out);
     }
 
     @SuppressWarnings("unused")
 private String toStringOldXDF(ByteBuffer image) throws Exception {
-	boolean table = this.organization.isTable();
-	boolean oneD = this.organization.is1D() || this.size.y<=1;
+	final boolean table = this.organization.isTable();
+	final boolean oneD = this.organization.is1D() || this.size.y<=1;
 	String out = table?"%%TABLE%%\n":"%%CONSTANT%%\n";
 	out += String.format(XDF_LBL+"0x%X\n",100,"Cat0ID",this.folderId+1);
-	int off = table?40000:20000;
+	final int off = table?40000:20000;
 	String title = "";
 	String desc = "";
 	if(this.id.length()>0) {
@@ -713,7 +702,7 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
 	    out += String.format(XDF_LBL+"\"%s\"\n", off+320, "XUnits",
 		this.x_axis.value.units);
 	    out += String.format(XDF_LBL+"0x%X\n", off+352,
-		"XLabelType", x_axis.value.precision==0?2:1);
+		"XLabelType", this.x_axis.value.precision==0?2:1);
 
 	    if(this.x_axis.datasource.isOrdinal() && this.size.x>1) {
 		out += String.format(XDF_LBL+"%s\n", off+350, "XLabels",
@@ -730,9 +719,9 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
 		    this.x_axis.value.type.width());
 		out += String.format(XDF_LBL+"%d\n", off+620, "XAddrStep",
 		    this.x_axis.value.type.width());
-		if(x_axis.value.precision!=2) {
+		if(this.x_axis.value.precision!=2) {
 		    out += String.format(XDF_LBL+"0x%X\n", off+650,
-			"XOutputDig", x_axis.value.precision);
+			"XOutputDig", this.x_axis.value.precision);
 		}
 	    }
 
@@ -747,7 +736,7 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
 		this.y_axis.value.units);
 	    // LabelType 0x1 = float, 0x2 = integer, 0x4 = string
 	    out += String.format(XDF_LBL+"0x%X\n", off+362,
-		"YLabelType", y_axis.value.precision==0?2:1);
+		"YLabelType", this.y_axis.value.precision==0?2:1);
 
 	    if(this.y_axis.datasource.isOrdinal() && this.size.y>1 ) {
 		out += String.format(XDF_LBL+"%s\n", off+360, "YLabels",
@@ -764,26 +753,26 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
 		    this.y_axis.value.type.width());
 		out += String.format(XDF_LBL+"%d\n", off+720, "YAddrStep",
 		    this.y_axis.value.type.width());
-		if(y_axis.value.precision!=2) {
+		if(this.y_axis.value.precision!=2) {
 		    out += String.format(XDF_LBL+"0x%X\n", off+750,
-			"YOutputDig", y_axis.value.precision);
+			"YOutputDig", this.y_axis.value.precision);
 		}
 	    }
 	}
 	out += String.format(XDF_LBL+"0x%X\n",off+150,"Flags", flags);
 
 	if(false && image!=null && image.limit()>0) {
-	    MapData mapdata = new MapData(this, image);
+	    final MapData mapdata = new MapData(this, image);
 	    if(table && this.x_axis.addr!=null) {
-		MapData xaxis = new MapData(new Map(this.x_axis, this.size.x),
+		final MapData xaxis = new MapData(new Map(this.x_axis, this.size.x),
 			image);
 		out += String.format(XDF_LBL+"%s\n", off+350, "XLabels",
 			xaxis.toString());
 		// LabelType 0x1 = float, 0x2 = integer, 0x4 = string
 		out += String.format(XDF_LBL+"0x%X\n", off+352,
-		    "XLabelType", x_axis.value.precision==0?2:1);
+		    "XLabelType", this.x_axis.value.precision==0?2:1);
 		if(!oneD && this.y_axis.addr!=null) {
-		    MapData yaxis = new MapData(new Map(this.y_axis,
+		    final MapData yaxis = new MapData(new Map(this.y_axis,
 				this.size.y), image);
 		    out += String.format(XDF_LBL+"%s\n", off+360, "YLabels",
 			    yaxis.toString());
@@ -822,7 +811,7 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
 	int flags = this.value.sign?1:0;
 	if (this.value.type.isLE()) flags |= 2;
 
-	LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+	final LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 	if (flags!=0)
 	    m.put("mmedtypeflags",String.format("0x%02X", flags));
 	m.put("mmedaddress",String.format("0x%X", this.extent[0].v));
@@ -846,10 +835,10 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
     }
 
     private String toStringXDF(ByteBuffer image) throws Exception {
-	boolean table = this.organization.isTable();
+	final boolean table = this.organization.isTable();
 	String tag;
 
-	XmlString xs = new XmlString(1);
+	final XmlString xs = new XmlString(1);
 	if (table) {
 	    tag = "XDFTABLE";
 	    xs.append("XDFTABLE uniqueid=\"0x0\" flags=\"0x0\"");
@@ -879,56 +868,56 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
     }
 
     public String toStringDump() {
-	String out = "index: " + index + "\n";
-	out += "   h0: " + header0 + "\n";
+	String out = "index: " + this.index + "\n";
+	out += "   h0: " + this.header0 + "\n";
 	if (this.kpv == Map.INPUT_KP_v2) {
-	    out += " *h0a: " + header0a + "\n";
-	    out += " *cmt: " + comment + "\n";
-	    out += " *h0b: " + header0b + "\n";
+	    out += " *h0a: " + this.header0a + "\n";
+	    out += " *cmt: " + this.comment + "\n";
+	    out += " *h0b: " + this.header0b + "\n";
 	}
-	out += "  map: " + name + " [" + id + "] " + value.type + "\n";
-	out += "  org: " + organization + "\n";
-	out += "    h: " + header + "\n";
-	out += "   ha: " + headera + "\n";
-	out += " base: " + base + "\n";
-	out += "fdrId: " + folderId + "\n";
-	out += "   id: " + id + "\n";
-	out += "   h1: " + header1 + "\n";
-	out += "  h1a: " + header1a + " (byte)\n";
+	out += "  map: " + this.name + " [" + this.id + "] " + this.value.type + "\n";
+	out += "  org: " + this.organization + "\n";
+	out += "    h: " + this.header + "\n";
+	out += "   ha: " + this.headera + "\n";
+	out += " base: " + this.base + "\n";
+	out += "fdrId: " + this.folderId + "\n";
+	out += "   id: " + this.id + "\n";
+	out += "   h1: " + this.header1 + "\n";
+	out += "  h1a: " + this.header1a + " (byte)\n";
 	if (this.kpv == Map.INPUT_KP_v2)
-	    out += " *h1b: " + header1b + "\n";
-	out += "range: " + range[0] + "-" + range[2]+ "\n";
-	out += "   h2: " + Arrays.toString(header2) + "\n";
+	    out += " *h1b: " + this.header1b + "\n";
+	out += "range: " + this.range[0] + "-" + this.range[2]+ "\n";
+	out += "   h2: " + Arrays.toString(this.header2) + "\n";
 	out += "flags: ";
-	if(reciprocal) out += "R";
-	if(value.sign) out += "S";
-	if(difference) out += "D";
-	if(percent) out += "P";
+	if(this.reciprocal) out += "R";
+	if(this.value.sign) out += "S";
+	if(this.difference) out += "D";
+	if(this.percent) out += "P";
 	out += "\n";
-	out += " size: " + size + "\n";
-	out += "   h3: " + Arrays.toString(header3) + "\n";
-	out += " prec: " + value.precision + "\n";
-	out += "value: " + value + "\n";
-	out += " addr: " + Arrays.toString(extent) + "\n";
-	out += "   h4: " + header4 + "\n";
+	out += " size: " + this.size + "\n";
+	out += "   h3: " + Arrays.toString(this.header3) + "\n";
+	out += " prec: " + this.value.precision + "\n";
+	out += "value: " + this.value + "\n";
+	out += " addr: " + Arrays.toString(this.extent) + "\n";
+	out += "   h4: " + this.header4 + "\n";
 	if (this.kpv == Map.INPUT_KP_v2)
-	    out += " *h4a: " + Arrays.toString(header4a) + "\n";
-	out += "addr?: " + extent2 + "\n";	//??
-	out += "   h5: " + Arrays.toString(header5) + "\n";
-	out += "   h6: " + header6 + "\n";
-	out += "   h7: " + header7 + "\n";
-	out += "xaxis: " + x_axis + "\n";
-	out += "yaxis: " + y_axis + "\n";
-	out += "   h8: " + header8 + "\n";
-	out += "  h8a: " + header8a + " (short)\n";
-	out += "   h9: " + Arrays.toString(header9) + "\n";
-	out += "  h9a: " + Arrays.toString(header9a) + " (shorts)\n";
-	out += "  h9b: " + header9b + "\n";
-	out += "  h9c: " + header9c + " (byte)\n";
-	out += "  h10: " + Arrays.toString(header10) + "\n";
-	out += "  h11: " + Arrays.toString(header11) + "\n";
-	out += "term2: " + Arrays.toString(term2) + "\n";
-	out += "zaxis: " + z_axis + "\n";
+	    out += " *h4a: " + Arrays.toString(this.header4a) + "\n";
+	out += "addr?: " + this.extent2 + "\n";	//??
+	out += "   h5: " + Arrays.toString(this.header5) + "\n";
+	out += "   h6: " + this.header6 + "\n";
+	out += "   h7: " + this.header7 + "\n";
+	out += "xaxis: " + this.x_axis + "\n";
+	out += "yaxis: " + this.y_axis + "\n";
+	out += "   h8: " + this.header8 + "\n";
+	out += "  h8a: " + this.header8a + " (short)\n";
+	out += "   h9: " + Arrays.toString(this.header9) + "\n";
+	out += "  h9a: " + Arrays.toString(this.header9a) + " (shorts)\n";
+	out += "  h9b: " + this.header9b + "\n";
+	out += "  h9c: " + this.header9c + " (byte)\n";
+	out += "  h10: " + Arrays.toString(this.header10) + "\n";
+	out += "  h11: " + Arrays.toString(this.header11) + "\n";
+	out += "term2: " + Arrays.toString(this.term2) + "\n";
+	out += "zaxis: " + this.z_axis + "\n";
 	return out;
     }
 
@@ -936,15 +925,15 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
     @Override
     @SuppressWarnings("unused")
     public int compareTo(Object o) {
-	Map them = (Map)o;
+	final Map them = (Map)o;
 	int ret;
 	if (true) {
 	    // new (correct) compare
 	    ret=this.extent[0].v-them.extent[0].v;
 	} else {
 	    // old (broken) compare
-	    String me = Integer.toString(this.extent[0].v);
-	    String th = Integer.toString(them.extent[0].v);
+	    final String me = Integer.toString(this.extent[0].v);
+	    final String th = Integer.toString(them.extent[0].v);
 	    ret = me.compareTo(th);
 	}
 	return (ret==0)?this.index - them.index:ret;

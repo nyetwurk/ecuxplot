@@ -19,10 +19,10 @@ public final class OptionsMenu extends JMenu {
      *
      */
     private static final long serialVersionUID = 1L;
-    private ECUxPlot plotFrame;
-    private JMenu loadPresetsMenu;
-    private JMenu savePresetsMenu;
-    private JMenu deletePresetsMenu;
+    private final ECUxPlot plotFrame;
+    private final JMenu loadPresetsMenu;
+    private final JMenu savePresetsMenu;
+    private final JMenu deletePresetsMenu;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
 	super(id);
@@ -49,7 +49,7 @@ public final class OptionsMenu extends JMenu {
 	this.add(new JSeparator());
 
 	// Prefs
-	Preferences prefs = ECUxPlot.getPreferences();
+	final Preferences prefs = ECUxPlot.getPreferences();
 	jcb = new JCheckBox("Use alternate column names",
 		prefs.getBoolean("altnames", false));
 	jcb.addActionListener(plotFrame);
@@ -102,14 +102,14 @@ public final class OptionsMenu extends JMenu {
 	this.savePresetsMenu.removeAll();
 	this.deletePresetsMenu.removeAll();
 
-	LoadPresetAction lpa = new LoadPresetAction();
-	SavePresetAction spa = new SavePresetAction();
-	DeletePresetAction dpa = new DeletePresetAction();
+	final LoadPresetAction lpa = new LoadPresetAction();
+	final SavePresetAction spa = new SavePresetAction();
+	final DeletePresetAction dpa = new DeletePresetAction();
 	JMenuItem jmi;
 	Boolean undoPresent = false;
 	Boolean addSeparator = false;
 
-	for(String s : ECUxPreset.getPresets()) {
+	for(final String s : ECUxPreset.getPresets()) {
 	    if(!s.equals("Undo")) {
 		jmi = new JMenuItem(s);
 		jmi.addActionListener(lpa);
@@ -152,24 +152,24 @@ public final class OptionsMenu extends JMenu {
     private class LoadPresetAction implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent event) {
-	    String s = event.getActionCommand();
+	    final String s = event.getActionCommand();
 	    if(!s.equals("Undo")) {
 		/* save last setup */
-		plotFrame.saveUndoPreset();
+		OptionsMenu.this.plotFrame.saveUndoPreset();
 		/* maybe undo didn't exist. rebuild load menu just in case */
 		updatePresets();
 	    }
-	    plotFrame.loadPreset(s);
+	    OptionsMenu.this.plotFrame.loadPreset(s);
 	}
     }
 
     private class LoadAllPresetsAction implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent event) {
-	    ArrayList<String> list = new
+	    final ArrayList<String> list = new
 		ArrayList<String>(Arrays.asList(ECUxPreset.getPresets()));
 	    list.remove("Undo");
-	    plotFrame.loadPresets(list);
+	    OptionsMenu.this.plotFrame.loadPresets(list);
 	}
     }
 
@@ -191,19 +191,19 @@ public final class OptionsMenu extends JMenu {
 		    s = ECUxPlot.showInputDialog("Enter preset name");
 		    if (s==null) return;
 
-		    if (blacklist.contains(s)) {
+		    if (this.blacklist.contains(s)) {
 			JOptionPane.showMessageDialog(null, "Illegal name");
 			return;
 		    }
 
-		    for(String k : ECUxPreset.getPresets()) {
+		    for(final String k : ECUxPreset.getPresets()) {
 			if (s.equals(k)) {
 			    JOptionPane.showMessageDialog(null, "Name in use");
 			    return;
 			}
 		    }
 		}
-		plotFrame.savePreset(s);
+		OptionsMenu.this.plotFrame.savePreset(s);
 	    }
 	    updatePresets();
 	}
@@ -212,11 +212,11 @@ public final class OptionsMenu extends JMenu {
     private class DeletePresetAction implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent event) {
-	    String s = event.getActionCommand();
+	    final String s = event.getActionCommand();
 	    try {
 		ECUxPreset.getPreferencesStatic().node(s).removeNode();
 		updatePresets();
-	    } catch (Exception e) {}
+	    } catch (final Exception e) {}
 	}
     }
 }

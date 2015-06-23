@@ -13,10 +13,10 @@ public class MMapFile {
     private MappedByteBuffer buf;
 
     public MMapFile(String fname, ByteOrder order) throws Exception {
-	File file = new File(fname);
+	final File file = new File(fname);
 	if(!file.exists()) throw new Exception(fname + ": no such file");
 
-	FileInputStream fi = new FileInputStream(fname);
+	final FileInputStream fi = new FileInputStream(fname);
 	try {
 	    this.buf=fi.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
 	    if(this.buf == null) {

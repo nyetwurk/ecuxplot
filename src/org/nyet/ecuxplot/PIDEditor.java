@@ -11,17 +11,17 @@ public class PIDEditor extends PreferencesEditor {
      */
     private static final long serialVersionUID = 1L;
 
-    private PID pid;
+    private final PID pid;
 
-    private JTextField time_constant;
-    private JTextField P_deadband;
-    private JTextField I_limit;
-    private JTextField P;
-    private JTextField I;
-    private JTextField D0; // 0
-    private JTextField D1; // 300
-    private JTextField D2; // 500
-    private JTextField D3; // 700
+    private final JTextField time_constant;
+    private final JTextField P_deadband;
+    private final JTextField I_limit;
+    private final JTextField P;
+    private final JTextField I;
+    private final JTextField D0; // 0
+    private final JTextField D1; // 300
+    private final JTextField D2; // 500
+    private final JTextField D3; // 700
 
     @Override
     protected void Process(ActionEvent event) {
@@ -40,7 +40,7 @@ public class PIDEditor extends PreferencesEditor {
     public PIDEditor (PID pid) {
 	this.pid = pid;
 
-	JPanel pp = this.getPrefsPanel();
+	final JPanel pp = this.getPrefsPanel();
 
 	pp.add(new JLabel(" Time constant (s)", SwingConstants.TRAILING));
 	this.time_constant = new JTextField(10);
@@ -64,7 +64,7 @@ public class PIDEditor extends PreferencesEditor {
 
 	pp.add(new JLabel(" D (%/100mBar)", SwingConstants.TRAILING));
 
-	JPanel pd = new JPanel();
+	final JPanel pd = new JPanel();
 	pd.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
 	pp.add(pd);
 

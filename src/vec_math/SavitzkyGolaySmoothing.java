@@ -54,10 +54,10 @@ public class SavitzkyGolaySmoothing extends LinearSmoothing
 
     public SavitzkyGolaySmoothing(int deg, int nl, int nr, int der)
     {
-	degree     = deg;
-	derivative = der;
-	nk         = -nl;
-	nj         = 0;
+	this.degree     = deg;
+	this.derivative = der;
+	this.nk         = -nl;
+	this.nj         = 0;
 
 	// in the default implementation, only the 'standard' coef are allowed
 
@@ -66,39 +66,39 @@ public class SavitzkyGolaySmoothing extends LinearSmoothing
 	if (der != 0) {
 	    if (der == 1 && nl == 6 && nr == 0 && deg == 4) {
 		allowed = true;
-		cn = M4L6R0D1;
+		this.cn = M4L6R0D1;
 	    }
 	    else throw new IllegalArgumentException("Not implemented!");
 	}
 
 	if (deg == 2 && nl == 2 && nr == 2) {
 	    allowed = true;
-	    cn    = M2L2R2;
+	    this.cn    = M2L2R2;
 	}
 
 	if (deg == 2 && nl == 3 && nr == 1) {
 	    allowed = true;
-	    cn    = M2L3R1;
+	    this.cn    = M2L3R1;
 	}
 
 	if (deg == 2 && nl == 4 && nr == 0) {
 	    allowed = true;
-	    cn    = M2L4R0;
+	    this.cn    = M2L4R0;
 	}
 
 	if (deg == 2 && nl == 5 && nr == 5) {
 	    allowed = true;
-	    cn    = M2L5R5;
+	    this.cn    = M2L5R5;
 	}
 
 	if (deg == 4 && nl == 4 && nr == 4) {
 	    allowed = true;
-	    cn    = M4L4R4;
+	    this.cn    = M4L4R4;
 	}
 
 	if (deg == 4 && nl == 5 && nr == 5) {
 	    allowed = true;
-	    cn    = M4L5R5;
+	    this.cn    = M4L5R5;
 	}
 
 	if (!allowed) throw new IllegalArgumentException("Not implemented!");
@@ -131,7 +131,7 @@ public class SavitzkyGolaySmoothing extends LinearSmoothing
     @Override
     protected void setType()
     {
-	type = FIR;
+	this.type = FIR;
     }
 
     /**
@@ -150,25 +150,25 @@ public class SavitzkyGolaySmoothing extends LinearSmoothing
 	    line = in.readLine();
 	    if (!line.startsWith("#savitzky-golay"))
 		throw new IllegalArgumentException("wrong header in file!");
-	    StringTokenizer breakup = new StringTokenizer(line);
+	    final StringTokenizer breakup = new StringTokenizer(line);
 	    if (breakup.countTokens() != 4)
 		throw new IllegalArgumentException("wrong header arguments");
 	    breakup.nextToken();	// intro
 
-	    int nl = Integer.parseInt(breakup.nextToken());
-	    int nr = Integer.parseInt(breakup.nextToken());
-	    int m  = Integer.parseInt(breakup.nextToken());
+	    final int nl = Integer.parseInt(breakup.nextToken());
+	    final int nr = Integer.parseInt(breakup.nextToken());
+	    final int m  = Integer.parseInt(breakup.nextToken());
 
-	    degree = m;
-	    nk     = -nl;
+	    this.degree = m;
+	    this.nk     = -nl;
 
-	    cn = new double[nl+nr+1];
+	    this.cn = new double[nl+nr+1];
 
 	    for (int i1 = 0; i1 != nl+nr+1; i1 ++)
-		cn[i1] = Double.valueOf(in.readLine().trim()).doubleValue();
+		this.cn[i1] = Double.valueOf(in.readLine().trim()).doubleValue();
 	    // if we got that far, we had no conversion exceptions
 	    in.close();
-	} catch (IOException ioe) {
+	} catch (final IOException ioe) {
 	    throw new IllegalArgumentException("wrong file");
 	}
 
@@ -182,7 +182,7 @@ public class SavitzkyGolaySmoothing extends LinearSmoothing
     */
     public int getDegree()
     {
-	return degree;
+	return this.degree;
     }
 
     /**
@@ -191,7 +191,7 @@ public class SavitzkyGolaySmoothing extends LinearSmoothing
     */
     public int getDerivative()
     {
-	return derivative;
+	return this.derivative;
     }
 
     /**

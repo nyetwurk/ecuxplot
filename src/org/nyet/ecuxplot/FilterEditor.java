@@ -11,7 +11,7 @@ public class FilterEditor extends PreferencesEditor {
      */
     private static final long serialVersionUID = 1L;
 
-    private Filter filter;
+    private final Filter filter;
 
     public JTextField gear;
     public JTextField minRPM;

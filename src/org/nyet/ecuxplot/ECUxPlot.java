@@ -39,7 +39,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private FATSChartFrame fatsFrame;
 
     // Menus
-    private JMenuBar menuBar;
+    private final JMenuBar menuBar;
     private AxisMenu xAxis;
     private AxisMenu yAxis[] = new AxisMenu[2];
 
@@ -52,10 +52,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private SAEEditor sae;
 
     // Preferences
-    private Preferences prefs = getPreferences();
+    private final Preferences prefs = getPreferences();
 
-    private Env env;
-    private Filter filter;
+    private final Env env;
+    private final Filter filter;
 
     private int verbose = 0;
     private boolean exitOnClose = true;
@@ -82,7 +82,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	this.filter = new Filter(this.prefs);
 	this.env = new Env(this.prefs);
 
-	java.net.URL imageURL =
+	final java.net.URL imageURL =
 	    getClass().getResource("icons/ECUxPlot2-64.png");
 
 	this.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
@@ -92,7 +92,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	this.menuBar.add(new OptionsMenu("Options", this));
 
 	this.menuBar.add(Box.createHorizontalGlue());
-	HelpMenu helpMenu = new HelpMenu("Help", this);
+	final HelpMenu helpMenu = new HelpMenu("Help", this);
 	this.menuBar.add(helpMenu);
 
 	setJMenuBar(this.menuBar);
@@ -123,7 +123,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	final Comparable<?>[] ykeys2 = new ECUxPreset("Power").ykeys(1);
 	final String[] defaultYkeys = { Strings.join(",", ykeys), Strings.join(",", ykeys2) };
 
-	String k=this.prefs.get("ykeys"+index, defaultYkeys[index]);
+	final String k=this.prefs.get("ykeys"+index, defaultYkeys[index]);
 	return k.split(",");
     }
 
@@ -146,7 +146,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
     private void prefsPutYkeys(int axis) {
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
-	DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
+	final DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
 	this.prefsPutYkeys(axis, ECUxChartFactory.getDatasetYkeys(dataset));
     }
 
@@ -161,7 +161,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     private void fileDatasetsChanged() {
 	// set title
-	this.setTitle("ECUxPlot " + Strings.join(", ", fileDatasets.keySet()));
+	this.setTitle("ECUxPlot " + Strings.join(", ", this.fileDatasets.keySet()));
 
 	// xaxis label depends on units found in files
 	updateXAxisLabel();
@@ -171,12 +171,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 	// merge ids using a TreeSet - only add new headers
 	// note that TreeSet keeps us sorted!
-	TreeSet<DatasetId> hset = new TreeSet<DatasetId>();
-	for(ECUxDataset d : this.fileDatasets.values()) {
-	    for(DatasetId s : d.getIds())
+	final TreeSet<DatasetId> hset = new TreeSet<DatasetId>();
+	for(final ECUxDataset d : this.fileDatasets.values()) {
+	    for(final DatasetId s : d.getIds())
 		if(s!=null) hset.add(s);
 	}
-	DatasetId [] ids = hset.toArray(new DatasetId[0]);
+	final DatasetId [] ids = hset.toArray(new DatasetId[0]);
 	if(ids.length<=0) return;
 
 	// rebuild the axis menus
@@ -185,22 +185,22 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	if(this.yAxis[1]!=null) this.menuBar.remove(this.yAxis[1]);
 
 	this.xAxis = new AxisMenu("X Axis", ids, this, true, this.xkey());
-	this.menuBar.add(xAxis, 3);
+	this.menuBar.add(this.xAxis, 3);
 
 	this.yAxis[0] = new AxisMenu("Y Axis", ids, this, false,
 	    this.ykeys(0));
-	this.menuBar.add(yAxis[0], 4);
+	this.menuBar.add(this.yAxis[0], 4);
 
 	this.yAxis[1] = new AxisMenu("Y Axis2", ids, this, false,
 	    this.ykeys(1));
-	this.menuBar.add(yAxis[1], 5);
+	this.menuBar.add(this.yAxis[1], 5);
 
 	// hide/unhide filenames in the legend
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	for(int axis=0;axis<plot.getDatasetCount();axis++) {
-	    org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
+	    final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
 	    for(int series=0;series<pds.getSeriesCount();series++) {
-		Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
+		final Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
 		if(this.fileDatasets.size()==1) ykey.hideFilename();
 		else ykey.showFilename();
 	    }
@@ -215,7 +215,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		FATSChartFrame.createFATSChartFrame(this.fileDatasets, this);
 	    this.fatsFrame.pack();
 
-	    java.net.URL imageURL =
+	    final java.net.URL imageURL =
 		getClass().getResource("icons/ECUxPlot2-64.png");
 
 	    this.fatsFrame.setIconImage(new
@@ -225,12 +225,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	}
 
 	// grab title from prefs, or just use what current title is
-	this.chartTitle(prefs.get("title", this.chartTitle()));
+	this.chartTitle(this.prefs.get("title", this.chartTitle()));
     }
 
     public void loadFiles(ArrayList<String> files) {
 	WaitCursor.startWaitCursor(this);
-	for(String s : files) {
+	for(final String s : files) {
 	    if(s.length()>0) _loadFile(new File(s), false);
 	}
 	fileDatasetsChanged();
@@ -240,7 +240,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     @Override
     public void loadFiles(List<File> files) {
 	WaitCursor.startWaitCursor(this);
-	for(File f : files) {
+	for(final File f : files) {
 	    _loadFile(f, false);
 	}
 	fileDatasetsChanged();
@@ -267,12 +267,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		setContentPane(this.chartPanel);
 	    }
 
-	    ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
+	    final ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
 		    this.env, this.filter, this.verbose);
 
 	    this.fileDatasets.put(file.getName(), data);
 	    this.files.add(file.getAbsolutePath());
-	} catch (Exception e) {
+	} catch (final Exception e) {
 	    JOptionPane.showMessageDialog(this, e);
 	    e.printStackTrace();
 	    return;
@@ -303,8 +303,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     private String getExportStem() {
 	String stem=null;
-	for(ECUxDataset d : this.fileDatasets.values()) {
-	    String fname=d.getFileId();
+	for(final ECUxDataset d : this.fileDatasets.values()) {
+	    final String fname=d.getFileId();
 	    if(stem == null) {
 		stem = Files.stem(fname);
 	    } else {
@@ -320,7 +320,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     {
 	String ret = null;
 	if (this.chartPanel != null) {
-	    String stem = getExportStem();
+	    final String stem = getExportStem();
 	    ret = dir + File.separator + stem;
 	}
 	return ret;
@@ -351,7 +351,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     @Override
     public void actionPerformed(ActionEvent event) {
-	AbstractButton source = (AbstractButton) (event.getSource());
+	final AbstractButton source = (AbstractButton) (event.getSource());
 	if(source.getText().equals("Quit")) {
 	    exitApp();
 	} else if(source.getText().equals("Export Chart")) {
@@ -360,7 +360,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    } else {
 		try {
 		    this.chartPanel.doSaveAs(getExportStem());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 		    JOptionPane.showMessageDialog(this, e);
 		    e.printStackTrace();
 		}
@@ -371,7 +371,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		return;
 	    }
 	    boolean ok = false;
-	    for (ECUxPlot p: this.plotlist) {
+	    for (final ECUxPlot p: this.plotlist) {
 		if(p.chartPanel != null) {
 		    ok = true;
 		    break;
@@ -385,15 +385,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 	    String dir = this.prefs.get("exportDir",
 		System.getProperty("user.home"));
-	    JFileChooser fileChooser = new JFileChooser(dir);
+	    final JFileChooser fileChooser = new JFileChooser(dir);
 	    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-	    int option = fileChooser.showSaveDialog(this);
-	    ArrayList<String> seen = new ArrayList<String>();
+	    final int option = fileChooser.showSaveDialog(this);
+	    final ArrayList<String> seen = new ArrayList<String>();
 	    if (option == JFileChooser.APPROVE_OPTION) {
 		dir = fileChooser.getSelectedFile().getPath();
-		for (ECUxPlot p: this.plotlist) {
+		for (final ECUxPlot p: this.plotlist) {
 		    if (p==null) continue;
-		    String stem = p.exportChartStem(dir);
+		    final String stem = p.exportChartStem(dir);
 		    if (stem==null) continue;
 		    String fname = stem + "-" + p.chartTitle() + ".png";
 		    for(int i=1; seen.contains(fname); i++)
@@ -401,7 +401,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    try {
 			p.chartPanel.saveChartAsPNG(fname);
 			seen.add(fname);
-		    } catch (Exception e) {
+		    } catch (final Exception e) {
 			JOptionPane.showMessageDialog(this, e);
 			e.printStackTrace();
 		    }
@@ -413,7 +413,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 			try {
 			    p.fatsFrame.saveChartAsPNG(fname);
 			    seen.add(fname);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 			    JOptionPane.showMessageDialog(this, e);
 			    e.printStackTrace();
 			}
@@ -449,36 +449,36 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    this.newChart();
 	} else if(source.getText().equals("Open File") ||
 		  source.getText().equals("Add File") ) {
-	    if(fc==null) {
+	    if(this.fc==null) {
 		// current working dir
 		// String dir  = System.getProperty("user.dir"));
 		// home dir
-		String dir = this.prefs.get("chooserDir",
+		final String dir = this.prefs.get("chooserDir",
 		    System.getProperty("user.home"));
-		fc = new JFileChooser(dir);
-		fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
+		this.fc = new JFileChooser(dir);
+		this.fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
 	    }
-	    int ret = fc.showOpenDialog(this);
+	    final int ret = this.fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
-		boolean replace =
+		final boolean replace =
 		    source.getText().equals("Open File")?true:false;
 
 		WaitCursor.startWaitCursor(this);
-		loadFile(fc.getSelectedFile(), replace);
+		loadFile(this.fc.getSelectedFile(), replace);
 		// if somebody hid the fats frame, lets unhide it for them.
 		setMyVisible(true);
 		WaitCursor.stopWaitCursor(this);
 		this.prefs.put("chooserDir",
-		    fc.getCurrentDirectory().toString());
+		    this.fc.getCurrentDirectory().toString());
 	    }
 	} else if(source.getText().equals("Use alternate column names")) {
-	    boolean s = source.isSelected();
+	    final boolean s = source.isSelected();
 	    this.prefs.putBoolean("altnames", s);
 	    // rebuild title and labels
 	    this.updateXAxisLabel();
 	    this.updatePlotTitleAndYAxisLabels();
 	} else if(source.getText().equals("Scatter plot")) {
-	    boolean s = source.isSelected();
+	    final boolean s = source.isSelected();
 	    this.prefs.putBoolean("scatter", s);
 	    if(this.chartPanel != null)
 		ECUxChartFactory.setChartStyle(this.chartPanel.getChart(),
@@ -490,11 +490,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    this.filter.showAllRanges(source.isSelected());
 	    rebuild();
 	} else if(source.getText().equals("Next range...")) {
-	    filter.currentRange++;
+	    this.filter.currentRange++;
 	    rebuild();
 	} else if(source.getText().equals("Previous range...")) {
-	    if(filter.currentRange > 0) {
-	        filter.currentRange--;
+	    if(this.filter.currentRange > 0) {
+	        this.filter.currentRange--;
 	    }
 	    rebuild();
 	} else if(source.getText().equals("Configure filter...")) {
@@ -523,7 +523,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    JOptionPane.showMessageDialog(this, new AboutPanel(),
 		    "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
 	} else if(source.getText().equals("Show FATS window...")) {
-	    boolean s = source.isSelected();
+	    final boolean s = source.isSelected();
 	    this.prefs.putBoolean("showfats", s);
 	    if(!s && this.fatsFrame.isShowing()) {
 		this.fatsFrame.setVisible(s);
@@ -537,9 +537,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     private String findUnits(Comparable<?> key) {
-	ArrayList<String> units = new ArrayList<String>();
-	for(ECUxDataset d : this.fileDatasets.values()) {
-	    String u = d.units(key);
+	final ArrayList<String> units = new ArrayList<String>();
+	for(final ECUxDataset d : this.fileDatasets.values()) {
+	    final String u = d.units(key);
 	    if(u==null || u.length()==0) continue;
 	    if(!units.contains(u)) units.add(u);
 	}
@@ -550,7 +550,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	this.chartPanel.getChart().setTitle(title);
     }
     private String chartTitle() {
-	String ret = this.chartPanel.getChart().getTitle().getText();
+	final String ret = this.chartPanel.getChart().getTitle().getText();
 	return ret;
     }
     private void updatePlotTitleAndYAxisLabels() {
@@ -559,20 +559,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    this.chartPanel.getChart().getXYPlot());
     }
     private void updatePlotTitleAndYAxisLabels(XYPlot plot) {
-	ArrayList<String> title = new ArrayList<String>();
+	final ArrayList<String> title = new ArrayList<String>();
 	for(int axis=0; axis<plot.getDatasetCount(); axis++) {
-	    ArrayList<String> seriesTitle = new ArrayList<String>();
-	    ArrayList<String> label= new ArrayList<String>();
+	    final ArrayList<String> seriesTitle = new ArrayList<String>();
+	    final ArrayList<String> label= new ArrayList<String>();
 	    final org.jfree.data.xy.XYDataset dataset = plot.getDataset(axis);
 	    if(dataset!=null) {
 		for(int series=0; series<dataset.getSeriesCount(); series++) {
-		    Comparable<?> key = dataset.getSeriesKey(series);
+		    final Comparable<?> key = dataset.getSeriesKey(series);
 		    if(key==null) continue;
 		    String s;
 
 		    if(key instanceof Dataset.Key) {
-			Dataset.Key k = (Dataset.Key)key;
-			s = prefs.getBoolean("altnames", false)?k.getId2():k.getString();
+			final Dataset.Key k = (Dataset.Key)key;
+			s = this.prefs.getBoolean("altnames", false)?k.getId2():k.getString();
 		    } else
 			s = key.toString();
 
@@ -580,7 +580,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    if(!seriesTitle.contains(s)) seriesTitle.add(s);
 
 		    // construct y axis label array
-		    String l = findUnits(key);
+		    final String l = findUnits(key);
 		    if(l==null || l.length()==0) continue;
 		    if(!label.contains(l)) label.add(l);
 		}
@@ -604,12 +604,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private void updateXAxisLabel(XYPlot plot) {
 	// find x axis label. just pick first one that has units we can use
 	String label = "";
-	for (ECUxDataset data : this.fileDatasets.values()) {
+	for (final ECUxDataset data : this.fileDatasets.values()) {
 	    if(data.get(this.xkey())!=null) {
-		String units = data.units(this.xkey());
+		final String units = data.units(this.xkey());
 		if(units != null) {
 		    label =
-			data.getLabel(this.xkey(), prefs.getBoolean("altnames", false));
+			data.getLabel(this.xkey(), this.prefs.getBoolean("altnames", false));
 		    if(label.indexOf(units)==-1)
 			label += " ("+units+")";
 		    break;
@@ -625,7 +625,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	// walk the filenames and get it, and the index for it
 	ECUxDataset data=null;
 	int stroke=0;
-	for(Map.Entry<String, ECUxDataset> e : this.fileDatasets.entrySet()) {
+	for(final Map.Entry<String, ECUxDataset> e : this.fileDatasets.entrySet()) {
 	    if(e.getKey().equals(ykey.getFilename())) {
 		data=e.getValue();
 		break;
@@ -635,8 +635,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	if (data==null) return;
 
 	/* returns the series indicies of the dataset we just added */
-	Integer[] series =
-	    ECUxChartFactory.addDataset(d, data, this.xkey(), ykey, filter);
+	final Integer[] series =
+	    ECUxChartFactory.addDataset(d, data, this.xkey(), ykey, this.filter);
 
 	/* set the color for those series */
 	ECUxChartFactory.setAxisPaint(this.chartPanel.getChart(), axis,
@@ -652,7 +652,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 	WaitCursor.startWaitCursor(this);
 
-	for(ECUxDataset data : this.fileDatasets.values())
+	for(final ECUxDataset data : this.fileDatasets.values())
 	    data.buildRanges();
 
 	if(this.fatsFrame!=null)
@@ -660,10 +660,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 	for(int axis=0;axis<plot.getDatasetCount();axis++) {
-	    org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
+	    final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
 	    final DefaultXYDataset newdataset = new DefaultXYDataset();
 	    for(int series=0;series<pds.getSeriesCount();series++) {
-		Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
+		final Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
 		addDataset(axis, newdataset, ykey);
 	    }
 	    plot.setDataset(axis, newdataset);
@@ -682,7 +682,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     private void editChartY(Comparable<?> ykey, int axis, boolean add) {
-	for(ECUxDataset data : this.fileDatasets.values())
+	for(final ECUxDataset data : this.fileDatasets.values())
 	    editChartY(data, ykey, axis, add);
     }
 
@@ -691,9 +691,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	if(add && !(data.exists(ykey)) )
 	    return;
 	final XYPlot plot = this.chartPanel.getChart().getXYPlot();
-	DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
+	final DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
 	if(add) {
-	    Dataset.Key key = data.new Key(ykey.toString(), data);
+	    final Dataset.Key key = data.new Key(ykey.toString(), data);
 	    if(this.fileDatasets.size()==1) key.hideFilename();
 	    addDataset(axis, pds, key);
 	} else {
@@ -702,7 +702,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     private void addChartY(Comparable<?>[] ykey, int axis) {
-	for(Comparable<?> k : ykey)
+	for(final Comparable<?> k : ykey)
 	    editChartY(k, axis, true);
     }
 
@@ -723,7 +723,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     public void loadPresets(List<String> presets) {
 	boolean first = true;
 	Point where = null;
-	for (String s : presets) {
+	for (final String s : presets) {
 	    if (first) {
 		loadPreset(s);
 		first = false;
@@ -761,14 +761,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	this.prefs.put("title", p.tag());
 
 	// update AxisMenu selections
-	xAxis.setSelected(p.xkey());
-	yAxis[0].setOnlySelected(p.ykeys(0));
-	yAxis[1].setOnlySelected(p.ykeys(1));
+	this.xAxis.setSelected(p.xkey());
+	this.yAxis[0].setOnlySelected(p.ykeys(0));
+	this.yAxis[1].setOnlySelected(p.ykeys(1));
     }
 
     @Override
     public void actionPerformed(ActionEvent event, Comparable<?> parentId) {
-	AbstractButton source = (AbstractButton) (event.getSource());
+	final AbstractButton source = (AbstractButton) (event.getSource());
 	// System.out.println(source.getText() + ":" + parentId);
 	if(parentId.equals("X Axis")) {
 	    prefsPutXkey(source.getText());
@@ -789,12 +789,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	try {
 	    // System.out.println("removing title pref");
 	    this.prefs.remove("title");
-	} catch (Exception e) {}
+	} catch (final Exception e) {}
     }
 
     @Override
     public void windowClosing(java.awt.event.WindowEvent we) {
-	if(exitOnClose) exitApp();
+	if(this.exitOnClose) exitApp();
     }
 
     private void exitApp() {
@@ -809,7 +809,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     public static final String showInputDialog(String message) {
-	String ret = JOptionPane.showInputDialog(message);
+	final String ret = JOptionPane.showInputDialog(message);
 	if(ret == null || ret.length() == 0) return null;
 	if(ret.startsWith(".") || ret.contains(":") ||
 	    ret.contains(File.separator) ||
@@ -846,9 +846,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    }
 		    if(args[i].equals("-l")) {
 			try {
-			    for(String s : ECUxPreset.getPresets())
+			    for(final String s : ECUxPreset.getPresets())
 				System.out.println(s);
-			} catch (Exception e) {}
+			} catch (final Exception e) {}
 			System.exit(0);
 		    }
 		    if(args[i].equals("-?")) {
@@ -903,7 +903,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 			plot.pack();
 			plot.chartPanel.saveChartAsPNG(o.output);
 			System.exit(0);
-		    } catch (IOException e) {
+		    } catch (final IOException e) {
 			e.printStackTrace();
 		    }
 		}

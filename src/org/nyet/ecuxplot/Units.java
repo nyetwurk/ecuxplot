@@ -38,8 +38,8 @@ public final class Units {
 	    {".*Voltage.*", "V"},
 	};
 
-	for(int i=0;i<legend.length;i++) {
-	    if(id.matches(legend[i][0])) return legend[i][1];
+	for (final String[] element : legend) {
+	    if(id.matches(element[0])) return element[1];
 	}
 	return "";
     }

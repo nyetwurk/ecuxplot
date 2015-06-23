@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-
 import java.awt.Component;
 
 import javax.swing.JMenu;
@@ -18,7 +17,6 @@ import javax.swing.ButtonGroup;
 
 import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
-
 import org.nyet.logfile.Dataset.DatasetId;
 
 public class AxisMenu extends JMenu {
@@ -26,14 +24,14 @@ public class AxisMenu extends JMenu {
      *
      */
     private static final long serialVersionUID = 1L;
-    private SubActionListener listener;
-    private boolean radioButton;
-    private Comparable<?>[] initialChecked;
+    private final SubActionListener listener;
+    private final boolean radioButton;
+    private final Comparable<?>[] initialChecked;
 
-    private HashMap<String, AbstractButton> members =
+    private final HashMap<String, AbstractButton> members =
 	new HashMap<String, AbstractButton>();
 
-    private HashMap<String, JMenu> subMenus =
+    private final HashMap<String, JMenu> subMenus =
 	new HashMap<String, JMenu>();
 
     private int count=0;
@@ -60,14 +58,14 @@ public class AxisMenu extends JMenu {
 	SubActionListener listener, ButtonGroup bg) {
 	boolean checked = false;
 
-	for(int i=0;i<initialChecked.length;i++) {
-	    if(id.equals(initialChecked[i])) {
+	for (final Comparable<?> element : this.initialChecked) {
+	    if(id.equals(element)) {
 		checked = true;
 		break;
 	    }
 	}
 
-	AbstractButton item = (bg==null)?new JCheckBox(id, checked):
+	final AbstractButton item = (bg==null)?new JCheckBox(id, checked):
 	    new JRadioButtonMenuItem(id, checked);
 
 	if(tip!=null) item.setToolTipText(tip);
@@ -85,7 +83,7 @@ public class AxisMenu extends JMenu {
 
     private void add(String id, String tip, SubActionListener listener,
 	ButtonGroup bg, int where) {
-	AbstractButton item = makeMenuItem(id, tip, listener, bg);
+	final AbstractButton item = makeMenuItem(id, tip, listener, bg);
 	this.add(item, where);
     }
 
@@ -99,7 +97,7 @@ public class AxisMenu extends JMenu {
 
 	if (this.members.containsKey(id)) return;
 
-	AbstractButton item = makeMenuItem(id, tip, listener, bg);
+	final AbstractButton item = makeMenuItem(id, tip, listener, bg);
 
 	if(id.matches("RPM")) {
 	    this.add(item, 0);	// always add rpms first!
@@ -204,7 +202,7 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("IgnitionTimingAngleOverall")) {
 		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
 	    }
-	    AbstractButton titem = makeMenuItem(id + " (ms)", tip, listener, bg);
+	    final AbstractButton titem = makeMenuItem(id + " (ms)", tip, listener, bg);
 	    addToSubmenu("TrueTiming", titem, true);
 	} else if(id.matches("(Cat|MainCat).*")) {
 	    addToSubmenu("Cats", item);
@@ -275,14 +273,14 @@ public class AxisMenu extends JMenu {
 	    }
 
 	    // put ME7Log next
-	    JMenu me7l=subMenus.get("ME7 Logger");
+	    final JMenu me7l=this.subMenus.get("ME7 Logger");
 	    if(me7l!=null) {
 		super.add(new JSeparator());
 		super.add(me7l);
 	    }
 
 	    // put calc next
-	    JMenu calc=subMenus.get("Calc");
+	    final JMenu calc=this.subMenus.get("Calc");
 	    if(calc!=null) {
 		super.add(new JSeparator());
 		super.add(calc);
@@ -298,7 +296,7 @@ public class AxisMenu extends JMenu {
 	// add "Remove all" to top level menu
 	if(ids!=null && !radioButton) {
 	    super.add(new JSeparator());
-	    JMenuItem item=new JMenuItem("Remove all");
+	    final JMenuItem item=new JMenuItem("Remove all");
 	    super.add(item);
 	    item.addActionListener(new MenuListener(listener,this.getText()));
 	}
@@ -321,7 +319,7 @@ public class AxisMenu extends JMenu {
     public Component add(Component item) {return add(item, false);}
     private Component add(Component item, boolean force) {
 	if (this.more==null && item instanceof JSeparator) {
-	    Component c=this.getMenuComponent(this.getMenuComponentCount()-1);
+	    final Component c=this.getMenuComponent(this.getMenuComponentCount()-1);
 	    if (c==null || (c instanceof JSeparator))
 		return null;
 	    return super.add(item);
@@ -337,7 +335,7 @@ public class AxisMenu extends JMenu {
 	    // if this is root, delay add until later so its closer to the bottom
 	    if (this.parent != null) {
 		this.add(new JSeparator());
-		this.add(more, true);
+		this.add(this.more, true);
 	    }
 	}
 	// will recurse until it fits
@@ -345,18 +343,18 @@ public class AxisMenu extends JMenu {
     }
 
     public void uncheckAll() {
-	for(AbstractButton item : this.members.values())
+	for(final AbstractButton item : this.members.values())
 	    item.setSelected(false);
     }
 
     public void setSelected(Comparable<?> key) {
-	AbstractButton item = this.members.get(key);
+	final AbstractButton item = this.members.get(key);
 	if(item!=null) item.setSelected(true);
     }
 
     public void setSelected(Comparable<?>[] keys) {
-	for(int i=0; i<keys.length; i++) {
-	    this.setSelected(keys[i]);
+	for (final Comparable<?> key : keys) {
+	    this.setSelected(key);
 	}
     }
 
@@ -365,8 +363,8 @@ public class AxisMenu extends JMenu {
     }
 
     public void setOnlySelected(Set<Comparable<?>> keys) {
-	for(String ik : this.members.keySet()) {
-	    AbstractButton item = this.members.get(ik);
+	for(final String ik : this.members.keySet()) {
+	    final AbstractButton item = this.members.get(ik);
 	    item.setSelected(keys.contains(ik));
 	}
     }

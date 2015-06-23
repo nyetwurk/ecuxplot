@@ -5,14 +5,14 @@ import java.nio.ByteBuffer;
 public class HexValue implements Comparable<Object> {
     public int v;
     @Override
-    public String toString() { return String.format("0x%x", v); }
+    public String toString() { return String.format("0x%x", this.v); }
     public HexValue(int vv) { this.v=vv; }
     public HexValue(ByteBuffer b) { this.v = b.getInt(); }
 
     public static final String dumpHex(ByteBuffer b, int length) {
 	if(length > b.limit()-b.position())
 	    length = b.limit()-b.position();
-	byte[] out = new byte[length];
+	final byte[] out = new byte[length];
 	b.slice().get(out, 0, length);
 	String s="";
 	for(int i=0;i<length;i++) {
@@ -26,7 +26,7 @@ public class HexValue implements Comparable<Object> {
     public boolean equals(int v) { return (v==this.v); }
     @Override
     public int compareTo(Object o) {
-	return (new Integer(v).compareTo(((HexValue)o).v));
+	return (new Integer(this.v).compareTo(((HexValue)o).v));
     }
 
     public static final String dumpHex(ByteBuffer b) {

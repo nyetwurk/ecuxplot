@@ -11,7 +11,7 @@ public class DoubleArray
     private int sp = 0;
 
     private double[] array;
-    private int growthSize;
+    private final int growthSize;
 
     public interface TransferFunction {
 	public double f(double x, double y);
@@ -44,34 +44,34 @@ public class DoubleArray
     public DoubleArray( int initialSize, int growthSize )
     {
         this.growthSize = growthSize;
-        array = new double[ initialSize ];
+        this.array = new double[ initialSize ];
     }
 
     public void append( double d )
     {
-        if( sp >= array.length ) // time to grow!
+        if( this.sp >= this.array.length ) // time to grow!
         {
-            double[] tmpArray = new double[ array.length + growthSize ];
-            System.arraycopy( array, 0, tmpArray, 0, array.length );
-            array = tmpArray;
+            final double[] tmpArray = new double[ this.array.length + this.growthSize ];
+            System.arraycopy( this.array, 0, tmpArray, 0, this.array.length );
+            this.array = tmpArray;
         }
-        array[ sp ] = d;
-        sp += 1;
+        this.array[ this.sp ] = d;
+        this.sp += 1;
     }
 
-    public int size() { return sp; }
+    public int size() { return this.sp; }
 
     public double[] toArray()
     {
-        double[] trimmedArray = new double[ sp ];
-        System.arraycopy( array, 0, trimmedArray, 0, trimmedArray.length );
+        final double[] trimmedArray = new double[ this.sp ];
+        System.arraycopy( this.array, 0, trimmedArray, 0, trimmedArray.length );
         return trimmedArray;
     }
 
     public double[] toArray(int start, int end)	// end is inclusive
     {
-        double[] trimmedArray = new double[ end-start+1 ];
-	double[] out = this.array;
+        final double[] trimmedArray = new double[ end-start+1 ];
+	final double[] out = this.array;
 	System.arraycopy( out, start, trimmedArray, 0, trimmedArray.length );
         return trimmedArray;
     }
@@ -82,11 +82,11 @@ public class DoubleArray
     }
 
     public double get(int i) {
-	return i<this.sp?array[i]:0;
+	return i<this.sp?this.array[i]:0;
     }
 
     public double[] _func(TransferFunction f, double d) {
-        double[] out = new double[ sp ];
+        final double[] out = new double[ this.sp ];
 	for(int i=0;i<this.sp;i++) {
 	    out[i]=f.f(this.array[i], d);
 	}
@@ -100,7 +100,7 @@ public class DoubleArray
     }
 
     public double[] _func(TransferFunction f, double[] d) {
-        double[] out = new double[ sp ];
+        final double[] out = new double[ this.sp ];
 	for(int i=0;i<this.sp && i<d.length;i++) {
 	    out[i]=f.f(this.array[i], d[i]);
 	}
@@ -155,7 +155,7 @@ public class DoubleArray
     }
 
     public double[] _ident(double x) {
-        double[] out = new double[ sp ];
+        final double[] out = new double[ this.sp ];
 	for(int i=0;i<this.sp;i++) {
 	    out[i]=x;
 	}
@@ -166,9 +166,9 @@ public class DoubleArray
     }
 
     public double[] _inverse() {
-        double[] out = new double[ sp ];
+        final double[] out = new double[ this.sp ];
 	for(int i=0;i<this.sp;i++) {
-	    out[i]=(array[i]==0)?0:1/array[i];
+	    out[i]=(this.array[i]==0)?0:1/this.array[i];
 	}
 	return out;
     }
@@ -177,7 +177,7 @@ public class DoubleArray
     }
 
     public double[] _abs() {
-        double[] out = new double[ sp ];
+        final double[] out = new double[ this.sp ];
 	for(int i=0;i<this.sp;i++) {
 	    out[i]=Math.abs(this.array[i]);
 	}
@@ -188,7 +188,7 @@ public class DoubleArray
     }
 
     public double[] _min(double d) {
-        double[] out = new double[ sp ];
+        final double[] out = new double[ this.sp ];
 	for(int i=0;i<this.sp;i++) {
 	    out[i]=Math.min(this.array[i],d);
 	}
@@ -199,7 +199,7 @@ public class DoubleArray
     }
 
     public double[] _max(double d) {
-        double[] out = new double[ sp ];
+        final double[] out = new double[ this.sp ];
 	for(int i=0;i<this.sp;i++) {
 	    out[i]=Math.max(this.array[i],d);
 	}
@@ -210,7 +210,7 @@ public class DoubleArray
     }
 
     public double[] _max(double[] d) {
-        double[] out = new double[ sp ];
+        final double[] out = new double[ this.sp ];
 	for(int i=0;i<this.sp && i<d.length;i++) {
 	    out[i]=Math.max(this.array[i],d[i]);
 	}
@@ -228,7 +228,7 @@ public class DoubleArray
     }
 
     public double[] _derivative(double[] d, int window) {
-        double[] out = new double[ this.sp ];
+        final double[] out = new double[ this.sp ];
 	/*
         if(this.sp==1 || d.length<2 || d.length!=this.sp) {
             System.out.println("sp: " + sp +", d.len: " + d.length +
@@ -236,12 +236,12 @@ public class DoubleArray
         }
 	*/
         for(int i=0;i<this.sp;i++) {
-            int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
+            final int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
             out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
             // System.out.println(i +" ["+ i0 + ", " + i1 + "]:" + this.get(i1) + "," + this.get(i0) + "/" + d[i1] +","+d[i0]);
         }
 	if(window>0 && window<this.sp/2) {
-	    MovingAverageSmoothing s = new MovingAverageSmoothing(window);
+	    final MovingAverageSmoothing s = new MovingAverageSmoothing(window);
 	    return s.smoothAll(out);
 	} else {
 	    return out;
@@ -255,13 +255,13 @@ public class DoubleArray
     }
 
     public double[] _integral(double[] d, double min, double max) {
-        double[] out = new double[ sp ];
-        if(sp==1 || d.length<2 || d.length!=sp) {
-            System.out.println("sp: " + sp +", d.len: " + d.length +
-            ", sp=" + sp);
+        final double[] out = new double[ this.sp ];
+        if(this.sp==1 || d.length<2 || d.length!=this.sp) {
+            System.out.println("sp: " + this.sp +", d.len: " + d.length +
+            ", sp=" + this.sp);
         }
         for(int i=0;i<this.sp;i++) {
-            int i0 = Math.max(i-1, 0);
+            final int i0 = Math.max(i-1, 0);
 	    out[i] = out[i0]+this.get(i)*(d[i]-d[i0]);
 	    if(out[i]<min) out[i]=min;
 	    else if(out[i]>max) out[i]=max;
@@ -281,19 +281,19 @@ public class DoubleArray
     public DoubleArray smooth() {
 	if(this.sp<4) return new DoubleArray(this.toArray());
 	if(this.sp<10) return movingAverage(this.sp/4);
-	SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
+	final SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
 	return new DoubleArray(s.smoothAll(this.toArray()));
     }
 
     public DoubleArray movingAverage(int window) {
-	MovingAverageSmoothing s = new MovingAverageSmoothing(window);
+	final MovingAverageSmoothing s = new MovingAverageSmoothing(window);
 	return new DoubleArray(s.smoothAll(this.toArray()));
     }
 
     public Spline spline(int order, double[] mesh) {
 	try {
 	    return POddSplineCreator.createSpline(order, mesh, this.toArray());
-	} catch (CalculatingException e){
+	} catch (final CalculatingException e){
 	    System.out.println(e);
 	}
 	return null;
@@ -303,7 +303,7 @@ public class DoubleArray
 	try {
 	    return POddSplineCreator.createSpline(order, 0, 1, this.sp,
 		this.toArray());
-	} catch (CalculatingException e){
+	} catch (final CalculatingException e){
 	    System.out.println(e);
 	}
 	return null;
@@ -311,8 +311,8 @@ public class DoubleArray
     public Spline spline() throws CalculatingException { return this.spline(2); }
 
     public double[] _splineDerivative(double[] d) {
-        double[] out = new double[ sp ];
-	Spline spl = this.spline(d);
+        final double[] out = new double[ this.sp ];
+	final Spline spl = this.spline(d);
         for(int i=0;i<this.sp && i<d.length;i++) {
 	    out[i]=spl.value(d[i], 1);
 	}

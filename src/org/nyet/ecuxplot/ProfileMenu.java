@@ -22,9 +22,9 @@ public final class ProfileMenu extends JMenu {
      *
      */
     private static final long serialVersionUID = 1L;
-    private ECUxPlot plotFrame;
-    private JMenu loadProfilesMenu;
-    private JMenu saveProfilesMenu;
+    private final ECUxPlot plotFrame;
+    private final JMenu loadProfilesMenu;
+    private final JMenu saveProfilesMenu;
 
     public ProfileMenu(String id, ECUxPlot plotFrame) {
 	super(id);
@@ -59,19 +59,19 @@ public final class ProfileMenu extends JMenu {
 	    if (!dir.isDirectory()) {
 		dir=new File("profiles");
 	    }
-	} catch (Exception e) {
-	    ProfileMenu pm = ProfileMenu.this;
+	} catch (final Exception e) {
+	    final ProfileMenu pm = ProfileMenu.this;
 	    JOptionPane.showMessageDialog(pm.plotFrame, e.toString());
 	    e.printStackTrace();
 	    return;
 	};
 
 	if (dir.isDirectory()) {
-	    LoadProfileAction lpa = new LoadProfileAction(dir);
-	    for(File p : dir.listFiles()) {
+	    final LoadProfileAction lpa = new LoadProfileAction(dir);
+	    for(final File p : dir.listFiles()) {
 		if(p.isDirectory() && !p.getName().startsWith(".")) {
 		    // do not add static profiles to "save" menu
-		    JMenuItem jmi = new JMenuItem(p.getName());
+		    final JMenuItem jmi = new JMenuItem(p.getName());
 		    jmi.addActionListener(lpa);
 		    this.loadProfilesMenu.add(jmi);
 		}
@@ -82,13 +82,13 @@ public final class ProfileMenu extends JMenu {
 	dir=new File(Locate.getDataDirectory("ECUxPlot"),
 		"profiles");
 	if (dir.isDirectory()) {
-	    SaveProfileAction spa = new SaveProfileAction(dir);
-	    File profiles[] = dir.listFiles();
+	    final SaveProfileAction spa = new SaveProfileAction(dir);
+	    final File profiles[] = dir.listFiles();
 	    if(profiles!=null && profiles.length>0) {
 		// add separator to load menu (divide static from custom)
 		this.loadProfilesMenu.add(new JSeparator());
-		LoadProfileAction lpa = new LoadProfileAction(dir);
-		for(File p : profiles) {
+		final LoadProfileAction lpa = new LoadProfileAction(dir);
+		for(final File p : profiles) {
 		    if(p.isDirectory() && !p.getName().startsWith(".")) {
 			// add both static and custom items
 			JMenuItem jmi = new JMenuItem(p.getName());
@@ -102,27 +102,27 @@ public final class ProfileMenu extends JMenu {
 		// add separator to save menu (divide custom from new)
 		this.saveProfilesMenu.add(new JSeparator());
 	    }
-	    JMenuItem jmi = new JMenuItem("New Profile...");
+	    final JMenuItem jmi = new JMenuItem("New Profile...");
 	    jmi.addActionListener(spa);
 	    this.saveProfilesMenu.add(jmi);
 	}
     }
 
     private class LoadProfileAction implements ActionListener {
-	private File dir;
+	private final File dir;
 	public LoadProfileAction(File dir) {this.dir=dir;}
 	@Override
 	public void actionPerformed(ActionEvent event) {
-	    ProfileMenu pm = ProfileMenu.this;
+	    final ProfileMenu pm = ProfileMenu.this;
 	    try {
-		File pdir=new File(this.dir, event.getActionCommand());
-		File profiles[] = pdir.listFiles(new GenericFileFilter("xml"));
-		for(File p : profiles) {
+		final File pdir=new File(this.dir, event.getActionCommand());
+		final File profiles[] = pdir.listFiles(new GenericFileFilter("xml"));
+		for(final File p : profiles) {
 		    ECUxPlot.getPreferences();
 		    Preferences.importPreferences(new FileInputStream(p));
 		}
 		if(pm.plotFrame!=null) pm.plotFrame.rebuild();
-	    } catch (Exception e) {
+	    } catch (final Exception e) {
 		JOptionPane.showMessageDialog(pm.plotFrame, e.toString());
 		e.printStackTrace();
 	    };
@@ -130,20 +130,20 @@ public final class ProfileMenu extends JMenu {
     }
 
     private class SaveProfileAction implements ActionListener {
-	private File dir;
+	private final File dir;
 	public SaveProfileAction(File dir) {this.dir=dir;}
 	@Override
 	public void actionPerformed(ActionEvent event) {
 	    String prof = event.getActionCommand();
 	    boolean make = false;
-	    ProfileMenu pm = ProfileMenu.this;
+	    final ProfileMenu pm = ProfileMenu.this;
 	    if(prof.equals("New Profile...")) {
 		prof = ECUxPlot.showInputDialog("Enter profile name");
 		if (prof==null) return;
 		make = true;
 	    }
 	    try {
-		File pdir=new File(this.dir, prof);
+		final File pdir=new File(this.dir, prof);
 		if(make) {
 		    if(pdir.isDirectory()) {
 			JOptionPane.showMessageDialog(pm.plotFrame,
@@ -160,13 +160,13 @@ public final class ProfileMenu extends JMenu {
 		    updateProfiles();
 		}
 		if(pdir.isDirectory()) {
-		    for (File f : pdir.listFiles()) f.delete();
+		    for (final File f : pdir.listFiles()) f.delete();
 		    pm.plotFrame.getEnv().c.get().exportNode(new
 			FileOutputStream(new File(pdir, "constants.xml")));
 		    pm.plotFrame.getEnv().f.get().exportNode(new
 			FileOutputStream(new File(pdir, "fueling.xml")));
 		}
-	    } catch (Exception e) {
+	    } catch (final Exception e) {
 		JOptionPane.showMessageDialog(pm.plotFrame, e.toString());
 		e.printStackTrace();
 	    };

@@ -11,7 +11,7 @@ public class FuelingEditor extends PreferencesEditor {
      */
     private static final long serialVersionUID = 1L;
 
-    private Fueling fueling;
+    private final Fueling fueling;
 
     public JTextField MAF;
     public JLabel MAFCorrection;

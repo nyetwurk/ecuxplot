@@ -22,13 +22,13 @@ public class ECUxChartPanel extends ChartPanel {
     }
 
     public void doSaveAs(String fname) throws IOException {
-	JFileChooser fileChooser = new JFileChooser();
+	final JFileChooser fileChooser = new JFileChooser();
 	fileChooser.setSelectedFile(new File(fname + ".png"));
-	ExtensionFileFilter filter = new ExtensionFileFilter(
+	final ExtensionFileFilter filter = new ExtensionFileFilter(
 	       localizationResources.getString("PNG_Image_Files"), ".png");
 	fileChooser.addChoosableFileFilter(filter);
 
-	int option = fileChooser.showSaveDialog(this);
+	final int option = fileChooser.showSaveDialog(this);
 	if (option == JFileChooser.APPROVE_OPTION) {
 	   String filename = fileChooser.getSelectedFile().getPath();
 	   if (isEnforceFileExtensions()) {

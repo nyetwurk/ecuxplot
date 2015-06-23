@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 import org.nyet.util.MMapFile;
 
 public class Parser extends MMapFile {
-    private String signature;
-    private String filename;
-    private String version;
+    private final String signature;
+    private final String filename;
+    private final String version;
 
     public ArrayList<Project> projects;
 
@@ -35,7 +35,7 @@ public class Parser extends MMapFile {
 	eatNumber(b);		// 2
 
 	if(b.getInt()!=-1) {
-	    int pos = b.position();
+	    final int pos = b.position();
 	    throw new Exception(HexValue.dumpHex(b, 16) +
 		": can't find term 1 @" + pos);
 	}
@@ -57,7 +57,7 @@ public class Parser extends MMapFile {
 	eatNumber(b,1,1);	// 0 (char)
 
 	if(b.getInt()!=-1) {
-	    int pos = b.position();
+	    final int pos = b.position();
 	    throw new Exception(HexValue.dumpHex(b, 16) +
 		": can't find term 2 @" + pos);
 	}
@@ -73,22 +73,19 @@ public class Parser extends MMapFile {
 		eatNumber(b,1,1);	// 0 (char)
 		eatNumber(b,1);		// 5
 		eatNumber(b,5);		// 0 x 5
-		@SuppressWarnings("unused")
-		String car = Parse.string(b);
-		@SuppressWarnings("unused")
-		String engine = Parse.string(b);
+	    Parse.string(b);
+	    Parse.string(b);
 		eatNumber(b,10);	// 0 x 10
 
 		if(b.getInt()!=-1) {
-		    int pos = b.position();
+		    final int pos = b.position();
 		    throw new Exception(HexValue.dumpHex(b, 16) +
 			": can't find term 2a @" + pos);
 		}
 
 		eatNumber(b,1,1);	// 0 (char)
 		eatNumber(b,12);	// 0 x 12
-		@SuppressWarnings("unused")
-		String data = Parse.string(b);
+	    Parse.string(b);
 		eatNumber(b,7);	// 0 x 7
 		eatNumber(b,1);	// 9d ff ff ff
 		eatNumber(b,2);		// 0 x 2
@@ -101,7 +98,7 @@ public class Parser extends MMapFile {
 	eatNumber(b,18);	// 0 x 18
 
 	if(b.getInt()!=-1) {
-	    int pos = b.position();
+	    final int pos = b.position();
 	    throw new Exception(HexValue.dumpHex(b, 16) +
 		": can't find term 3 @" + pos);
 	}
@@ -125,10 +122,10 @@ public class Parser extends MMapFile {
 
     public Parser (String fname) throws Exception {
 	super(fname, ByteOrder.LITTLE_ENDIAN);
-	int kp[] = new int[2];
+	final int kp[] = new int[2];
 	int kpv;
-	ByteBuffer buf = this.getByteBuffer();
-	signature = Parse.string(buf);
+	final ByteBuffer buf = this.getByteBuffer();
+	this.signature = Parse.string(buf);
 	kp[0] = buf.getInt();
 	kp[1] = buf.getInt();
 	switch(kp[0]) {
@@ -146,46 +143,46 @@ public class Parser extends MMapFile {
 		throw new Exception("Unknown kp version " + kp[0]);
 	}
 
-	filename = Parse.string(buf);
-	version = Parse.string(buf);
+	this.filename = Parse.string(buf);
+	this.version = Parse.string(buf);
 
 	parseHeader(buf, kpv);
 
-	projects = new ArrayList<Project>();
-	Project p = new Project(fname, buf, kpv);
+	this.projects = new ArrayList<Project>();
+	final Project p = new Project(fname, buf, kpv);
 	p.mTime = new Date(this.mTime);
-	projects.add(p);
+	this.projects.add(p);
     }
 
     @Override
     public String toString() {
-	String out="signature: " + signature + "\n";
-	out += "filename: " + filename + "\n";
-	out += "version: " + version + "\n";
-	out += "projects: " + projects.size() + "\n";
+	String out="signature: " + this.signature + "\n";
+	out += "filename: " + this.filename + "\n";
+	out += "version: " + this.version + "\n";
+	out += "projects: " + this.projects.size() + "\n";
 
-	for (Project p: projects)
+	for (final Project p: this.projects)
 	    out += p.toString();
 	return out;
     }
 
     public ArrayList<Map> find(Map map) {
-	ArrayList<Map> matches = new ArrayList<Map>();
-	for (Project p: projects)
+	final ArrayList<Map> matches = new ArrayList<Map>();
+	for (final Project p: this.projects)
 	    matches.addAll(p.find(map));
 	return matches;
     }
 
     public ArrayList<Map> find(String id) {
-	ArrayList<Map> matches = new ArrayList<Map>();
-	for (Project p: projects)
+	final ArrayList<Map> matches = new ArrayList<Map>();
+	for (final Project p: this.projects)
 	    matches.addAll(p.find(id));
 	return matches;
     }
 
     public ArrayList<Map> find(HexValue v) {
-	ArrayList<Map> matches = new ArrayList<Map>();
-	for (Project p: projects)
+	final ArrayList<Map> matches = new ArrayList<Map>();
+	for (final Project p: this.projects)
 	    matches.addAll(p.find(v));
 	return matches;
     }

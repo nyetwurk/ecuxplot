@@ -21,14 +21,14 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
      *
      */
     private static final long serialVersionUID = 1L;
-    private FATSDataset dataset;
-    private ECUxPlot plotFrame;
-    private JTextField start;
-    private JTextField end;
+    private final FATSDataset dataset;
+    private final ECUxPlot plotFrame;
+    private final JTextField start;
+    private final JTextField end;
 
     public static FATSChartFrame createFATSChartFrame(
 	    TreeMap<String, ECUxDataset> fileDatasets, ECUxPlot plotFrame) {
-	FATSDataset dataset = new FATSDataset(fileDatasets);
+	final FATSDataset dataset = new FATSDataset(fileDatasets);
 	final JFreeChart chart =
 	    ECUxChartFactory.createFATSChart(dataset);
 	return new FATSChartFrame(chart, dataset, plotFrame);
@@ -41,9 +41,9 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	this.dataset=dataset;
 	this.plotFrame=plotFrame;
 
-	CategoryPlot plot = chart.getCategoryPlot();
+	final CategoryPlot plot = chart.getCategoryPlot();
 	plot.getRangeAxis().setLabel("seconds");
-	BarRenderer renderer = (BarRenderer)plot.getRenderer();
+	final BarRenderer renderer = (BarRenderer)plot.getRenderer();
 
 	renderer.setBaseItemLabelGenerator(
 	    new org.jfree.chart.labels.StandardCategoryItemLabelGenerator(
@@ -52,15 +52,15 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	);
 	renderer.setBaseItemLabelsVisible(true);
 
-	JPanel panel = new JPanel();
+	final JPanel panel = new JPanel();
 	panel.setLayout(new BorderLayout());
-	ECUxChartPanel chartPanel = new ECUxChartPanel(chart);
+	final ECUxChartPanel chartPanel = new ECUxChartPanel(chart);
 	// chartPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 	chartPanel.setBorder(BorderFactory.createLoweredBevelBorder());
 	panel.add(chartPanel, BorderLayout.CENTER);
 
 
-	JPanel rpmPanel = new JPanel();
+	final JPanel rpmPanel = new JPanel();
 	rpmPanel.setLayout(new BoxLayout(rpmPanel, BoxLayout.LINE_AXIS));
 	rpmPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 	this.start=new JTextField(""+dataset.getStart(), 5);
@@ -71,14 +71,14 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 
 	rpmPanel.add(Box.createRigidArea(new Dimension(5,0)));
 
-	JButton apply = new JButton("Apply");
+	final JButton apply = new JButton("Apply");
 	apply.addActionListener(this);
 	this.getRootPane().setDefaultButton(apply);
 	rpmPanel.add(apply);
 
 	rpmPanel.add(Box.createRigidArea(new Dimension(5,0)));
 
-	JButton defaults = new JButton("Defaults");
+	final JButton defaults = new JButton("Defaults");
 	defaults.addActionListener(this);
 	rpmPanel.add(defaults);
 
@@ -93,9 +93,9 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	final Toolkit tk = Toolkit.getDefaultToolkit();
 	final Dimension d = tk.getScreenSize();
 	final Dimension s = this.windowSize();
-	final Point pl = plotFrame.getLocation();
+	final Point pl = this.plotFrame.getLocation();
 
-	Point l = this.windowLocation();
+	final Point l = this.windowLocation();
 	l.translate(pl.x, pl.y);
 	if(l.x<0) l.x=0;
 	if(l.y<0) l.y=0;
@@ -106,7 +106,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 
     public void setDatasets(TreeMap<String, ECUxDataset> fileDatasets) {
 	this.dataset.clear();
-	for(ECUxDataset data : fileDatasets.values())
+	for(final ECUxDataset data : fileDatasets.values())
 	    setDataset(data);
     }
 
@@ -151,8 +151,8 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     }
 
     private void putWindowLocation() {
-	Point l = this.getLocation();
-	Point pl = plotFrame.getLocation();
+	final Point l = this.getLocation();
+	final Point pl = this.plotFrame.getLocation();
 	l.translate(-pl.x, -pl.y);
 	ECUxPlot.getPreferences().putInt("FATSWindowX", l.x);
 	ECUxPlot.getPreferences().putInt("FATSWindowY", l.y);

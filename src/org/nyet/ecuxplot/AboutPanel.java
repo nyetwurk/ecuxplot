@@ -17,10 +17,10 @@ public class AboutPanel extends JPanel implements ActionListener {
 
     public AboutPanel() {
 	this.setLayout(new BorderLayout());
-	String v = new org.nyet.util.Version().toString();
+	final String v = new org.nyet.util.Version().toString();
 	this.add(new JLabel(v), BorderLayout.EAST);
 
-	JButton icon = new JButton(new ImageIcon(getClass().getResource(
+	final JButton icon = new JButton(new ImageIcon(getClass().getResource(
 	    "icons/ECUxPlot2-64.png")));
 	icon.setBorderPainted(false);
 	icon.setContentAreaFilled(false);
@@ -29,7 +29,7 @@ public class AboutPanel extends JPanel implements ActionListener {
 
 	final String html =
 	"<a href=\"http://nyet.org/cars/ECUxPlot\">ECUxPlot home page</a>";
-	JButton url = new JButton("<html>" + html + "</html>");
+	final JButton url = new JButton("<html>" + html + "</html>");
 	url.setActionCommand("Homepage");
 	url.setBorderPainted(false);
 	url.setContentAreaFilled(false);

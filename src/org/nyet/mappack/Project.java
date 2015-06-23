@@ -15,39 +15,39 @@ public class Project {
     public String stem;
     public String name;
     public Date mTime;
-    private HexValue[] header = new HexValue[4];
+    private final HexValue[] header = new HexValue[4];
     public String version;
-    private HexValue[] header1 = new HexValue[4];
-    private HexValue[] h77 = new HexValue[1];	// 77 33 88 11
+    private final HexValue[] header1 = new HexValue[4];
+    private final HexValue[] h77 = new HexValue[1];	// 77 33 88 11
     public int numMaps;
     public TreeSet<Map> maps;
-    private HexValue[] header2 = new HexValue[3];
+    private final HexValue[] header2 = new HexValue[3];
     public int numFolders;
     public TreeSet<Folder> folders = new TreeSet<Folder>();
-    private int kpv;
+    private final int kpv;
 
     private void ParseHeader(ByteBuffer b) throws ParserException {
 	this.name = Parse.string(b);
 	Parse.buffer(b, this.header);	// unk
 
-	if (kpv == Map.INPUT_KP_v2) b.getInt();	// eat an extra 0
+	if (this.kpv == Map.INPUT_KP_v2) b.getInt();	// eat an extra 0
 
 	this.version = Parse.string(b);
 	Parse.buffer(b, this.header1);	// unk
-	if (kpv == Map.INPUT_KP_v2) b.getInt();	// eat an extra 0
+	if (this.kpv == Map.INPUT_KP_v2) b.getInt();	// eat an extra 0
 
 	Parse.buffer(b, this.h77);	// unk
-	if (kpv == Map.INPUT_KP_v2) b.get(); // eat an extra 0 byte
+	if (this.kpv == Map.INPUT_KP_v2) b.get(); // eat an extra 0 byte
     }
 
     private static ByteBuffer is2bb(ZipInputStream in) throws IOException {
 	final int BUFSIZE=1024;
-	ByteArrayOutputStream out = new ByteArrayOutputStream(BUFSIZE);
+	final ByteArrayOutputStream out = new ByteArrayOutputStream(BUFSIZE);
 
-	byte[] tmp = new byte[BUFSIZE];
+	final byte[] tmp = new byte[BUFSIZE];
 
 	while (true) {
-	    int r = in.read(tmp, 0, BUFSIZE);
+	    final int r = in.read(tmp, 0, BUFSIZE);
 	    if (r == -1) break;
 	    if (r>0) out.write(tmp,0,r);
 	}
@@ -56,20 +56,19 @@ public class Project {
     }
 
     private void ParseMapsZip(ByteBuffer b) throws ParserException {
-	int start = b.position();
-	int zsize = b.getInt();
-	byte[] zip = new byte[zsize];
+	final int start = b.position();
+	final int zsize = b.getInt();
+	final byte[] zip = new byte[zsize];
 	b.get(zip);
-	ByteArrayInputStream bbis = new ByteArrayInputStream(zip);
-	ZipInputStream zis = new ZipInputStream(bbis);
+	final ByteArrayInputStream bbis = new ByteArrayInputStream(zip);
+	final ZipInputStream zis = new ZipInputStream(bbis);
 	try {
-	    @SuppressWarnings("unused")
-	    ZipEntry ze = zis.getNextEntry();
-	    ByteBuffer bb = is2bb(zis);
+	    zis.getNextEntry();
+	    final ByteBuffer bb = is2bb(zis);
 	    bb.order(ByteOrder.LITTLE_ENDIAN);
 	    bb.get();	// eat a byte
 	    ParseMaps(bb);
-	} catch (IOException e) {
+	} catch (final IOException e) {
 	    throw new ParserException(b, e.toString(), e);
 	}
 
@@ -82,11 +81,11 @@ public class Project {
 	this.numMaps = b.getInt();
 
 	this.maps = new TreeSet<Map>();
-	for(int i=0;i<numMaps;i++) {
+	for(int i=0;i<this.numMaps;i++) {
 	    try {
-		Map m = new Map(i, b, this.kpv);
+		final Map m = new Map(i, b, this.kpv);
 		this.maps.add(m);
-	    } catch (ParserException e) {
+	    } catch (final ParserException e) {
 		throw new ParserException(e.b,
 		    String.format("error parsing map %d/%d:\n  %s",
 			(i+1), this.numMaps, e.getMessage()),
@@ -99,12 +98,12 @@ public class Project {
 	// Folders
 	this.numFolders = b.getInt();
 
-	for(int i=0;i<numFolders;i++) {
+	for(int i=0;i<this.numFolders;i++) {
 	    try {
-		Folder f = new Folder(b, this.kpv);
-		if(f.id>=0 && f.id<numFolders)
+		final Folder f = new Folder(b, this.kpv);
+		if(f.id>=0 && f.id<this.numFolders)
 		    this.folders.add(f);
-	    } catch (ParserException e) {
+	    } catch (final ParserException e) {
 		throw new ParserException(e.b,
 		    String.format("error parsing folder %d/%d: %s",
 			(i+1), this.numMaps, e.toString()),
@@ -113,16 +112,16 @@ public class Project {
 	}
 
 	// renumber ordinally, and make a lookup table for it
-        int flut[] = new int[numFolders];
+        final int flut[] = new int[this.numFolders];
 	int i=0;
-	for(Folder f: this.folders) {
+	for(final Folder f: this.folders) {
 	    flut[f.id]=i; // old->new
 	    f.id=i++; // new id
 	}
 
 	if(this.maps!=null) {
 	    // fix up map folder ids
-	    for(Map m: this.maps) {
+	    for(final Map m: this.maps) {
 		m.folderId=flut[m.folderId]; // old->new
 	    }
 	}
@@ -148,10 +147,10 @@ public class Project {
 
     @Override
     public String toString () {
-	String out ="project: '" + name + "': (" + version + ") - " + numMaps + " maps\n";
-	out += "  h: " + Arrays.toString(header) + "\n";
-	out += " h1: " + Arrays.toString(header1) + "\n";
-	out += " h2: " + Arrays.toString(header2) + "\n";
+	String out ="project: '" + this.name + "': (" + this.version + ") - " + this.numMaps + " maps\n";
+	out += "  h: " + Arrays.toString(this.header) + "\n";
+	out += " h1: " + Arrays.toString(this.header1) + "\n";
+	out += " h2: " + Arrays.toString(this.header2) + "\n";
 	// out += "rem: " + Arrays.toString(remaining) + "\n";
 	return out;
     }
@@ -176,12 +175,12 @@ public class Project {
 		out += String.format(Map.XDF_LBL+"0x0\n",1225, "ADSCheck", 0);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1300, "GenFlags", 0);
 		out += String.format(Map.XDF_LBL+"0x%X\n",1325, "ModeFlags", 0);
-		for(Folder f: this.folders) {
+		for(final Folder f: this.folders) {
 		    out += String.format(Map.XDF_LBL+"\"%s\"\n", 2000+f.id, "Category"+f.id, f.name);
 		}
 		return out + "%%END%%\n\n";
 	    case Map.FORMAT_XDF:
-		XmlString xs = new XmlString();
+		final XmlString xs = new XmlString();
 		xs.indent();
 		xs.append("XDFHEADER");
 		xs.indent();
@@ -191,7 +190,7 @@ public class Project {
 		xs.append("description",this.name);
 		xs.append("author","mesim translator");
 		xs.append("baseoffset", 0);
-		LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
+		final LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
 		m.put("datasizeinbits",8);
 		m.put("sigdigits",2);
 		m.put("outputtype",1);
@@ -209,7 +208,7 @@ public class Project {
 		    m.put("desc", "This region describes the bin file edited by this XDF");
 		    xs.append("REGION", m);
 		}
-		for(Folder f: this.folders) {
+		for(final Folder f: this.folders) {
 		    m.clear();
 		    m.put("index", String.format("0x%X", f.id));
 		    m.put("name", f.name);
@@ -226,24 +225,24 @@ public class Project {
 
     public ArrayList<Map> find(Map map) {
 	if(this.maps == null) return null;
-	ArrayList<Map> matches = new ArrayList<Map>();
-	for(Map m: this.maps)
+	final ArrayList<Map> matches = new ArrayList<Map>();
+	for(final Map m: this.maps)
 	    if(m.equals(map)) matches.add(m);
 	return matches;
     }
 
     public ArrayList<Map> find(String id) {
 	if(this.maps == null) return null;
-	ArrayList<Map> matches = new ArrayList<Map>();
-	for(Map m: this.maps)
+	final ArrayList<Map> matches = new ArrayList<Map>();
+	for(final Map m: this.maps)
 	    if(m.equals(id)) matches.add(m);
 	return matches;
     }
 
     public ArrayList<Map> find(HexValue v) {
 	if(this.maps == null) return null;
-	ArrayList<Map> matches = new ArrayList<Map>();
-	for(Map m: this.maps)
+	final ArrayList<Map> matches = new ArrayList<Map>();
+	for(final Map m: this.maps)
 	    if(m.extent[0].equals(v));
 	return matches;
     }

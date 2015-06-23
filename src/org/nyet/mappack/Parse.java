@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 public class Parse {
     public static final String string(ByteBuffer b) throws ParserException {
 	b.mark();
-	int len = b.getInt();
+	final int len = b.getInt();
 	if(len==0) return "";
 	if(len<0) {
 	    b.reset();
@@ -16,12 +16,12 @@ public class Parse {
 	    b.reset();
 	    throw new ParserException(b, "string: invalid len", len);
 	}
-	byte[] buf = new byte[len];
+	final byte[] buf = new byte[len];
 	b.get(buf, 0, buf.length);
 	b.get();
 	try {
 	    return new String(buf, "ISO-8859-15");
-	} catch (UnsupportedEncodingException e) {
+	} catch (final UnsupportedEncodingException e) {
 	    b.reset();
 	    throw new ParserException(b, e.getMessage(), buf);
 	}

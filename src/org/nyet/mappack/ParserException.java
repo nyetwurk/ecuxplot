@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 public class ParserException extends Exception {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     public ByteBuffer b;
@@ -29,6 +29,6 @@ public class ParserException extends Exception {
     public String getMessage()
     {
 	return String.format("%s: obj=%s @ 0x%x(%d):\n  %s", super.getMessage(),
-	    this.o.toString(), b.position(), b.position(), HexValue.dumpHex(b, 16));
+	    this.o.toString(), this.b.position(), this.b.position(), HexValue.dumpHex(this.b, 16));
     }
 }

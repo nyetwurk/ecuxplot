@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class CSVRow extends ArrayList<String> {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -15,8 +15,8 @@ public class CSVRow extends ArrayList<String> {
 
     public CSVRow() { super(); }
     public CSVRow(Object[] data) {
-	for(int i=0;i<data.length;i++) {
-	    add(data[i].toString());
+	for (final Object element : data) {
+	    add(element.toString());
 	}
     }
 

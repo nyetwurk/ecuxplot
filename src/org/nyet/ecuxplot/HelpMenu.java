@@ -19,7 +19,7 @@ public final class HelpMenu extends JMenu {
 	item.addActionListener(listener);
 	this.add(item);
 	*/
-	JMenuItem item = new JMenuItem("About...");
+	final JMenuItem item = new JMenuItem("About...");
 	item.addActionListener(listener);
 	this.add(item);
     }
