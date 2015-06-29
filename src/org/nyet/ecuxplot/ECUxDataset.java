@@ -112,7 +112,7 @@ public class ECUxDataset extends Dataset {
 	final LoggerType log_detected = Loggers.detect(h);
 
 	if (verbose>0)
-	    System.out.printf("Detected %d based on \"%s\"\n", log_detected, h[0]);
+	    System.out.printf("Detected %s based on \"%s\"\n", log_detected, h[0]);
 
 	/*
 	  passed     detected
@@ -127,7 +127,7 @@ public class ECUxDataset extends Dataset {
 	final LoggerType log_use = (log_req==LoggerType.LOG_DETECT)?log_detected:log_req;
 
 	if (verbose>0)
-	    System.out.printf("Using %d\n", log_use);
+	    System.out.printf("Using %s\n", log_use);
 
 	this.time_ticks_per_sec = 1;
 	switch(log_use) {
