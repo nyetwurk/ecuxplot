@@ -173,7 +173,11 @@ build/build.properties: Makefile build/version.txt
 	@echo Creating $@
 	$(shell echo "" > $@) $(foreach V,$(PROPVARS),$(shell echo $(V)='$($V)' >> $@))
 
-versioninfo:
+latest-links: archives installer
+	@ln -sf $(INSTALLER) ECUxPlot-latest-setup.exe
+	@ln -sf $(TARGET).MacOS.tar.gz ECUxPlot-latest.MacOS.tar.gz
+
+vars:
 	@echo ecuxplot_ver=$(ECUXPLOT_VER)
 	@echo version=$(VERSION)
 	@echo release=$(RELEASE)
