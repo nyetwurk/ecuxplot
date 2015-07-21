@@ -610,11 +610,13 @@ public class ECUxDataset extends Dataset {
 	    if (c.getUnits().matches(".*F$"))
 		c = new Column(id, "\u00B0 C", ECUxDataset.toCelcius(c.data));
 	} else if(id.equals("BoostPressureDesired (PSI)")) {
-	    final DoubleArray abs = super.get("BoostPressureDesired").data;
-	    c = new Column(id, "PSI", this.toPSI(abs));
+	    c = super.get("BoostPressureDesired");
+	    if (!c.getUnits().matches("PSI"))
+		c = new Column(id, "PSI", this.toPSI(c.data));
 	} else if(id.equals("BoostPressureActual (PSI)")) {
-	    final DoubleArray abs = super.get("BoostPressureActual").data;
-	    c = new Column(id, "PSI", this.toPSI(abs));
+	    c = super.get("BoostPressureActual");
+	    if (!c.getUnits().matches("PSI"))
+		c = new Column(id, "PSI", this.toPSI(c.data));
 	} else if(id.equals("Zeitronix Boost (PSI)")) {
 	    final DoubleArray boost = super.get("Zeitronix Boost").data;
 	    c = new Column(id, "PSI", boost.movingAverage(this.filter.ZeitMAW()));
