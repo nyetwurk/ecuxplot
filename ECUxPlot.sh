@@ -11,21 +11,19 @@ done
 
 jar=$DIR/ECUxPlot-$VER.jar
 
+    IFS=$','
 if [ ! -z $(which cygpath) ]; then
     args=()
     jar=$(cygpath -w $jar)
-    IFS=$','
     for arg in "$@"; do
 	if [ -r "$arg" ]; then
 	    arg=($(cygpath -w "$arg"))
 	fi
 	args+=($arg)
     done
-    unset IFS
 else
     args=($@)
 fi
 
-IFS=$','
 #echo exec java -jar $jar ${args[@]}
 exec java -jar $jar ${args[@]}
