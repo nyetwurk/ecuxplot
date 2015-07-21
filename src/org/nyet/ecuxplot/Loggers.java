@@ -13,7 +13,8 @@ public class Loggers {
 	LOG_ZEITRONIX,
 	LOG_ME7LOGGER,
 	LOG_EVOSCAN,
-	LOG_VOLVOLOGGER
+	LOG_VOLVOLOGGER,
+	LOG_LOGWORKS
     }
 
     public static final String[] pedalnames = new String []
@@ -75,6 +76,12 @@ public class Loggers {
 	{"^Mass Air Flow$", "MAF"}
     };
 
+    private static final String[][] LOGWORKS_aliases = new String[][] {
+	{"^time$", "TIME"},
+	{"^Boost$", "BoostPressureActual"},
+	{"^LC1_O2WB$", "AFR"},
+    };
+
     private static final String[][] DEFAULT_aliases = new String[][] {
 	{"^Time$", "TIME"},
 	{"^Engine [Ss]peed.*", "RPM"},
@@ -89,6 +96,7 @@ public class Loggers {
 	    case LOG_ME7LOGGER: return ME7L_aliases;
 	    case LOG_EVOSCAN: return EVOSCAN_aliases;
 	    case LOG_VOLVOLOGGER: return VOLVOLOGGER_aliases;
+	    case LOG_LOGWORKS: return LOGWORKS_aliases;
 	    default: return DEFAULT_aliases;
 	}
     }
@@ -111,23 +119,25 @@ public class Loggers {
     }
 
     public static LoggerType detect(String[] h) {
- 	h[0]=h[0].trim();
- 	if(h[0].matches("VCDS")) return LoggerType.LOG_VCDS;
- 	if(h[0].matches("^.*(day|tag)$")) return LoggerType.LOG_VCDS;
- 	if(h[0].matches("^Filename:.*")) {
- 	    if(Files.extension(h[0]).equals("zto") ||
- 	       Files.extension(h[0]).equals("zdl") ||
- 		h[0].matches(".*<unnamed file>$"))
- 	    return LoggerType.LOG_ZEITRONIX;
- 	}
- 	if(h[0].matches("^TIME$")) return LoggerType.LOG_ECUX;
+	h[0]=h[0].trim();
+	if(h[0].matches("VCDS")) return LoggerType.LOG_VCDS;
+	if(h[0].matches("^.*(day|tag)$")) return LoggerType.LOG_VCDS;
+	if(h[0].matches("^Filename:.*")) {
+	    if(Files.extension(h[0]).equals("zto") ||
+	       Files.extension(h[0]).equals("zdl") ||
+		h[0].matches(".*<unnamed file>$"))
+	    return LoggerType.LOG_ZEITRONIX;
+	}
+	if(h[0].matches("^TIME$")) return LoggerType.LOG_ECUX;
 
- 	if(h[0].matches(".*ME7-Logger.*")) return LoggerType.LOG_ME7LOGGER;
+	if(h[0].matches(".*ME7-Logger.*")) return LoggerType.LOG_ME7LOGGER;
 
- 	if(h[0].matches("^LogID$")) return LoggerType.LOG_EVOSCAN;
+	if(h[0].matches("^LogID$")) return LoggerType.LOG_EVOSCAN;
 
- 	if(h[0].matches("^Time\\s*\\(sec\\)$")) return LoggerType.LOG_VOLVOLOGGER;
+	if(h[0].matches("^Time\\s*\\(sec\\)$")) return LoggerType.LOG_VOLVOLOGGER;
 
- 	return LoggerType.LOG_UNKNOWN;
-     }
+	if(h[0].matches("^Session: Session [0-8]+$")) return LoggerType.LOG_LOGWORKS;
+
+	return LoggerType.LOG_UNKNOWN;
+    }
 }

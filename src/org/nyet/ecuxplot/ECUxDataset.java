@@ -313,6 +313,19 @@ public class ECUxDataset extends Dataset {
 		Loggers.processAliases(h, log_use);
 
 		break;
+	    case LOG_LOGWORKS:
+		h = reader.readNext(); // headers
+		u = reader.readNext(); // units
+
+		Loggers.processAliases(h, log_use);
+		final Pattern unitsRegEx1 =
+		    Pattern.compile("\\((.+)\\)");
+		for (int i=0; i<u.length; i++) {
+		    u[i] = u[i].trim();
+		    final Matcher matcher = unitsRegEx1.matcher(u[i]);
+		    if (matcher.find()) u[i]=matcher.group(1).trim();
+		}
+		break;
 	    default:
 		u = ParseUnits(h);
 		for(int i=0;i<h.length;i++) {
