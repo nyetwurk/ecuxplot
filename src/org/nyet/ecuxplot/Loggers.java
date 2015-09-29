@@ -28,6 +28,7 @@ public class Loggers {
 	{"^Zeit$", "TIME"},
 	// remap engine speed to "RPM'
 	{"^(Engine RPM|[Ss]peed|Motordrehzahl).*", "RPM"},
+	{"^Idle [Ss]peed.*", "RPM"},
 	// ignore weird letter case for throttle angle
 	{"^Throttle [Aa]ngle.*", "Throttle Angle"},
 	// ignore weird spacing for MAF
