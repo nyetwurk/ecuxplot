@@ -26,11 +26,12 @@ public class Loggers {
 
     private static final String[][] VCDS_aliases = new String[][] {
 	{"^Zeit$", "TIME"},
-	// remap engine speed to "RPM'
-	{"^(Engine RPM|[Ss]peed|Motordrehzahl).*", "RPM"},
-	{"^Idle [Ss]peed.*", "RPM"},
+	// remap engine rpm/speedand idle speed to "RPM'
+	{"^(Engine RPM|Engine [Ss]peed|Motordrehzahl).*", "RPM"},
+	{"^Idle (RPM|[Ss]peed).*", "RPM"},
 	// ignore weird letter case for throttle angle
 	{"^Throttle [Aa]ngle.*", "Throttle Angle"},
+	{"^Throttle [Vv]alve [Aa]ngle.*", "Throttle Angle"},
 	// ignore weird spacing for MAF
 	{"^Mass [Aa]ir [Ff]low.*", "MassAirFlow"},
 	{"^Mass [Aa]ir [Tt]aken [Ii]n.*", "MassAirFlow"},
