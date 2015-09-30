@@ -33,6 +33,7 @@ public class Loggers {
 	{"^Throttle [Aa]ngle.*", "Throttle Angle"},
 	// ignore weird spacing for MAF
 	{"^Mass [Aa]ir [Ff]low.*", "MassAirFlow"},
+	{"^Mass [Aa]ir [Tt]aken [Ii]n.*", "MassAirFlow"},
 	{"^Mass Flow$", "MassAirFlow"},
 	{"^Ign timing.*", "Ignition Timing Angle"}
     };
