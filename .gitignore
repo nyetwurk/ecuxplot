@@ -7,4 +7,6 @@ build
 ECUxPlot*.jar
 ECUxPlot*.tar.gz
 mapdump.jar
+data/*.csv
+data/*.xdf
 src/org/nyet/util/Version.java
