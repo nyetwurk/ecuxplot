@@ -5,7 +5,7 @@ REFS_8D0907551H=-r $(addsuffix .kp,$(REFS))
 REFS_8D0907551M=-r $(addsuffix .kp,$(REFS))
 
 TARGETS=$(addsuffix .csv,$(PACKS)) $(addsuffix .xdf,$(PACKS))
-DATE=$(shell date +%Y%m%d)
+DATE=$(shell date -d "$(shell stat -c %y 8D0907551M.kp)" +%Y%m%d)
 
 all: $(TARGETS)
 
