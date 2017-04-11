@@ -34,9 +34,12 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 OPT_PRE := '/'
 
 JAVA_HOME ?= $(shell cygpath -w "$(JAVAC_DIR)")
-JAVA_RT=Java/jre$(JAVA_TARGET_VER)/lib/rt.jar
-JAVA_RT32 := C:/Program\ Files\ (x86)/$(JAVA_RT)
-JAVA_RT64 := C:/Program\ Files/$(JAVA_RT)
+JAVA_RT=lib/rt.jar
+JAVA_RT1=jdk1.$(JAVA_TARGET_VER)/jre/$(JAVA_RT)
+JAVA_RT2=jre$(JAVA_TARGET_VER)/$(JAVA_RT)
+JAVA_RT32 := C:/Program\ Files\ (x86)/Java/$(JAVA_RT1) C:/Program\ Files\ (x86)/Java/$(JAVA_RT2)
+JAVA_RT64 := C:/Program\ Files/Java/$(JAVA_RT1) C:/Program\ Files/Java/$(JAVA_RT2)
+#JAVA_RTS := C:/Program\ Files*/Java/$(JAVA_RT1) C:/Program\ Files*/Java/$(JAVA_RT2)
 JAVA_RT_PATH := $(wildcard $(JAVA_RT32) $(JAVA_RT64))
 else
 #ARCH_x86_64 := amd64
@@ -183,6 +186,11 @@ vars:
 	@echo release=$(RELEASE)
 	@echo rc=$(RC)
 	@echo 'JAVAC=$(JAVAC)'
+	@echo 'JAVA_RT=$(JAVA_RT)'
+	@echo 'JAVA_RT1=$(JAVA_RT1)'
+	@echo 'JAVA_RT2=$(JAVA_RT2)'
+	@echo 'JAVA_RT32=$(JAVA_RT32)'
+	@echo 'JAVA_RT64=$(JAVA_RT64)'
 	@echo 'JAVA_HOME=$(JAVA_HOME)'
 	@echo 'JAVA_RT_PATH=$(JAVA_RT_PATH)'
 
