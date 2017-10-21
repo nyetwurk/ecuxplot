@@ -40,7 +40,7 @@ JAVA_RT2=jre$(JAVA_TARGET_VER)/$(JAVA_RT)
 JAVA_RT32 := C:/Program\ Files\ (x86)/Java/$(JAVA_RT1) C:/Program\ Files\ (x86)/Java/$(JAVA_RT2)
 JAVA_RT64 := C:/Program\ Files/Java/$(JAVA_RT1) C:/Program\ Files/Java/$(JAVA_RT2)
 #JAVA_RTS := C:/Program\ Files*/Java/$(JAVA_RT1) C:/Program\ Files*/Java/$(JAVA_RT2)
-JAVA_RT_PATH := $(wildcard $(JAVA_RT32) $(JAVA_RT64))
+JAVA_RT_PATH := $(wildcard $(JAVA_RT32) $(JAVA_RT64) jre$(JAVA_TARGET_VER)/rt.jar)
 else
 #ARCH_x86_64 := amd64
 #ARCH_i686 := i386
@@ -52,7 +52,7 @@ MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := makensis
 OPT_PRE := '-'
 JAVA_HOME ?= $(JAVAC_DIR)
-JAVA_RT_PATH := $(wildcard /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-*/jre/lib/rt.jar)
+JAVA_RT_PATH := $(wildcard /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-*/jre/lib/rt.jar jre$(JAVA_TARGET_VER)/rt.jar)
 endif
 
 INSTALL_DIR := /usr/local/ecuxplot
