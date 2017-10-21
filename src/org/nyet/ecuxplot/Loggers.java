@@ -26,6 +26,8 @@ public class Loggers {
 
     private static final String[][] VCDS_aliases = new String[][] {
 	{"^Zeit$", "TIME"},
+	{"^Boost Pressure \\(actual\\)$", "BoostPressureActual"},
+	{"^Boost Pressure \\(specified\\)$", "BoostPressureDesired"},
 	// remap engine rpm/speedand idle speed to "RPM'
 	{"^(Engine RPM|Engine [Ss]peed|Motordrehzahl).*", "RPM"},
 	{"^Idle (RPM|[Ss]peed).*", "RPM"},
@@ -115,6 +117,7 @@ public class Loggers {
     public static void processAliases(String[] h, String[][] a) {
 	for(int i=0;i<h.length;i++) {
 	    h[i]=h[i].trim();
+	    System.out.printf("%d: '%s'\n", i, h[i]);
 	    for (final String [] s: a) {
 		if (h[i].matches(s[0])) h[i]=s[1];
 	    }
