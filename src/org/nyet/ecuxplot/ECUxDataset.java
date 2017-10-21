@@ -286,6 +286,8 @@ public class ECUxDataset extends Dataset {
 
 		/* prepend ME7L tag */
 		for(int i=0;i<h.length;i++) {
+		    /* remove existing v before seeing whats there */
+		    h[i]=h[i].replace(v[i],"").trim();
 		    if(h[i].length()==0) {
 		        if(v[i].length()>0) h[i]="ME7L " + v[i];
 		    }
