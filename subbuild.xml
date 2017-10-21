@@ -18,15 +18,15 @@
 	<fail message="Can't find JRE${JAVA_TARGET_VER} rt.jar!">
 	    <condition>
 		<or>
-		    <equals arg1="${JAVA_RT_PATH}" arg2=""/>
+		    <equals arg1="${JAVA_RT}" arg2=""/>
 		    <not>
-			<isset property="JAVA_RT_PATH"/>
+			<isset property="JAVA_RT"/>
 		    </not>
 		</or>
 	    </condition>
 	</fail>
-	<available file="${JAVA_RT_PATH}" property="rt.jar.ok"/>
-	<fail message="Can't find ${JAVA_RT_PATH}!" unless="rt.jar.ok"/>
+	<available file="${JAVA_RT}" property="rt.jar.ok"/>
+	<fail message="Can't find ${JAVA_RT}!" unless="rt.jar.ok"/>
 
 	<javac
 	    srcdir="src"
@@ -36,7 +36,7 @@
 	    includeantruntime="false"
 	    classpathref="classpath"
 	    debug="on"
-	    bootclasspath="${JAVA_RT_PATH}"
+	    bootclasspath="${JAVA_RT}"
 	/>
     </target>
 

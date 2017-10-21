@@ -12,7 +12,7 @@ COMMONS_LANG3_VER := 3.4
 JAVA_TARGET_VER := 6
 
 # things to pass to build/build.properties
-PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVA_TARGET_VER JAVA_RT_PATH
+PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVA_TARGET_VER JAVA_RT
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
@@ -34,13 +34,10 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 OPT_PRE := '/'
 
 JAVA_HOME ?= $(shell cygpath -w "$(JAVAC_DIR)")
-JAVA_RT=lib/rt.jar
-JAVA_RT1=jdk1.$(JAVA_TARGET_VER)/jre/$(JAVA_RT)
-JAVA_RT2=jre$(JAVA_TARGET_VER)/$(JAVA_RT)
-JAVA_RT32 := C:/Program\ Files\ (x86)/Java/$(JAVA_RT1) C:/Program\ Files\ (x86)/Java/$(JAVA_RT2)
-JAVA_RT64 := C:/Program\ Files/Java/$(JAVA_RT1) C:/Program\ Files/Java/$(JAVA_RT2)
-#JAVA_RTS := C:/Program\ Files*/Java/$(JAVA_RT1) C:/Program\ Files*/Java/$(JAVA_RT2)
-JAVA_RT_PATH := $(wildcard $(JAVA_RT32) $(JAVA_RT64) jre$(JAVA_TARGET_VER)/rt.jar)
+JAVA_RT1=jdk1.$(JAVA_TARGET_VER)/jre/lib
+JAVA_RT2=jre$(JAVA_TARGET_VER)/lib
+JAVA_RT_PATH := $(shell cygpath -pu "C:\Program Files*\Java\$(JAVA_RT1);C:\Program Files*\Java\$(JAVA_RT2);jre$(JAVA_TARGET_VER)")
+JAVA_RT = $(shell cygpath -wm "$(shell ./scripts/find-rt.sh $(JAVA_RT_PATH))")
 else
 #ARCH_x86_64 := amd64
 #ARCH_i686 := i386
@@ -52,7 +49,8 @@ MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := makensis
 OPT_PRE := '-'
 JAVA_HOME ?= $(JAVAC_DIR)
-JAVA_RT_PATH := $(wildcard /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-*/jre/lib/rt.jar jre$(JAVA_TARGET_VER)/rt.jar)
+JAVA_RT_PATH := /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-*/jre/lib:jre$(JAVA_TARGET_VER)
+JAVA_RT = $(shell ./scripts/find-rt.sh $(JAVA_RT_PATH))
 endif
 
 INSTALL_DIR := /usr/local/ecuxplot
@@ -174,7 +172,7 @@ tag:	force
 build/build.properties: Makefile build/version.txt
 	@mkdir -p build
 	@echo Creating $@
-	$(shell echo "" > $@) $(foreach V,$(PROPVARS),$(shell echo $(V)='$($V)' >> $@))
+	$(shell echo "" > $@) $(foreach V,$(PROPVARS),$(shell echo "$(V)=$($V)" >> $@))
 
 latest-links: archives installer
 	@ln -sf $(INSTALLER) ECUxPlot-latest-setup.exe
@@ -193,6 +191,7 @@ vars:
 	@echo 'JAVA_RT64=$(JAVA_RT64)'
 	@echo 'JAVA_HOME=$(JAVA_HOME)'
 	@echo 'JAVA_RT_PATH=$(JAVA_RT_PATH)'
+	@echo 'JAVA_RT=$(JAVA_RT)'
 
 export JAVA_HOME
 .PRECIOUS: $(VERSION_JAVA)
