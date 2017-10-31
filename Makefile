@@ -46,7 +46,7 @@ else
 LAUNCH4J := /usr/local/launch4j/launch4j
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
-MAKENSIS := makensis
+MAKENSIS := $(shell which makensis 2> /dev/null)
 OPT_PRE := '-'
 JAVA_HOME ?= $(JAVAC_DIR)
 JAVA_RT_PATH := /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-*/jre/lib:jre$(JAVA_TARGET_VER)
