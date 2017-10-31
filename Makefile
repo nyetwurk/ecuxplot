@@ -16,7 +16,7 @@ PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVA_TARGET_VER JAVA_RT
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
-JAVAC := $(shell readlink -e "$(shell which javac)")
+JAVAC := $(shell readlink -e "$(shell which javac 2> /dev/null)")
 JAVAC_DIR := $(shell dirname "$(JAVAC)")/..
 JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1 \2/')
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
@@ -24,12 +24,12 @@ JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
 
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
-    "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc)'
+    "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc 2> /dev/null)'
 ECUXPLOT_XML := '$(shell cygpath -w $(PWD)/build/ECUxPlot.xml)'
 MAPDUMP_XML := '$(shell cygpath -w $(PWD)/build/mapdump.xml)'
 
 MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
-    "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis)'
+    "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis 2> /dev/null)'
 
 OPT_PRE := '/'
 

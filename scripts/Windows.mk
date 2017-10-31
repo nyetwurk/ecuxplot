@@ -6,6 +6,7 @@ build/%.xml: %.xml.template build/version.txt Makefile scripts/Windows.mk
 
 # unix launch4j requires full path to .xml
 build/ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar build/ECUxPlot.xml ECUxPlot.ico build/version.txt
+	@[ -x $(LAUNCH4J) ] || ( echo "Can't find launch4j!"; false)
 	cp -f ECUxPlot-$(ECUXPLOT_VER).jar build/
 	$(LAUNCH4J) $(ECUXPLOT_XML)
 
@@ -17,6 +18,7 @@ build/mapdump.exe: mapdump.jar build/mapdump.xml ECUxPlot.ico build/version.txt
 exes: $(EXES)
 
 $(INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
+	@[ -x $(MAKENSIS) ] || (echo "Can't find NSIS!"; false)
 	$(MAKENSIS) $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DVERSION=$(ECUXPLOT_VER) \
 	    $(OPT_PRE)DJFREECHART_VER=$(JFREECHART_VER) \
