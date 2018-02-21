@@ -637,7 +637,7 @@ public class ECUxDataset extends Dataset {
 	    if (delta != null) {
 	        final Column ecu = super.get("ECUBoostPressureDesired");
 		if (ecu != null) {
-		    c = new Column(id, "BoostPressureDesired", ecu.data.add(delta.data));
+		    c = new Column(id, "PSI", ecu.data.add(delta.data));
 		}
 	    }
 	} else if(id.equals("BoostPressureActual (PSI)")) {
