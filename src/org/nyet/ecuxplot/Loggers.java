@@ -14,15 +14,18 @@ public class Loggers {
 	LOG_ME7LOGGER,
 	LOG_EVOSCAN,
 	LOG_VOLVOLOGGER,
-	LOG_LOGWORKS
+	LOG_LOGWORKS,
+	LOG_JB4
     }
 
     public static final String[] pedalnames = new String []
-		{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS", "Accelerator position", "Pedal Position"};
+	{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS",
+	 "Accelerator position", "Pedal Position"};
     public static final String[] throttlenames = new String []
-		{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle", "TPS"};
+	{"ThrottlePlateAngle", "Throttle Angle", "Throttle Valve Angle",
+	 "TPS"};
     public static final String[] gearnames = new String []
-		{"Gear", "SelectedGear", "Engaged Gear"};
+	{"Gear", "SelectedGear", "Engaged Gear"};
 
     private static final String[][] VCDS_aliases = new String[][] {
 	{"^Zeit$", "TIME"},
@@ -32,13 +35,13 @@ public class Loggers {
 	{"^(Engine RPM|Engine [Ss]peed|Motordrehzahl).*", "RPM"},
 	{"^Idle (RPM|[Ss]peed).*", "RPM"},
 	// ignore weird letter case for throttle angle
-	{"^Throttle [Aa]ngle.*", "Throttle Angle"},
-	{"^Throttle [Vv]alve [Aa]ngle.*", "Throttle Angle"},
+	{"^Throttle [Aa]ngle.*", "ThrottleAngle"},
+	{"^Throttle [Vv]alve [Aa]ngle.*", "ThrottleAngle"},
 	// ignore weird spacing for MAF
 	{"^Mass [Aa]ir [Ff]low.*", "MassAirFlow"},
 	{"^Mass [Aa]ir [Tt]aken [Ii]n.*", "MassAirFlow"},
 	{"^Mass Flow$", "MassAirFlow"},
-	{"^Ign timing.*", "Ignition Timing Angle"}
+	{"^Ign timing.*", "IgnitionTimingAngle"}
     };
 
     private static final String[][] Zeitronix_aliases = new String[][] {
@@ -87,10 +90,38 @@ public class Loggers {
 	{"^LC1_O2WB$", "AFR"},
     };
 
+    private static final String[][] JB4_aliases = new String[][] {
+	{"^timestamp$", "TIME"},
+	{"^rpm$", "RPM"},
+	{"^pedal$", "Pedal (%)"},
+	{"^mph$", "VehicleSpeed (mph)"},
+	{"^throttle$", "ThrottlePlateAngle (%)"},
+	{"^ecu_psi$", "BoostPressureDesired (PSI)"},
+	{"^boost$", "BoostPressureActual (PSI)"},
+	{"^iat$", "IntakeAirTemperature (F)"},
+	{"^waterf$", "WaterTemperature (F)"},
+	{"^oilf$", "OilTemperature (F)"},
+	{"^transf$", "TransmissionTemperature (F)"},
+	{"^gear$", "Gear"},
+	{"^load$", "EngineLoad (%)"},
+	{"^calc_torque$", "CalculatedTorque"},
+	{"^afr$", "AirFuelRatio (AFR)"},
+	{"^afr2$", "AirFuelRatio2 (AFR)"},
+	{"^avg_ign$", "AverageIgnitionTimingAngle"},
+	{"^ign_1$", "IgnitionTimingAngle1"},
+	{"^ign_2$", "IgnitionTimingAngle2"},
+	{"^ign_3$", "IgnitionTimingAngle3"},
+	{"^ign_4$", "IgnitionTimingAngle4"},
+	{"^ign_5$", "IgnitionTimingAngle5"},
+	{"^ign_6$", "IgnitionTimingAngle6"},
+	{"^ign_7$", "IgnitionTimingAngle7"},
+	{"^ign_6$", "IgnitionTimingAngle8"}
+    };
+
     private static final String[][] DEFAULT_aliases = new String[][] {
-	{"^Time$", "TIME"},
-	{"^Engine [Ss]peed.*", "RPM"},
-	{"^Mass air flow$", "MassAirFlow"}
+	{"^[Tt]ime$", "TIME"},
+	{"^[Ee]ngine [Ss]peed.*", "RPM"},
+	{"^[Mm]ass air flow$", "MassAirFlow"}
     };
 
     private static String[][] which(LoggerType logger) {
@@ -102,6 +133,7 @@ public class Loggers {
 	    case LOG_EVOSCAN: return EVOSCAN_aliases;
 	    case LOG_VOLVOLOGGER: return VOLVOLOGGER_aliases;
 	    case LOG_LOGWORKS: return LOGWORKS_aliases;
+	    case LOG_JB4: return JB4_aliases;
 	    default: return DEFAULT_aliases;
 	}
     }
@@ -117,7 +149,7 @@ public class Loggers {
     public static void processAliases(String[] h, String[][] a) {
 	for(int i=0;i<h.length;i++) {
 	    h[i]=h[i].trim();
-	    System.out.printf("%d: '%s'\n", i, h[i]);
+	    // System.out.printf("%d: '%s'\n", i, h[i]);
 	    for (final String [] s: a) {
 		if (h[i].matches(s[0])) h[i]=s[1];
 	    }
@@ -143,6 +175,8 @@ public class Loggers {
 	if(h[0].matches("^Time\\s*\\(sec\\)$")) return LoggerType.LOG_VOLVOLOGGER;
 
 	if(h[0].matches("^Session: Session [0-8]+$")) return LoggerType.LOG_LOGWORKS;
+
+	if(h[0].matches("^Firmware$")) return LoggerType.LOG_JB4;
 
 	return LoggerType.LOG_UNKNOWN;
     }

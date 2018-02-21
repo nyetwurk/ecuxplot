@@ -328,6 +328,19 @@ public class ECUxDataset extends Dataset {
 		    if (matcher.find()) u[i]=matcher.group(1).trim();
 		}
 		break;
+	    case LOG_JB4:
+		reader.readNext(); // Date
+		reader.readNext(); // Junk
+		reader.readNext(); // Junk
+		h = reader.readNext(); // headers
+		Loggers.processAliases(h, log_use);
+		u = ParseUnits(h);
+		for(int i=0;i<h.length;i++) {
+		    if (verbose>0)
+			System.out.println("in : " + h[i] + " [" + u[i] + "]");
+		}
+
+		break;
 	    default:
 		u = ParseUnits(h);
 		for(int i=0;i<h.length;i++) {
