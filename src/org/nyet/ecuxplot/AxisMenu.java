@@ -131,7 +131,7 @@ public class AxisMenu extends JMenu {
 		this.add("Calc Turbo Flow (lb/min)", listener, bg);
 		addToSubmenu("Calc", new JSeparator());
 	    }
-	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector).*")) {
+	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85).*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("TargetAFRDriverRequest")) {
 		this.add("TargetAFRDriverRequest (AFR)", listener, bg);
@@ -193,6 +193,11 @@ public class AxisMenu extends JMenu {
 		this.add("Calc LDR PID", listener, bg);
 		this.add("Calc pspvds", listener, bg);
 		addToSubmenu("Calc", new JSeparator());
+	    }
+	    /* JB4 does noth boost pressure desired, its calc'd */
+	    /* "target" is this delta */
+	    if(id.matches("BoostPressureDesiredDelta")) {
+		this.add("BoostPressureDesired", listener, bg);
 	    }
 	/* do this before Timing so we don't match Throttle Angle */
 	} else if(id.matches(".*(Pedal|Throttle).*")) {

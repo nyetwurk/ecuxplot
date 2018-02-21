@@ -333,11 +333,15 @@ public class ECUxDataset extends Dataset {
 		reader.readNext(); // Junk
 		reader.readNext(); // Junk
 		h = reader.readNext(); // headers
+		v = Arrays.copyOf(h, h.length);
+		/* hack: use process Aliases to generate units in () for use in ParseUnits */
 		Loggers.processAliases(h, log_use);
 		u = ParseUnits(h);
 		for(int i=0;i<h.length;i++) {
+		    h[i]=h[i].trim();
+		    v[i]=v[i].trim();
 		    if (verbose>0)
-			System.out.println("in : " + h[i] + " [" + u[i] + "]");
+			System.out.println("in : " + v[i] + ": " + h[i] + " [" + u[i] + "]");
 		}
 
 		break;
@@ -628,6 +632,14 @@ public class ECUxDataset extends Dataset {
 	    c = super.get("BoostPressureDesired");
 	    if (!c.getUnits().matches("PSI"))
 		c = new Column(id, "PSI", this.toPSI(c.data));
+	} else if(id.equals("BoostPressureDesired")) {
+	    final Column delta = super.get("BoostPressureDesiredDelta");
+	    if (delta != null) {
+	        final Column ecu = super.get("ECUBoostPressureDesired");
+		if (ecu != null) {
+		    c = new Column(id, "BoostPressureDesired", ecu.data.add(delta.data));
+		}
+	    }
 	} else if(id.equals("BoostPressureActual (PSI)")) {
 	    c = super.get("BoostPressureActual");
 	    if (!c.getUnits().matches("PSI"))
@@ -645,21 +657,27 @@ public class ECUxDataset extends Dataset {
 	    final DoubleArray abs = super.get("Zeitronix Lambda").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("Calc BoostDesired PR")) {
-	    final DoubleArray act = super.get("BoostPressureDesired").data;
+	    final Column act = super.get("BoostPressureDesired");
 	    try {
 		final DoubleArray ambient = super.get("BaroPressure").data;
-		c = new Column(id, "PR", act.div(ambient));
+		c = new Column(id, "PR", act.data.div(ambient));
 	    } catch (final Exception e) {
-		c = new Column(id, "PR", act.div(1013));
+		if (act.getUnits().matches("PSI"))
+		    c = new Column(id, "PR", act.data.div(14.7));
+		else
+		    c = new Column(id, "PR", act.data.div(1013));
 	    }
 
 	} else if(id.equals("Calc BoostActual PR")) {
-	    final DoubleArray act = super.get("BoostPressureActual").data;
+	    final Column act = super.get("BoostPressureActual");
 	    try {
 		final DoubleArray ambient = super.get("BaroPressure").data;
-		c = new Column(id, "PR", act.div(ambient));
+		c = new Column(id, "PR", act.data.div(ambient));
 	    } catch (final Exception e) {
-		c = new Column(id, "PR", act.div(1013));
+		if (act.getUnits().matches("PSI"))
+		    c = new Column(id, "PR", act.data.div(14.7));
+		else
+		    c = new Column(id, "PR", act.data.div(1013));
 	    }
 	} else if(id.equals("Calc evtmod")) {
 	    final DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
