@@ -78,22 +78,22 @@ public class AxisMenu extends JMenu {
 
     private void add(String id, SubActionListener listener,
 	ButtonGroup bg, int where) {
-	this.add(id, null, listener, bg, where);
+	this.add(id, null, null, listener, bg, where);
     }
 
-    private void add(String id, String tip, SubActionListener listener,
-	ButtonGroup bg, int where) {
+    private void add(String id, String tip, String units,
+	SubActionListener listener, ButtonGroup bg, int where) {
 	final AbstractButton item = makeMenuItem(id, tip, listener, bg);
 	this.add(item, where);
     }
 
     private void add(String id, SubActionListener listener,
 	ButtonGroup bg) {
-	this.add(id, null, listener, bg);
+	this.add(id, null, null, listener, bg);
     }
 
-    private void add(String id, String tip, SubActionListener listener,
-	ButtonGroup bg) {
+    private void add(String id, String tip, String units,
+	SubActionListener listener, ButtonGroup bg) {
 
 	if (this.members.containsKey(id)) return;
 
@@ -179,11 +179,13 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Pressure|PID).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
-		this.add("BoostPressureDesired (PSI)", listener, bg);
+		if (units!=null && !units.equals("PSI"))
+		    this.add("BoostPressureDesired (PSI)", listener, bg);
 		this.add("Calc BoostDesired PR", listener, bg);
 	    }
 	    if(id.matches("BoostPressureActual")) {
-		this.add("BoostPressureActual (PSI)", listener, bg);
+		if (units!=null && !units.equals("PSI"))
+		    this.add("BoostPressureActual (PSI)", listener, bg);
 		this.add("Calc BoostActual PR", listener, bg);
 		this.add("Calc Boost Spool Rate (RPM)", listener, bg);
 		this.add("Calc Boost Spool Rate (time)", listener, bg);
@@ -273,7 +275,7 @@ public class AxisMenu extends JMenu {
 	    for(int i=0;i<ids.length;i++) {
 		if(ids[i] == null) continue;
 		if(ids[i].id.length()>0 && !this.members.containsKey(ids[i].id)) {
-		    this.add(ids[i].id, ids[i].id2, listener, bg);
+		    this.add(ids[i].id, ids[i].id2, ids[i].unit, listener, bg);
 		}
 	    }
 
