@@ -92,6 +92,11 @@ public class AxisMenu extends JMenu {
 	this.add(id, null, null, listener, bg);
     }
 
+    private void add(String id, String units, SubActionListener listener,
+	ButtonGroup bg) {
+	this.add(id, null, units, listener, bg);
+    }
+
     private void add(String id, String tip, String units,
 	SubActionListener listener, ButtonGroup bg) {
 
@@ -134,10 +139,12 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85).*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("TargetAFRDriverRequest")) {
-		this.add("TargetAFRDriverRequest (AFR)", listener, bg);
+		if (units==null || !units.equals("AFR"))
+		    this.add("TargetAFRDriverRequest (AFR)", listener, bg);
 	    }
 	    if(id.matches("AirFuelRatioDesired")) {
-		this.add("AirFuelRatioDesired (AFR)", listener, bg);
+		if (units==null || !units.equals("AFR"))
+		    this.add("AirFuelRatioDesired (AFR)", listener, bg);
 	    }
 	    if(id.matches("AirFuelRatioCurrent")) {
 		this.add("AirFuelRatioCurrent (AFR)", listener, bg);
@@ -179,12 +186,12 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Pressure|PID).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
-		if (units!=null && !units.equals("PSI"))
+		if (units==null || !units.equals("PSI"))
 		    this.add("BoostPressureDesired (PSI)", listener, bg);
 		this.add("Calc BoostDesired PR", listener, bg);
 	    }
 	    if(id.matches("BoostPressureActual")) {
-		if (units!=null && !units.equals("PSI"))
+		if (units==null || !units.equals("PSI"))
 		    this.add("BoostPressureActual (PSI)", listener, bg);
 		this.add("Calc BoostActual PR", listener, bg);
 		this.add("Calc Boost Spool Rate (RPM)", listener, bg);
@@ -199,7 +206,7 @@ public class AxisMenu extends JMenu {
 	    /* JB4 does noth boost pressure desired, its calc'd */
 	    /* "target" is this delta */
 	    if(id.matches("BoostPressureDesiredDelta")) {
-		this.add("BoostPressureDesired", listener, bg);
+		this.add("BoostPressureDesired", units, listener, bg);
 	    }
 	/* do this before Timing so we don't match Throttle Angle */
 	} else if(id.matches(".*(Pedal|Throttle).*")) {
