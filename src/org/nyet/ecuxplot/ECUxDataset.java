@@ -24,7 +24,7 @@ public class ECUxDataset extends Dataset {
     private final Filter filter;
     private final double hp_per_watt = 0.00134102209;
     private final double mbar_per_psi = 68.9475729;
-    private double time_ticks_per_sec;	// ECUx has time in ms. Nobody else does.
+    private double time_ticks_per_sec;	// ECUx has time in ms, JB4 in 1/10s
     public double samples_per_sec=0;
     private CubicSpline [] splines;	// rpm vs time splines
 
@@ -329,6 +329,7 @@ public class ECUxDataset extends Dataset {
 		}
 		break;
 	    case LOG_JB4:
+		this.time_ticks_per_sec = 10;
 		reader.readNext(); // Date
 		reader.readNext(); // Junk
 		reader.readNext(); // Junk
