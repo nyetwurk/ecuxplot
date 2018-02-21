@@ -556,6 +556,7 @@ public class ECUxDataset extends Dataset {
 /*****************************************************************************/
 	} else if(id.equals("Calc Velocity")) {
 	    // TODO: make a user adjustable checkbox for this
+	    // Also, make sure we test units of VehicleSpeed
 	    /* Column v = this.get("VehicleSpeed");
 	    if (v!=null) {
 		c = new Column(id, "m/s", v.data.mult(1000.0/60.0/60.0));

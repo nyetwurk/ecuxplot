@@ -21,7 +21,8 @@ public class ConstantsEditor extends PreferencesEditor {
 
     private static final String[][] pairs = {
 	{"Mass (kg)", "mass"},
-	{"RPM per mph (if VehicleSpeed N/A)", "rpm_per_mph"},
+	//{"RPM per mph (if VehicleSpeed N/A)", "rpm_per_mph"},
+	{"RPM per mph", "rpm_per_mph"},
 	{"Coefficient of drag", "Cd"},
 	{"<html>Frontal area (m<sup>2</sup>)</html>", "FA"},
 	{"Driveline loss (%)", "driveline_loss"},
