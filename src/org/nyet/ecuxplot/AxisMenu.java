@@ -26,6 +26,7 @@ public class AxisMenu extends JMenu {
      */
     private static final long serialVersionUID = 1L;
     private final SubActionListener listener;
+    private ButtonGroup buttonGroup = null;
     private final boolean radioButton;
     private final Comparable<?>[] initialChecked;
 
@@ -50,10 +51,9 @@ public class AxisMenu extends JMenu {
 	sub.add(item);
     }
 
-    private void addToSubmenu(String submenu, String id,
-	SubActionListener listener, ButtonGroup bg) {
+    private void addToSubmenu(String submenu, String id) {
 	DatasetId dsid = new DatasetId(id);
-	final AbstractButton item = makeMenuItem(id, null, listener, bg);
+	final AbstractButton item = makeMenuItem(id, null);
 	addToSubmenu(submenu, item);
     }
 
@@ -63,8 +63,7 @@ public class AxisMenu extends JMenu {
 	addToSubmenu(id, item, true);
     }
 
-    private AbstractButton makeMenuItem(String id, String tip,
-	SubActionListener listener, ButtonGroup bg) {
+    private AbstractButton makeMenuItem(String id, String tip) {
 	boolean checked = false;
 
 	for (final Comparable<?> element : this.initialChecked) {
@@ -74,146 +73,144 @@ public class AxisMenu extends JMenu {
 	    }
 	}
 
-	final AbstractButton item = (bg==null)?new JCheckBox(id, checked):
+	final AbstractButton item = (this.buttonGroup==null)?new JCheckBox(id, checked):
 	    new JRadioButtonMenuItem(id, checked);
 
 	if(tip!=null) item.setToolTipText(tip);
 
-	item.addActionListener(new MenuListener(listener,this.getText()));
-	if(bg!=null) bg.add(item);
+	item.addActionListener(new MenuListener(this.listener, this.getText()));
+	if(this.buttonGroup!=null) this.buttonGroup.add(item);
 
 	return item;
     }
 
-    /* string, listener, bg, index */
-    private void addDirect(String id, SubActionListener listener,
-	ButtonGroup bg, int index) {
+    /* string, index */
+    private void addDirect(String id, int index) {
 	DatasetId dsid = new DatasetId(id);
-	final AbstractButton item = makeMenuItem(id, null, listener, bg);
+	final AbstractButton item = makeMenuItem(id, null);
 	super.add(item, index);
     }
 
-    /* string, listener, bg */
+    /* string */
     /* process through this.add() to detect submenu */
-    private void add(String id, SubActionListener listener,
-	ButtonGroup bg) {
-	this.add(new DatasetId(id), listener, bg);
+    /* override add */
+    public JMenuItem add(String id) {
+	return this.add(new DatasetId(id));
     }
 
-    /* dsid, listener, bg */
-    private void add(DatasetId dsid, SubActionListener listener,
-	ButtonGroup bg) {
-	if (this.members.containsKey(dsid.id)) return;
+    /* dsid */
+    private JMenuItem add(DatasetId dsid) {
+	/* FIXME: return something useful? */
+	if (this.members.containsKey(dsid.id)) return null;
 
 	final String id = dsid.id;
 	final String tip = dsid.id2;
 	final String units = dsid.unit;
 
-	final AbstractButton item = makeMenuItem(id, tip, listener, bg);
+	final AbstractButton item = makeMenuItem(id, tip);
 
 	if(id.matches("RPM")) {
 	    this.add(item, 0);	// always add rpms first!
-	    addDirect("RPM - raw", listener, bg, 1);
+	    addDirect("RPM - raw", 1);
 
-	    addToSubmenu("Calc Power", "WHP", listener, bg);
-	    addToSubmenu("Calc Power", "WTQ", listener, bg);
-	    addToSubmenu("Calc Power", "HP", listener, bg);
-	    addToSubmenu("Calc Power", "TQ", listener, bg);
-	    addToSubmenu("Calc Power", "Drag", listener, bg);
+	    addToSubmenu("Calc Power", "WHP");
+	    addToSubmenu("Calc Power", "WTQ");
+	    addToSubmenu("Calc Power", "HP");
+	    addToSubmenu("Calc Power", "TQ");
+	    addToSubmenu("Calc Power", "Drag");
 
 	    addToSubmenu("Calc Power", new JSeparator());
 
-	    addToSubmenu("Calc Power", "Calc Velocity", listener, bg);
-	    addToSubmenu("Calc Power", "Acceleration (RPM/s)", listener, bg);
-	    addToSubmenu("Calc Power", "Acceleration - raw (RPM/s)", listener, bg);
-	    addToSubmenu("Calc Power", "Acceleration (m/s^2)", listener, bg);
-	    addToSubmenu("Calc Power", "Acceleration (g)", listener, bg);
+	    addToSubmenu("Calc Power", "Calc Velocity");
+	    addToSubmenu("Calc Power", "Acceleration (RPM/s)");
+	    addToSubmenu("Calc Power", "Acceleration - raw (RPM/s)");
+	    addToSubmenu("Calc Power", "Acceleration (m/s^2)");
+	    addToSubmenu("Calc Power", "Acceleration (g)");
 
 	// goes before .*Load.* to catch CalcLoad
 	} else if(id.matches(".*(MAF|MassAir|AirMass|Mass Air Flow).*")) {
 	    addToSubmenu("MAF", item);
 	    if(id.matches("MassAirFlow")) {
-		this.add("MassAirFlow (kg/hr)", listener, bg);
+		this.add("MassAirFlow (kg/hr)");
 		if (dsid.type == LoggerType.LOG_ME7LOGGER) {
-		    addToSubmenu("Calc MAF", "Sim Load", listener, bg);
-		    addToSubmenu("Calc MAF", "Sim Load Corrected", listener, bg);
-		    addToSubmenu("Calc MAF", "Sim MAF", listener, bg);
+		    addToSubmenu("Calc MAF", "Sim Load");
+		    addToSubmenu("Calc MAF", "Sim Load Corrected");
+		    addToSubmenu("Calc MAF", "Sim MAF");
 		}
-		addToSubmenu("Calc MAF", "MassAirFlow df/dt", listener, bg);
-		addToSubmenu("Calc MAF", "Turbo Flow", listener, bg);
-		addToSubmenu("Calc MAF", "Turbo Flow (lb/min)", listener, bg);
+		addToSubmenu("Calc MAF", "MassAirFlow df/dt");
+		addToSubmenu("Calc MAF", "Turbo Flow");
+		addToSubmenu("Calc MAF", "Turbo Flow (lb/min)");
 		addToSubmenu("Calc MAF", new JSeparator());
 	    }
 	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85).*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("TargetAFRDriverRequest")) {
 		if (units==null || !units.equals("AFR"))
-		    this.add("TargetAFRDriverRequest (AFR)", listener, bg);
+		    this.add("TargetAFRDriverRequest (AFR)");
 	    }
 	    if(id.matches("AirFuelRatioDesired")) {
 		if (units==null || !units.equals("AFR"))
-		    this.add("AirFuelRatioDesired (AFR)", listener, bg);
+		    this.add("AirFuelRatioDesired (AFR)");
 	    }
 	    if(id.matches("AirFuelRatioCurrent")) {
-		this.add("AirFuelRatioCurrent (AFR)", listener, bg);
+		this.add("AirFuelRatioCurrent (AFR)");
 	    }
 	    if(id.matches("FuelInjectorOnTime")) {	// ti
-		this.add("FuelInjectorDutyCycle", listener, bg);
+		this.add("FuelInjectorDutyCycle");
 	    }
 	    if(id.matches("EffInjectionTime")) {	// te
-		this.add("EffInjectorDutyCycle", listener, bg);
-		addToSubmenu("Calc Fuel", "Sim Fuel Mass", listener, bg);
-		addToSubmenu("Calc Fuel", "Sim AFR", listener, bg);
-		addToSubmenu("Calc Fuel", "Sim lambda", listener, bg);
-		addToSubmenu("Calc Fuel", "Sim lambda error", listener, bg);
+		this.add("EffInjectorDutyCycle");
+		addToSubmenu("Calc Fuel", "Sim Fuel Mass");
+		addToSubmenu("Calc Fuel", "Sim AFR");
+		addToSubmenu("Calc Fuel", "Sim lambda");
+		addToSubmenu("Calc Fuel", "Sim lambda error");
 		// addToSubmenu("Calc Fuel", new JSeparator());
 	    }
 	    if(id.matches("EffInjectionTimeBank2")) {	// te
-		this.add("EffInjectorDutyCycleBank2", listener, bg);
+		this.add("EffInjectorDutyCycleBank2");
 	    }
 	} else if(id.matches("^Zeitronix.*")) {
 	    /* do zeitronix before boost so we get the conversions we want */
 	    if(id.matches("^Zeitronix Boost")) {
-		this.add("Zeitronix Boost (PSI)", listener, bg);
-		addToSubmenu("Calc Boost", "Boost Spool Rate Zeit (RPM)", listener, bg);
+		this.add("Zeitronix Boost (PSI)");
+		addToSubmenu("Calc Boost", "Boost Spool Rate Zeit (RPM)");
 	    }
 	    if(id.matches("^Zeitronix AFR")) {
-		this.add("Zeitronix AFR (lambda)", listener, bg);
+		this.add("Zeitronix AFR (lambda)");
 	    }
 	    if(id.matches("^Zeitronix Lambda")) {
-		this.add("Zeitronix Lambda (AFR)", listener, bg);
+		this.add("Zeitronix Lambda (AFR)");
 	    }
 	    addToSubmenu("Zeitronix", item);
 	} else if(id.matches(".*(Load|Torque|ChargeLimit.*Protection).*")) {
 	    // before Boost so we catch ChargeLimit*Protection before Charge
 	    addToSubmenu("Load", item);
 	    if(id.matches("EngineLoad(Requested|Corrected)")) {
-		addToSubmenu("Calc Boost", "Sim BoostPressureDesired", listener, bg);
-		addToSubmenu("Calc Boost", "Sim LoadSpecified correction", listener, bg);
+		addToSubmenu("Calc Boost", "Sim BoostPressureDesired");
+		addToSubmenu("Calc Boost", "Sim LoadSpecified correction");
 	    }
 	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Pressure|PID).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		if (units==null || !units.equals("PSI"))
-		    this.add("BoostPressureDesired (PSI)", listener, bg);
-		addToSubmenu("Calc Boost", "BoostDesired PR", listener, bg);
+		    this.add("BoostPressureDesired (PSI)");
+		addToSubmenu("Calc Boost", "BoostDesired PR");
 	    }
 	    if(id.matches("BoostPressureActual")) {
 		if (units==null || !units.equals("PSI"))
-		    this.add("BoostPressureActual (PSI)", listener, bg);
-		addToSubmenu("Calc Boost", "BoostActual PR", listener, bg);
-		addToSubmenu("Calc Boost", "Boost Spool Rate (RPM)", listener, bg);
-		addToSubmenu("Calc Boost", "Boost Spool Rate (time)", listener, bg);
-		addToSubmenu("Calc PID", "LDR error", listener, bg);
-		addToSubmenu("Calc PID", "LDR de/dt", listener, bg);
-		addToSubmenu("Calc PID", "LDR I e dt", listener, bg);
-		addToSubmenu("Calc PID", "LDR PID", listener, bg);
+		    this.add("BoostPressureActual (PSI)");
+		addToSubmenu("Calc Boost", "BoostActual PR");
+		addToSubmenu("Calc Boost", "Boost Spool Rate (RPM)");
+		addToSubmenu("Calc Boost", "Boost Spool Rate (time)");
+		addToSubmenu("Calc PID", "LDR error");
+		addToSubmenu("Calc PID", "LDR de/dt");
+		addToSubmenu("Calc PID", "LDR I e dt");
+		addToSubmenu("Calc PID", "LDR PID");
 	    }
 	    /* JB4 does noth boost pressure desired, its calc'd */
 	    /* "target" is this delta */
 	    if(id.matches("BoostPressureDesiredDelta")) {
-		this.add(new DatasetId("BoostPressureDesired", null, units),
-		    listener, bg);
+		this.add(new DatasetId("BoostPressureDesired", null, units));
 	    }
 	/* do this before Timing so we don't match Throttle Angle */
 	} else if(id.matches(".*(Pedal|Throttle).*")) {
@@ -221,9 +218,9 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing|Angle).*")) {
 	    addToSubmenu("Ignition", item);
 	    if(id.matches("IgnitionTimingAngleOverall")) {
-		this.add("IgnitionTimingAngleOverallDesired", listener, bg);
+		this.add("IgnitionTimingAngleOverallDesired");
 	    }
-	    final AbstractButton titem = makeMenuItem(id + " (ms)", tip, listener, bg);
+	    final AbstractButton titem = makeMenuItem(id + " (ms)", tip);
 	    addToSubmenu("TrueTiming", titem, true);
 	} else if(id.matches("(Cat|MainCat).*")) {
 	    addToSubmenu("Cats", item);
@@ -239,15 +236,15 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("O2 Sensor(s)", item);
 	} else if(id.matches("Engine torque")) {
 	    this.add(item);
-	    this.add("Engine torque (ft-lb)", listener, bg);
-	    this.add("Engine HP", listener, bg);
+	    this.add("Engine torque (ft-lb)");
+	    this.add("Engine HP");
 	} else if(id.matches("IntakeAirTemperature")) {
 	    addToSubmenu("Temperature", item);
-	    this.add("IntakeAirTemperature (C)", listener, bg);
+	    this.add("IntakeAirTemperature (C)");
 	    if (dsid.type == LoggerType.LOG_ME7LOGGER) {
-		addToSubmenu("Calc IAT", "Sim evtmod", listener, bg);
-		addToSubmenu("Calc IAT", "Sim ftbr", listener, bg);
-		addToSubmenu("Calc IAT", "Sim BoostIATCorrection", listener, bg);
+		addToSubmenu("Calc IAT", "Sim evtmod");
+		addToSubmenu("Calc IAT", "Sim ftbr");
+		addToSubmenu("Calc IAT", "Sim BoostIATCorrection");
 	    }
 	} else if(id.matches(".*Temperature.*")) {
 	    addToSubmenu("Temperature", item);
@@ -258,13 +255,16 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("^ME7L.*")) {
 	    addToSubmenu("ME7 Logger", item);
 	    if(id.matches("ME7L ps_w")) {
-		addToSubmenu("Calc Boost", "Sim pspvds", listener, bg);
+		addToSubmenu("Calc Boost", "Sim pspvds");
 	    }
 	} else {
 	    this.add(item);
 	}
 
 	this.members.put(id, item);
+
+	/* FIXME: return something useful? */
+	return null;
     }
 
     // constructors
@@ -284,17 +284,16 @@ public class AxisMenu extends JMenu {
 
 	if (ids!=null) {
 	    /* top level menu (before "more...") */
-	    ButtonGroup bg = null;
 	    if(radioButton) {
-		bg = new ButtonGroup();
-		this.add("Sample", listener, bg);
+		this.buttonGroup = new ButtonGroup();
+		this.add("Sample");
 		this.add(new JSeparator());
 	    }
 
 	    for(int i=0;i<ids.length;i++) {
 		if(ids[i] == null) continue;
 		if(ids[i].id.length()>0 && !this.members.containsKey(ids[i].id)) {
-		    this.add(ids[i], listener, bg);
+		    this.add(ids[i]);
 		}
 	    }
 
