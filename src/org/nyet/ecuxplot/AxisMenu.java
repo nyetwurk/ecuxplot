@@ -52,15 +52,14 @@ public class AxisMenu extends JMenu {
     }
 
     private void addToSubmenu(String submenu, String id) {
-	DatasetId dsid = new DatasetId(id);
 	final AbstractButton item = makeMenuItem(id, null);
 	addToSubmenu(submenu, item);
     }
 
-    private void addToSubmenu(String id, JComponent item) {
+    private void addToSubmenu(String submenu, JComponent item) {
 	// autoadd if not Calc, which is added last
-	//addToSubmenu(id, item, id.matches("^Calc")?false:true);
-	addToSubmenu(id, item, true);
+	//addToSubmenu(submenu, item, id.matches("^Calc")?false:true);
+	addToSubmenu(submenu, item, true);
     }
 
     private AbstractButton makeMenuItem(String id, String tip) {
@@ -86,7 +85,6 @@ public class AxisMenu extends JMenu {
 
     /* string, index */
     private void addDirect(String id, int index) {
-	DatasetId dsid = new DatasetId(id);
 	final AbstractButton item = makeMenuItem(id, null);
 	super.add(item, index);
     }
