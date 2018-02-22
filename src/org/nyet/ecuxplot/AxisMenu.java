@@ -18,6 +18,7 @@ import javax.swing.ButtonGroup;
 import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 import org.nyet.logfile.Dataset.DatasetId;
+import org.nyet.ecuxplot.Loggers.LoggerType;
 
 public class AxisMenu extends JMenu {
     /**
@@ -35,23 +36,31 @@ public class AxisMenu extends JMenu {
 	new HashMap<String, JMenu>();
 
     private int count=0;
-    private int maxItems=18;
+    private int maxItems=20;
     private AxisMenu more=null;
     private AxisMenu parent=null;
 
-    private void addToSubmenu(String id, JComponent item, boolean autoadd) {
-	JMenu sub = this.subMenus.get(id);
+    private void addToSubmenu(String submenu, JComponent item, boolean autoadd) {
+	JMenu sub = this.subMenus.get(submenu);
 	if(sub==null) {
-	    sub = new AxisMenu(id + "...", this);
-	    this.subMenus.put(id, sub);
+	    sub = new AxisMenu(submenu + "...", this);
+	    this.subMenus.put(submenu, sub);
 	    if(autoadd) this.add(sub);
 	}
 	sub.add(item);
     }
 
+    private void addToSubmenu(String submenu, String id,
+	SubActionListener listener, ButtonGroup bg) {
+	DatasetId dsid = new DatasetId(id);
+	final AbstractButton item = makeMenuItem(id, null, listener, bg);
+	addToSubmenu(submenu, item);
+    }
+
     private void addToSubmenu(String id, JComponent item) {
 	// autoadd if not Calc, which is added last
-	addToSubmenu(id, item, id.equals("Calc")?false:true);
+	//addToSubmenu(id, item, id.matches("^Calc")?false:true);
+	addToSubmenu(id, item, true);
     }
 
     private AbstractButton makeMenuItem(String id, String tip,
@@ -76,65 +85,64 @@ public class AxisMenu extends JMenu {
 	return item;
     }
 
-    private void add(String id, SubActionListener listener,
-	ButtonGroup bg, int where) {
-	this.add(id, null, null, listener, bg, where);
+    /* string, listener, bg, index */
+    private void addDirect(String id, SubActionListener listener,
+	ButtonGroup bg, int index) {
+	DatasetId dsid = new DatasetId(id);
+	final AbstractButton item = makeMenuItem(id, null, listener, bg);
+	super.add(item, index);
     }
 
-    private void add(String id, String tip, String units,
-	SubActionListener listener, ButtonGroup bg, int where) {
-	final AbstractButton item = makeMenuItem(id, tip, listener, bg);
-	this.add(item, where);
-    }
-
+    /* string, listener, bg */
+    /* process through this.add() to detect submenu */
     private void add(String id, SubActionListener listener,
 	ButtonGroup bg) {
-	this.add(id, null, null, listener, bg);
+	this.add(new DatasetId(id), listener, bg);
     }
 
-    private void add(String id, String units, SubActionListener listener,
+    /* dsid, listener, bg */
+    private void add(DatasetId dsid, SubActionListener listener,
 	ButtonGroup bg) {
-	this.add(id, null, units, listener, bg);
-    }
+	if (this.members.containsKey(dsid.id)) return;
 
-    private void add(String id, String tip, String units,
-	SubActionListener listener, ButtonGroup bg) {
-
-	if (this.members.containsKey(id)) return;
+	final String id = dsid.id;
+	final String tip = dsid.id2;
+	final String units = dsid.unit;
 
 	final AbstractButton item = makeMenuItem(id, tip, listener, bg);
 
 	if(id.matches("RPM")) {
 	    this.add(item, 0);	// always add rpms first!
-	    this.add("RPM - raw", listener, bg, 1);
+	    addDirect("RPM - raw", listener, bg, 1);
 
-	    this.add("Calc Velocity", listener, bg);
-	    this.add("Calc Acceleration (RPM/s)", listener, bg);
-	    this.add("Calc Acceleration - raw (RPM/s)", listener, bg);
-	    this.add("Calc Acceleration (m/s^2)", listener, bg);
-	    this.add("Calc Acceleration (g)", listener, bg);
-	    this.add("Calc WHP", listener, bg);
-	    this.add("Calc WTQ", listener, bg);
-	    this.add("Calc HP", listener, bg);
-	    this.add("Calc TQ", listener, bg);
-	    this.add("Calc Drag", listener, bg);
+	    addToSubmenu("Calc Power", "WHP", listener, bg);
+	    addToSubmenu("Calc Power", "WTQ", listener, bg);
+	    addToSubmenu("Calc Power", "HP", listener, bg);
+	    addToSubmenu("Calc Power", "TQ", listener, bg);
+	    addToSubmenu("Calc Power", "Drag", listener, bg);
 
-	    addToSubmenu("Calc", new JSeparator());
+	    addToSubmenu("Calc Power", new JSeparator());
+
+	    addToSubmenu("Calc Power", "Calc Velocity", listener, bg);
+	    addToSubmenu("Calc Power", "Acceleration (RPM/s)", listener, bg);
+	    addToSubmenu("Calc Power", "Acceleration - raw (RPM/s)", listener, bg);
+	    addToSubmenu("Calc Power", "Acceleration (m/s^2)", listener, bg);
+	    addToSubmenu("Calc Power", "Acceleration (g)", listener, bg);
 
 	// goes before .*Load.* to catch CalcLoad
-	} else if(id.matches("^Calc .*")) {
-	    addToSubmenu("Calc", item);
 	} else if(id.matches(".*(MAF|MassAir|AirMass|Mass Air Flow).*")) {
 	    addToSubmenu("MAF", item);
 	    if(id.matches("MassAirFlow")) {
 		this.add("MassAirFlow (kg/hr)", listener, bg);
-		this.add("Calc Load", listener, bg);
-		this.add("Calc Load Corrected", listener, bg);
-		this.add("Calc MAF", listener, bg);
-		this.add("Calc MassAirFlow df/dt", listener, bg);
-		this.add("Calc Turbo Flow", listener, bg);
-		this.add("Calc Turbo Flow (lb/min)", listener, bg);
-		addToSubmenu("Calc", new JSeparator());
+		if (dsid.type == LoggerType.LOG_ME7LOGGER) {
+		    addToSubmenu("Calc MAF", "Sim Load", listener, bg);
+		    addToSubmenu("Calc MAF", "Sim Load Corrected", listener, bg);
+		    addToSubmenu("Calc MAF", "Sim MAF", listener, bg);
+		}
+		addToSubmenu("Calc MAF", "MassAirFlow df/dt", listener, bg);
+		addToSubmenu("Calc MAF", "Turbo Flow", listener, bg);
+		addToSubmenu("Calc MAF", "Turbo Flow (lb/min)", listener, bg);
+		addToSubmenu("Calc MAF", new JSeparator());
 	    }
 	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85).*")) {
 	    addToSubmenu("Fuel", item);
@@ -154,11 +162,11 @@ public class AxisMenu extends JMenu {
 	    }
 	    if(id.matches("EffInjectionTime")) {	// te
 		this.add("EffInjectorDutyCycle", listener, bg);
-		this.add("Calc Fuel Mass", listener, bg);
-		this.add("Calc AFR", listener, bg);
-		this.add("Calc lambda", listener, bg);
-		this.add("Calc lambda error", listener, bg);
-		// addToSubmenu("Calc", new JSeparator());
+		addToSubmenu("Calc Fuel", "Sim Fuel Mass", listener, bg);
+		addToSubmenu("Calc Fuel", "Sim AFR", listener, bg);
+		addToSubmenu("Calc Fuel", "Sim lambda", listener, bg);
+		addToSubmenu("Calc Fuel", "Sim lambda error", listener, bg);
+		// addToSubmenu("Calc Fuel", new JSeparator());
 	    }
 	    if(id.matches("EffInjectionTimeBank2")) {	// te
 		this.add("EffInjectorDutyCycleBank2", listener, bg);
@@ -167,7 +175,7 @@ public class AxisMenu extends JMenu {
 	    /* do zeitronix before boost so we get the conversions we want */
 	    if(id.matches("^Zeitronix Boost")) {
 		this.add("Zeitronix Boost (PSI)", listener, bg);
-		this.add("Calc Boost Spool Rate Zeit (RPM)", listener, bg);
+		addToSubmenu("Calc Boost", "Boost Spool Rate Zeit (RPM)", listener, bg);
 	    }
 	    if(id.matches("^Zeitronix AFR")) {
 		this.add("Zeitronix AFR (lambda)", listener, bg);
@@ -180,33 +188,32 @@ public class AxisMenu extends JMenu {
 	    // before Boost so we catch ChargeLimit*Protection before Charge
 	    addToSubmenu("Load", item);
 	    if(id.matches("EngineLoad(Requested|Corrected)")) {
-		this.add("Calc SimBoostPressureDesired", listener, bg);
-		this.add("Calc LoadSpecified correction", listener, bg);
+		addToSubmenu("Calc Boost", "Sim BoostPressureDesired", listener, bg);
+		addToSubmenu("Calc Boost", "Sim LoadSpecified correction", listener, bg);
 	    }
 	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Pressure|PID).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		if (units==null || !units.equals("PSI"))
 		    this.add("BoostPressureDesired (PSI)", listener, bg);
-		this.add("Calc BoostDesired PR", listener, bg);
+		addToSubmenu("Calc Boost", "BoostDesired PR", listener, bg);
 	    }
 	    if(id.matches("BoostPressureActual")) {
 		if (units==null || !units.equals("PSI"))
 		    this.add("BoostPressureActual (PSI)", listener, bg);
-		this.add("Calc BoostActual PR", listener, bg);
-		this.add("Calc Boost Spool Rate (RPM)", listener, bg);
-		this.add("Calc Boost Spool Rate (time)", listener, bg);
-		this.add("Calc LDR error", listener, bg);
-		this.add("Calc LDR de/dt", listener, bg);
-		this.add("Calc LDR I e dt", listener, bg);
-		this.add("Calc LDR PID", listener, bg);
-		this.add("Calc pspvds", listener, bg);
-		addToSubmenu("Calc", new JSeparator());
+		addToSubmenu("Calc Boost", "BoostActual PR", listener, bg);
+		addToSubmenu("Calc Boost", "Boost Spool Rate (RPM)", listener, bg);
+		addToSubmenu("Calc Boost", "Boost Spool Rate (time)", listener, bg);
+		addToSubmenu("Calc PID", "LDR error", listener, bg);
+		addToSubmenu("Calc PID", "LDR de/dt", listener, bg);
+		addToSubmenu("Calc PID", "LDR I e dt", listener, bg);
+		addToSubmenu("Calc PID", "LDR PID", listener, bg);
 	    }
 	    /* JB4 does noth boost pressure desired, its calc'd */
 	    /* "target" is this delta */
 	    if(id.matches("BoostPressureDesiredDelta")) {
-		this.add("BoostPressureDesired", units, listener, bg);
+		this.add(new DatasetId("BoostPressureDesired", null, units),
+		    listener, bg);
 	    }
 	/* do this before Timing so we don't match Throttle Angle */
 	} else if(id.matches(".*(Pedal|Throttle).*")) {
@@ -237,9 +244,11 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("IntakeAirTemperature")) {
 	    addToSubmenu("Temperature", item);
 	    this.add("IntakeAirTemperature (C)", listener, bg);
-	    this.add("Calc evtmod", listener, bg);
-	    this.add("Calc ftbr", listener, bg);
-	    this.add("Calc SimBoostIATCorrection", listener, bg);
+	    if (dsid.type == LoggerType.LOG_ME7LOGGER) {
+		addToSubmenu("Calc IAT", "Sim evtmod", listener, bg);
+		addToSubmenu("Calc IAT", "Sim ftbr", listener, bg);
+		addToSubmenu("Calc IAT", "Sim BoostIATCorrection", listener, bg);
+	    }
 	} else if(id.matches(".*Temperature.*")) {
 	    addToSubmenu("Temperature", item);
 	} else if(id.matches(".*VV.*")) {	// EvoScan
@@ -248,6 +257,9 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("EvoScan", item);
 	} else if(id.matches("^ME7L.*")) {
 	    addToSubmenu("ME7 Logger", item);
+	    if(id.matches("ME7L ps_w")) {
+		addToSubmenu("Calc Boost", "Sim pspvds", listener, bg);
+	    }
 	} else {
 	    this.add(item);
 	}
@@ -282,7 +294,7 @@ public class AxisMenu extends JMenu {
 	    for(int i=0;i<ids.length;i++) {
 		if(ids[i] == null) continue;
 		if(ids[i].id.length()>0 && !this.members.containsKey(ids[i].id)) {
-		    this.add(ids[i].id, ids[i].id2, ids[i].unit, listener, bg);
+		    this.add(ids[i], listener, bg);
 		}
 	    }
 
@@ -291,13 +303,6 @@ public class AxisMenu extends JMenu {
 	    if(me7l!=null) {
 		super.add(new JSeparator());
 		super.add(me7l);
-	    }
-
-	    // put calc next
-	    final JMenu calc=this.subMenus.get("Calc");
-	    if(calc!=null) {
-		super.add(new JSeparator());
-		super.add(calc);
 	    }
 
 	    // put More.. next

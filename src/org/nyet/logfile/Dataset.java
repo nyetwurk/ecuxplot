@@ -10,10 +10,11 @@ import au.com.bytecode.opencsv.*;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
-    public class DatasetId implements Comparable<Object> {
+    public static class DatasetId implements Comparable<Object> {
 	public String id;
 	public String id2;
 	public String unit;
+	public Object type;
 
 	@Override
 	public int compareTo(Object o) {

@@ -27,6 +27,7 @@ public class ECUxDataset extends Dataset {
     private double time_ticks_per_sec;	// ECUx has time in ms, JB4 in 1/10s
     public double samples_per_sec=0;
     private CubicSpline [] splines;	// rpm vs time splines
+    private LoggerType log_detected = LoggerType.LOG_UNKNOWN;
 
     public ECUxDataset(String filename, Env env, Filter filter, int verbose)
 	    throws Exception {
@@ -109,7 +110,7 @@ public class ECUxDataset extends Dataset {
 		    System.out.println("h[" + i + "]: " + h[i]);
 	} while (h.length<1 || h[0].trim().length() == 0 || h[0].trim().matches("^#.+"));
 
-	final LoggerType log_detected = Loggers.detect(h);
+	this.log_detected = Loggers.detect(h);
 
 	if (verbose>0)
 	    System.out.printf("Detected %s based on \"%s\"\n", log_detected, h[0]);
@@ -387,6 +388,7 @@ public class ECUxDataset extends Dataset {
 	    ids[i] = new DatasetId(h[i]);
 	    if(v!=null && i<v.length) ids[i].id2 = v[i];
 	    if(u!=null && i<u.length) ids[i].unit = u[i];
+	    ids[i].type = this.log_detected;
 	}
 	this.setIds(ids);
     }
@@ -457,16 +459,16 @@ public class ECUxDataset extends Dataset {
 	    }
 	} else if(id.equals("RPM - raw")) {
 	    c = new Column(id, "RPM", super.get("RPM").data);
-	} else if(id.equals("Calc Load")) {
+	} else if(id.equals("Sim Load")) {
 	    // g/sec to kg/hr
 	    final DoubleArray a = super.get("MassAirFlow").data.mult(3.6);
 	    final DoubleArray b = super.get("RPM").data.smooth();
 
 	    // KUMSRL
 	    c = new Column(id, "%", a.div(b).div(.001072));
-	} else if(id.equals("Calc Load Corrected")) {
+	} else if(id.equals("Sim Load Corrected")) {
 	    // g/sec to kg/hr
-	    final DoubleArray a = this.get("Calc MAF").data.mult(3.6);
+	    final DoubleArray a = this.get("Sim MAF").data.mult(3.6);
 	    final DoubleArray b = this.get("RPM").data;
 
 	    // KUMSRL
@@ -475,23 +477,23 @@ public class ECUxDataset extends Dataset {
 	    // mass in g/sec
 	    final DoubleArray maf = super.get("MassAirFlow").data;
 	    c = new Column(id, "kg/hr", maf.mult(60.0*60.0/1000.0));
-	} else if(id.equals("Calc MAF")) {
+	} else if(id.equals("Sim MAF")) {
 	    // mass in g/sec
 	    final DoubleArray a = super.get("MassAirFlow").data.
 		mult(this.env.f.MAF_correction()).add(this.env.f.MAF_offset());
 	    c = new Column(id, "g/sec", a);
-	} else if(id.equals("Calc MassAirFlow df/dt")) {
+	} else if(id.equals("MassAirFlow df/dt")) {
 	    // mass in g/sec
 	    final DoubleArray maf = super.get("MassAirFlow").data;
 	    final DoubleArray time = this.get("TIME").data;
 	    c = new Column(id, "g/sec^s", maf.derivative(time).max(0));
-	} else if(id.equals("Calc Turbo Flow")) {
-	    final DoubleArray a = this.get("Calc MAF").data;
+	} else if(id.equals("Turbo Flow")) {
+	    final DoubleArray a = this.get("Sim MAF").data;
 	    c = new Column(id, "m^3/sec", a.div(1225*this.env.f.turbos()));
-	} else if(id.equals("Calc Turbo Flow (lb/min)")) {
-	    final DoubleArray a = this.get("Calc MAF").data;
+	} else if(id.equals("Turbo Flow (lb/min)")) {
+	    final DoubleArray a = this.get("Sim MAF").data;
 	    c = new Column(id, "lb/min", a.div(7.55*this.env.f.turbos()));
-	} else if(id.equals("Calc Fuel Mass")) {	// based on te
+	} else if(id.equals("Sim Fuel Mass")) {	// based on te
 	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
 	    final double gps = this.env.f.injector()*gps_per_ccmin;
 	    final double cylinders = this.env.f.cylinders();
@@ -511,16 +513,16 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("AirFuelRatioCurrent (AFR)")) {
 	    final DoubleArray abs = super.get("AirFuelRatioCurrent").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
-	} else if(id.equals("Calc AFR")) {
-	    final DoubleArray a = this.get("Calc MAF").data;
-	    final DoubleArray b = this.get("Calc Fuel Mass").data;
+	} else if(id.equals("Sim AFR")) {
+	    final DoubleArray a = this.get("Sim MAF").data;
+	    final DoubleArray b = this.get("Sim Fuel Mass").data;
 	    c = new Column(id, "AFR", a.div(b));
-	} else if(id.equals("Calc lambda")) {
-	    final DoubleArray a = this.get("Calc AFR").data.div(14.7);
+	} else if(id.equals("Sim lambda")) {
+	    final DoubleArray a = this.get("Sim AFR").data.div(14.7);
 	    c = new Column(id, "lambda", a);
-	} else if(id.equals("Calc lambda error")) {
+	} else if(id.equals("Sim lambda error")) {
 	    final DoubleArray a = super.get("AirFuelRatioDesired").data;
-	    final DoubleArray b = this.get("Calc lambda").data;
+	    final DoubleArray b = this.get("Sim lambda").data;
 	    c = new Column(id, "%", a.div(b).mult(-1).add(1).mult(100).
 		max(-25).min(25));
 
@@ -566,24 +568,24 @@ public class ECUxDataset extends Dataset {
 		c = new Column(id, "m/s", rpm.div(this.env.c.rpm_per_mph()).
 		    div(mph_per_mps));
 	    }
-	} else if(id.equals("Calc Acceleration (RPM/s)")) {
+	} else if(id.equals("Acceleration (RPM/s)")) {
 	    final DoubleArray y = this.get("RPM").data;
 	    final DoubleArray x = this.get("TIME").data;
 	    c = new Column(id, "RPM/s", y.derivative(x, this.MAW()).max(0));
-	} else if(id.equals("Calc Acceleration - raw (RPM/s)")) {
+	} else if(id.equals("Acceleration - raw (RPM/s)")) {
 	    final DoubleArray y = this.get("RPM - raw").data;
 	    final DoubleArray x = this.get("TIME").data;
 	    c = new Column(id, "RPM/s", y.derivative(x));
-	} else if(id.equals("Calc Acceleration (m/s^2)")) {
+	} else if(id.equals("Acceleration (m/s^2)")) {
 	    final DoubleArray y = this.get("Calc Velocity").data;
 	    final DoubleArray x = this.get("TIME").data;
 	    c = new Column(id, "m/s^2", y.derivative(x, this.MAW()).max(0));
-	} else if(id.equals("Calc Acceleration (g)")) {
-	    final DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
+	} else if(id.equals("Acceleration (g)")) {
+	    final DoubleArray a = this.get("Acceleration (m/s^2)").data;
 	    c = new Column(id, "g", a.div(9.80665));
 /*****************************************************************************/
-	} else if(id.equals("Calc WHP")) {
-	    final DoubleArray a = this.get("Calc Acceleration (m/s^2)").data;
+	} else if(id.equals("WHP")) {
+	    final DoubleArray a = this.get("Acceleration (m/s^2)").data;
 	    final DoubleArray v = this.get("Calc Velocity").data;
 	    final DoubleArray whp = a.mult(v).mult(this.env.c.mass()).
 		add(this.drag(v));	// in watts
@@ -595,22 +597,22 @@ public class ECUxDataset extends Dataset {
 		l += " (SAE)";
 	    }
 	    c = new Column(id, l, value.movingAverage(this.MAW()));
-	} else if(id.equals("Calc HP")) {
-	    final DoubleArray whp = this.get("Calc WHP").data;
+	} else if(id.equals("HP")) {
+	    final DoubleArray whp = this.get("WHP").data;
 	    final DoubleArray value = whp.div((1-this.env.c.driveline_loss())).
 		    add(this.env.c.static_loss());
 	    String l = "HP";
 	    if(this.env.sae.enabled()) l += " (SAE)";
 	    c = new Column(id, l, value);
-	} else if(id.equals("Calc WTQ")) {
-	    final DoubleArray whp = this.get("Calc WHP").data;
+	} else if(id.equals("WTQ")) {
+	    final DoubleArray whp = this.get("WHP").data;
 	    final DoubleArray rpm = this.get("RPM").data;
 	    final DoubleArray value = whp.mult(5252).div(rpm);
 	    String l = "ft-lb";
 	    if(this.env.sae.enabled()) l += " (SAE)";
 	    c = new Column(id, l, value);
-	} else if(id.equals("Calc TQ")) {
-	    final DoubleArray hp = this.get("Calc HP").data;
+	} else if(id.equals("TQ")) {
+	    final DoubleArray hp = this.get("HP").data;
 	    final DoubleArray rpm = this.get("RPM").data;
 	    final DoubleArray value = hp.mult(5252).div(rpm);
 	    String l = "ft-lb";
@@ -618,7 +620,7 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, l, value);
 	/* TODO */
 	/*
-	} else if(id.equals("Calc Drag")) {
+	} else if(id.equals("Drag")) {
 	    DoubleArray v = this.get("Calc Velocity").data;
 	    DoubleArray drag = this.drag(v);	// in watts
 	*/
@@ -658,7 +660,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Zeitronix Lambda (AFR)")) {
 	    final DoubleArray abs = super.get("Zeitronix Lambda").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
-	} else if(id.equals("Calc BoostDesired PR")) {
+	} else if(id.equals("BoostDesired PR")) {
 	    final Column act = super.get("BoostPressureDesired");
 	    try {
 		final DoubleArray ambient = super.get("BaroPressure").data;
@@ -670,7 +672,7 @@ public class ECUxDataset extends Dataset {
 		    c = new Column(id, "PR", act.data.div(1013));
 	    }
 
-	} else if(id.equals("Calc BoostActual PR")) {
+	} else if(id.equals("BoostActual PR")) {
 	    final Column act = super.get("BoostPressureActual");
 	    try {
 		final DoubleArray ambient = super.get("BaroPressure").data;
@@ -681,7 +683,7 @@ public class ECUxDataset extends Dataset {
 		else
 		    c = new Column(id, "PR", act.data.div(1013));
 	    }
-	} else if(id.equals("Calc evtmod")) {
+	} else if(id.equals("Sim evtmod")) {
 	    final DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
 	    DoubleArray tmot = tans.ident(95);
 	    try {
@@ -692,9 +694,9 @@ public class ECUxDataset extends Dataset {
 	    // evtmod = tans + (tmot-tans)*KFFWTBR
 	    final DoubleArray evtmod = tans.add((tmot.sub(tans)).mult(0.02));
 	    c = new Column(id, "\u00B0 C", evtmod);
-	} else if(id.equals("Calc ftbr")) {
+	} else if(id.equals("Sim ftbr")) {
 	    final DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
-	    final DoubleArray evtmod = this.get("Calc evtmod").data;
+	    final DoubleArray evtmod = this.get("Sim evtmod").data;
 	    // linear fit to stock FWFTBRTA
 	    // fwtf = (tans+637.425)/731.334
 
@@ -708,10 +710,10 @@ public class ECUxDataset extends Dataset {
 
 	    // ftbr=273/(evtmod-273) * fwft
 	    c = new Column(id, "", evtmod.ident(273).div(evtmod.add(273)).mult(fwft));
-	} else if(id.equals("Calc SimBoostIATCorrection")) {
-	    final DoubleArray ftbr = this.get("Calc ftbr").data;
+	} else if(id.equals("Sim BoostIATCorrection")) {
+	    final DoubleArray ftbr = this.get("Sim ftbr").data;
 	    c = new Column(id, "", ftbr.inverse());
-	} else if(id.equals("Calc SimBoostPressureDesired")) {
+	} else if(id.equals("Sim BoostPressureDesired")) {
 	    final boolean SY_BDE = false;
 	    final boolean SY_AGR = true;
 	    DoubleArray load;
@@ -736,7 +738,7 @@ public class ECUxDataset extends Dataset {
 
             DoubleArray fupsrl = load.ident(0.1037); // KFURL
 	    try {
-		final DoubleArray ftbr = this.get("Calc ftbr").data;
+		final DoubleArray ftbr = this.get("Sim ftbr").data;
 		// fupsrl = KFURL * ftbr
 		fupsrl = fupsrl.mult(ftbr);
 	    } catch (final Exception e) {}
@@ -772,37 +774,37 @@ public class ECUxDataset extends Dataset {
 	    boost = boost.div(1.016);	// plsol
 
 	    c = new Column(id, "mBar", boost.max(ambient));
-	} else if(id.equals("Calc Boost Spool Rate (RPM)")) {
+	} else if(id.equals("Boost Spool Rate (RPM)")) {
 	    final DoubleArray abs = super.get("BoostPressureActual").data.smooth();
 	    final DoubleArray rpm = this.get("RPM").data;
 	    c = new Column(id, "mBar/RPM", abs.derivative(rpm).max(0));
-	} else if(id.equals("Calc Boost Spool Rate Zeit (RPM)")) {
+	} else if(id.equals("Boost Spool Rate Zeit (RPM)")) {
 	    final DoubleArray boost = this.get("Zeitronix Boost").data.smooth();
 	    final DoubleArray rpm =
 		this.get("RPM").data.movingAverage(this.filter.ZeitMAW()).smooth();
 	    c = new Column(id, "mBar/RPM", boost.derivative(rpm).max(0));
-	} else if(id.equals("Calc Boost Spool Rate (time)")) {
+	} else if(id.equals("Boost Spool Rate (time)")) {
 	    final DoubleArray abs = this.get("BoostPressureActual (PSI)").data.smooth();
 	    final DoubleArray time = this.get("TIME").data;
 	    c = new Column(id, "PSI/sec", abs.derivative(time, this.MAW()).max(0));
-	} else if(id.equals("Calc LDR error")) {
+	} else if(id.equals("LDR error")) {
 	    final DoubleArray set = super.get("BoostPressureDesired").data;
 	    final DoubleArray out = super.get("BoostPressureActual").data;
 	    c = new Column(id, "100mBar", set.sub(out).div(100));
-	} else if(id.equals("Calc LDR de/dt")) {
+	} else if(id.equals("LDR de/dt")) {
 	    final DoubleArray set = super.get("BoostPressureDesired").data;
 	    final DoubleArray out = super.get("BoostPressureActual").data;
 	    final DoubleArray t = this.get("TIME").data;
 	    final DoubleArray o = set.sub(out).derivative(t,this.MAW());
 	    c = new Column(id,"100mBar",o.mult(this.env.pid.time_constant).div(100));
-	} else if(id.equals("Calc LDR I e dt")) {
+	} else if(id.equals("LDR I e dt")) {
 	    final DoubleArray set = super.get("BoostPressureDesired").data;
 	    final DoubleArray out = super.get("BoostPressureActual").data;
 	    final DoubleArray t = this.get("TIME").data;
 	    final DoubleArray o = set.sub(out).
 		integral(t,0,this.env.pid.I_limit/this.env.pid.I*100);
 	    c = new Column(id,"100mBar",o.div(this.env.pid.time_constant).div(100));
-	} else if(id.equals("Calc LDR PID")) {
+	} else if(id.equals("LDR PID")) {
 	    final DoubleArray.TransferFunction fP =
 		new DoubleArray.TransferFunction() {
 		    @Override
@@ -822,12 +824,12 @@ public class ECUxDataset extends Dataset {
 			return x*ECUxDataset.this.env.pid.D[3];
 		    }
 	    };
-	    final DoubleArray E = this.get("Calc LDR error").data;
+	    final DoubleArray E = this.get("LDR error").data;
 	    final DoubleArray P = E.func(fP);
-	    final DoubleArray I = this.get("Calc LDR I e dt").data.mult(this.env.pid.I);
-	    final DoubleArray D = this.get("Calc LDR de/dt").data.func(fD,E);
+	    final DoubleArray I = this.get("LDR I e dt").data.mult(this.env.pid.I);
+	    final DoubleArray D = this.get("LDR de/dt").data.func(fD,E);
 	    c = new Column(id, "%", P.add(I).add(D).max(0).min(95));
-	} else if(id.equals("Calc pspvds")) {
+	} else if(id.equals("Sim pspvds")) {
 	    final DoubleArray ps_w = super.get("ME7L ps_w").data;
 	    final DoubleArray pvdkds = super.get("BoostPressureActual").data;
 	    c = new Column(id,"",ps_w.div(pvdkds));
@@ -851,7 +853,7 @@ public class ECUxDataset extends Dataset {
 	    }
 	    c = new Column(id, "\u00B0", out);
 /*****************************************************************************/
-	} else if(id.equals("Calc LoadSpecified correction")) {
+	} else if(id.equals("Sim LoadSpecified correction")) {
 	    final DoubleArray cs = super.get("EngineLoadCorrected").data;
 	    final DoubleArray s = super.get("EngineLoadSpecified").data;
 	    c = new Column(id, "K", cs.div(s));

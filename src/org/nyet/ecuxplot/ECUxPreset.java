@@ -42,7 +42,7 @@ public class ECUxPreset extends Preset {
 
     public static void createDefaultECUxPresets() {
 	new ECUxPreset("Power", "RPM",
-	    new String[] { "Calc WHP","Calc WTQ","Calc HP","Calc TQ" },
+	    new String[] { "WHP","WTQ","HP","TQ" },
 	    new String[] {"BoostPressureDesired (PSI)","BoostPressureActual (PSI)"});
 
 	new ECUxPreset("Timing", "RPM",
@@ -51,15 +51,15 @@ public class ECUxPreset extends Preset {
 	    true);
 
 	new ECUxPreset("Fueling", "RPM",
-	    new String[] { "Zeitronix AFR", "Calc AFR" },
+	    new String[] { "Zeitronix AFR", "Sim AFR" },
 	    new String[] { "Zeitronix Boost (PSI)" ,
 		"BoostPressureDesired (PSI)" , "BoostPressureActual (PSI)"});
 
-	new ECUxPreset("Compressor Map", "Calc Turbo Flow", "Calc BoostActual PR");
+	new ECUxPreset("Compressor Map", "Turbo Flow", "BoostActual PR");
 
 	new ECUxPreset("Spool Rate", "BoostPressureActual (PSI)",
-	    "Calc Boost Spool Rate (RPM)",
-	    "Calc Boost Spool Rate (time)");
+	    "Boost Spool Rate (RPM)",
+	    "Boost Spool Rate (time)");
     }
 
     public ECUxPreset(Comparable<?> name) { super(name);}
