@@ -5,6 +5,7 @@
   !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
   !include "scripts\fileassoc.nsh"
   !include "LogicLib.nsh"
+  !include "x64.nsh"
 
   Name "ECUxPlot"
 
@@ -130,6 +131,12 @@ Section "install" InstallationInfo
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_FILE}" "UninstallString" "$INSTDIR\Uninstall.exe"
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+;create Java Prefs key (might be missing due to jre bug)
+  ${If} ${RunningX64}
+    SetRegView 64
+  ${EndIf}
+  WriteRegStr HKLM "Software\JavaSoft\Prefs" "" ""
 
 SectionEnd
 
