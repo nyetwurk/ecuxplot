@@ -7,9 +7,15 @@ for source in $*; do
 	echo "generating csv"
 	echo ./mapdump -r 4Z7907551R.kp 8D0907551F.kp 8D0907551G.kp -i $stem.bin $source $dest.csv
 	../mapdump.sh -r 4Z7907551R.kp 8D0907551F.kp 8D0907551G.kp -i $stem.bin $source $dest.csv
+	touch -r $source $dest.csv
 	echo "generating xdf"
 	echo ./mapdump -i $stem.bin -x $source $dest.xdf
 	../mapdump.sh -i $stem.bin -x $source $dest.xdf
+	touch -r $source $dest.xdf
+	echo zip $dest.zip $dest.kp $dest.csv $dest.xdf
+	rm -f $dest.zip
+	zip $dest.zip $dest.kp $dest.csv $dest.xdf
+	touch -r $source $dest.zip
     else
 	echo "can't read $source"
     fi
