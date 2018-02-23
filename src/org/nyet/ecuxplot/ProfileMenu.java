@@ -79,8 +79,22 @@ public final class ProfileMenu extends JMenu {
 	}
 
 	// Add custom profiles
-	dir=new File(Locate.getDataDirectory("ECUxPlot"),
-		"profiles");
+	dir=new File(Locate.getDataDirectory("ECUxPlot"), "profiles");
+
+	// Issue #27 - create missing directories if needed
+        if (!dir.exists()) {
+	    final ProfileMenu pm = ProfileMenu.this;
+	    String err = null;
+	    try {
+		if (!dir.mkdirs()) {
+		    err = "Failed to create profile directory " + dir.getPath();
+		}
+	    } catch (SecurityException se) {
+		err = "Failed to create profile directory " + dir.getPath() + "\n" + se.toString();
+	    }
+	    if (err != null) System.out.println(err);
+	}
+
 	if (dir.isDirectory()) {
 	    final SaveProfileAction spa = new SaveProfileAction(dir);
 	    final File profiles[] = dir.listFiles();
