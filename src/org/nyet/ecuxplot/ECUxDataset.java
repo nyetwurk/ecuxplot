@@ -618,12 +618,10 @@ public class ECUxDataset extends Dataset {
 	    String l = "ft-lb";
 	    if(this.env.sae.enabled()) l += " (SAE)";
 	    c = new Column(id, l, value);
-	/* TODO */
-	/*
 	} else if(id.equals("Drag")) {
-	    DoubleArray v = this.get("Calc Velocity").data;
-	    DoubleArray drag = this.drag(v);	// in watts
-	*/
+	    final DoubleArray v = this.get("Calc Velocity").data;
+	    final DoubleArray drag = this.drag(v);
+	    c = new Column(id, "HP", drag.mult(this.hp_per_watt));
 	} else if(id.equals("IntakeAirTemperature")) {
 	    c = super.get(id);
 	    if (c.getUnits().matches(".*C$"))
