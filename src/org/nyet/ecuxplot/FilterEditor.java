@@ -39,7 +39,7 @@ public class FilterEditor extends PreferencesEditor {
 	{"Minimum Pedal", "minPedal"},
 	{"Minimum Throttle", "minThrottle"},
 	{"Minimum Points", "minPoints"},
-	{"HW/TQ smoothing", "HPTQMAW"},
+	{"HP/TQ smoothing", "HPTQMAW"},
 	{"Zeitronix smoothing", "ZeitMAW"},
     };
 
