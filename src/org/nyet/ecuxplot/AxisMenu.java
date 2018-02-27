@@ -49,17 +49,21 @@ public class AxisMenu extends JMenu {
 	    if(autoadd) this.add(sub);
 	}
 	sub.add(item);
-    }
-
-    private void addToSubmenu(String submenu, String id) {
-	final AbstractButton item = makeMenuItem(id, null);
-	addToSubmenu(submenu, item);
+	if (item instanceof AbstractButton) {
+	    AbstractButton b = (AbstractButton)item;
+	    this.members.put(b.getText(), b);
+	}
     }
 
     private void addToSubmenu(String submenu, JComponent item) {
 	// autoadd if not Calc, which is added last
 	//addToSubmenu(submenu, item, id.matches("^Calc")?false:true);
 	addToSubmenu(submenu, item, true);
+    }
+
+    private void addToSubmenu(String submenu, String id) {
+	final AbstractButton item = makeMenuItem(id, null);
+	addToSubmenu(submenu, item);
     }
 
     private AbstractButton makeMenuItem(String id, String tip) {
@@ -86,6 +90,7 @@ public class AxisMenu extends JMenu {
     /* string, index */
     private void addDirect(String id, int index) {
 	final AbstractButton item = makeMenuItem(id, null);
+	this.members.put(id, item);
 	super.add(item, index);
     }
 
