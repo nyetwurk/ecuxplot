@@ -15,14 +15,22 @@
     </target>
 
     <target name="compile">
-	<fail message="Can't find JRE${JAVA_TARGET_VER} rt.jar!">
+	<!-- fail if (target!=javac and (JAVA_RT is unset or "") -->
+	<fail message="Can't find JRE${JAVA_TARGET_VER} rt.jar! (${JAVAC_MAJOR_VER})">
 	    <condition>
-		<or>
-		    <equals arg1="${JAVA_RT}" arg2=""/>
+		<and>
+		    <!-- JAVA_TARGET_VER != MAJOR_VER -->
 		    <not>
-			<isset property="JAVA_RT"/>
+			<equals arg1="${JAVA_TARGET_VER}" arg2="${JAVAC_MAJOR_VER}"/>
 		    </not>
-		</or>
+		    <or>
+			<!-- JAVA_RT is unset or "" -->
+			<not>
+			    <isset property="JAVA_RT"/>
+			</not>
+			<equals arg1="${JAVA_RT}" arg2=""/>
+		    </or>
+		</and>
 	    </condition>
 	</fail>
 	<available file="${JAVA_RT}" property="rt.jar.ok"/>

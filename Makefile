@@ -12,15 +12,16 @@ COMMONS_LANG3_VER := 3.4
 JAVA_TARGET_VER := 6
 
 # things to pass to build/build.properties
-PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVA_TARGET_VER JAVA_RT
+PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVAC_MAJOR_VER JAVA_TARGET_VER JAVA_RT
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
 JAVAC := $(shell readlink -e "$(shell which javac 2> /dev/null)")
 JAVAC_DIR := $(shell dirname "$(JAVAC)")/..
-JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1 \2/')
-JAVAC_MAJOR_VER := $(word 1,$(JAVAC_VER))
-JAVAC_MINOR_VER := $(word 2,$(JAVAC_VER))
+JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1.\2/')
+JAVAC_S_VER := $(subst ., ,$(JAVAC_VER))
+JAVAC_MAJOR_VER := $(word 1,$(JAVAC_S_VER))
+JAVAC_MINOR_VER := $(word 2,$(JAVAC_S_VER))
 
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
@@ -183,13 +184,14 @@ vars:
 	@echo version=$(VERSION)
 	@echo release=$(RELEASE)
 	@echo rc=$(RC)
-	@echo 'JAVAC=$(JAVAC)'
-	@echo 'JAVA_RT=$(JAVA_RT)'
+	@echo launch4j=$(LAUNCH4J)
+	@echo 'JAVAC_DIR=$(JAVAC_DIR)'
+	@echo 'JAVAC_VER=$(JAVAC_VER)'
+	@echo 'JAVAC_MAJOR_VER=$(JAVAC_MAJOR_VER)'
+	@echo 'JAVAC_MINOR_VER=$(JAVAC_MINOR_VER)'
+	@echo 'JAVA_HOME=$(JAVA_HOME)'
 	@echo 'JAVA_RT1=$(JAVA_RT1)'
 	@echo 'JAVA_RT2=$(JAVA_RT2)'
-	@echo 'JAVA_RT32=$(JAVA_RT32)'
-	@echo 'JAVA_RT64=$(JAVA_RT64)'
-	@echo 'JAVA_HOME=$(JAVA_HOME)'
 	@echo 'JAVA_RT_PATH=$(JAVA_RT_PATH)'
 	@echo 'JAVA_RT=$(JAVA_RT)'
 
