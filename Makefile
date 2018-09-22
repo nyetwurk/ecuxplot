@@ -58,8 +58,7 @@ ECUXPLOT_JARS := \
     jcommon-$(JCOMMON_VER).jar \
     jfreechart-$(JFREECHART_VER).jar \
     applib.jar \
-    flanagan.jar \
-    AppleJavaExtensions.jar
+    flanagan.jar
 
 COMMON_JARS := \
     opencsv-$(OPENCSV_VER).jar \

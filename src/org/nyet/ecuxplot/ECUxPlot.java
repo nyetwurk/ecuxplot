@@ -11,7 +11,10 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.*;
 
-import com.apple.eawt.*;
+/*
+import java.awt.desktop.*;
+import java.awt.Desktop;
+*/
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
@@ -26,7 +29,8 @@ import org.nyet.util.*;
 import org.nyet.logfile.Dataset;
 import org.nyet.logfile.Dataset.DatasetId;
 
-public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost {
+public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost
+    /* AboutHandler, OpenFilesHandler, QuitHandler */ {
     /**
      *
      */
@@ -866,6 +870,36 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	}
     }
 
+    // java.awt.Desktop stuff; not needed?
+    /*
+    // we implement AboutHandler
+    public void handleAbout(AboutEvent e)
+    {
+	JOptionPane.showMessageDialog(this, new AboutPanel(), "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    // we don't implement PreferencesHandler
+    public void handlePreferences(PreferencesEvent e)
+    {
+    }
+
+    // we implement OpenFilesHandler
+    public void openFiles(OpenFilesEvent e)
+    {
+	final List<File> files = e.getFiles();
+	for(final File f : files) {
+	    System.out.println(f);
+	}
+	this.loadFiles(files);
+    }
+
+    // we implement QuitHandler
+    public void handleQuitRequestWith(QuitEvent e, QuitResponse r)
+    {
+	this.exitApp();
+    }
+    */
+
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
 	    @Override
@@ -874,22 +908,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 		// exit on close
 		final ECUxPlot plot = new ECUxPlot("ECUxPlot", o.size, true, o.verbose);
-		final Application app = Application.getApplication();
+		// java.awt.Desktop stuff; not needed?
+		/*
+		final Desktop dt = Desktop.getDesktop();
 
-		if(app!=null) {
-		    app.addApplicationListener(new ApplicationAdapter() {
-			@Override
-			public void handleOpenFile(ApplicationEvent evt) {
-			    final String file = evt.getFilename();
-			    plot.loadFile(new File(file));
-			}
-			@Override
-			public void handleQuit(ApplicationEvent evt) {
-			    plot.prefsPutWindowSize();
-			    evt.setHandled(true);
-			}
-		    });
+		if(dt!=null) {
+		    dt.setAboutHandler(plot);
+		    //dt.setPreferencesHandler(plot);
+		    dt.setOpenFileHandler(plot);
+		    dt.setQuitHandler(plot);
 		}
+		*/
 
 		plot.pack();
 		RefineryUtilities.centerFrameOnScreen(plot);
