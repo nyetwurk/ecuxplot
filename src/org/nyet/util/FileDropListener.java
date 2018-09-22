@@ -138,12 +138,11 @@ public class FileDropListener implements DropTargetListener {
         dropTargetEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 
         final BufferedReader read = new BufferedReader(flavor.getReaderForText(tr));
-        // Remove 'file://' from file name
-        String fileName = read.readLine().substring(7).replace("%20", " ");
-        // Remove 'localhost' from OS X file names
-        if (fileName.substring(0, 9).equals("localhost")) {
-            fileName = fileName.substring(9);
-        }
+	String fileName = java.net.URLDecoder.decode(read.readLine(), "UTF-8");
+	// Remove 'file://' from start of URL (if there)
+	if (fileName.startsWith("file://")) {
+	    fileName = fileName.substring(7);
+	}
         read.close();
 
         dropTargetEvent.dropComplete(true);
