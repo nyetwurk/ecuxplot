@@ -15,8 +15,9 @@ JAVA_TARGET_VER := 9
 PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVAC_MAJOR_VER JAVA_TARGET_VER
 
 PWD := $(shell pwd)
-UNAME := $(shell uname -s)
+UNAME := $(shell uname -s | cut -f 1 -d -)
 READLINK_Linux_flags := "-e" # SIGH
+READLINK_CYGWIN_NT_flags := "-e" # SIGH
 JAVAC := $(shell readlink $(READLINK_$(UNAME)_flags) "$(shell which javac 2> /dev/null)")
 JAVAC_DIR := $(shell dirname "$(JAVAC)")/..
 JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1.\2/')
