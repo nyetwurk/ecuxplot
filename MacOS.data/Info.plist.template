@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>%ECUxPlot</string>
+	<string>ECUxPlot</string>
 	<key>CFBundleVersion</key>
 	<string>%ECUXPLOT_VER</string>
 	<key>CFBundleAllowMixedLocalizations</key>
