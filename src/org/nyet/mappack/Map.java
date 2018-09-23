@@ -24,7 +24,7 @@ public class Map implements Comparable<Object> {
 	}
 	@Override
 	public int compareTo(Object o) {
-	    return (new Integer(this.enm).compareTo(((Enm)o).enm));
+	    return (Integer.valueOf(this.enm).compareTo(((Enm)o).enm));
 	}
     }
 
@@ -119,7 +119,7 @@ public class Map implements Comparable<Object> {
 	public String toString() { return this.x + "x" + this.y; }
 	@Override
 	public int compareTo(Object o) {
-	    return (new Integer(areaOf())).compareTo(((Dimension)o).areaOf());
+	    return (Integer.valueOf(areaOf())).compareTo(((Dimension)o).areaOf());
 	}
 	public int areaOf() { return this.x*this.y; }
     }

@@ -11,10 +11,8 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.*;
 
-/*
 import java.awt.desktop.*;
 import java.awt.Desktop;
-*/
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
@@ -29,8 +27,9 @@ import org.nyet.util.*;
 import org.nyet.logfile.Dataset;
 import org.nyet.logfile.Dataset.DatasetId;
 
-public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost
-    /* AboutHandler, OpenFilesHandler, QuitHandler */ {
+public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost,
+    OpenFilesHandler
+    /* AboutHandler, QuitHandler */ {
     /**
      *
      */
@@ -870,7 +869,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	}
     }
 
-    // java.awt.Desktop stuff; not needed?
+    // java.awt.Desktop stuff
     /*
     // we implement AboutHandler
     public void handleAbout(AboutEvent e)
@@ -882,18 +881,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     public void handlePreferences(PreferencesEvent e)
     {
     }
+    */
 
     // we implement OpenFilesHandler
     public void openFiles(OpenFilesEvent e)
     {
-	final List<File> files = e.getFiles();
-	for(final File f : files) {
-	    System.out.println(f);
-	}
-	this.loadFiles(files);
+	this.loadFiles(e.getFiles());
     }
 
     // we implement QuitHandler
+    /*
     public void handleQuitRequestWith(QuitEvent e, QuitResponse r)
     {
 	this.exitApp();
@@ -908,17 +905,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 		// exit on close
 		final ECUxPlot plot = new ECUxPlot("ECUxPlot", o.size, true, o.verbose);
-		// java.awt.Desktop stuff; not needed?
-		/*
+
+		// java.awt.Desktop stuff
 		final Desktop dt = Desktop.getDesktop();
 
 		if(dt!=null) {
-		    dt.setAboutHandler(plot);
+		    //dt.setAboutHandler(plot);
 		    //dt.setPreferencesHandler(plot);
 		    dt.setOpenFileHandler(plot);
-		    dt.setQuitHandler(plot);
+		    //dt.setQuitHandler(plot);
 		}
-		*/
 
 		plot.pack();
 		RefineryUtilities.centerFrameOnScreen(plot);

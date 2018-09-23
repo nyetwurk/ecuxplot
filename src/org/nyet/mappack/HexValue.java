@@ -26,7 +26,7 @@ public class HexValue implements Comparable<Object> {
     public boolean equals(int v) { return (v==this.v); }
     @Override
     public int compareTo(Object o) {
-	return (new Integer(this.v).compareTo(((HexValue)o).v));
+	return (Integer.valueOf(this.v).compareTo(((HexValue)o).v));
     }
 
     public static final String dumpHex(ByteBuffer b) {
