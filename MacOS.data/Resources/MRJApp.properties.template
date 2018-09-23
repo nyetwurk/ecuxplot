@@ -1,2 +1,0 @@
-com.apple.mrj.application.main=org.nyet.ecuxplot.ECUxPlot
-com.apple.mrj.application.classpath=Contents/Resources/Java/ECUxPlot-%ECUXPLOT_VER.jar:Contents/Resources/Java/applib.jar:Contents/Resources/Java/flanagan.jar:Contents/Resources/Java/jcommon-%JCOMMON_VER.jar:Contents/Resources/Java/jfreechart-%JFREECHART_VER.jar:Contents/Resources/Java/opencsv-%OPENCSV_VER.jar

@@ -16,7 +16,8 @@ PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVAC_MAJOR_VER JAVA_TARGET_VER
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
-JAVAC := $(shell readlink -e "$(shell which javac 2> /dev/null)")
+READLINK_Linux_flags := "-e" # SIGH
+JAVAC := $(shell readlink $(READLINK_$(UNAME)_flags) "$(shell which javac 2> /dev/null)")
 JAVAC_DIR := $(shell dirname "$(JAVAC)")/..
 JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1.\2/')
 JAVAC_S_VER := $(subst ., ,$(JAVAC_VER))
@@ -24,6 +25,7 @@ JAVAC_MAJOR_VER := $(word 1,$(JAVAC_S_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_S_VER))
 
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
+# cygwin under Windows
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc 2> /dev/null)'
 ECUXPLOT_XML := '$(shell cygpath -w $(PWD)/build/ECUxPlot.xml)'
@@ -35,17 +37,20 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 OPT_PRE := '/'
 
 JAVA_HOME ?= $(shell cygpath -w "$(JAVAC_DIR)")
-else
-#ARCH_x86_64 := amd64
-#ARCH_i686 := i386
-#UNAME_ARCH := $(ARCH_$(shell uname -m))
-#DPKG_ARCH := $(shell dpkg --print-architecture)
-LAUNCH4J := /usr/local/launch4j/launch4j
+else # !cygwin
+# Darwin or Linux
+LAUNCH4J := $(shell PATH=$(PATH):/usr/local/launch4j which launch4j)
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := $(shell which makensis 2> /dev/null)
 OPT_PRE := '-'
+ifeq ($(UNAME),Darwin)
+# Darwin
+JAVA_HOME ?= $(shell /usr/libexec/java_home)
+else # !Darwin
+# Linux
 JAVA_HOME ?= $(JAVAC_DIR)
+endif # Darwin
 endif
 
 INSTALL_DIR := /usr/local/ecuxplot
@@ -69,8 +74,7 @@ JARS:=$(ECUXPLOT_JARS) $(COMMON_JARS)
 
 TARGET=ECUxPlot-$(ECUXPLOT_VER)
 
-INSTALLER=$(TARGET)-setup.exe
-ARCHIVES=$(TARGET).tar.gz $(TARGET).MacOS.tar.gz
+ARCHIVES=$(TARGET).tar.gz
 
 ANT:=ant
 
@@ -85,17 +89,16 @@ compile: build.xml build/build.properties $(VERSION_JAVA)
 run: $(TARGET).jar
 	@$(ANT) run
 
-archives: $(ARCHIVES)
-installer: $(INSTALLER)
-rsync: $(ARCHIVES) $(INSTALLER)
-	$(RSYNC) $^ nyet.org:public_html/cars/files/
+.PHONY: all compile run
 
 binclean:
-	rm -f $(addprefix ECUxPlot*.,jar zip tar gz) mapdump.jar *.exe
+	rm -f $(addprefix ECUxPlot*.,jar zip tar gz) mapdump.jar *.exe *.pkg *.dmg
 
 clean: binclean
 	rm -rf build
 	rm -f $(VERSION_JAVA)
+
+.PHONY: binclean clean
 
 %.csv: %.kp mapdump
 	./mapdump -r $(REFERENCE) $< > $@
@@ -126,6 +129,17 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 
 include scripts/Windows.mk
 include scripts/MacOS.mk
+
+archives: $(ARCHIVES)
+mac-installer: $(MAC_INSTALLER)
+win-installer: $(WIN_INSTALLER)
+installers: mac-installer win-installer
+
+rsync: $(ARCHIVES) $(WIN_INSTALLER) $(MAC_INSTALLER)
+	$(RSYNC) $^ nyet.org:public_html/cars/files/
+
+.PHONY: archives mac-installer win-installer installers rsync
+
 
 $(TARGET).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
 	@rm -f $@
@@ -159,7 +173,9 @@ tag:	force
 	fi
 	git tag -a v$(VER) -m "Version v$(VER)"
 
-%.java: %.java.template Makefile
+.PHONY: install tag force
+
+%: %.template Makefile
 	@echo Creating $@
 	@cat $< | $(GEN) > $@
 
@@ -168,9 +184,9 @@ build/build.properties: Makefile build/version.txt
 	@echo Creating $@
 	$(shell echo "" > $@) $(foreach V,$(PROPVARS),$(shell echo "$(V)=$($V)" >> $@))
 
-latest-links: archives installer
-	@ln -sf $(INSTALLER) ECUxPlot-latest-setup.exe
-	@ln -sf $(TARGET).MacOS.tar.gz ECUxPlot-latest.MacOS.tar.gz
+latest-links: archives installers
+	@[ -z "$(WIN_INSTALLER)" ] || ln -sf $(WIN_INSTALLER) ECUxPlot-latest-setup.exe
+	@[ -z "$(MAC_INSTALLER)" ] || ln -sf $(MAC_INSTALLER) ECUxPlot-latest.$(MAC_TYPE)
 
 vars:
 	@echo ecuxplot_ver=$(ECUXPLOT_VER)
@@ -184,6 +200,7 @@ vars:
 	@echo 'JAVAC_MINOR_VER=$(JAVAC_MINOR_VER)'
 	@echo 'JAVA_HOME=$(JAVA_HOME)'
 
+.PHONY: latest-links vars
+
 export JAVA_HOME
 .PRECIOUS: $(VERSION_JAVA)
-.PHONY: force compile clean binclean

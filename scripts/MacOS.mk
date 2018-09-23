@@ -1,36 +1,28 @@
-build/.ECUxPlot.app.stamp build/ECUxPlot.app: \
-		build/ECUxPlot.app/Contents/Info.plist \
-		build/ECUxPlot.app/Contents/PkgInfo \
-		build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub \
-		build/ECUxPlot.app/Contents/Resources/MRJApp.properties \
-		build/ECUxPlot.app/Contents/Resources/ECUxPlot.icns \
-		$(INSTALL_FILES)
-	@rm -rf build/ECUxPlot.app/Contents/Resources/Java
-	@mkdir -p build/ECUxPlot.app/Contents/Resources/Java
-	install -m 644 $(INSTALL_FILES) build/ECUxPlot.app/Contents/Resources/Java
-	install ECUxPlot.sh build/ECUxPlot.app/Contents/Resources/Java
-	cp -a --parents $(PROFILES) build/ECUxPlot.app/Contents/Resources/Java
-	touch build/.ECUxPlot.app.stamp
+MAC_TYPE:=pkg
+MAC_INSTALLER=$(TARGET).$(MAC_TYPE)
 
-build/ECUxPlot.app/Contents/%: MacOS.data/%.template build/version.txt Makefile scripts/MacOS.mk
-	@mkdir -p `dirname $@`
-	cat $< | $(GEN) > $@
+ICON=MacOS.data/ECUxPlot.icns
+SRCFILES=$(notdir $(INSTALL_FILES)) $(PROFILES)
 
-build/ECUxPlot.app/Contents/PkgInfo: MacOS.data/PkgInfo
-	@mkdir -p build/ECUxPlot.app/Contents
-	install -m 644 $< $@
+mac-install: $(MAC_INSTALLER)
+	sudo installer -pkg $(MAC_INSTALLER) -target /
 
-#build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: scripts/MacOS.mk
-#	@mkdir -p build/ECUxPlot.app/Contents/MacOS
-#	ln -sf "/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" $@
-
-build/ECUxPlot.app/Contents/MacOS/JavaApplicationStub: MacOS.data/JavaApplicationStub
-	@mkdir -p build/ECUxPlot.app/Contents/MacOS
-	install $< $@
-
-build/ECUxPlot.app/Contents/Resources/%.icns: MacOS.data/%.icns
-	@mkdir -p build/ECUxPlot.app/Contents/Resources
-	install -m 644 $< $@
-
-$(TARGET).MacOS.tar.gz: build/ECUxPlot.app build/.ECUxPlot.app.stamp
-	(cd build; tar czvf ../$@ ECUxPlot.app)
+$(MAC_INSTALLER): $(ICON) $(INSTALL_FILES) $(PROFILES) MacOS.data/package/macosx/Info.plist scripts/MacOS.mk
+	@rm -rf build/ECUxPlot.app
+	#@mkdir -p build/ECUxPlot.app
+	#install -m 644 $(INSTALL_FILES) build/ECUxPlot.app
+	#rsync -aR $(PROFILES) build/ECUxPlot.app/
+	cp -f build/version.txt version.txt
+	javapackager -deploy -native $(MAC_TYPE) \
+	    -name ECUxPlot \
+	    -title ECUxPlot \
+	    -appclass org.nyet.ecuxplot.ECUxPlot \
+	    -BappVersion=$(ECUXPLOT_VER) \
+	    -Bicon=$(ICON) \
+	    -Bmac.category=public.app-category.utility \
+	    -BdropinResourcesRoot=MacOS.data \
+	    -nosign -verbose \
+	    -srcdir . \
+	    -srcfiles $(subst $() $(),:,$(SRCFILES)) \
+	    -outdir . -outfile $(TARGET)
+	rm -f version.txt

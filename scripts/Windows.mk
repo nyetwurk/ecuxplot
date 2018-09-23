@@ -17,7 +17,7 @@ build/mapdump.exe: mapdump.jar build/mapdump.xml ECUxPlot.ico build/version.txt
 
 exes: $(EXES)
 
-$(INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
+$(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	@[ -x $(MAKENSIS) ] || (echo "Can't find NSIS!"; false)
 	$(MAKENSIS) $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DVERSION=$(ECUXPLOT_VER) \
@@ -27,4 +27,4 @@ $(INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
 	    $(OPT_PRE)DCOMMONS_LANG3_VER=$(COMMONS_LANG3_VER) \
 	    $(OPT_PRE)DCOMMONS_CLI_VER=$(COMMONS_CLI_VER) \
 	    scripts/ECUxPlot.nsi
-	@chmod +x $(INSTALLER)
+	@chmod +x $(WIN_INSTALLER)

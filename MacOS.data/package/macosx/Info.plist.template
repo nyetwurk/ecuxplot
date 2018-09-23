@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.9</string>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+    <key>CFBundleAllowMixedLocalizations</key>
+    <true/>
+    <key>CFBundleExecutable</key>
+    <string>ECUxPlot</string>
+    <key>CFBundleIconFile</key>
+    <string>ECUxPlot.icns</string>
+    <key>CFBundleIdentifier</key>
+    <string>org.nyet.ecuxplot</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>ECUxPlot</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>%ECUXPLOT_VER</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <!-- See http://developer.apple.com/library/mac/#releasenotes/General/SubmittingToMacAppStore/_index.html
+	 for list of AppStore categories -->
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.utility</string>
+    <key>CFBundleVersion</key>
+    <string>100</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright (C) 2018</string>
+    <key>NSHighResolutionCapable</key>
+    <string>true</string>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+      <dict>
+	<key>CFBundleTypeExtensions</key>
+	<array>
+	  <string>csv</string>
+	</array>
+	<key>CFBundleTypeMIMETypes</key>
+	<array>
+	  <string>text/csv</string>
+	</array>
+	<key>CFBundleTypeName</key>
+	<string>CSV</string>
+	<key>CFBundleTypeRole</key>
+	<string>Viewer</string>
+	<key>LSItemContentTypes</key>
+	<array>
+	  <string>public.comma-separated-values-text</string>
+	</array>
+	<key>LSHandlerRank</key>
+	<string>Alternate</string>
+      </dict>
+    </array>
+    <key>UTImportedTypeDeclarations</key>
+    <array>
+      <dict>
+	<key>UTTypeConformsTo</key>
+	<array>
+	  <string>public.text</string>
+	</array>
+	<key>UTTypeDescription</key>
+	<string>Comma Separated Values</string>
+	<key>UTTypeIdentifier</key>
+	<string>public.comma-separated-values-text</string>
+	<key>UTTypeReferenceURL</key>
+	<string>http://tools.ietf.org/html/rfc4180</string>
+	<key>UTTypeTagSpecification</key>
+	<dict>
+	  <key>public.filename-extension</key>
+	  <array>
+	    <string>csv</string>
+	  </array>
+	  <key>public.mime-type</key>
+	  <string>text/csv</string>
+	</dict>
+      </dict>
+    </array>
+  </dict>
+</plist>
