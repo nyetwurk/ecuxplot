@@ -9,10 +9,10 @@ JFREECHART_VER := 1.0.14
 OPENCSV_VER := 2.3
 COMMONS_CLI_VER := 1.3.1
 COMMONS_LANG3_VER := 3.4
-JAVA_TARGET_VER := 6
+JAVA_TARGET_VER := 7
 
 # things to pass to build/build.properties
-PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVAC_MAJOR_VER JAVA_TARGET_VER JAVA_RT
+PROPVARS:=ECUXPLOT_JARS COMMON_JARS TARGET JAVAC_MAJOR_VER JAVA_TARGET_VER
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s)
@@ -35,10 +35,6 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 OPT_PRE := '/'
 
 JAVA_HOME ?= $(shell cygpath -w "$(JAVAC_DIR)")
-JAVA_RT1=jdk1.$(JAVA_TARGET_VER)/jre/lib
-JAVA_RT2=jre$(JAVA_TARGET_VER)/lib
-JAVA_RT_PATH := $(shell cygpath -pu "C:\Program Files*\Java\$(JAVA_RT1);C:\Program Files*\Java\$(JAVA_RT2);jre$(JAVA_TARGET_VER)")
-JAVA_RT = $(shell cygpath -wm "$(shell ./scripts/find-rt.sh $(JAVA_RT_PATH))")
 else
 #ARCH_x86_64 := amd64
 #ARCH_i686 := i386
@@ -50,8 +46,6 @@ MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := $(shell which makensis 2> /dev/null)
 OPT_PRE := '-'
 JAVA_HOME ?= $(JAVAC_DIR)
-JAVA_RT_PATH := /usr/lib/jvm/java-$(JAVA_TARGET_VER)-openjdk-*/jre/lib:jre$(JAVA_TARGET_VER)
-JAVA_RT = $(shell ./scripts/find-rt.sh $(JAVA_RT_PATH))
 endif
 
 INSTALL_DIR := /usr/local/ecuxplot
@@ -190,10 +184,6 @@ vars:
 	@echo 'JAVAC_MAJOR_VER=$(JAVAC_MAJOR_VER)'
 	@echo 'JAVAC_MINOR_VER=$(JAVAC_MINOR_VER)'
 	@echo 'JAVA_HOME=$(JAVA_HOME)'
-	@echo 'JAVA_RT1=$(JAVA_RT1)'
-	@echo 'JAVA_RT2=$(JAVA_RT2)'
-	@echo 'JAVA_RT_PATH=$(JAVA_RT_PATH)'
-	@echo 'JAVA_RT=$(JAVA_RT)'
 
 export JAVA_HOME
 .PRECIOUS: $(VERSION_JAVA)
