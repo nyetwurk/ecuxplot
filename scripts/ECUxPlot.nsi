@@ -105,7 +105,6 @@ Section "install" InstallationInfo
   File "commons-cli-${COMMONS_CLI_VER}.jar"
   File "applib.jar"
   File "flanagan.jar"
-  File "AppleJavaExtensions.jar"
   File "build\version.txt"
   File "gpl-3.0.txt"
   File "flanagan-license.txt"

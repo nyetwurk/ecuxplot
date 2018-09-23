@@ -28,8 +28,8 @@ import org.nyet.logfile.Dataset;
 import org.nyet.logfile.Dataset.DatasetId;
 
 public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost,
-    OpenFilesHandler
-    /* AboutHandler, QuitHandler */ {
+    OpenFilesHandler, QuitHandler
+    /* AboutHandler, PreferencesHandler */ {
     /**
      *
      */
@@ -890,12 +890,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     // we implement QuitHandler
-    /*
     public void handleQuitRequestWith(QuitEvent e, QuitResponse r)
     {
 	this.exitApp();
     }
-    */
 
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -910,10 +908,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		final Desktop dt = Desktop.getDesktop();
 
 		if(dt!=null) {
-		    //dt.setAboutHandler(plot);
-		    //dt.setPreferencesHandler(plot);
-		    dt.setOpenFileHandler(plot);
-		    //dt.setQuitHandler(plot);
+		    /*
+		    if (dt.isSupported(Desktop.Action.APP_ABOUT)) {
+			dt.setAboutHandler(plot);
+		    }
+		    if (dt.isSupported(Desktop.Action.APP_PREFERENCES)) {
+			dt.setPreferencesHandler(plot);
+		    }
+		    */
+		    if (dt.isSupported(Desktop.Action.APP_OPEN_FILE)) {
+			dt.setOpenFileHandler(plot);
+		    }
+		    if (dt.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
+			dt.setQuitHandler(plot);
+		    }
 		}
 
 		plot.pack();
