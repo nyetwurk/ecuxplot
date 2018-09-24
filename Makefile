@@ -129,7 +129,9 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g'
 
 include scripts/Windows.mk
+ifneq ($(UNAME),Linux)
 include scripts/MacOS.mk
+endif
 
 archives: $(ARCHIVES)
 mac-installer: $(MAC_INSTALLER)
