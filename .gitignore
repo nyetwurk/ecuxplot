@@ -10,3 +10,4 @@ mapdump.jar
 data/*.csv
 data/*.xdf
 src/org/nyet/util/Version.java
+MacOS.data/package/macosx/Info.plist

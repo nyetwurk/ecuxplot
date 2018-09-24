@@ -2,7 +2,7 @@ EXES:=build/ECUxPlot.exe build/mapdump.exe
 
 WIN_INSTALLER:=$(TARGET)-setup.exe
 
-build/%.xml: %.xml.template build/version.txt Makefile scripts/Windows.mk
+build/%.xml: scripts/%.xml.template build/version.txt Makefile scripts/Windows.mk
 	@mkdir -p build
 	cat $< | $(GEN) > $@
 
