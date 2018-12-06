@@ -18,7 +18,7 @@
   </classPath>
   <jre>
     <path></path>
-    <minVersion>9</minVersion>
+    <minVersion>1.9.0</minVersion>
     <maxVersion></maxVersion>
     <dontUsePrivateJres>false</dontUsePrivateJres>
     <initialHeapSize>0</initialHeapSize>
