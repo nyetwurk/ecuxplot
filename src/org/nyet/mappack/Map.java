@@ -536,7 +536,7 @@ public class Map implements Comparable<Object> {
     public static final String CSVHeader() {
 	final String[] header = {
 	    "ID","Address","Name","Size","Organization","Description",
-	    "Units","X Units","Y Units",
+	    "Units","X Address","Y Address", "X Units","Y Units",
 	    "Scale","X Scale","Y Scale",
 	    "Value min","Value max","Value min*1", "Value max*1"
 	    };
@@ -603,6 +603,8 @@ public class Map implements Comparable<Object> {
 	row.add(this.value.type);
 	row.add(this.value.description);
 	row.add(this.value.units);
+	row.add(this.x_axis.addr!=null?String.format("0x%x", this.x_axis.addr.v):"-");
+	row.add(this.y_axis.addr!=null?String.format("0x%x", this.y_axis.addr.v):"-");
 	row.add(this.x_axis.value.units);
 	row.add(this.y_axis.value.units);
 	row.add(this.value.factor);
