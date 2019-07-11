@@ -628,7 +628,7 @@ public class Map implements Comparable<Object> {
     }
 
     @SuppressWarnings("unused")
-private String toStringOldXDF(ByteBuffer image) throws Exception {
+    private String toStringOldXDF(ByteBuffer image) throws Exception {
 	final boolean table = this.organization.isTable();
 	final boolean oneD = this.organization.is1D() || this.size.y<=1;
 	String out = table?"%%TABLE%%\n":"%%CONSTANT%%\n";
