@@ -619,7 +619,10 @@ public class Map implements Comparable<Object> {
 	} else {
 	    row.add("");
 	    row.add("");
+	    row.add("");
+	    row.add("");
 	}
+	row.add(this.comment!=null?this.comment:"");
 	return row.toString();
     }
 
@@ -854,9 +857,11 @@ public class Map implements Comparable<Object> {
 	String desc = "";
 	if(this.id.length()>0) {
 	    title = this.id.split(" ")[0];	// HACK: drop the junk
-	    desc = this.name;
+	    desc = this.name.trim();
+	    if (this.comment!=null) desc += "\r\n" + this.comment.trim();
 	} else {
 	    title = this.name;
+	    if (this.comment!=null) desc = this.comment.trim();
 	}
 	xs.append("title", title);
 	xs.append("description", desc);

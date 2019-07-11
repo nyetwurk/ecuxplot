@@ -46,7 +46,8 @@ public class XmlString implements CharSequence, Appendable {
     // Methods
     private String escape(String s)
     {
-	return this.lt.translate(StringEscapeUtils.escapeXml11(s));
+	return this.lt.translate(StringEscapeUtils.escapeXml11(s.trim()))
+	    .replaceAll("\r","&#013;").replaceAll("\n","&#010;");
 	//return StringEscapeUtils.escapeHtml3(s);
 	//return StringEscapeUtils.escapeHtml4(s);
     }
