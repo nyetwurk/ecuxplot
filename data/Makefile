@@ -8,6 +8,7 @@ TARGETS=$(addsuffix .csv,$(PACKS)) $(addsuffix .xdf,$(PACKS))
 DATE=$(shell date -d "$(shell stat -c %y 8D0907551M.kp)" +%Y%m%d)
 
 .PHONY: all zip clean
+.PRECIOUS: $(addprefix %-$(DATE).,csv xdf kp)
 
 all: $(TARGETS)
 
@@ -15,6 +16,7 @@ zip: 8D0907551M-$(DATE).zip
 
 clean:
 	rm -f $(TARGETS)
+	rm -f $(addprefix 8D0907551M-*.,csv xdf kp zip)
 
 %.csv: %.kp %.bin ../mapdump.jar
 	../mapdump.sh $(REFS_$(*)) -i $*.bin $< $@
@@ -33,7 +35,5 @@ clean:
 	zip $@ $^
 
 upload: zip
-	cp 8D0907551M.kp 8D0907551M-$(DATE).kp
-	cp 8D0907551M.csv 8D0907551M-$(DATE).csv
-	cp 8D0907551M.xdf 8D0907551M-$(DATE).xdf
-	scp 8D0907551M-$(DATE).* stupid:/var/www/s4wiki-files/public/defs/
+	ln -sf 8D0907551M-$(DATE).zip 8D0907551M-latest.zip
+	rsync -l 8D0907551M-$(DATE).* 8D0907551M-latest.zip stupid:/var/www/s4wiki-files/public/defs/
