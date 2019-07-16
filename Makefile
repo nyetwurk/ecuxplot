@@ -40,7 +40,7 @@ OPT_PRE := '/'
 JAVA_HOME ?= $(shell cygpath -w "$(JAVAC_DIR)")
 else # !cygwin
 # Darwin or Linux
-LAUNCH4J := $(shell PATH=$(PATH):/usr/local/launch4j which launch4j)
+LAUNCH4J := $(shell PATH="$(PATH):/usr/local/launch4j" which launch4j)
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
 MAKENSIS := $(shell which makensis 2> /dev/null)
