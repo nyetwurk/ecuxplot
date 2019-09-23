@@ -1,18 +1,33 @@
-REFS=4Z7907551R 8D0907551F 8D0907551G
-PACKS=$(REFS) 8D0907551H 8D0907551K 8D0907551M 4Z7907551AA
+REFS:=4Z7907551R 8D0907551F 8D0907551G
+PACKS:=$(REFS) 8D0907551H 8D0907551K 8D0907551M 4Z7907551AA 4D1907558
+ZIP_BINS:=8D0907551M 4D1907558
 
 REFS_8D0907551H=-r $(addsuffix .kp,$(REFS))
 REFS_8D0907551M=-r $(addsuffix .kp,$(REFS))
 
 TARGETS=$(addsuffix .csv,$(PACKS)) $(addsuffix .xdf,$(PACKS))
-DATE=$(shell date -d "$(shell stat -c %y 8D0907551M.kp)" +%Y%m%d)
 
-.PHONY: all zip clean
-.PRECIOUS: $(addprefix %-$(DATE).,csv xdf kp)
+filedate=$(shell date -d "$(shell git log -n1 --format=%ci $(1).kp)" +%Y%m%d)
+
+define ZIP_template
+$(1)_DATE=$$(call filedate,$(1))
+.PRECIOUS: $(addprefix $(1)-$$($(1)_DATE).,kp xdf csv)
+$(1)-$$($(1)_DATE).zip: $(addprefix $(1)-$$($(1)_DATE).,kp xdf csv)
+$(1)-$$($(1)_DATE).kp: $(1).kp
+$(1)-$$($(1)_DATE).xdf: $(1).xdf
+$(1)-$$($(1)_DATE).csv: $(1).csv
+$(1)-$$($(1)_DATE).%: $(1).%
+	cp $$< $$@
+$(1)-latest.zip: $(1)-$$($(1)_DATE).zip
+	ln -sf $$< $$@
+ZIPS+=$(1)-latest.zip $(1)-$$($(1)_DATE).zip
+endef
+
+$(foreach bin,$(ZIP_BINS),$(eval $(call ZIP_template,$(bin))))
+
+.PHONY: all zips clean upload
 
 all: $(TARGETS)
-
-zip: 8D0907551M-$(DATE).zip
 
 clean:
 	rm -f $(TARGETS)
@@ -24,16 +39,10 @@ clean:
 %.xdf: %.kp ../mapdump.jar
 	../mapdump.sh -i $*.bin -x $< $@
 
-%-$(DATE).kp: %.kp
-	cp $< $@
-%-$(DATE).xdf: %.xdf
-	cp $< $@
-%-$(DATE).csv: %.csv
-	cp $< $@
-
 %.zip: %.kp %.xdf %.csv
 	zip $@ $^
 
-upload: zip
-	ln -sf 8D0907551M-$(DATE).zip 8D0907551M-latest.zip
-	rsync -l 8D0907551M-$(DATE).* 8D0907551M-latest.zip stupid:/var/www/s4wiki-files/public/defs/
+zips: $(ZIPS)
+
+upload: zips
+	rsync -l $(ZIPS) stupid:/var/www/s4wiki-files/public/defs/
