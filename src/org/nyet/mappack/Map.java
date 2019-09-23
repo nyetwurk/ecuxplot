@@ -106,7 +106,7 @@ public class Map implements Comparable<Object> {
 	    return this.enm>0 && this.enm<4;
 	}
 	public boolean isOrdinal() {
-	    return this.enm == 0;
+	    return this.enm == 0 || this.enm == 4;
 	}
     }
 
