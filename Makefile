@@ -185,6 +185,15 @@ tag:	force
 	@echo Creating $@
 	@cat $< | $(GEN) > $@
 
+runtime/$(UNAME)/release:
+	$(JAVA_HOME)/bin/jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules ALL-MODULE-PATH --output runtime/$(UNAME)
+
+
+.PHONY: app
+
+app: runtime/$(UNAME)/release
+	$(JAVA_HOME)/bin/jpackage --type app-image -i . -n ECUxPlot --main-class org.nyet.ecuxplot.ECUxPlot --main-jar $(TARGET).jar --runtime-image runtime/$(UNAME)
+
 build/build.properties: Makefile build/version.txt
 	@mkdir -p build
 	@echo Creating $@
