@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
 
-import au.com.bytecode.opencsv.*;
+import com.opencsv.*;
 
 import org.nyet.util.DoubleArray;
 
@@ -242,7 +242,8 @@ public class Dataset {
 	    ParseHeaders(reader, verbose);
 	} catch ( final Exception e ) {
 	    /* try semicolon separated */
-	    reader = new CSVReader(new FileReader(filename), ';');
+	    reader = new CSVReaderBuilder(new FileReader(filename)).withCSVParser(
+		    new CSVParserBuilder().withSeparator(';').build()).build();
 	    ParseHeaders(reader, verbose);
 	}
 	for (final DatasetId id : this.ids)

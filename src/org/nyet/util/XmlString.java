@@ -5,10 +5,11 @@ import java.lang.CharSequence;
 import java.lang.String;
 import java.lang.StringBuffer;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.text.translate.LookupTranslator;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.text.translate.LookupTranslator;
 
 public class XmlString implements CharSequence, Appendable {
     // Members
@@ -20,12 +21,20 @@ public class XmlString implements CharSequence, Appendable {
 
     // Constructors
     public XmlString() {
-	final String[][] sb = new String[128][2];
-	for(char i=0; i<128; i++) {
-	    sb[i][0] = String.format("%c",i+128);
-	    sb[i][1] = "&#" + (i+128) + ";";
-	}
-	this.lt = new LookupTranslator(sb);
+        final Map<CharSequence, CharSequence> sb = new HashMap<CharSequence, CharSequence>()
+        {
+            /**
+             *
+             */
+            private static final long serialVersionUID = 1L;
+
+            {
+                for(char i=0; i<128; i++) {
+                    put(String.format("%c", i+128), "&#" + (i+128) + ";");
+                }
+            }
+        };
+        this.lt = new LookupTranslator(sb);
     }
     public XmlString(int i) { this(); this.indent(i); }
     public XmlString(String s) { this(); this.append(s); }
@@ -40,7 +49,7 @@ public class XmlString implements CharSequence, Appendable {
     public int length() { return this.buf.length(); }
     @Override
     public CharSequence subSequence(int start, int end) {
-	return this.buf.subSequence(start, end);
+        return this.buf.subSequence(start, end);
     }
 
     // Methods

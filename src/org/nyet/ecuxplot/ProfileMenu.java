@@ -83,7 +83,7 @@ public final class ProfileMenu extends JMenu {
 
 	// Issue #27 - create missing directories if needed
         if (!dir.exists()) {
-	    final ProfileMenu pm = ProfileMenu.this;
+	    //final ProfileMenu pm = ProfileMenu.this;
 	    String err = null;
 	    try {
 		if (!dir.mkdirs()) {

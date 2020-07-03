@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 
 import javax.swing.JOptionPane;
 
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVReader;
 import flanagan.interpolation.CubicSpline;
 
 import org.nyet.logfile.Dataset;

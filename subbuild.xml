@@ -7,8 +7,8 @@
     <depend srcdir="src" destdir="build/classes" cache="build/depcache" closure="yes"/>
 
     <path id="classpath">
-	<fileset dir="." includes="${ECUXPLOT_JARS}"/>
-	<fileset dir="." includes="${COMMON_JARS}"/>
+	<fileset id="ecuxplot_jars" dir="lib" includes="${ECUXPLOT_JARS}"/>
+	<fileset id="common_jars" dir="lib" includes="${COMMON_JARS}"/>
     </path>
 
     <target name="test">
@@ -27,6 +27,7 @@
     </target>
 
     <target name="ecuxplot" depends="compile">
+	<pathconvert refid="classpath" property="classpath.jars" pathsep=" "/>
 	<dependset>
 	    <srcfileset dir="." includes="${ant.file}"/>
 	    <targetfileset dir="." includes="${TARGET}.jar"/>
@@ -36,12 +37,13 @@
 	    <fileset dir="src" includes="org/nyet/**/*.png" />
             <manifest>
                 <attribute name="Main-Class" value="${main-class}"/>
-                <attribute name="Class-Path" value="${ECUXPLOT_JARS} ${COMMON_JARS}"/>
+                <attribute name="Class-Path" value="${TARGET}.jar ${classpath.jars}"/>
             </manifest>
         </jar>
     </target>
 
     <target name="mapdump" depends="compile">
+	<pathconvert refid="common_jars" property="classpath.jars" pathsep=" "/>
 	<dependset>
 	    <srcfileset dir="." includes="${ant.file}"/>
 	    <targetfileset dir="." includes="mapdump.jar"/>
@@ -50,7 +52,7 @@
 	    <fileset dir="build/classes" includes="mapdump*.class" />
             <manifest>
                 <attribute name="Main-Class" value="mapdump"/>
-                <attribute name="Class-Path" value="${TARGET}.jar ${COMMON_JARS}"/>
+                <attribute name="Class-Path" value="${TARGET}.jar ${classpath.jars}"/>
             </manifest>
         </jar>
     </target>

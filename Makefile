@@ -4,11 +4,12 @@ VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/\([^.]*\.[^r]*\)r.*/\1/')
 RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r\([^.]*\.[^-]*\).*/\1/')
 RC      := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r[^.]*\.[^-]*\(-.*\)/\1/')
 
-JCOMMON_VER := 1.0.17
-JFREECHART_VER := 1.0.14
-OPENCSV_VER := 2.3
-COMMONS_CLI_VER := 1.3.1
-COMMONS_LANG3_VER := 3.4
+JCOMMON_VER := 1.0.23
+JFREECHART_VER := 1.0.19
+OPENCSV_VER := 5.2
+COMMONS_CLI_VER := 1.4
+COMMONS_LANG3_VER := 3.10
+COMMONS_TEXT_VER := 1.8
 JAVA_TARGET_VER := 9
 
 # things to pass to build/build.properties
@@ -63,13 +64,14 @@ REFERENCE=data/4Z7907551R.kp
 ECUXPLOT_JARS := \
     jcommon-$(JCOMMON_VER).jar \
     jfreechart-$(JFREECHART_VER).jar \
-    applib.jar \
+    jspline.jar \
     flanagan.jar
 
 COMMON_JARS := \
     opencsv-$(OPENCSV_VER).jar \
+    commons-cli-$(COMMONS_CLI_VER).jar \
     commons-lang3-$(COMMONS_LANG3_VER).jar \
-    commons-cli-$(COMMONS_CLI_VER).jar
+    commons-text-$(COMMONS_TEXT_VER).jar
 
 JARS:=$(ECUXPLOT_JARS) $(COMMON_JARS)
 
@@ -126,6 +128,7 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 	-e 's/%JCOMMON_VER/$(JCOMMON_VER)/g' \
 	-e 's/%OPENCSV_VER/$(OPENCSV_VER)/g' \
 	-e 's/%COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g' \
+	-e 's/%COMMONS_TEXT_VER/$(COMMONS_TEXT_VER)/g' \
 	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g'
 
 include scripts/Windows.mk
@@ -158,7 +161,7 @@ install: $(INSTALL_FILES) $(PROFILES)
 	mkdir -p $(INSTALL_DIR)
 	mkdir -p $(INSTALL_DIR)/profiles
 	rm -f $(INSTALL_DIR)/ECUxPlot*.jar
-	rm -f $(INSTALL_DIR)/commons-lang3-*.jar
+	rm -f $(INSTALL_DIR)/commons-*-*.jar
 	rm -f $(INSTALL_DIR)/jcommon-*.jar
 	rm -f $(INSTALL_DIR)/jfreechart-*.jar
 	rm -f $(INSTALL_DIR)/opencsv-*.jar
