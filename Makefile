@@ -1,15 +1,16 @@
 ECUXPLOT_UID := 20150620L
-ECUXPLOT_VER := $(shell git describe --tags --abbrev=4 --dirty --always | sed -e 's/v\(.*\)/\1/')
-VERSION := $(shell echo $(ECUXPLOT_VER) | sed -e 's/\([^.]*\.[^r]*\)r.*/\1/')
-RELEASE := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r\([^.]*\.[^-]*\).*/\1/')
-RC      := $(shell echo $(ECUXPLOT_VER) | sed -e 's/[^.]*\.[^r]*r[^.]*\.[^-]*\(-.*\)/\1/')
+ECUXPLOT_VER := $(shell git describe --tags --abbrev=4 --dirty --always)
+VERSION := $(subst v,,$(shell echo $(ECUXPLOT_VER) | cut -f 1 -d -))
+RC      := $(shell echo $(ECUXPLOT_VER) | cut -f 2- -d -)
 
-JCOMMON_VER := 1.0.23
-JFREECHART_VER := 1.0.19
-OPENCSV_VER := 5.2
-COMMONS_CLI_VER := 1.4
-COMMONS_LANG3_VER := 3.10
-COMMONS_TEXT_VER := 1.8
+jar_version = $(lastword $(subst -, ,$(shell basename $(lastword $(wildcard lib/$(1)-*.jar)) .jar)))
+JCOMMON_VER := $(call jar_version,jcommon)
+JFREECHART_VER := $(call jar_version,jfreechart)
+OPENCSV_VER := $(call jar_version,opencsv)
+COMMONS_CLI_VER := $(call jar_version,commons-cli)
+COMMONS_LANG3_VER := $(call jar_version,commons-lang3)
+COMMONS_TEXT_VER := $(call jar_version,commons-text)
+
 JAVA_TARGET_VER := 9
 
 # things to pass to build/build.properties
@@ -23,7 +24,7 @@ READLINK_CYGWIN_NT_flags := "-e" # SIGH
 
 JAVAC := $(shell readlink $(READLINK_$(UNAME)_flags) "$(shell which javac 2> /dev/null)")
 JAVAC_DIR := $(shell dirname "$(JAVAC)")/..
-JAVAC_VER := $(shell javac -version 2>&1 | sed -e 's/javac \([^.]*\.[^.]*\)\.\(.*\)/\1.\2/')
+JAVAC_VER := $(shell javac -version 2>&1 | cut -f 2 -d " ")
 JAVAC_S_VER := $(subst ., ,$(JAVAC_VER))
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_S_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_S_VER))
@@ -125,7 +126,6 @@ INSTALL_FILES:= $(TARGET).jar mapdump.jar \
 		gpl-3.0.txt flanagan-license.txt
 
 GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
-	-e 's/%RELEASE/$(RELEASE)/g' \
 	-e 's/%JAVAC_MAJOR_VER/$(JAVAC_MAJOR_VER)/g' \
 	-e 's/%JAVAC_MINOR_VER/$(JAVAC_MINOR_VER)/g' \
 	-e 's/%ECUXPLOT_UID/$(ECUXPLOT_UID)/g' \
@@ -195,24 +195,26 @@ runtime/$(UNAME)/release:
 
 .PHONY: app installer
 
-app build/$(UNAME)/ECUxPlot$(APP_EXT): runtime/$(UNAME)/release
+# --app-version can't have dashes in windows
+PACKAGER_OPTS:=$(PACKAGER_OPTS_$(UNAME)) \
+    --name ECUxPlot \
+    --description "ECUxPlot $(ECUXPLOT_VER)" \
+    --app-version $(VERSION) \
+    --dest build/$(UNAME)
+
+app build/$(UNAME)/ECUxPlot$(APP_EXT): $(TARGET).jar mapdump.jar runtime/$(UNAME)/release
 	@mkdir -p build/ECUxPlot; rm -rf build/ECUxPlot build/$(UNAME)/ECUxPlot$(APP_EXT)
 	@rsync --del -aR $(INSTALL_FILES) $(PROFILES) build/ECUxPlot
-	"$(JAVA_HOME)/bin/jpackage" --type app-image \
-		-n ECUxPlot \
-		--app-version $(ECUXPLOT_VER) \
-		--dest build/$(UNAME) \
-		-i build/ECUxPlot \
-		--icon src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) \
-		--main-jar $(TARGET).jar \
-		--main-class org.nyet.ecuxplot.ECUxPlot \
-		--runtime-image runtime/$(UNAME)
+	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) --type app-image \
+	    --input build/ECUxPlot \
+	    --icon src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) \
+	    --file-associations scripts/assoc.prop \
+	    --main-jar $(TARGET).jar \
+	    --main-class org.nyet.ecuxplot.ECUxPlot \
+	    --runtime-image runtime/$(UNAME)
 
 installer: build/$(UNAME)/ECUxPlot$(APP_EXT)
-	"$(JAVA_HOME)/bin/jpackage" --app-image build/$(UNAME) \
-		-n ECUxPlot \
-		--app-version $(ECUXPLOT_VER) \
-		--dest build/$(UNAME)
+	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) --app-image build/$(UNAME)
 
 build/build.properties: Makefile build/version.txt
 	@mkdir -p build
@@ -227,7 +229,6 @@ latest-links: archives installers
 vars:
 	@echo ecuxplot_ver=$(ECUXPLOT_VER)
 	@echo version=$(VERSION)
-	@echo release=$(RELEASE)
 	@echo rc=$(RC)
 	@echo launch4j=$(LAUNCH4J)
 	@echo 'JAVAC_DIR=$(JAVAC_DIR)'

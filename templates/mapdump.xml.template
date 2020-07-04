@@ -24,11 +24,11 @@
     <maxHeapSize>0</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>%VERSION.%RELEASE</fileVersion>
+    <fileVersion>%VERSION</fileVersion>
     <txtFileVersion>%ECUXPLOT_VER</txtFileVersion>
     <fileDescription>Map pack converter</fileDescription>
     <copyright>Nye Liu</copyright>
-    <productVersion>%VERSION.%RELEASE</productVersion>
+    <productVersion>%VERSION</productVersion>
     <txtProductVersion>%ECUXPLOT_VER</txtProductVersion>
     <productName>Map pack converter</productName>
     <companyName></companyName>
