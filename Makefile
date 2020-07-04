@@ -209,6 +209,7 @@ PACKAGER_OPTS:=$(PACKAGER_OPTS_$(UNAME)) \
     --app-version $(VERSION) \
     --dest build/$(UNAME)
 
+# currently not used
 app build/$(UNAME)/ECUxPlot$(APP_EXT): $(TARGET).jar mapdump.jar runtime/$(UNAME)/release
 	@mkdir -p build/ECUxPlot; rm -rf build/ECUxPlot build/$(UNAME)/ECUxPlot$(APP_EXT)
 	@rsync --del -aR $(INSTALL_FILES) $(PROFILES) build/ECUxPlot
@@ -220,6 +221,7 @@ app build/$(UNAME)/ECUxPlot$(APP_EXT): $(TARGET).jar mapdump.jar runtime/$(UNAME
 	    --main-class org.nyet.ecuxplot.ECUxPlot \
 	    --runtime-image runtime/$(UNAME)
 
+# currently not used
 installer: build/$(UNAME)/ECUxPlot$(APP_EXT)
 	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) --app-image build/$(UNAME)
 

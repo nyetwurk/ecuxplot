@@ -93,10 +93,10 @@ Section "install" InstallationInfo
   File /r "profiles\*.xml"
 
   SetOutPath "$INSTDIR"
-  File "build\${MUI_FILE}.exe"
+  File "build\CYGWIN_NT\${MUI_FILE}.exe"
   File "${MUI_FILE}.sh"
   File "${MUI_FILE}-${VERSION}.jar"
-  File "build\mapdump.exe"
+  File "build\CYGWIN_NT\mapdump.exe"
   File "mapdump.jar"
   File "build\version.txt"
   File "gpl-3.0.txt"
@@ -112,6 +112,9 @@ Section "install" InstallationInfo
   File "lib\commons-text-${COMMONS_TEXT_VER}.jar"
   File "lib\jspline.jar"
   File "lib\flanagan.jar"
+
+  SetOutPath "$INSTDIR\runtime"
+  File /r "runtime\CYGWIN_NT\*.*"
 
 ;create desktop shortcut
   CreateShortCut "$DESKTOP\${MUI_FILE}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""

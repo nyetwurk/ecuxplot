@@ -2,7 +2,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>console</headerType>
   <jar>mapdump.jar</jar>
-  <outfile>mapdump.exe</outfile>
+  <outfile>CYGWIN_NT/mapdump.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <priority>normal</priority>
@@ -13,10 +13,10 @@
   <icon>../src/org/nyet/ecuxplot/icons/ECUxPlot.ico</icon>
   <classPath>
     <mainClass>mapdump</mainClass>
-    <cp>.</cp>
+    <cp>.:lib</cp>
   </classPath>
   <jre>
-    <path></path>
+    <path>runtime</path>
     <minVersion>1.5.0</minVersion>
     <maxVersion></maxVersion>
     <dontUsePrivateJres>false</dontUsePrivateJres>
