@@ -187,11 +187,16 @@ tag:	force
 	@echo Creating $@
 	@cat $< | $(GEN) > $@
 
+
+.PHONY: runtime-archive
 #JLINK_MODULES:=ALL-MODULE-PATH
 JLINK_MODULES:=java.base,java.desktop,java.datatransfer
 runtime/$(UNAME)/release:
 	@rm -rf runtime/$(UNAME)
 	"$(JAVA_HOME)/bin/jlink" --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules $(JLINK_MODULES) --output runtime/$(UNAME)
+
+runtime-archive runtime-$(UNAME)-$(JAVAC_VER).tar.gz: runtime/$(UNAME)/release
+	tar czf runtime-$(UNAME)-$(JAVAC_VER).tar.gz runtime/$(UNAME)
 
 .PHONY: app installer
 
