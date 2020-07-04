@@ -3,7 +3,9 @@
 *.swp
 *.tmp
 .metadata
+/.vscode
 /build
+/runtime
 /ECUxPlot*.jar
 /ECUxPlot*.tar.gz
 /mapdump.jar
@@ -12,4 +14,3 @@
 /data/*.zip
 /data/*-*.kp
 /src/org/nyet/util/Version.java
-/MacOS.data/package/macosx/Info.plist
