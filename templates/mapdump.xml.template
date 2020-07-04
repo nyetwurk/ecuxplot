@@ -10,7 +10,7 @@
   <supportUrl></supportUrl>
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
-  <icon>../ECUxPlot.ico</icon>
+  <icon>../src/org/nyet/ecuxplot/icons/ECUxPlot.ico</icon>
   <classPath>
     <mainClass>mapdump</mainClass>
     <cp>.</cp>
@@ -24,11 +24,11 @@
     <maxHeapSize>0</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>%VERSION</fileVersion>
+    <fileVersion>%VERSION.0</fileVersion>
     <txtFileVersion>%ECUXPLOT_VER</txtFileVersion>
     <fileDescription>Map pack converter</fileDescription>
     <copyright>Nye Liu</copyright>
-    <productVersion>%VERSION</productVersion>
+    <productVersion>%VERSION.0</productVersion>
     <txtProductVersion>%ECUXPLOT_VER</txtProductVersion>
     <productName>Map pack converter</productName>
     <companyName></companyName>

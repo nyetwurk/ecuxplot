@@ -11,7 +11,7 @@
   <supportUrl></supportUrl>
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
-  <icon>../ECUxPlot.ico</icon>
+  <icon>../src/org/nyet/ecuxplot/icons/ECUxPlot.ico</icon>
   <classPath>
     <mainClass>org.nyet.ecuxplot.ECUxPlot</mainClass>
     <cp>.</cp>
@@ -25,11 +25,11 @@
     <maxHeapSize>0</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>%VERSION</fileVersion>
+    <fileVersion>%VERSION.0</fileVersion>
     <txtFileVersion>%ECUXPLOT_VER</txtFileVersion>
     <fileDescription>ECUx log csv plotter</fileDescription>
     <copyright>Nye Liu</copyright>
-    <productVersion>%VERSION</productVersion>
+    <productVersion>%VERSION.0</productVersion>
     <txtProductVersion>%ECUXPLOT_VER</txtProductVersion>
     <productName>ECUx log csv plotter</productName>
     <companyName></companyName>

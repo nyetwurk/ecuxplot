@@ -25,8 +25,8 @@
   ShowUninstDetails "nevershow"
   ;SetCompressor "bzip2"
 
-  !define MUI_ICON "${MUI_FILE}.ico"
-  !define MUI_UNICON "${MUI_FILE}.ico"
+  !define MUI_ICON "src/org/nyet/ecuxplot/icons/${MUI_FILE}.ico"
+  !define MUI_UNICON "src/org/nyet/ecuxplot/icons/${MUI_FILE}.ico"
 
   Function .onInit
   UserInfo::GetAccountType
@@ -98,18 +98,20 @@ Section "install" InstallationInfo
   File "${MUI_FILE}-${VERSION}.jar"
   File "build\mapdump.exe"
   File "mapdump.jar"
-  File "jcommon-${JCOMMON_VER}.jar"
-  File "jfreechart-${JFREECHART_VER}.jar"
-  File "opencsv-${OPENCSV_VER}.jar"
-  File "commons-cli-${COMMONS_CLI_VER}.jar"
-  File "commons-lang3-${COMMONS_LANG3_VER}.jar"
-  File "commons-text-${COMMONS_TEXT_VER}.jar"
-  File "jspline.jar"
-  File "flanagan.jar"
   File "build\version.txt"
   File "gpl-3.0.txt"
   File "flanagan-license.txt"
   File "README-Zeitronix.txt"
+
+  SetOutPath "$INSTDIR\lib"
+  File "lib\jcommon-${JCOMMON_VER}.jar"
+  File "lib\jfreechart-${JFREECHART_VER}.jar"
+  File "lib\opencsv-${OPENCSV_VER}.jar"
+  File "lib\commons-cli-${COMMONS_CLI_VER}.jar"
+  File "lib\commons-lang3-${COMMONS_LANG3_VER}.jar"
+  File "lib\commons-text-${COMMONS_TEXT_VER}.jar"
+  File "lib\jspline.jar"
+  File "lib\flanagan.jar"
 
 ;create desktop shortcut
   CreateShortCut "$DESKTOP\${MUI_FILE}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""

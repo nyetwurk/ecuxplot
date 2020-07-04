@@ -7,12 +7,12 @@ build/%.xml: templates/%.xml.template build/version.txt Makefile scripts/Windows
 	cat $< | $(GEN) > $@
 
 # unix launch4j requires full path to .xml
-build/ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar build/ECUxPlot.xml ECUxPlot.ico build/version.txt
+build/ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar build/ECUxPlot.xml
 	@[ -x $(LAUNCH4J) ] || ( echo "Can't find launch4j!"; false)
 	cp -f ECUxPlot-$(ECUXPLOT_VER).jar build/
 	$(LAUNCH4J) $(ECUXPLOT_XML)
 
-build/mapdump.exe: mapdump.jar build/mapdump.xml ECUxPlot.ico build/version.txt
+build/mapdump.exe: mapdump.jar build/mapdump.xml build/version.txt
 	cp -f mapdump.jar build/
 	$(LAUNCH4J) $(MAPDUMP_XML)
 
