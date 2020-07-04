@@ -29,6 +29,11 @@ JAVAC_S_VER := $(subst ., ,$(JAVAC_VER))
 JAVAC_MAJOR_VER := $(word 1,$(JAVAC_S_VER))
 JAVAC_MINOR_VER := $(word 2,$(JAVAC_S_VER))
 
+# lazy evaluation, these don't work on every arch
+JAVA_HOME_CYGWIN_NT = $(shell cygpath -w "$(JAVAC_DIR)")
+JAVA_HOME_Darwin = $(shell /usr/libexec/java_home)
+JAVA_HOME_Linux := $(JAVAC_DIR)
+
 APP_EXT_Linux :=
 APP_EXT_CYGWIN_NT :=
 APP_EXT_Darwin := .app
@@ -41,7 +46,6 @@ ICON_EXT := $(ICON_EXT_$(UNAME))
 
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
 # cygwin under Windows
-JAVA_HOME_CYGWIN_NT := $(shell cygpath -w "$(JAVAC_DIR)")
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc 2> /dev/null)'
 ECUXPLOT_XML := '$(shell cygpath -w $(PWD)/build/ECUxPlot.xml)'
@@ -51,8 +55,6 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 OPT_PRE := '/'
 else # !cygwin
 # Darwin or Linux
-JAVA_HOME_Darwin := $(shell /usr/libexec/java_home)
-JAVA_HOME_Linux := $(JAVAC_DIR)
 LAUNCH4J := $(shell PATH="$(PATH):/usr/local/launch4j" which launch4j)
 ECUXPLOT_XML := $(PWD)/build/ECUxPlot.xml
 MAPDUMP_XML := $(PWD)/build/mapdump.xml
