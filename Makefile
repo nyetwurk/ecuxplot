@@ -153,12 +153,12 @@ rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_INSTALLER)
 	$(MAKE) latest-links
 	$(RSYNC) -at $^ build/*latest* nyet.org:public_html/cars/files/
 
-$(ARCHIVE): $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh mapdump.sh Makefile
+$(ARCHIVE): $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh mapdump.sh build/version.txt Makefile
 	@rm -f $@
 	@rm -rf build/ECUxPlot
 	mkdir -p build/ECUxPlot
 	rsync --del -aR $(INSTALL_FILES) $(PROFILES) build/ECUxPlot
-	install -m 755 ECUxPlot.sh mapdump.sh build/ECUxPlot
+	install -m 755 ECUxPlot.sh mapdump.sh build/version.txt build/ECUxPlot
 	tar -C build -czf $@ ECUxPlot
 
 .PHONY: install tag force
@@ -166,7 +166,7 @@ install: $(ARCHIVE)
 	mkdir -p $(INSTALL_DIR)
 	rm -f $(INSTALL_DIR)/*.jar
 	rm -rf $(INSTALL_DIR)/lib
-	tar -C $(INSTALL_DIR) -xzvf $(ARCHIVE)  --strip-components=1
+	tar -C $(INSTALL_DIR) -xzf $(ARCHIVE) --strip-components=1
 
 tag:	force
 	@if [ -z $(VER) ]; then \

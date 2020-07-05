@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-PROG=$(readlink -m "$0" 2>/dev/null || true)
+# Note: can't use readlink -m on MacOS
+PROG=$(realpath "$0" 2>/dev/null || true)
 [ -z "$PROG" ] && PROG=$0
 DIR=`dirname "$PROG"`
 
