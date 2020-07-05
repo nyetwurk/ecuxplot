@@ -139,6 +139,7 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 	-e 's/%COMMONS_TEXT_VER/$(COMMONS_TEXT_VER)/g' \
 	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g'
 
+# Can build windows installers from anywhere
 include scripts/Windows.mk
 include scripts/jpackage.mk
 

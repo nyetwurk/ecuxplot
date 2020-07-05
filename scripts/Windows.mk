@@ -18,10 +18,9 @@ build/CYGWIN_NT/mapdump.exe: mapdump.jar build/mapdump.xml build/version.txt
 	cp -f mapdump.jar build/
 	$(LAUNCH4J) $(MAPDUMP_XML)
 
-
 exes: $(EXES)
 
-$(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi
+$(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runtime/CYGWIN_NT/release
 	@[ -x $(MAKENSIS) ] || (echo "Can't find NSIS!"; false)
 	$(MAKENSIS) $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DVERSION=$(ECUXPLOT_VER) \
