@@ -104,7 +104,8 @@ run: $(TARGET).jar
 .PHONY: all compile run
 
 binclean:
-	rm -f $(addprefix ECUxPlot*.,jar zip tar gz) mapdump.jar build/*.exe build/*.pkg build/*.dmg build/*.zip build/*.tar.gz
+	rm -f $(addprefix *.,jar zip tar gz)
+	rm -f $(addprefix build/*.,jar zip tar gz)
 
 clean: binclean
 	rm -rf build
