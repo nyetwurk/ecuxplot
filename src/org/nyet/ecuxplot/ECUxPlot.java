@@ -843,7 +843,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 			    this.output = new File(args[i+1]);
 			else if(args[i].equals("-w"))
 			    width = Integer.valueOf(args[i+1]);
-			else if(args[i].equals("-h"))
+			else if(args[i].equals("-h") || args[i].equals("-?"))
 			    height = Integer.valueOf(args[i+1]);
 			i++;	// all above take an arg
 		    }
@@ -859,7 +859,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 			    "usage: ECUxPlot [-v] [-p Preset] [-o OutputFile] " +
 			    "[-w width] [-h height] [LogFiles ... ]");
 			System.out.println("       ECUxPlot -l (list presets)");
-			System.out.println("       ECUxPlot -? (show usage)");
+			System.out.println("       ECUxPlot -h -? (show usage)");
 			System.exit(0);
 		    }
 		} else this.files.add(args[i]);

@@ -18,6 +18,15 @@ public class Loggers {
 	LOG_JB4
     }
 
+    public static class DetectResult {
+	LoggerType type;
+	String message;
+	public DetectResult(LoggerType type, String message) {
+		this.type = type;
+		this.message = message;
+	}
+    }
+
     public static final String[] pedalnames = new String []
 	{"AcceleratorPedalPosition", "AccelPedalPosition", "Zeitronix TPS",
 	 "Accelerator position", "Pedal Position"};
@@ -169,27 +178,36 @@ public class Loggers {
 	}
     }
 
-    public static LoggerType detect(String[] h) {
-	h[0]=h[0].trim();
-	if(h[0].matches("VCDS")) return LoggerType.LOG_VCDS;
-	if(h[0].matches("^.*(day|tag)$")) return LoggerType.LOG_VCDS;
-	if(h[0].matches("^Filename:.*")) {
-	    if(Files.extension(h[0]).equals("zto") ||
-	       Files.extension(h[0]).equals("zdl") ||
-		h[0].matches(".*<unnamed file>$"))
+    public static DetectResult detect(String[] h) {
+	for(int i=0;i<h.length;i++) {
+	    h[i]=h[i].trim();
+	    if(h[i].matches("^VCDS.*")) return new DetectResult(LoggerType.LOG_VCDS, h[i]);
+	}
+	LoggerType t = detect(h[0]);
+	if(t==LoggerType.LOG_UNKNOWN)
+	    return new DetectResult(t, "");
+	return new DetectResult(t, h[0]);
+    }
+
+    public static LoggerType detect(String h) {
+	if(h.matches("^.*(day|tag)$")) return LoggerType.LOG_VCDS;
+	if(h.matches("^Filename:.*")) {
+	    if(Files.extension(h).equals("zto") ||
+	       Files.extension(h).equals("zdl") ||
+		h.matches(".*<unnamed file>$"))
 	    return LoggerType.LOG_ZEITRONIX;
 	}
-	if(h[0].matches("^TIME$")) return LoggerType.LOG_ECUX;
+	if(h.matches("^TIME$")) return LoggerType.LOG_ECUX;
 
-	if(h[0].matches(".*ME7-Logger.*")) return LoggerType.LOG_ME7LOGGER;
+	if(h.matches(".*ME7-Logger.*")) return LoggerType.LOG_ME7LOGGER;
 
-	if(h[0].matches("^LogID$")) return LoggerType.LOG_EVOSCAN;
+	if(h.matches("^LogID$")) return LoggerType.LOG_EVOSCAN;
 
-	if(h[0].matches("^Time\\s*\\(sec\\)$")) return LoggerType.LOG_VOLVOLOGGER;
+	if(h.matches("^Time\\s*\\(sec\\)$")) return LoggerType.LOG_VOLVOLOGGER;
 
-	if(h[0].matches("^Session: Session [0-8]+$")) return LoggerType.LOG_LOGWORKS;
+	if(h.matches("^Session: Session [0-8]+$")) return LoggerType.LOG_LOGWORKS;
 
-	if(h[0].matches("^Firmware$")) return LoggerType.LOG_JB4;
+	if(h.matches("^Firmware$")) return LoggerType.LOG_JB4;
 
 	return LoggerType.LOG_UNKNOWN;
     }

@@ -110,13 +110,14 @@ public class ECUxDataset extends Dataset {
 		    System.out.println("h[" + i + "]: " + h[i]);
 	} while (h.length<1 || h[0].trim().length() == 0 || h[0].trim().matches("^#.+"));
 
-	this.log_detected = Loggers.detect(h);
+	Loggers.DetectResult r = Loggers.detect(h);
+	if (verbose>0 && r.type != LoggerType.LOG_UNKNOWN)
+	    System.out.printf("Detected %s based on \"%s\"\n", r.type, r.message);
 
-	if (verbose>0)
-	    System.out.printf("Detected %s based on \"%s\"\n", log_detected, h[0]);
+	this.log_detected = r.type;
 
 	/*
-	  passed     detected
+	  passed       detected
 	  DETECT       all ok
 	  not DETECT   DETECT and equals ok
 	*/
