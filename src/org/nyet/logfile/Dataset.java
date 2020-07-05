@@ -233,19 +233,39 @@ public class Dataset {
 	}
     }
 
+    public static CSVReader DatasetReader(String filename) throws FileNotFoundException, UnsupportedEncodingException {
+	return DatasetReader(filename, ',');
+    }
+
+    public static CSVReader DatasetReader(String filename, char separator) throws FileNotFoundException, UnsupportedEncodingException {
+	return DatasetReader(filename, "ISO-8859-1", separator);
+    }
+
+    public static CSVReader DatasetReader(String filename, String encoding) throws FileNotFoundException, UnsupportedEncodingException {
+	return DatasetReader(filename, encoding, ',');
+    }
+
+    public static CSVReader DatasetReader(String filename, String encoding, char separator) throws FileNotFoundException, UnsupportedEncodingException {
+	Reader reader = new InputStreamReader(new FileInputStream(filename), encoding);
+	return new CSVReaderBuilder(reader)
+	    .withCSVParser(new CSVParserBuilder().withSeparator(separator).build())
+	    .build();
+    }
+
     public Dataset(String filename, int verbose) throws Exception {
 	this.fileId = org.nyet.util.Files.filename(filename);
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
-	CSVReader reader = new CSVReader(new FileReader(filename));
+
+	CSVReader reader = DatasetReader(filename);
 	try {
 	    ParseHeaders(reader, verbose);
 	} catch ( final Exception e ) {
 	    /* try semicolon separated */
-	    reader = new CSVReaderBuilder(new FileReader(filename)).withCSVParser(
-		    new CSVParserBuilder().withSeparator(';').build()).build();
+	    reader = DatasetReader(filename, ';');
 	    ParseHeaders(reader, verbose);
 	}
+
 	for (final DatasetId id : this.ids)
 	    this.columns.add(new Column(id.id,
 		id.id2,
@@ -256,7 +276,7 @@ public class Dataset {
 	    if (nextLine.length>0) {
 		boolean gotone=false;
 		for(int i=0;i<nextLine.length;i++) {
- 		    if (nextLine[i].trim().length()>0
+		    if (nextLine[i].trim().length()>0
 			&& this.columns.size() > i) {
 			this.columns.get(i).add(nextLine[i]);
 			gotone=true;
@@ -333,7 +353,7 @@ public class Dataset {
     }
 
     protected void buildRanges() {
-        this.range_cache = new ArrayList<Range>();
+	this.range_cache = new ArrayList<Range>();
 	Range r = null;
 	for(int i=0;i<this.rows; i++) {
 	    boolean end = false;
