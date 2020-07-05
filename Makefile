@@ -140,16 +140,16 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g'
 
 include scripts/Windows.mk
+include scripts/jpackage.mk
 
+.PHONY: archives mac-installer win-installer installers rsync
 archives: $(ARCHIVES)
 mac-installer: $(MAC_INSTALLER)
 win-installer: $(WIN_INSTALLER)
 installers: mac-installer win-installer
-
 rsync: $(ARCHIVES) $(WIN_INSTALLER) $(MAC_INSTALLER)
 	$(RSYNC) $^ nyet.org:public_html/cars/files/
 
-.PHONY: archives mac-installer win-installer installers rsync
 
 $(TARGET).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
 	@rm -f $@
@@ -161,6 +161,7 @@ $(TARGET).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
 	(cd profiles; tar cf - .) | (cd build/ECUxPlot/profiles && tar xf -)
 	(cd build; tar czvf ../$@ ECUxPlot)
 
+.PHONY: install tag force
 install: $(INSTALL_FILES) $(PROFILES)
 	mkdir -p $(INSTALL_DIR)
 	mkdir -p $(INSTALL_DIR)/profiles
@@ -183,47 +184,9 @@ tag:	force
 	fi
 	git tag -a v$(VER) -m "Version v$(VER)"
 
-.PHONY: install tag force
-
 %: %.template Makefile
 	@echo Creating $@
 	@cat $< | $(GEN) > $@
-
-
-.PHONY: runtime-archive
-#JLINK_MODULES:=ALL-MODULE-PATH
-JLINK_MODULES:=java.base,java.desktop,java.datatransfer
-runtime/$(UNAME)/release:
-	@rm -rf runtime/$(UNAME)
-	"$(JAVA_HOME)/bin/jlink" --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules $(JLINK_MODULES) --output runtime/$(UNAME)
-
-runtime-archive runtime-$(UNAME)-$(JAVAC_VER).tar.gz: runtime/$(UNAME)/release
-	tar czf runtime-$(UNAME)-$(JAVAC_VER).tar.gz runtime/$(UNAME)
-
-.PHONY: app installer
-
-# --app-version can't have dashes in windows
-PACKAGER_OPTS:=$(PACKAGER_OPTS_$(UNAME)) \
-    --name ECUxPlot \
-    --description "ECUxPlot $(ECUXPLOT_VER)" \
-    --app-version $(VERSION) \
-    --dest build/$(UNAME)
-
-# currently not used
-app build/$(UNAME)/ECUxPlot$(APP_EXT): $(TARGET).jar mapdump.jar runtime/$(UNAME)/release
-	@mkdir -p build/ECUxPlot; rm -rf build/ECUxPlot build/$(UNAME)/ECUxPlot$(APP_EXT)
-	@rsync --del -aR $(INSTALL_FILES) $(PROFILES) build/ECUxPlot
-	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) --type app-image \
-	    --input build/ECUxPlot \
-	    --icon src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) \
-	    --file-associations scripts/assoc.prop \
-	    --main-jar $(TARGET).jar \
-	    --main-class org.nyet.ecuxplot.ECUxPlot \
-	    --runtime-image runtime/$(UNAME)
-
-# currently not used
-installer: build/$(UNAME)/ECUxPlot$(APP_EXT)
-	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) --app-image build/$(UNAME)
 
 build/build.properties: Makefile build/version.txt
 	@mkdir -p build

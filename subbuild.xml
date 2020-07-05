@@ -7,9 +7,19 @@
     <depend srcdir="src" destdir="build/classes" cache="build/depcache" closure="yes"/>
 
     <path id="classpath">
-	<fileset id="ecuxplot_jars" dir="lib" includes="${ECUXPLOT_JARS}"/>
-	<fileset id="common_jars" dir="lib" includes="${COMMON_JARS}"/>
+	<fileset dir="lib" includes="${ECUXPLOT_JARS} ${COMMON_JARS}"/>
     </path>
+    <path id="common-jars">
+	<fileset dir="lib" includes="${COMMON_JARS}"/>
+    </path>
+
+    <manifestclasspath property="classpath.list" jarfile="${TARGET}.jar">
+	<classpath refid="classpath"/>
+    </manifestclasspath>
+
+    <manifestclasspath property="common-jars.list" jarfile="${TARGET}.jar">
+	<classpath refid="common-jars"/>
+    </manifestclasspath>
 
     <target name="test">
     </target>
@@ -27,23 +37,21 @@
     </target>
 
     <target name="ecuxplot" depends="compile">
-	<pathconvert refid="classpath" property="classpath.jars" pathsep=" "/>
 	<dependset>
 	    <srcfileset dir="." includes="${ant.file}"/>
 	    <targetfileset dir="." includes="${TARGET}.jar"/>
 	</dependset>
         <jar destfile="${TARGET}.jar">
-	    <fileset dir="build/classes" excludes="mapdump*.class" />
-	    <fileset dir="src" includes="org/nyet/**/*-*.png" />
+	    <fileset dir="build/classes" excludes="mapdump*.class"/>
+	    <fileset dir="src" includes="org/nyet/**/*-*.png"/>
             <manifest>
                 <attribute name="Main-Class" value="${main-class}"/>
-                <attribute name="Class-Path" value="${TARGET}.jar ${classpath.jars}"/>
+                <attribute name="Class-Path" value="${classpath.list}"/>
             </manifest>
         </jar>
     </target>
 
     <target name="mapdump" depends="compile">
-	<pathconvert refid="common_jars" property="classpath.jars" pathsep=" "/>
 	<dependset>
 	    <srcfileset dir="." includes="${ant.file}"/>
 	    <targetfileset dir="." includes="mapdump.jar"/>
@@ -52,7 +60,7 @@
 	    <fileset dir="build/classes" includes="mapdump*.class" />
             <manifest>
                 <attribute name="Main-Class" value="mapdump"/>
-                <attribute name="Class-Path" value="${TARGET}.jar ${classpath.jars}"/>
+                <attribute name="Class-Path" value="${TARGET}.jar ${common-jars.list}"/>
             </manifest>
         </jar>
     </target>
