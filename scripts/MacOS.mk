@@ -10,8 +10,9 @@ build/Darwin/%: templates/Darwin/%.template build/version.txt Makefile scripts/M
 	@cat $< | $(GEN) > $@
 
 # unix launch4j requires full path to .xml
-$(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE) $(MAC_CONFIGS)
-	@rm -f $@
+$(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE)
+	@rm -rf $(MAC_APP)
+	@$(MAKE) $(MAC_CONFIGS)
 	@echo "Installing stubs to $(MAC_APP)"
 	@tar -xzf templates/Darwin/stub.tar.gz
 	@echo "Installing runtime to $(MACv0.9.9-rc3_APP)/Contents/runtime"
