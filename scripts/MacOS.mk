@@ -20,6 +20,8 @@ $(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE)
 	@rsync -a --delete runtime/Darwin/* $(MAC_APP)/Contents/runtime/Contents/Home
 	@echo "Installing app to $(MAC_APP)/Contents/app"
 	@tar -C $(MAC_APP)/Contents/app -xzf $(ARCHIVE) --strip-components=1
+	@mkdir -p $(MAC_APP)/Contents/Resources
+	@install -m 644 src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) $(MAC_APP)/Contents/Resources/
 	@touch $@
 
 $(MAC_INSTALLER): $(MAC_APP)/.stamp # $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runtime/Darwin/release
