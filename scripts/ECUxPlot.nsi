@@ -19,7 +19,7 @@
 ;--------------------------------
 ;General
 
-  OutFile "${MUI_FILE}-${VERSION}-setup.exe"
+  OutFile "build/${MUI_FILE}-${VERSION}-setup.exe"
   RequestExecutionLevel admin
   ShowInstDetails "nevershow"
   ShowUninstDetails "nevershow"

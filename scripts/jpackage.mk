@@ -9,7 +9,7 @@ runtimes: $(RUNTIMES)
 runtime/%/release:
 	@mkdir -p runtime
 	wget -c https://nyet.org/cars/ECUxPlot/jre/runtime-$*-latest.tar.gz -O runtime/runtime-$*-latest.tar.gz
-	tar xzvf runtime/runtime-$*-latest.tar.gz
+	tar xzf runtime/runtime-$*-latest.tar.gz
 
 #JLINK_MODULES:=ALL-MODULE-PATH
 JLINK_MODULES:=java.base,java.desktop,java.datatransfer
@@ -24,6 +24,14 @@ $(MY_RUNTIME)/release:
 runtime-archive runtime/runtime-$(UNAME)-$(JAVAC_VER).tar.gz: $(MY_RUNTIME)/release
 	tar czf runtime/runtime-$(UNAME)-$(JAVAC_VER).tar.gz $(MY_RUNTIME)
 
+ifeq ($(UNAME),Darwin)
+.PHONY: stub-archive
+STUB_DIR:=build/Darwin/ECUxPlot.app
+STUB_FILES:=MacOS PkgInfo runtime/Contents/MacOS runtime/Contents/Info.plist
+stub-archive templates/Darwin/stub.tar.gz: $(STUB_DIR)
+	tar czf templates/Darwin/stub.tar.gz $(addprefix $(STUB_DIR)/Contents/,$(STUB_FILES))
+endif
+
 .PHONY: jpackage jpackage-installer
 # Note: --app-version can't have dashes in windows
 PACKAGER_OPTS:=\
@@ -35,9 +43,9 @@ PACKAGER_OPTS:=\
 # Not supported on windows or linux(?) in app
 PACKAGER_APP_OPTS_Darwin:=--file-associations scripts/assoc.prop
 
-jpackage build/$(UNAME)/ECUxPlot$(APP_EXT): $(TARGET).jar mapdump.jar $(MY_RUNTIME)/release
+jpackage build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE) $(MY_RUNTIME)/release
 	@mkdir -p build/ECUxPlot; rm -rf build/ECUxPlot build/$(UNAME)/ECUxPlot$(APP_EXT)
-	@rsync --del -aR $(INSTALL_FILES) $(PROFILES) build/ECUxPlot
+	tar -C build -xzf $(ARCHIVE)
 	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) $(PACKAGER_APP_OPTS_$(UNAME)) --type app-image \
 	    --input build/ECUxPlot \
 	    --icon src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) \

@@ -1,6 +1,6 @@
 EXES:=build/CYGWIN_NT/ECUxPlot.exe build/CYGWIN_NT/mapdump.exe
 
-WIN_INSTALLER:=$(TARGET)-setup.exe
+WIN_INSTALLER:=build/$(TARGET)-setup.exe
 
 build/%.xml: templates/%.xml.template build/version.txt Makefile scripts/Windows.mk
 	@mkdir -p build

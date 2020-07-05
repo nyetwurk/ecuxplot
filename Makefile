@@ -86,7 +86,7 @@ JARS:=$(addprefix lib/,$(ECUXPLOT_JARS) $(COMMON_JARS))
 
 TARGET=ECUxPlot-$(ECUXPLOT_VER)
 
-ARCHIVES=$(TARGET).tar.gz
+ARCHIVE=build/$(TARGET).tar.gz
 
 ANT:=ant
 
@@ -104,7 +104,7 @@ run: $(TARGET).jar
 .PHONY: all compile run
 
 binclean:
-	rm -f $(addprefix ECUxPlot*.,jar zip tar gz) mapdump.jar *.exe *.pkg *.dmg
+	rm -f $(addprefix ECUxPlot*.,jar zip tar gz) mapdump.jar build/*.exe build/*.pkg build/*.dmg build/*.zip build/*.tar.gz
 
 clean: binclean
 	rm -rf build
@@ -139,42 +139,34 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 	-e 's/%COMMONS_TEXT_VER/$(COMMONS_TEXT_VER)/g' \
 	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g'
 
-# Can build windows installers from anywhere
 include scripts/Windows.mk
+include scripts/MacOS.mk
+
 include scripts/jpackage.mk
 
-.PHONY: archives mac-installer win-installer installers rsync
-archives: $(ARCHIVES)
+.PHONY: archive mac-installer win-installer installers rsync
+archive: $(ARCHIVE)
 mac-installer: $(MAC_INSTALLER)
 win-installer: $(WIN_INSTALLER)
 installers: mac-installer win-installer
-rsync: $(ARCHIVES) $(WIN_INSTALLER) $(MAC_INSTALLER)
-	$(RSYNC) $^ nyet.org:public_html/cars/files/
+rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_INSTALLER)
+	$(MAKE) latest-links
+	$(RSYNC) -at $^ build/*latest* nyet.org:public_html/cars/files/
 
-
-$(TARGET).tar.gz: $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh
+$(ARCHIVE): $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh mapdump.sh Makefile
 	@rm -f $@
 	@rm -rf build/ECUxPlot
 	mkdir -p build/ECUxPlot
-	install -m 644 $(INSTALL_FILES) build/ECUxPlot
-	install ECUxPlot.sh build/ECUxPlot
-	@mkdir -p build/ECUxPlot/profiles
-	(cd profiles; tar cf - .) | (cd build/ECUxPlot/profiles && tar xf -)
-	(cd build; tar czvf ../$@ ECUxPlot)
+	rsync --del -aR $(INSTALL_FILES) $(PROFILES) build/ECUxPlot
+	install -m 755 ECUxPlot.sh mapdump.sh build/ECUxPlot
+	tar -C build -czf $@ ECUxPlot
 
 .PHONY: install tag force
-install: $(INSTALL_FILES) $(PROFILES)
+install: $(ARCHIVE)
 	mkdir -p $(INSTALL_DIR)
-	mkdir -p $(INSTALL_DIR)/profiles
-	rm -f $(INSTALL_DIR)/ECUxPlot*.jar
-	rm -f $(INSTALL_DIR)/commons-*-*.jar
-	rm -f $(INSTALL_DIR)/jcommon-*.jar
-	rm -f $(INSTALL_DIR)/jfreechart-*.jar
-	rm -f $(INSTALL_DIR)/opencsv-*.jar
-	install -D -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
-	install ECUxPlot.sh $(INSTALL_DIR)
-	install mapdump.sh $(INSTALL_DIR)
-	(cd profiles; tar cf - .) | (cd $(INSTALL_DIR)/profiles && tar xf -)
+	rm -f $(INSTALL_DIR)/*.jar
+	rm -rf $(INSTALL_DIR)/lib
+	tar -C $(INSTALL_DIR) -xzvf $(ARCHIVE)  --strip-components=1
 
 tag:	force
 	@if [ -z $(VER) ]; then \
@@ -194,10 +186,12 @@ build/build.properties: Makefile build/version.txt
 	@echo Creating $@
 	$(shell echo "" > $@) $(foreach V,$(PROPVARS),$(shell echo "$(V)=$($V)" >> $@))
 
-.PHONY: latest-links archives installers vars
-latest-links: archives installers
-	@[ -z "$(WIN_INSTALLER)" ] || ln -sf $(WIN_INSTALLER) ECUxPlot-latest-setup.exe
-	@[ -z "$(MAC_INSTALLER)" ] || ln -sf $(MAC_INSTALLER) ECUxPlot-latest.$(MAC_TYPE)
+.PHONY: latest-links archive installers vars
+latest-links: archive installers
+	@[ -z "$(ARCHIVE)" ] || ln -sf $(notdir $(ARCHIVE)) build/ECUxPlot-latest.tar.gz
+	@[ -z "$(WIN_INSTALLER)" ] || ln -sf $(notdir $(WIN_INSTALLER)) build/ECUxPlot-latest-setup.exe
+	#@[ -z "$(MAC_INSTALLER)" ] || ln -sf $(notdir $(MAC_INSTALLER)) build/ECUxPlot-latest.dmg
+	@[ -z "$(MAC_INSTALLER)" ] || ln -sf $(notdir $(MAC_INSTALLER)) build/ECUxPlot-latest-MacOS.zip
 
 vars:
 	@echo ecuxplot_ver=$(ECUXPLOT_VER)
@@ -210,8 +204,6 @@ vars:
 	@echo 'JAVAC_MINOR_VER=$(JAVAC_MINOR_VER)'
 	@echo 'JAVA_HOME=$(JAVA_HOME)'
 	@echo 'JARS=$(JARS)'
-
-.PHONY: latest-links vars
 
 export JAVA_HOME
 .PRECIOUS: $(VERSION_JAVA)
