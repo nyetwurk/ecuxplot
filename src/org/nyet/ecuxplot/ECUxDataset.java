@@ -1,5 +1,8 @@
 package org.nyet.ecuxplot;
 
+import java.io.PrintStream;
+import java.io.OutputStream;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
@@ -70,7 +73,7 @@ public class ECUxDataset extends Dataset {
     }
 
     private int MAW() {
-        /* assume 10 == 1 sec smoothing */
+	/* assume 10 == 1 sec smoothing */
 	return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.HPTQMAW());
     }
 
@@ -101,7 +104,7 @@ public class ECUxDataset extends Dataset {
 
 	String [] h,u,v=null;
 
-        do {
+	do {
 	    h = reader.readNext();
 	    if (h==null)
 		throw new Exception(this.getFileId() + ": read failed parsing CSV headers");
@@ -122,7 +125,7 @@ public class ECUxDataset extends Dataset {
 	  not DETECT   DETECT and equals ok
 	*/
 	if(log_req != LoggerType.LOG_DETECT && log_detected != LoggerType.LOG_ERR) {
-            if(log_req != log_detected)
+	    if(log_req != log_detected)
 		throw new Exception(log_req + "!=" + log_detected);
 	}
 
@@ -291,7 +294,7 @@ public class ECUxDataset extends Dataset {
 		    /* remove existing v before seeing whats there */
 		    h[i]=h[i].replace(v[i],"").trim();
 		    if(h[i].length()==0) {
-		        if(v[i].length()>0) h[i]="ME7L " + v[i];
+			if(v[i].length()>0) h[i]="ME7L " + v[i];
 		    }
 		}
 
@@ -355,7 +358,7 @@ public class ECUxDataset extends Dataset {
 			System.out.println("in : " + h[i] + " [" + u[i] + "]");
 		}
 
-		Loggers.processAliases(h);
+		Loggers.processAliases(h, log_use);
 
 		break;
 	}
@@ -638,7 +641,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("BoostPressureDesired")) {
 	    final Column delta = super.get("BoostPressureDesiredDelta");
 	    if (delta != null) {
-	        final Column ecu = super.get("ECUBoostPressureDesired");
+		final Column ecu = super.get("ECUBoostPressureDesired");
 		if (ecu != null) {
 		    c = new Column(id, "PSI", ecu.data.add(delta.data));
 		}
@@ -735,7 +738,7 @@ public class ECUxDataset extends Dataset {
 		ambient	= super.get("BaroPressure").data;
 	    } catch (final Exception e) { }
 
-            DoubleArray fupsrl = load.ident(0.1037); // KFURL
+	    DoubleArray fupsrl = load.ident(0.1037); // KFURL
 	    try {
 		final DoubleArray ftbr = this.get("Sim ftbr").data;
 		// fupsrl = KFURL * ftbr
@@ -964,24 +967,36 @@ public class ECUxDataset extends Dataset {
 	return ret;
     }
 
+    private static final PrintStream nullStdout() {
+	PrintStream original = System.out;
+	System.setOut(new PrintStream(new OutputStream() {
+		    public void write(int b) {
+			//DO NOTHING
+		    }
+		}));
+	return original;
+    }
+
     @Override
     public void buildRanges() {
 	super.buildRanges();
-        final ArrayList<Dataset.Range> ranges = this.getRanges();
+	final ArrayList<Dataset.Range> ranges = this.getRanges();
 	this.splines = new CubicSpline[ranges.size()];
-        for(int i=0;i<ranges.size();i++) {
+	for(int i=0;i<ranges.size();i++) {
 	    this.splines[i] = null;
-            final Dataset.Range r=ranges.get(i);
-            try {
-                final double [] rpm = this.getData("RPM", r);
-                final double [] time = this.getData("TIME", r);
-		if(time.length>0 && time.length==rpm.length)
+	    final Dataset.Range r=ranges.get(i);
+	    try {
+		final double [] rpm = this.getData("RPM", r);
+		final double [] time = this.getData("TIME", r);
+		if(time.length>0 && time.length==rpm.length) {
+		    PrintStream original = nullStdout();	// hack to disable junk that CubicSpline prints
 		    this.splines[i] = new CubicSpline(rpm, time);
-		else
+		    System.setOut(original);
+		} else
 		    JOptionPane.showMessageDialog(null,
 			"length problem " + time.length + ":" + rpm.length);
-            } catch (final Exception e) {}
-        }
+	    } catch (final Exception e) {}
+	}
     }
 
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
@@ -1008,9 +1023,9 @@ public class ECUxDataset extends Dataset {
     }
 
     public double[] calcFATS(int RPMStart, int RPMEnd) {
-        final ArrayList<Dataset.Range> ranges = this.getRanges();
+	final ArrayList<Dataset.Range> ranges = this.getRanges();
 	final double [] out = new double[ranges.size()];
-        for(int i=0;i<ranges.size();i++) {
+	for(int i=0;i<ranges.size();i++) {
 	    try {
 		out[i]=calcFATS(i, RPMStart, RPMEnd);
 	    } catch (final Exception e) {
