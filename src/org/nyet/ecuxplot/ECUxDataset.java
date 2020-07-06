@@ -759,6 +759,10 @@ public class ECUxDataset extends Dataset {
 	    final DoubleArray abs = this.get("BoostPressureActual (PSI)").data.smooth();
 	    final DoubleArray time = this.get("TIME").data;
 	    c = new Column(id, "PSI/sec", abs.derivative(time, this.MAW()).max(0));
+	} else if(id.equals("ps_w error")) {
+	    final DoubleArray abs = super.get("BoostPressureActual").data.smooth();
+	    final DoubleArray ps_w = super.get("ME7L ps_w").data.smooth();
+	    c = new Column(id, "%", abs.div(ps_w).sub(1).mult(-100));
 	} else if(id.equals("LDR error")) {
 	    final DoubleArray set = super.get("BoostPressureDesired").data;
 	    final DoubleArray out = super.get("BoostPressureActual").data;

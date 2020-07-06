@@ -261,6 +261,7 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("ME7 Logger", item);
 	    if(id.matches("ME7L ps_w")) {
 		addToSubmenu("Calc Boost", "Sim pspvds");
+		addToSubmenu("Boost", "ps_w error");
 	    }
 	} else {
 	    this.add(item);
