@@ -20,12 +20,10 @@ public final class Units {
 	    {"VehicleSpeed", "kph"},
 	    {"TPS", "%"},
 
-	    {"RPM", "1/min"},
+	    {"RPM", "RPM"},
 	    {"Time", "s"},
 
 	    {"Zeitronix TPS", "%"},
-	    {"Zeitronix AFR", "AFR"},
-	    {"Zeitronix Lambda", "lambda"},
 	    {"Zeitronix Time", "s"},
 
 	    {"KnockVolt.*", "V"},
@@ -33,11 +31,14 @@ public final class Units {
 
 	    {".*BoostPressure.*", "mBar"},
 	    {".*DutyCycle.*", "%"},
+	    {".*Angle.*", "\u00B0"},
 	    {".*IgnitionRetard.*", "\u00B0"},
 	    {".*IgnitionTiming.*", "\u00B0"},
 	    {".*Load.*", "%"},
 	    {".*Pressure.*", "mBar"},
 	    {".*Voltage.*", "V"},
+	    {".*AFR.*", "AFR"},
+	    {".*[Ll]ambda.*", "lambda"},
 	};
 
 	for (final String[] element : legend) {
@@ -48,12 +49,17 @@ public final class Units {
 
     public final static String normalize(String u) {
 	final String[][] map = {
+	    {"^1/min$", "RPM"},
+	    {"\u00B0KW","\u00B0"},
+	    {"^DK$", "\u00B0"},
 	    {"^[Dd]egrees$", "\u00B0"},
+	    {"^PED$", "\u00B0"},
 	    {"^C$", "\u00B0C"},
 	    {"^F$", "\u00B0F"},
 	    {"^mbar$", "mBar"},
 	    {"^psi$", "PSI"},
 	    {"^PSI/.*", "PSI"},
+	    {"^rpm", "RPM"},
 	    {"^-$", ""}
 	};
 	for (final String[] element : map) {
