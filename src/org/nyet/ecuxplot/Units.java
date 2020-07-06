@@ -48,6 +48,7 @@ public final class Units {
     }
 
     public final static String normalize(String u) {
+	if(u==null) return "";
 	final String[][] map = {
 	    {"^1/min$", "RPM"},
 	    {"\u00B0KW","\u00B0"},
