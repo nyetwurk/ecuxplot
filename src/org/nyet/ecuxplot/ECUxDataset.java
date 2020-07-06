@@ -77,7 +77,7 @@ public class ECUxDataset extends Dataset {
 	return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.HPTQMAW());
     }
 
-    private String [] ParseUnits(String [] h) {
+    private String [] ParseUnits(String [] h, int verbose) {
 	final String [] u = new String[h.length];
 	for(int i=0;i<h.length;i++) {
 	    h[i]=h[i].trim();
@@ -85,16 +85,20 @@ public class ECUxDataset extends Dataset {
 		Pattern.compile("([\\S\\s]+)\\(([\\S\\s].*)\\)");
 	    final Matcher matcher = unitsRegEx.matcher(h[i]);
 	    if(matcher.find()) {
-		h[i]=matcher.group(1);
-		u[i]=matcher.group(2);
-		if(u[i].matches("^PSI/.*")) u[i]="PSI";
+		h[i]=matcher.group(1).trim();
+		u[i]=matcher.group(2).trim();
 	    }
 	}
+	if (verbose>1)
+	    for(int i=0;i<h.length;i++)
+		 System.out.printf("pu: '%s' [%s]\n", h[i], u[i]);
 	return u;
     }
+
     public void ParseHeaders(CSVReader reader) throws Exception {
 	ParseHeaders(reader, LoggerType.LOG_DETECT, 0);
     }
+
     @Override
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
 	ParseHeaders(reader, LoggerType.LOG_DETECT, verbose);
@@ -200,7 +204,6 @@ public class ECUxDataset extends Dataset {
 		    if (verbose>0)
 			System.out.printf("out %d (g:h:h2:[u]): '%s' '%s' [%s]\n", i, g[i], h[i], h2[i], u[i]);
 		}
-
 		break;
 	    case LOG_ZEITRONIX:
 		if (log_detected == LoggerType.LOG_ZEITRONIX) {
@@ -215,7 +218,7 @@ public class ECUxDataset extends Dataset {
 		// otherwise, the user gave us a zeit log with no header,
 		// but asked us to treat it like a zeit log.
 
-		u = ParseUnits(h);
+		u = ParseUnits(h, verbose);
 
 		Loggers.processAliases(h, log_use);
 
@@ -225,17 +228,13 @@ public class ECUxDataset extends Dataset {
 		}
 		break;
 	    case LOG_ECUX:
-		u = ParseUnits(h);
+		u = ParseUnits(h, verbose);
 		this.time_ticks_per_sec = 1000;
-
 		Loggers.processAliases(h, log_use);
-
 		break;
 	    case LOG_EVOSCAN:
 		u = new String[h.length]; // no units :/
-
 		Loggers.processAliases(h, log_use);
-
 		break;
 	    case LOG_ME7LOGGER:
 		/* VARS */
@@ -271,21 +270,14 @@ public class ECUxDataset extends Dataset {
 		if (h==null || h.length<1)
 		    throw new Exception(this.getFileId() + ": read failed parsing ME7Logger log aliases");
 
-		if (verbose>0)
-		    for(int i=0;i<h.length;i++)
-			System.out.printf("in: '%s' (%s) [%s]\n", v[i], h[i], u[i]);
-
 		/* process variables */
 		for(int i=0;i<v.length;i++) {
 		    v[i]=v[i].trim();
 		}
 
-		/* process units */
-		for(int i=0;i<u.length;i++) {
-		    u[i]=u[i].trim();
-		    if(u[i].matches("^mbar$")) u[i]="mBar";
-		    if(u[i].matches("^-$")) u[i]="";
-		}
+		if (verbose>0)
+		    for(int i=0;i<h.length;i++)
+			System.out.printf("in: '%s' (%s) [%s]\n", v[i], h[i], u[i]);
 
 		Loggers.processAliases(h, log_use);
 
@@ -297,7 +289,6 @@ public class ECUxDataset extends Dataset {
 			if(v[i].length()>0) h[i]="ME7L " + v[i];
 		    }
 		}
-
 		break;
 	    case LOG_VOLVOLOGGER:
 		u = new String[h.length];
@@ -316,9 +307,7 @@ public class ECUxDataset extends Dataset {
 			}
 		    }
 		}
-
 		Loggers.processAliases(h, log_use);
-
 		break;
 	    case LOG_LOGWORKS:
 		h = reader.readNext(); // headers
@@ -339,43 +328,23 @@ public class ECUxDataset extends Dataset {
 		reader.readNext(); // Junk
 		reader.readNext(); // Junk
 		h = reader.readNext(); // headers
-		v = Arrays.copyOf(h, h.length);
+		for(int i=0;i<h.length;i++)
+		    h[i]=h[i].trim();
+		v = Arrays.copyOf(h, h.length); // save off original headers
 		/* hack: use process Aliases to generate units in () for use in ParseUnits */
 		Loggers.processAliases(h, log_use);
-		u = ParseUnits(h);
-		for(int i=0;i<h.length;i++) {
-		    h[i]=h[i].trim();
-		    v[i]=v[i].trim();
-		    if (verbose>0)
-			System.out.println("in : " + v[i] + ": " + h[i] + " [" + u[i] + "]");
-		}
-
+		u = ParseUnits(h, verbose);
 		break;
 	    default:
-		u = ParseUnits(h);
-		for(int i=0;i<h.length;i++) {
-		    if (verbose>0)
-			System.out.println("in : " + h[i] + " [" + u[i] + "]");
-		}
-
+		u = ParseUnits(h, verbose);
 		Loggers.processAliases(h, log_use);
-
 		break;
 	}
 
-	if(u.length<h.length) {
-	    u = Arrays.copyOf(u, h.length);
-	}
-
-	for(int i=0;i<h.length;i++) {
-	    if(h[i].length()>0 && (u[i]==null || u[i].length()==0)) {
-		u[i]=Units.find(h[i]);
-		if (verbose>0 && (u[i]==null || u[i].length()==0)) {
-		    System.out.println("Can't find units for " + h[i]);
-		}
-	    }
-	}
-
+	//
+	// Common to all logs
+	//
+	u = Units.processUnits(h, u, verbose);
 	if (verbose>0) {
 	    for(int i=0;i<h.length;i++) {
 		if (v!=null && i<v.length) {
@@ -385,6 +354,7 @@ public class ECUxDataset extends Dataset {
 		}
 	    }
 	}
+
 	//System.exit(0);
 
 	final DatasetId [] ids = new DatasetId[h.length];
@@ -629,11 +599,11 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("IntakeAirTemperature")) {
 	    c = super.get(id);
 	    if (c.getUnits().matches(".*C$"))
-		c = new Column(id, "\u00B0 F", ECUxDataset.toFahrenheit(c.data));
+		c = new Column(id, "\u00B0F", ECUxDataset.toFahrenheit(c.data));
 	} else if(id.equals("IntakeAirTemperature (C)")) {
 	    c = super.get("IntakeAirTemperature");
 	    if (c.getUnits().matches(".*F$"))
-		c = new Column(id, "\u00B0 C", ECUxDataset.toCelcius(c.data));
+		c = new Column(id, "\u00B0C", ECUxDataset.toCelcius(c.data));
 	} else if(id.equals("BoostPressureDesired (PSI)")) {
 	    c = super.get("BoostPressureDesired");
 	    if (!c.getUnits().matches("PSI"))
@@ -695,7 +665,7 @@ public class ECUxDataset extends Dataset {
 	    // KFFWTBR=0.02
 	    // evtmod = tans + (tmot-tans)*KFFWTBR
 	    final DoubleArray evtmod = tans.add((tmot.sub(tans)).mult(0.02));
-	    c = new Column(id, "\u00B0 C", evtmod);
+	    c = new Column(id, "\u00B0C", evtmod);
 	} else if(id.equals("Sim ftbr")) {
 	    final DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
 	    final DoubleArray evtmod = this.get("Sim evtmod").data;

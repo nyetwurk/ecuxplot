@@ -1,5 +1,8 @@
 package org.nyet.ecuxplot;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.nyet.util.Files;
 
 public class Loggers {
@@ -15,7 +18,8 @@ public class Loggers {
 	LOG_EVOSCAN,
 	LOG_VOLVOLOGGER,
 	LOG_LOGWORKS,
-	LOG_JB4
+	LOG_JB4,
+	LOG_COBB_AP
     }
 
     public static class DetectResult {
@@ -24,6 +28,10 @@ public class Loggers {
 	public DetectResult(LoggerType type, String message) {
 		this.type = type;
 		this.message = message;
+	}
+	public DetectResult(LoggerType type) {
+		this.type = type;
+		this.message = "";
 	}
     }
 
@@ -42,7 +50,7 @@ public class Loggers {
 	{"^Boost Pressure \\(specified\\)$", "BoostPressureDesired"},
 	// remap engine rpm/speedand idle speed to "RPM'
 	{"^(Engine RPM|Engine [Ss]peed|Motordrehzahl).*", "RPM"},
-	{"^Idle (RPM|[Ss]peed).*", "RPM"},
+	{"^Idle (RPM|[Ss]peed).*", "Idle RPM"},
 	// ignore weird letter case for throttle angle
 	{"^Throttle [Aa]ngle.*", "ThrottleAngle"},
 	{"^Throttle [Vv]alve [Aa]ngle.*", "ThrottleAngle"},
@@ -76,7 +84,7 @@ public class Loggers {
     };
 
     private static final String[][] ME7L_aliases = new String[][] {
-	{"^Engine[Ss]peed.*", "RPM"},
+	{"^Engine[Ss]peed$", "RPM"},
 	{"^BoostPressureSpecified$", "BoostPressureDesired"},
 	{"^EngineLoadCorrectedSpecified$", "EngineLoadCorrected"},
 	{"^AtmosphericPressure$", "BaroPressure"},
@@ -87,7 +95,7 @@ public class Loggers {
 
     private static final String[][] VOLVOLOGGER_aliases = new String[][] {
 	{"^Time$", "TIME"},
-	{"^Engine [Ss]peed.*", "RPM"},
+	{"^Engine [Ss]peed$", "RPM"},
 	{"^(Actual )?Boost Pressure$", "BoostPressureActual"},
 	{"^Desired Boost Pressure$", "BoostPressureDesired"},
 	{"^Mass Air Flow$", "MAF"}
@@ -102,7 +110,7 @@ public class Loggers {
     private static final String[][] JB4_aliases = new String[][] {
 	{"^timestamp$", "TIME"},
 	{"^rpm$", "RPM"},
-	{"^pedal$", "Pedal (%)"},
+	{"^pedal$", "AccelPedalPosition (%)"},
 	{"^mph$", "VehicleSpeed (mph)"},
 	{"^throttle$", "ThrottlePlateAngle (%)"},
 	{"^ecu_psi$", "ECUBoostPressureActual (PSI)"},
@@ -113,12 +121,12 @@ public class Loggers {
 	{"^ff$", "BoostFeedForward"},
 	{"^map$", "SelectedMap"},
 	{"^wgdc$", "WastegateDutyCycle (%)"},
-	{"^iat$", "IntakeAirTemperature (\u00B0 F)"},
+	{"^iat$", "IntakeAirTemperature (\u00B0F)"},
 	{"^fp_h$", "FuelPressureHigh (PSI)"},
 	{"^fp_l$", "FuelPressureLow (PSI)"},
-	{"^waterf$", "WaterTemperature (\u00B0 F)"},
-	{"^oilf$", "OilTemperature (\u00B0 F)"},
-	{"^transf$", "TransmissionTemperature (\u00B0 F)"},
+	{"^waterf$", "WaterTemperature (\u00B0F)"},
+	{"^oilf$", "OilTemperature (\u00B0F)"},
+	{"^transf$", "TransmissionTemperature (\u00B0F)"},
 	{"^gear$", "Gear"},
 	{"^load$", "EngineLoad (%)"},
 	{"^calc_torque$", "CalculatedTorque"},
@@ -140,24 +148,63 @@ public class Loggers {
 	{"^ign_6$", "IgnitionTimingAngle8"}
     };
 
+    private static final String[][] COBB_AP_aliases = new String[][] {
+	{"^AP Info:.*", ""},    // remove column
+	{"^Time", "TIME"},
+	{"^Engine Speed", "RPM"},
+	{"^Current Gear", "Gear"},
+	{"^Accel Pedal Position", "AccelPedalPosition"},
+	{"^TPS", "ThrottlePlateAngle"},
+
+	{"^AFR", "AirFuelRatio"},
+	{"^AFR Set Point", "AirFuelRatioDesired"},
+	{"^Trgt\\. Boost Press\\.", "BoostPressureDesired"},
+	{"^Boost Press\\.", "BoostPressureActual"},
+	{"^Ambient Air Temp\\.", "AmbientTemperature (\u00B0F)"},
+	{"^Coolant Temp\\.", "WaterTemperature (\u00B0F)"},
+	{"^Engine Oil Temp\\.", "OilTemperature (\u00B0F)"},
+	{"^IAT", "IntakeAirTemperature (\u00B0F)"},
+	{"^Ignition Timing Final", "IgnitionTimingAngle"},
+	{"^Knock Retard Cylinder 1", "IgnitionRetardCyl1"},
+	{"^Knock Retard Cylinder 2", "IgnitionRetardCyl2"},
+	{"^Knock Retard Cylinder 3", "IgnitionRetardCyl3"},
+	{"^Knock Retard Cylinder 4", "IgnitionRetardCyl4"},
+	{"^Knock Retard Cylinder 5", "IgnitionRetardCyl5"},
+	{"^Knock Retard Cylinder 6", "IgnitionRetardCyl6"},
+	{"^Knock Retard Cylinder 7", "IgnitionRetardCyl7"},
+	{"^Knock Retard Cylinder 8", "IgnitionRetardCyl8"},
+	{"^Turbine Act. Base Value", "WastegateDutyCycleBase"},
+	{"^Turbine Act. Final Value", "WastegateDutyCycle"},
+	{"^Vehicle Speed", "VehicleSpeed"},
+    };
+
     private static final String[][] DEFAULT_aliases = new String[][] {
 	{"^[Tt]ime$", "TIME"},
-	{"^[Ee]ngine [Ss]peed.*", "RPM"},
+	{"^[Ee]ngine [Ss]peed$", "RPM"},
 	{"^[Mm]ass air flow$", "MassAirFlow"}
     };
 
-    private static String[][] which(LoggerType logger) {
-	switch(logger) {
-	    case LOG_ECUX: return ECUX_aliases;
-	    case LOG_VCDS: return VCDS_aliases;
-	    case LOG_ZEITRONIX: return Zeitronix_aliases;
-	    case LOG_ME7LOGGER: return ME7L_aliases;
-	    case LOG_EVOSCAN: return EVOSCAN_aliases;
-	    case LOG_VOLVOLOGGER: return VOLVOLOGGER_aliases;
-	    case LOG_LOGWORKS: return LOGWORKS_aliases;
-	    case LOG_JB4: return JB4_aliases;
-	    default: return DEFAULT_aliases;
+    private static final Map<LoggerType, String[][]> Aliases = new HashMap<LoggerType, String[][]>() {
+	private static final long serialVersionUID = 1L;
+	{
+	    put(LoggerType.LOG_ECUX, ECUX_aliases);
+	    put(LoggerType.LOG_ECUX, ECUX_aliases);
+	    put(LoggerType.LOG_VCDS, VCDS_aliases);
+	    put(LoggerType.LOG_ZEITRONIX, Zeitronix_aliases);
+	    put(LoggerType.LOG_ME7LOGGER, ME7L_aliases);
+	    put(LoggerType.LOG_EVOSCAN, EVOSCAN_aliases);
+	    put(LoggerType.LOG_VOLVOLOGGER, VOLVOLOGGER_aliases);
+	    put(LoggerType.LOG_LOGWORKS, LOGWORKS_aliases);
+	    put(LoggerType.LOG_JB4, JB4_aliases);
+	    put(LoggerType.LOG_COBB_AP, COBB_AP_aliases);
 	}
+    };
+
+    private static String[][] which(LoggerType logger) {
+	if(Aliases.containsKey(logger))
+	    return Aliases.get(logger);
+
+	return DEFAULT_aliases;
     }
 
     public static void processAliases(String[] h, LoggerType logger) {
@@ -173,7 +220,10 @@ public class Loggers {
 	    h[i]=h[i].trim();
 	    // System.out.printf("%d: '%s'\n", i, h[i]);
 	    for (final String [] s: a) {
-		if (h[i].matches(s[0])) h[i]=s[1];
+		if (h[i].matches(s[0])) {
+		    //System.out.printf("%d: '%s'->'%s'\n", i, h[i], s[1]);
+		    h[i]=s[1];
+		}
 	    }
 	}
     }
@@ -182,15 +232,16 @@ public class Loggers {
 	for(int i=0;i<h.length;i++) {
 	    h[i]=h[i].trim();
 	    if(h[i].matches("^VCDS.*")) return new DetectResult(LoggerType.LOG_VCDS, h[i]);
+	    if(h[i].matches("^AP Info:.*")) return new DetectResult(LoggerType.LOG_COBB_AP, h[i]);
 	}
 	LoggerType t = detect(h[0]);
 	if(t==LoggerType.LOG_UNKNOWN)
-	    return new DetectResult(t, "");
+	    return new DetectResult(t);
 	return new DetectResult(t, h[0]);
     }
 
     public static LoggerType detect(String h) {
-	if(h.matches("^.*(day|tag)$")) return LoggerType.LOG_VCDS;
+	if(h.matches("^.*(day|tag)$")) return LoggerType.LOG_VCDS;	// Day of week, possibly German lol
 	if(h.matches("^Filename:.*")) {
 	    if(Files.extension(h).equals("zto") ||
 	       Files.extension(h).equals("zdl") ||

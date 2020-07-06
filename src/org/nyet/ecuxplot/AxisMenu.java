@@ -131,7 +131,7 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Calc Power", "Acceleration (g)");
 
 	// goes before .*Load.* to catch CalcLoad
-	} else if(id.matches(".*(MAF|MassAir|AirMass|Mass Air Flow).*")) {
+	} else if(id.matches(".*(MAF|Mass *Air|Air *Mass|Mass *Air *Flow).*")) {
 	    addToSubmenu("MAF", item);
 	    if(id.matches("MassAirFlow")) {
 		this.add("MassAirFlow (kg/hr)");
@@ -145,7 +145,7 @@ public class AxisMenu extends JMenu {
 		addToSubmenu("Calc MAF", "Turbo Flow (lb/min)");
 		addToSubmenu("Calc MAF", new JSeparator());
 	    }
-	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85).*")) {
+	} else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85|[LH]PFP|Rail).*")) {
 	    addToSubmenu("Fuel", item);
 	    if(id.matches("TargetAFRDriverRequest")) {
 		if (units==null || !units.equals("AFR"))
@@ -192,7 +192,7 @@ public class AxisMenu extends JMenu {
 		addToSubmenu("Calc Boost", "Sim BoostPressureDesired");
 		addToSubmenu("Calc Boost", "Sim LoadSpecified correction");
 	    }
-	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Pressure|PID).*")) {
+	} else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Press|PID|Turbine).*")) {
 	    addToSubmenu("Boost", item);
 	    if(id.matches("BoostPressureDesired")) {
 		if (units==null || !units.equals("PSI"))
@@ -218,13 +218,15 @@ public class AxisMenu extends JMenu {
 	/* do this before Timing so we don't match Throttle Angle */
 	} else if(id.matches(".*(Pedal|Throttle).*")) {
 	    addToSubmenu("Throttle", item);
-	} else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing|Angle).*")) {
+	} else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing|Angle|Spark|Combustion).*")) {
 	    addToSubmenu("Ignition", item);
 	    if(id.matches("IgnitionTimingAngleOverall")) {
 		this.add("IgnitionTimingAngleOverallDesired");
 	    }
 	    final AbstractButton titem = makeMenuItem(id + " (ms)", tip);
 	    addToSubmenu("TrueTiming", titem, true);
+	} else if(id.matches(".*(Cam|NWS|Valve).*")) {
+	    addToSubmenu("VVT", item);
 	} else if(id.matches("(Cat|MainCat).*")) {
 	    addToSubmenu("Cats", item);
 	} else if(id.matches(".*EGT.*")) {
