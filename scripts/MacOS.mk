@@ -1,4 +1,3 @@
-#MAC_INSTALLER:=build/$(TARGET).dmg
 MAC_INSTALLER:=build/$(TARGET)-MacOS.zip
 
 MAC_APP:=build/Darwin/ECUxPlot.app
@@ -25,3 +24,15 @@ $(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE)
 
 $(MAC_INSTALLER): $(MAC_APP)/.stamp
 	(cd $(dir $(MAC_APP)); zip -qr ../$(notdir $(MAC_INSTALLER)) ECUxPlot.app)
+
+MAC_INSTALLER_DMG:=build/Darwin/$(TARGET).dmg
+.PHONY: latest-links-dmg rsync-dmg
+latest-links-dmg:
+	@rm -f build/ECUxPlot-latest.dmg
+	@[ -r "$(MAC_INSTALLER_DMG)" ] && ln -sf $(notdir $(MAC_INSTALLER_DMG)) build/ECUxPlot-latest.dmg || true
+
+rsync-dmg:
+	@if [ -r "$(MAC_INSTALLER_DMG)" ]; then \
+	    $(MAKE) latest-links-dmg; \
+	    $(RSYNC) -at $(MAC_INSTALLER_DMG) nyet.org:public_html/cars/files/; \
+	fi	

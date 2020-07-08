@@ -47,11 +47,12 @@ installers: mac-installer win-installer
 
 rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_INSTALLER)
 	$(MAKE) latest-links
+	$(MAKE) rsync-dmg
 	$(RSYNC) -at $^ build/*latest* nyet.org:public_html/cars/files/
 
 .PHONY: latest-links installers vars
 latest-links: installers
-	@[ -z "$(ARCHIVE)" ] || ln -sf $(notdir $(ARCHIVE)) build/ECUxPlot-latest.tar.gz
-	@[ -z "$(WIN_INSTALLER)" ] || ln -sf $(notdir $(WIN_INSTALLER)) build/ECUxPlot-latest-setup.exe
-	#@[ -z "$(MAC_INSTALLER)" ] || ln -sf $(notdir $(MAC_INSTALLER)) build/ECUxPlot-latest.dmg
-	@[ -z "$(MAC_INSTALLER)" ] || ln -sf $(notdir $(MAC_INSTALLER)) build/ECUxPlot-latest-MacOS.zip
+	@rm -f build/*-latest.*
+	@[ -r "$(ARCHIVE)" ] && ln -sf $(notdir $(ARCHIVE)) build/ECUxPlot-latest.tar.gz
+	@[ -r "$(WIN_INSTALLER)" ] && ln -sf $(notdir $(WIN_INSTALLER)) build/ECUxPlot-latest-setup.exe
+	@[ -r "$(MAC_INSTALLER)" ] && ln -sf $(notdir $(MAC_INSTALLER)) build/ECUxPlot-latest-MacOS.zip

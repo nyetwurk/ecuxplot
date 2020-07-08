@@ -101,6 +101,7 @@ tag:
 	    git tag; \
 	    false; \
 	fi
+	git tag -d v$(VER) > /dev/null 2>&1 || true
 	git tag -a v$(VER) -m "Version v$(VER)"
 
 # debug

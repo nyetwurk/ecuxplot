@@ -47,7 +47,7 @@ endif
 PACKAGER_OPTS:=\
     --name ECUxPlot \
     --description "ECUxPlot $(ECUXPLOT_VER)" \
-    --app-version $(VERSION) \
+    --app-version v$(VERSION) \
     --dest build/$(UNAME)
 
 # Not supported on windows or linux(?) in app
