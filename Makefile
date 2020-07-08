@@ -66,8 +66,8 @@ run: $(TARGET).jar
 
 # clean targets
 binclean:
-	rm -f $(addprefix *.,jar zip tar gz)
-	rm -f $(addprefix build/*.,jar zip tar gz)
+	rm -f $(addprefix *.,jar zip tar gz exe)
+	rm -f $(addprefix build/*.,jar zip tar gz exe)
 
 clean: binclean
 	rm -rf build
