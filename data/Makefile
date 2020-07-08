@@ -7,7 +7,11 @@ REFS_8D0907551M=-r $(addsuffix .kp,$(REFS))
 
 TARGETS=$(addsuffix .csv,$(PACKS)) $(addsuffix .xdf,$(PACKS))
 
-filedate=$(shell date -d "$(shell git log -n1 --format=%ci $(1).kp)" +%Y%m%d)
+DATE_Darwin=-j -f @%s
+DATE_Linux=-d
+DATE_CYGWIN_NT=-d
+
+filedate=$(shell date $(DATE_$(shell uname -s | cut -f 1 -d -)) "@$(shell git log -n1 --format=%ct $(1).kp)" +%Y%m%d)
 
 define ZIP_template
 $(1)_DATE=$$(call filedate,$(1))
