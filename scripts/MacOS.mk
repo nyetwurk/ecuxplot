@@ -9,7 +9,6 @@ build/Darwin/%: templates/Darwin/%.template build/version.txt Makefile scripts/M
 	@mkdir -p $(dir $(MAC_CONFIGS))
 	@cat $< | $(GEN) > $@
 
-# unix launch4j requires full path to .xml
 $(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE)
 	@rm -rf $(MAC_APP)
 	@$(MAKE) $(MAC_CONFIGS)
@@ -24,5 +23,5 @@ $(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE)
 	@install -m 644 src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) $(MAC_APP)/Contents/Resources/
 	@touch $@
 
-$(MAC_INSTALLER): $(MAC_APP)/.stamp # $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runtime/Darwin/release
+$(MAC_INSTALLER): $(MAC_APP)/.stamp
 	(cd $(dir $(MAC_APP)); zip -qr ../$(notdir $(MAC_INSTALLER)) ECUxPlot.app)

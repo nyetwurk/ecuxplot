@@ -6,18 +6,18 @@ build/%.xml: templates/%.xml.template build/version.txt Makefile scripts/Windows
 	@mkdir -p build
 	cat $< | $(GEN) > $@
 
-# unix launch4j requires full path to .xml
 build/CYGWIN_NT/ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar build/ECUxPlot.xml
 	@[ -x $(LAUNCH4J) ] || ( echo "Can't find launch4j!"; false)
 	@mkdir -p build/CYGWIN_NT
 	cp -f ECUxPlot-$(ECUXPLOT_VER).jar build/
-	$(LAUNCH4J) $(ECUXPLOT_XML)
+	$(LAUNCH4J) build/ECUxPlot.xml
 
-build/CYGWIN_NT/mapdump.exe: mapdump.jar build/mapdump.xml build/version.txt
+build/CYGWIN_NT/mapdump.exe: mapdump.jar build/mapdump.xml
 	@mkdir -p build/CYGWIN_NT
 	cp -f mapdump.jar build/
-	$(LAUNCH4J) $(MAPDUMP_XML)
+	$(LAUNCH4J) build/mapdump.xml
 
+.PHONY: exes
 exes: $(EXES)
 
 $(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runtime/CYGWIN_NT/release

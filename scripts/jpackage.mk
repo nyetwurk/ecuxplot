@@ -1,3 +1,13 @@
+APP_EXT_Linux :=
+APP_EXT_CYGWIN_NT :=
+APP_EXT_Darwin := .app
+APP_EXT := $(APP_EXT_$(UNAME))
+
+ICON_EXT_Linux := .png
+ICON_EXT_CYGWIN_NT := .ico
+ICON_EXT_Darwin := .icns
+ICON_EXT := $(ICON_EXT_$(UNAME))
+
 UNAMES:=Darwin CYGWIN_NT # Linux # Linux runtime is broken
 RUNTIMES:=$(addprefix runtime/,$(addsuffix /release,$(UNAMES)))
 OTHER_UNAMES:=$(filter-out $(UNAME),$(UNAMES))
