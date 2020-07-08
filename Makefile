@@ -18,7 +18,7 @@ UNAME := $(shell uname -s | cut -f 1 -d -)
 
 READLINK_Linux_flags:=-e
 READLINK_CYGWIN_NT_flags:=-e
-READLINK_Darwin_flags:= 	# SIGH
+READLINK_Darwin_flags:=	# SIGH
 
 JAVAC := $(shell readlink $(READLINK_$(UNAME)_flags) "$(shell which javac 2> /dev/null)")
 JAVAC_DIR := $(shell dirname "$(JAVAC)")/..
@@ -96,7 +96,7 @@ build/build.properties: Makefile build/version.txt
 
 tag:
 	@if [ -z $(VER) ]; then \
-	    echo "usage: 'make tag VER=1.1r1.1'"; \
+	    echo "usage: 'make tag VER=1.1.1'"; \
 	    echo "Existing tags:"; \
 	    git tag; \
 	    false; \
