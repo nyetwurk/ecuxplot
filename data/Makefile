@@ -13,22 +13,6 @@ DATE_CYGWIN_NT=-d
 
 filedate=$(shell date $(DATE_$(shell uname -s | cut -f 1 -d -)) "@$(shell git log -n1 --format=%ct $(1).kp)" +%Y%m%d)
 
-define ZIP_template
-$(1)_DATE=$$(call filedate,$(1))
-.PRECIOUS: $(addprefix $(1)-$$($(1)_DATE).,kp xdf csv)
-$(1)-$$($(1)_DATE).zip: $(addprefix $(1)-$$($(1)_DATE).,kp xdf csv)
-$(1)-$$($(1)_DATE).kp: $(1).kp
-$(1)-$$($(1)_DATE).xdf: $(1).xdf
-$(1)-$$($(1)_DATE).csv: $(1).csv
-$(1)-$$($(1)_DATE).%: $(1).%
-	cp $$< $$@
-$(1)-latest.zip: $(1)-$$($(1)_DATE).zip
-	ln -sf $$< $$@
-ZIPS+=$(1)-latest.zip $(1)-$$($(1)_DATE).zip
-endef
-
-$(foreach bin,$(ZIP_BINS),$(eval $(call ZIP_template,$(bin))))
-
 .PHONY: all zips clean upload
 
 all: $(TARGETS)
@@ -45,6 +29,22 @@ clean:
 
 %.zip: %.kp %.xdf %.csv
 	zip $@ $^
+
+define ZIP_template
+$(1)_DATE=$$(call filedate,$(1))
+.PRECIOUS: $(addprefix $(1)-$$($(1)_DATE).,kp xdf csv)
+$(1)-$$($(1)_DATE).zip: $(addprefix $(1)-$$($(1)_DATE).,kp xdf csv)
+$(1)-$$($(1)_DATE).kp: $(1).kp
+$(1)-$$($(1)_DATE).xdf: $(1).xdf
+$(1)-$$($(1)_DATE).csv: $(1).csv
+$(1)-$$($(1)_DATE).%: $(1).%
+	cp $$< $$@
+$(1)-latest.zip: $(1)-$$($(1)_DATE).zip
+	ln -sf $$< $$@
+ZIPS+=$(1)-latest.zip $(1)-$$($(1)_DATE).zip
+endef
+
+$(foreach bin,$(ZIP_BINS),$(eval $(call ZIP_template,$(bin))))
 
 zips: $(ZIPS)
 
