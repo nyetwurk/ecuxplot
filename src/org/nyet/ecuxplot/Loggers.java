@@ -1,7 +1,10 @@
 package org.nyet.ecuxplot;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.nyet.util.Files;
 
@@ -221,9 +224,24 @@ public class Loggers {
 	    // System.out.printf("%d: '%s'\n", i, h[i]);
 	    for (final String [] s: a) {
 		if (h[i].matches(s[0])) {
-		    //System.out.printf("%d: '%s'->'%s'\n", i, h[i], s[1]);
-		    h[i]=s[1];
+		    // Only rename the first one
+		    if (!ArrayUtils.contains(h, s[1])) {
+			//System.out.printf("%d: '%s'->'%s'\n", i, h[i], s[1]);
+			h[i]=s[1];
+		    }
 		}
+	    }
+	    // Make sure all columns are unique
+	    if (i>0 && h[i].length() > 0) {
+		String[] prev = Arrays.copyOfRange(h, 0, i);
+		String renamed = h[i];
+		boolean rename = false;
+		for (int j = 2; ArrayUtils.contains(prev, renamed); j++)  {
+		    renamed = h[i] + " " + Integer.toString(j);
+		    // System.out.printf("%d: renamed to '%s'\n", i,  renamed);
+		    rename = true;
+		}
+		if (rename) h[i] = renamed;
 	    }
 	}
     }
