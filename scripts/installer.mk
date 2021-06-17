@@ -47,7 +47,7 @@ installers: mac-installer win-installer
 
 rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_INSTALLER)
 	$(MAKE) latest-links
-	$(MAKE) rsync-dmg
+	[ "$(UNAME)" != Darwin ] || $(MAKE) rsync-dmg
 	$(RSYNC) -at $^ build/*latest* nyet.org:public_html/cars/files/
 
 .PHONY: latest-links installers vars

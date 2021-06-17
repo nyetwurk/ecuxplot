@@ -47,7 +47,7 @@ endif
 PACKAGER_OPTS:=\
     --name ECUxPlot \
     --description "ECUxPlot $(ECUXPLOT_VER)" \
-    --app-version v$(VERSION) \
+    --app-version $(VERSION) \
     --dest build/$(UNAME)
 
 # Not supported on windows or linux(?) in app
@@ -63,5 +63,7 @@ jpackage build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE) $(MY_RUNTIME)/release
 	    --main-class org.nyet.ecuxplot.ECUxPlot \
 	    --runtime-image $(MY_RUNTIME)
 
-jpackage-installer: build/$(UNAME)/ECUxPlot$(APP_EXT)
+jpackage-installer $(MAC_INSTALLER_DMG): build/$(UNAME)/ECUxPlot$(APP_EXT)
+	rm -rf build/$(UNAME)/*.dmg
 	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) --app-image build/$(UNAME)
+	mv build/$(UNAME)/ECUxPlot-$(VERSION).dmg $(MAC_INSTALLER_DMG)
