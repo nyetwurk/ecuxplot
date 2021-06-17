@@ -35,4 +35,4 @@ rsync-dmg:
 	@if [ -r "$(MAC_INSTALLER_DMG)" ]; then \
 	    $(MAKE) latest-links-dmg; \
 	    $(RSYNC) -at $(MAC_INSTALLER_DMG) nyet.org:public_html/cars/files/; \
-	fi	
+	fi

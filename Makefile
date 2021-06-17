@@ -11,7 +11,7 @@ COMMONS_CLI_VER := $(call jar_version,commons-cli)
 COMMONS_LANG3_VER := $(call jar_version,commons-lang3)
 COMMONS_TEXT_VER := $(call jar_version,commons-text)
 
-JAVA_TARGET_VER := 9
+JAVA_TARGET_VER := 11
 
 PWD := $(shell pwd)
 UNAME := $(shell uname -s | cut -f 1 -d -)
