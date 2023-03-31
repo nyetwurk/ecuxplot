@@ -70,18 +70,12 @@ public class ECUxDataset extends Dataset {
 
     // check for 5120 logged without a 5120 template and double columns with unit of mBar if so
     final Column baroPressure = get("BaroPressure");
-    if (baroPressure != null) {
-		if (baroPressure.data.size() > 0) {
-			final double measuredBaroPressure = baroPressure.data.get(0);
-			if (measuredBaroPressure < 600) {
-				//double time! ;)
-				for (Column column : getColumns()) {
-					String unit = column.getUnits();
-					if (unit != null && unit.toLowerCase().equals("mbar")) {
-						for (int i = 1; i < column.data.size(); i++) {
-							column.data.set(i, column.data.get(i) * 2);
-						}
-					}
+    if (baroPressure != null && baroPressure.data.size() > 0 && baroPressure.data.get(0) < 600) {
+		//double time! ;)
+		for (Column column : getColumns()) {
+			if (column.getUnits() != null && column.getUnits().toLowerCase().equals("mbar")) {
+				for (int i = 1; i < column.data.size(); i++) {
+					column.data.set(i, column.data.get(i) * 2);
 				}
 			}
 		}
