@@ -85,9 +85,9 @@ public class DoubleArray
 	return i<this.sp?this.array[i]:0;
     }
 
-	public void set(int i, double value) {
-		this.array[i] = value;
-	}
+    public void set(int i, double value) {
+        this.array[i] = value;
+    }
 
     public double[] _func(TransferFunction f, double d) {
 	final double[] out = new double[ this.sp ];
