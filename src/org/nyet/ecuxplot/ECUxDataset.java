@@ -67,6 +67,24 @@ public class ECUxDataset extends Dataset {
 		}
 	    }
 	}
+
+    // check for 5120 logged without a 5120 template and double columns with unit of mBar if so
+    final Column baroPressure = get("BaroPressure");
+    if (baroPressure != null) {
+        final double measuredBaroPressure = baroPressure.data.get(0);
+        if (measuredBaroPressure < 600) {
+            //double time! ;)
+            for (Column column: getColumns()) {
+                String unit = column.getUnits();
+                if (unit != null && unit.toLowerCase().equals("mbar")) {
+					for (int i = 1; i < column.data.size(); i++) {
+						column.data.set(i, column.data.get(i) * 2);
+					}
+                }
+            }
+        }
+    }
+
 	// get RPM AFTER getting TIME, so we have an accurate samples per sec
 	this.rpm = get("RPM");
 	buildRanges(); // regenerate ranges, splines
