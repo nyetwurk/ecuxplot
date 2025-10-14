@@ -37,21 +37,19 @@ public class BrowserLaunch {
 		    new Class[] {String.class});
 		openURL.invoke(null, new Object[] {url});
 	    } else if (osName.startsWith("Windows"))
-		Runtime.getRuntime().exec(
-		    "rundll32 url.dll,FileProtocolHandler " + url);
+		new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url).start();
 	    else { //assume Unix or Linux
 		final String[] browsers = {
 		    "firefox", "iceweasel", "opera", "konqueror", "epiphany",
 		    "mozilla", "netscape" };
 		String browser = null;
 		for (int i = 0; i <browsers.length && browser == null; i++)
-		    if (Runtime.getRuntime().exec(
-			new String[] {"which", browsers[i]}).waitFor() == 0)
+		    if (new ProcessBuilder("which", browsers[i]).start().waitFor() == 0)
 		    browser = browsers[i];
 		if (browser == null)
 		    throw new Exception("Could not find web browser");
 		else
-		    Runtime.getRuntime().exec(new String[] {browser, url});
+		    new ProcessBuilder(browser, url).start();
 	    }
         } catch (final Exception e) {
 	    JOptionPane.showMessageDialog(null,
