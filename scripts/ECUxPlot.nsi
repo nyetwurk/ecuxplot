@@ -101,7 +101,7 @@ Section "install" InstallationInfo
   File "build\version.txt"
   File "gpl-3.0.txt"
   File "flanagan-license.txt"
-  File "README-Zeitronix.txt"
+  File "README.md"
 
   SetOutPath "$INSTDIR\lib"
   File "lib\jcommon-${JCOMMON_VER}.jar"

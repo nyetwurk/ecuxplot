@@ -18,7 +18,7 @@ PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/consta
 ARCHIVE:=build/$(TARGET).tar.gz
 INSTALL_DIR:=/usr/local/ecuxplot
 INSTALL_FILES:= $(TARGET).jar mapdump.jar \
-		$(subst :, ,$(JARS)) README-Zeitronix.txt \
+		$(subst :, ,$(JARS)) README.md \
 		gpl-3.0.txt flanagan-license.txt
 
 .PHONY: archive install tag
@@ -41,11 +41,22 @@ include scripts/Windows.mk
 include scripts/MacOS.mk
 
 .PHONY: archive mac-installer win-installer installers rsync
-mac-installer: $(MAC_INSTALLER)
+mac-zip: $(MAC_ZIP)
 win-installer: $(WIN_INSTALLER)
-installers: mac-installer win-installer
+installers:
+	@echo "Building installers for platform: $(UNAME)"
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		echo "Building macOS installer..."; \
+		$(MAKE) mac-zip; \
+	elif [ "$(UNAME)" = "Linux" ] || [ "$(findstring CYGWIN,$(UNAME))" = "CYGWIN" ]; then \
+		echo "Building Windows installer..."; \
+		$(MAKE) win-installer; \
+	else \
+		echo "Error: Unknown platform $(UNAME). Supported: Darwin, Linux, CYGWIN_NT"; \
+		exit 1; \
+	fi
 
-rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_INSTALLER)
+rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_ZIP)
 	$(MAKE) latest-links
 	[ "$(UNAME)" != Darwin ] || $(MAKE) rsync-dmg
 	$(RSYNC) -at $^ build/*latest* nyet.org:public_html/cars/files/

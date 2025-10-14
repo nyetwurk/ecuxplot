@@ -1,4 +1,4 @@
-MAC_INSTALLER:=build/$(TARGET)-MacOS.zip
+MAC_ZIP:=build/Darwin/$(TARGET)-MacOS.zip
 
 MAC_APP:=build/Darwin/ECUxPlot.app
 MAC_CONFIGS:=$(addprefix $(MAC_APP)/Contents/,Info.plist app/ECUxPlot.cfg )
@@ -22,8 +22,8 @@ $(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE)
 	@install -m 644 src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) $(MAC_APP)/Contents/Resources/
 	@touch $@
 
-$(MAC_INSTALLER): $(MAC_APP)/.stamp
-	(cd $(dir $(MAC_APP)); zip -qr ../$(notdir $(MAC_INSTALLER)) ECUxPlot.app)
+$(MAC_ZIP): $(MAC_APP)/.stamp
+	(cd $(dir $(MAC_APP)); zip -qr $(notdir $(MAC_ZIP)) ECUxPlot.app)
 
 MAC_INSTALLER_DMG:=build/Darwin/$(TARGET).dmg
 .PHONY: dmg latest-links-dmg rsync-dmg

@@ -42,7 +42,6 @@ stub-archive templates/Darwin/stub.tar.gz: $(STUB_DIR)
 	tar czf templates/Darwin/stub.tar.gz $(addprefix $(STUB_DIR)/Contents/,$(STUB_FILES))
 endif
 
-.PHONY: jpackage jpackage-installer
 # Note: --app-version can't have dashes in windows
 PACKAGER_OPTS:=\
     --name ECUxPlot \
@@ -53,7 +52,7 @@ PACKAGER_OPTS:=\
 # Not supported on windows or linux(?) in app
 PACKAGER_APP_OPTS_Darwin:=--file-associations scripts/assoc.prop
 
-jpackage build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE) $(MY_RUNTIME)/release
+build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE) $(MY_RUNTIME)/release
 	@mkdir -p build/ECUxPlot; rm -rf build/ECUxPlot build/$(UNAME)/ECUxPlot$(APP_EXT)
 	tar -C build -xzf $(ARCHIVE)
 	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) $(PACKAGER_APP_OPTS_$(UNAME)) --type app-image \
@@ -63,7 +62,22 @@ jpackage build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE) $(MY_RUNTIME)/release
 	    --main-class org.nyet.ecuxplot.ECUxPlot \
 	    --runtime-image $(MY_RUNTIME)
 
-jpackage-installer $(MAC_INSTALLER_DMG): build/$(UNAME)/ECUxPlot$(APP_EXT)
-	rm -rf build/$(UNAME)/*.dmg
-	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) --app-image build/$(UNAME)
-	mv build/$(UNAME)/ECUxPlot-$(VERSION).dmg $(MAC_INSTALLER_DMG)
+$(MAC_INSTALLER_DMG): build/$(UNAME)/ECUxPlot$(APP_EXT)
+	@if [ "$(UNAME)" != "Darwin" ]; then \
+		echo "Error: DMG creation only supported on macOS (Darwin), current platform: $(UNAME)"; \
+		exit 1; \
+	fi
+	rm -rf build/$(UNAME)/*.dmg build/$(UNAME)/dmg-temp
+	# Create proper installer DMG with Applications folder
+	mkdir -p build/$(UNAME)/dmg-temp
+	cp -R build/$(UNAME)/ECUxPlot$(APP_EXT) build/$(UNAME)/dmg-temp/
+	ln -s /Applications build/$(UNAME)/dmg-temp/Applications
+	cd build/$(UNAME) && \
+	hdiutil create -srcfolder dmg-temp \
+		-volname "ECUxPlot $(VERSION)" \
+		-fs HFS+ \
+		-fsargs "-c c=64,a=16,e=16" \
+		-format UDZO \
+		ECUxPlot-$(VERSION).dmg && \
+	mv ECUxPlot-$(VERSION).dmg $(notdir $(MAC_INSTALLER_DMG)) && \
+	rm -rf dmg-temp
