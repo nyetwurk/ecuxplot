@@ -158,6 +158,9 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("AirFuelRatioCurrent")) {
 		this.add("AirFuelRatioCurrent (AFR)");
 	    }
+	    if(id.matches("AirFuelRatioCurrentBank2")) {
+		this.add("AirFuelRatioCurrentBank2 (AFR)");
+	    }
 	    if(id.matches("FuelInjectorOnTime")) {	// ti
 		this.add("FuelInjectorDutyCycle");
 	    }

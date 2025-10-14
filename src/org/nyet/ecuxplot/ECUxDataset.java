@@ -501,6 +501,9 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("AirFuelRatioCurrent (AFR)")) {
 	    final DoubleArray abs = super.get("AirFuelRatioCurrent").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
+	} else if(id.equals("AirFuelRatioCurrentBank2 (AFR)")) {
+	    final DoubleArray abs = super.get("AirFuelRatioCurrentBank2").data;
+	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("Sim AFR")) {
 	    final DoubleArray a = this.get("Sim MAF").data;
 	    final DoubleArray b = this.get("Sim Fuel Mass").data;

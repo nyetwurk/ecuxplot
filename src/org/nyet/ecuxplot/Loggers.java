@@ -184,7 +184,15 @@ public class Loggers {
     private static final String[][] DEFAULT_aliases = new String[][] {
 	{"^[Tt]ime$", "TIME"},
 	{"^[Ee]ngine [Ss]peed$", "RPM"},
-	{"^[Mm]ass air flow$", "MassAirFlow"}
+	{"^[Mm]ass air flow$", "MassAirFlow"},
+	// M-Tuner Logger mappings
+	{"^Engine Speed$", "RPM"},
+	{"^Target Position Throttle$", "ThrottlePlateAngle"},
+	{"^Manifold Absolute Pressure$", "BoostPressureActual"},
+	{"^Intake air temperature$", "IntakeAirTemperature"},
+	{"^Lambda Bank 1$", "AirFuelRatioCurrent"},
+	{"^Lambda Bank 2$", "AirFuelRatioCurrentBank2"}, // ME7L oddity - bank 1 has no suffix, but bank 2 has a full suffix
+	{"^Ignition Angle Actual$", "IgnitionTimingAngleOverall"}
     };
 
     private static final Map<LoggerType, String[][]> Aliases = new HashMap<LoggerType, String[][]>() {
