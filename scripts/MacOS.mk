@@ -1,4 +1,4 @@
-MAC_INSTALLER:=build/$(TARGET)-MacOS.zip
+MAC_ZIP:=build/$(TARGET)-MacOS.zip
 
 MAC_APP:=build/Darwin/ECUxPlot.app
 MAC_CONFIGS:=$(addprefix $(MAC_APP)/Contents/,Info.plist app/ECUxPlot.cfg )
@@ -22,17 +22,17 @@ $(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE)
 	@install -m 644 src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) $(MAC_APP)/Contents/Resources/
 	@touch $@
 
-$(MAC_INSTALLER): $(MAC_APP)/.stamp
-	(cd $(dir $(MAC_APP)); zip -qr ../$(notdir $(MAC_INSTALLER)) ECUxPlot.app)
+$(MAC_ZIP): $(MAC_APP)/.stamp
+	(cd $(dir $(MAC_APP)); zip -qr ../$(notdir $(MAC_ZIP)) ECUxPlot.app)
 
-MAC_INSTALLER_DMG:=build/Darwin/$(TARGET).dmg
+MAC_INSTALLER:=build/$(TARGET).dmg
 .PHONY: dmg latest-links-dmg rsync-dmg
-dmg: $(MAC_INSTALLER_DMG)
+dmg: $(MAC_INSTALLER)
 
-latest-links-dmg: $(MAC_INSTALLER_DMG)
+latest-links-dmg: $(MAC_INSTALLER)
 	@rm -f build/ECUxPlot-latest.dmg
-	ln -sf $(notdir $(MAC_INSTALLER_DMG)) build/ECUxPlot-latest.dmg || true
+	ln -sf $(notdir $(MAC_INSTALLER)) build/ECUxPlot-latest.dmg || true
 
 rsync-dmg:
 	$(MAKE) latest-links-dmg
-	$(RSYNC) -at $(MAC_INSTALLER_DMG) nyet.org:public_html/cars/files/
+	$(RSYNC) -at $(MAC_INSTALLER) nyet.org:public_html/cars/files/
