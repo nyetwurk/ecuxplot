@@ -1,0 +1,47 @@
+---
+name: Pull Request Build
+
+on:
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-all-targets:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Set up JDK 18
+      uses: actions/setup-java@v5
+      with:
+        java-version: '18'
+        distribution: 'temurin'
+
+    - name: Install build tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y make ant nsis wget unzip
+        # Install Launch4j
+        wget -O /tmp/launch4j.tar.gz https://sourceforge.net/projects/launch4j/files/launch4j-3/3.50/launch4j-3.50-linux-x64.tgz/download
+        tar -xzf /tmp/launch4j.tar.gz -C /tmp
+        sudo mv /tmp/launch4j-3.50 /opt/launch4j
+        sudo ln -sf /opt/launch4j/launch4j /usr/local/bin/launch4j
+        echo "/opt/launch4j" >> $GITHUB_PATH
+
+    - name: Build all targets (no installers)
+      run: |
+        make archive
+        make all
+        make exes
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pr-builds
+        path: |
+          build/*.tar.gz
+          build/*.exe
+          ECUxPlot-*.jar
+          mapdump.jar

@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Monitor GitHub Actions workflows for updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    assignees:
+      - "nyetwurk"
+
+  # Monitor Launch4j version in workflow files
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 1
+    assignees:
+      - "nyetwurk"
