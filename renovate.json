@@ -1,0 +1,18 @@
+{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["launch4j"],
+      "matchFiles": ["scripts/launch4j-version.txt"],
+      "groupName": "launch4j",
+      "schedule": ["before 6am on monday"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    }
+  ],
+  "ignorePaths": ["lib/", "build/", "runtime/"],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
+}

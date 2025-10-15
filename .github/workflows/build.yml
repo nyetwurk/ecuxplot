@@ -67,9 +67,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends make ant nsis mingw-w64 binutils-mingw-w64
         # Install Launch4j manually (not available in Ubuntu repos)
-        # Version managed by Renovate via .github/dependabot-config/launch4j-version.txt
-        LAUNCH4J_VERSION=$(cat .github/dependabot-config/launch4j-version.txt | grep -v '^#' | head -1)
-        wget -O /tmp/launch4j.tar.gz "https://sourceforge.net/projects/launch4j/files/launch4j-3/3.14/${LAUNCH4J_VERSION}-linux-x64.tgz/download"
+        # Version managed by Renovate via scripts/launch4j-version.txt
+        LAUNCH4J_VERSION=$(cat scripts/launch4j-version.txt | grep -v '^#' | head -1)
+        wget -O /tmp/launch4j.tar.gz "https://sourceforge.net/projects/launch4j/files/launch4j-3/${LAUNCH4J_VERSION}/${LAUNCH4J_VERSION}-linux-x64.tgz/download"
         tar -xzf /tmp/launch4j.tar.gz -C /tmp
         sudo mv /tmp/launch4j /opt/launch4j
 
