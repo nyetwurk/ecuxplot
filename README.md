@@ -51,6 +51,29 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 - **Verification**: Check the correction value shown in the box under the MAF parameter
 - **Calibration**: Compare Calc AFR with wideband data if unsure
 
+### macOS Installation Issues
+
+**Problem**: "Application is damaged" error when trying to run ECUxPlot
+
+**Solution**: This is a macOS security feature that blocks unsigned applications. The application is likely not damaged.
+
+**For macOS Mojave (10.14) and earlier**:
+
+- Open Terminal and run: `xattr -c /Applications/ECUxPlot.app`
+- Note: This method is less effective on macOS Catalina (10.15) and later
+
+**For macOS Catalina (10.15) and later**:
+
+1. When you first try to run ECUxPlot, macOS will show a dialog saying: **"'ECUxPlot' is damaged and can't be opened. You should move it to the Trash."**
+2. **Important**: Click **"Cancel"** - do NOT click "Move to Trash"
+3. Go to **System Settings** → **Privacy & Security** (Note: On macOS Monterey and earlier, this is **System Preferences** → **Security & Privacy**)
+4. Scroll down to the bottom of the page
+5. Look for a message about ECUxPlot being blocked
+6. Click **"Allow Anyway"** or **"Open Anyway"**
+7. If you don't see the message, try running the application again and then check Privacy & Security settings
+
+**Note**: After clicking "Cancel", macOS will show a message telling you that running the app was refused. You can then go to Privacy & Security settings to override this restriction.
+
 ### FATS (For the Advancement of the S4)
 
 FATS is ET (Elapsed Time) from 4200-6500 RPM in 3rd gear, by B5S4 convention.
