@@ -20,7 +20,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Cache runtime directories
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           runtime/*/bin
@@ -32,7 +32,7 @@ jobs:
           runtime-cache-macos-
 
     - name: Cache Homebrew packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           /opt/homebrew/Cellar
@@ -77,7 +77,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Cache runtime directories
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           runtime/*/bin
