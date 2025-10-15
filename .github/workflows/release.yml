@@ -19,14 +19,36 @@ jobs:
         java-version: '18'
         distribution: 'temurin'
 
+    - name: Cache runtime directories
+      uses: actions/cache@v3
+      with:
+        path: |
+          runtime/*/bin
+          runtime/*/lib
+          runtime/*/release
+          runtime/*/java-*.stamp
+        key: runtime-cache-macos-${{ hashFiles('Makefile', 'scripts/jpackage.mk') }}
+        restore-keys: |
+          runtime-cache-macos-
+
+    - name: Cache Homebrew packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          /opt/homebrew/Cellar
+          /opt/homebrew/Caskroom
+          /opt/homebrew/var/homebrew/locks
+        key: brew-cache-macos-${{ runner.os }}-${{ hashFiles('.github/workflows/release.yml') }}
+        restore-keys: |
+          brew-cache-macos-${{ runner.os }}-
+
     - name: Install Make
       run: |
-        brew install make
+        brew install make $$ brew link make
         echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
     - name: Build macOS targets
       run: |
-        make mac-zip
         make dmg
       env:
         DISPLAY: ""
@@ -53,6 +75,18 @@ jobs:
       with:
         java-version: '18'
         distribution: 'temurin'
+
+    - name: Cache runtime directories
+      uses: actions/cache@v3
+      with:
+        path: |
+          runtime/*/bin
+          runtime/*/lib
+          runtime/*/release
+          runtime/*/java-*.stamp
+        key: runtime-cache-linux-${{ hashFiles('Makefile', 'scripts/jpackage.mk') }}
+        restore-keys: |
+          runtime-cache-linux-
 
     - name: Install build tools
       run: |

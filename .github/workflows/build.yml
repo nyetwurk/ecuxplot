@@ -19,9 +19,20 @@ jobs:
         java-version: '18'
         distribution: 'temurin'
 
+    - name: Cache Homebrew packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          /opt/homebrew/Cellar
+          /opt/homebrew/Caskroom
+          /opt/homebrew/var/homebrew/locks
+        key: brew-cache-macos-${{ runner.os }}-${{ hashFiles('.github/workflows/build.yml') }}
+        restore-keys: |
+          brew-cache-macos-${{ runner.os }}-
+
     - name: Install Make
       run: |
-        brew install make
+        brew install make && brew link make
         echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
     - name: Build macOS targets
@@ -54,7 +65,7 @@ jobs:
     - name: Install build tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y make ant nsis mingw-w64 binutils-mingw-w64
+        sudo apt-get install -y --no-install-recommends make ant nsis mingw-w64 binutils-mingw-w64
         # Install Launch4j manually (not available in Ubuntu repos)
         # Version managed by Renovate via .github/dependabot-config/launch4j-version.txt
         LAUNCH4J_VERSION=$(cat .github/dependabot-config/launch4j-version.txt | grep -v '^#' | head -1)

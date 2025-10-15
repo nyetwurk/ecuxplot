@@ -41,43 +41,36 @@ ECUxPlot supports building installers and packages for multiple platforms:
 | `archive` | Create Linux archive package | All |
 | `installers` | Build platform-appropriate installer | All (auto-detects) |
 
-### Platform-Specific Targets
+### Available Targets
 
-#### macOS Targets
-
-| Target | Description | Output |
-|--------|-------------|--------|
-| `mac-zip` | Create ZIP archive of app bundle | `build/$(TARGET)-MacOS.zip` |
-| `dmg` | Create DMG installer with Applications folder | `build/$(TARGET).dmg` |
-
-#### Windows Targets
-
-| Target | Description | Output |
-|--------|-------------|--------|
-| `win-installer` | Create NSIS Windows installer | `build/$(TARGET)-setup.exe` |
-| `exes` | Create Windows executable files | `build/CYGWIN_NT/*.exe` |
-
-#### Cross-Platform Targets
-
-| Target | Description | Output |
-|--------|-------------|--------|
-| `archive` | Create compressed archive (Unix/Linux/macOS) | `build/$(TARGET).tar.gz` |
+| Target | Platform | Description | Output |
+|--------|----------|-------------|--------|
+| `all` | macOS/Linux | Build everything for current platform | Platform-specific |
+| `archive` | macOS/Linux | Create compressed archive (Unix/Linux/macOS) | `build/$(TARGET).tar.gz` |
+| `installers` | macOS/Linux | Build platform-appropriate installer | Platform-specific |
+| `dmg` | macOS | Create DMG installer with Applications folder | `build/$(TARGET).dmg` |
+| `exes` | Linux | Create Windows executable files | `build/CYGWIN_NT/*.exe` |
 
 ## Platform Support Matrix
 
-| Target | macOS | Linux | Windows |
-|--------|-------|-------|---------|
-| `all` | ✅ | ✅ | ✅ |
-| `archive` | ✅ | ✅ | ✅ |
-| `installers` | ✅ | ✅ | ✅ |
-| `mac-zip` | ✅ | ❌ | ❌ |
-| `dmg` | ✅ | ❌ | ❌ |
-| `win-installer` | ❌ | ✅ | ✅ |
-| `exes` | ❌ | ✅ | ✅ |
+| Build Platform | Target | macOS | Linux | Windows |
+|----------------|--------|-------|-------|---------|
+| macOS/Linux | `all` | ✅ | ✅ | ✅ |
+|  | `archive` | ✅ | ✅ | ✅ |
+| Linux | `installers` | ❌ | ✅ | ✅ |
+|  | `exes` | ❌ | ✅ | ✅ |
+| macOS | `installers` | ✅ | ❌ | ❌ |
+|  | `dmg` | ✅ | ❌ | ❌ |
 
 **Note**: Targets automatically check platform compatibility and will show clear error messages if run on unsupported platforms.
 
 ## Quick Start
+
+### Quick Help
+
+```bash
+make help    # Show summary of most commonly used targets
+```
 
 ### Build Everything (Recommended)
 
@@ -86,27 +79,6 @@ make all
 make installers
 ```
 
-### Build Specific Platform Installers
-
-#### macOS Build Commands
-
-```bash
-make mac-zip    # Creates ZIP file
-make dmg        # Creates DMG installer
-```
-
-#### Windows (from Linux)
-
-```bash
-make win-installer  # Creates NSIS installer
-make exes           # Creates executable files
-```
-
-#### Cross-Platform Archive
-
-```bash
-make archive    # Creates tar.gz archive
-```
 
 ## Output Files
 
@@ -203,6 +175,113 @@ make binclean   # Remove only binary files
 ```bash
 make vars       # Show build configuration
 ```
+
+## Runtime Management System
+
+ECUxPlot uses a self-contained runtime management system that automatically creates Java runtimes for cross-platform builds without requiring external dependencies.
+
+### Runtime Strategy
+
+The system uses a **file-based dependency approach** where every target creates actual files, ensuring robust dependency tracking:
+
+- **Current Platform**: Uses `jlink` to create a custom runtime locally from system Java
+- **Other Platforms**: Automatically downloads JDKs and creates runtimes from scratch
+- **No External Dependencies**: Everything is created locally - no hosted runtime server needed
+
+### Runtime Creation Process
+
+The system follows a clean dependency chain:
+
+1. **JDK Download** (`runtime/jdk-%.$(FILE_EXT_%)`):
+   - Downloads latest JDK from Adoptium GitHub releases
+   - Uses platform-specific file extensions (`.tar.gz` for Linux/macOS, `.zip` for Windows)
+   - Fetches actual version dynamically from GitHub API
+
+2. **Runtime Creation** (`runtime/%/release`):
+   - Extracts downloaded JDK
+   - Creates custom runtime using `jlink` with minimal modules
+   - Generates `release` file with version and module information
+
+### Platform Support
+
+The system supports three platforms defined in `UNAMES`:
+
+| Platform | JDK File | Runtime Directory | Creation Method |
+|----------|----------|-------------------|-----------------|
+| Linux | `runtime/jdk-Linux.tar.gz` | `runtime/Linux/` | Download JDK + `jlink` |
+| Darwin (macOS) | `runtime/jdk-Darwin.tar.gz` | `runtime/Darwin/` | Download JDK + `jlink` |
+| CYGWIN_NT (Windows) | `runtime/jdk-CYGWIN_NT.zip` | `runtime/CYGWIN_NT/` | Download JDK + `jlink` |
+
+### Runtime Management Targets
+
+| Target | Description | Usage |
+|--------|-------------|-------|
+| `runtime/%/release` | Create runtime for specific platform | `make runtime/Linux/release` |
+| `runtime/jdk-%.$(FILE_EXT_%)` | Download JDK for specific platform | `make runtime/jdk-Darwin.tar.gz` |
+
+### Runtime Compatibility
+
+The system automatically ensures compatibility:
+
+- **JAVA_TARGET_VER**: 18 (configurable in Makefile)
+- **Downloaded JDKs**: Latest available from Adoptium (automatically fetched)
+- **Runtime versions**: Actual versions from downloaded JDKs (not hardcoded)
+
+### Technical Implementation
+
+The system uses **Make pattern rules** with **proper variable expansion**:
+
+```makefile
+# Platform-specific variables
+FILE_EXT_Linux:=tar.gz
+FILE_EXT_CYGWIN_NT:=zip
+FILE_EXT_Darwin:=tar.gz
+PLATFORM_NAME_Linux:=linux
+PLATFORM_NAME_CYGWIN_NT:=windows
+PLATFORM_NAME_Darwin:=mac
+
+# Pattern rules with variable expansion
+runtime/jdk-%.$(FILE_EXT_%):  # Downloads JDK
+runtime/%/release: runtime/jdk-%.$(FILE_EXT_%)  # Creates runtime
+```
+
+This approach eliminates shell conditionals and uses Make's built-in capabilities for clean, maintainable code.
+
+### Benefits of Self-Contained System
+
+- **No External Dependencies**: No need for hosted runtime server
+- **Always Up-to-Date**: Automatically fetches latest JDK versions
+- **Cross-Platform**: Works on any platform that can run Make
+- **Reliable**: No network dependencies for runtime creation
+- **Simple**: Single `make installers` command handles everything
+
+### CI/CD Integration
+
+The system is **CI-ready** with built-in GitHub Actions caching:
+
+#### **Build Workflow** (`.github/workflows/build.yml`)
+- **Linux Job**: Builds Linux + Windows executables (`make exes`)
+- **macOS Job**: Builds macOS application (`make all`)
+- **Caches**: Homebrew packages (macOS only)
+- **Purpose**: Continuous integration testing
+
+#### **Release Workflow** (`.github/workflows/release.yml`)
+- **Linux Job**: Builds Linux + Windows installers (`make installers`)
+- **macOS Job**: Builds macOS installers (`make dmg`)
+- **Caches**: Runtime directories (`runtime/*/bin`, `runtime/*/lib`, `runtime/*/release`, `runtime/*/java-*.stamp`)
+- **Purpose**: Release builds with full installer creation
+
+#### **Cache Strategy**
+- **What's Cached**: Runtime directories (created runtimes)
+- **What's Not Cached**: JDK downloads (downloaded fresh each time)
+- **Cache Invalidation**: Automatic when Makefile or jpackage.mk changes
+- **Fallback**: If cache miss, runtimes are recreated automatically
+
+#### **CI Benefits**
+- **Fast Builds**: Runtime directories cached between runs
+- **Reliable**: No external dependencies, works offline
+- **Cross-Platform**: Linux CI builds Windows, macOS CI builds macOS
+- **Automatic**: No manual cache management needed
 
 ## File Structure
 

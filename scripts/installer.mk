@@ -40,21 +40,9 @@ install: $(ARCHIVE)
 include scripts/Windows.mk
 include scripts/MacOS.mk
 
-.PHONY: archive mac-installer win-installer installers rsync
-mac-zip: $(MAC_ZIP)
-win-installer: $(WIN_INSTALLER)
-installers:
-	@echo "Building installers for platform: $(UNAME)"
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		echo "Building macOS installer..."; \
-		$(MAKE) mac-zip; \
-	elif [ "$(UNAME)" = "Linux" ] || [ "$(findstring CYGWIN,$(UNAME))" = "CYGWIN" ]; then \
-		echo "Building Windows installer..."; \
-		$(MAKE) win-installer; \
-	else \
-		echo "Error: Unknown platform $(UNAME). Supported: Darwin, Linux, CYGWIN_NT"; \
-		exit 1; \
-	fi
+.PHONY: archive installers rsync
+installers: $(WIN_INSTALLER) $(MAC_ZIP) runtime/Linux/release
+	@echo "All installers and runtimes built successfully"
 
 rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_ZIP)
 	$(MAKE) latest-links

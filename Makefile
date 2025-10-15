@@ -80,7 +80,26 @@ $(VERSION_JAVA): FORCE
 
 ANT:=ant
 RSYNC:=rsync
-.PHONY: all compile run binclean clean
+.PHONY: all compile run binclean clean help
+
+help:
+	@echo "ECUxPlot Build System"
+	@echo "===================="
+	@echo ""
+	@echo "Most commonly used targets:"
+	@echo ""
+	@echo "  make all        - Build everything for current platform"
+	@echo "  make installers - Build platform-appropriate installers"
+	@echo "  make archive    - Create compressed archive (Unix/Linux/macOS)"
+	@echo "  make clean      - Clean build artifacts"
+	@echo ""
+	@echo "Platform-specific targets:"
+	@echo ""
+	@echo "  make dmg        - Create macOS DMG installer (macOS only)"
+	@echo "  make exes       - Create Windows executable files (Linux/Windows)"
+	@echo ""
+	@echo "For detailed information, see INSTALL.md"
+	@echo ""
 
 # used by wrapper scripts
 build/version.txt: FORCE

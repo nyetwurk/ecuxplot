@@ -23,6 +23,7 @@
     <dontUsePrivateJres>false</dontUsePrivateJres>
     <initialHeapSize>0</initialHeapSize>
     <maxHeapSize>0</maxHeapSize>
+    <opt>-Djava.awt.headless=false</opt>
   </jre>
   <versionInfo>
     <fileVersion>%VERSION.0</fileVersion>

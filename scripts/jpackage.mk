@@ -8,31 +8,59 @@ ICON_EXT_CYGWIN_NT := .ico
 ICON_EXT_Darwin := .icns
 ICON_EXT := $(ICON_EXT_$(UNAME))
 
-UNAMES:=Darwin CYGWIN_NT # Linux # Linux runtime is broken
-RUNTIMES:=$(addprefix runtime/,$(addsuffix /release,$(UNAMES)))
-OTHER_UNAMES:=$(filter-out $(UNAME),$(UNAMES))
-OTHER_RUNTIMES:=$(addprefix runtime/,$(addsuffix /release,$(OTHER_UNAMES)))
+UNAMES:=Linux Darwin CYGWIN_NT
 
-.PHONY: runtimes runtime-archive
-runtimes: $(RUNTIMES)
-
-runtime/%/release:
-	@mkdir -p runtime
-	wget -c https://nyet.org/cars/ECUxPlot/jre/runtime-$*-latest.tar.gz -O runtime/runtime-$*-latest.tar.gz
-	tar xzf runtime/runtime-$*-latest.tar.gz
+# Platform-specific file extensions and names
+FILE_EXT_Linux:=tar.gz
+FILE_EXT_CYGWIN_NT:=zip
+FILE_EXT_Darwin:=tar.gz
+PLATFORM_NAME_Linux:=linux
+PLATFORM_NAME_CYGWIN_NT:=windows
+PLATFORM_NAME_Darwin:=mac
 
 #JLINK_MODULES:=ALL-MODULE-PATH
 JLINK_MODULES:=java.base,java.desktop,java.datatransfer
 
-MY_RUNTIME:=runtime/$(UNAME)
-$(MY_RUNTIME)/release:
-	@rm -rf $(MY_RUNTIME)
-	"$(JAVA_HOME)/bin/jlink" --no-header-files --no-man-pages \
-		--compress=2 --strip-debug --add-modules $(JLINK_MODULES) \
-		--output $(MY_RUNTIME)
+# Mark stamp files as precious so Make doesn't delete them
+.PRECIOUS: runtime/%/java-$(JAVA_TARGET_VER).stamp
 
-runtime-archive runtime/runtime-$(UNAME)-$(JAVAC_VER).tar.gz: $(MY_RUNTIME)/release
-	tar czf runtime/runtime-$(UNAME)-$(JAVAC_VER).tar.gz $(MY_RUNTIME)
+# Create version stamp file for a specific platform
+runtime/%/java-$(JAVA_TARGET_VER).stamp:
+	@mkdir -p runtime/$*
+	@touch runtime/$*/java-$(JAVA_TARGET_VER).stamp
+
+# Download JDK for a specific platform
+runtime/jdk-%.$(FILE_EXT_%): runtime/%/java-$(JAVA_TARGET_VER).stamp
+	@echo "Downloading $* JDK..."
+	@mkdir -p runtime
+	@LATEST_VERSION=$$(curl -s \
+		"https://api.github.com/repos/adoptium/temurin$(JAVA_TARGET_VER)-binaries/releases/latest" \
+		| grep -E '"tag_name"' | cut -d'"' -f4); \
+	echo "Latest version: $$LATEST_VERSION"; \
+	FILE_VERSION=$$(echo $$LATEST_VERSION | sed 's/jdk-//' | sed 's/+/_/'); \
+	wget -O runtime/jdk-$*.$(FILE_EXT_$*) \
+		"https://github.com/adoptium/temurin$(JAVA_TARGET_VER)-binaries/releases/download/$$LATEST_VERSION/OpenJDK$(JAVA_TARGET_VER)U-jdk_x64_$(PLATFORM_NAME_$*)_hotspot_$$FILE_VERSION.$(FILE_EXT_$*)"
+
+# Create runtime for a specific platform
+runtime/%/release: runtime/jdk-%.$(FILE_EXT_%)
+	@echo "Creating runtime for $*..."
+	@mkdir -p runtime
+	@echo "Creating runtime for $*..."; \
+	rm -rf runtime/$*; \
+	rm -f runtime/$*/java-*.stamp; \
+	cd runtime; \
+	if [ "$*" = "CYGWIN_NT" ]; then \
+		unzip -q jdk-$*.zip; \
+	else \
+		tar -xzf jdk-$*.tar.gz; \
+	fi; \
+	for dir in jdk-*; do mv "$$dir" $*; done; \
+		echo "JAVA_VERSION=\"$(JAVA_TARGET_VER)\"" > $*/release; \
+		echo "MODULES=\"$(JLINK_MODULES)\"" >> $*/release; \
+		touch $*/java-$(JAVA_TARGET_VER).stamp; \
+	echo "Successfully created runtime for $*";
+
+
 
 ifeq ($(UNAME),Darwin)
 .PHONY: stub-archive
@@ -52,7 +80,7 @@ PACKAGER_OPTS:=\
 # Not supported on windows or linux(?) in app
 PACKAGER_APP_OPTS_Darwin:=--file-associations scripts/assoc.prop
 
-build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE) $(MY_RUNTIME)/release
+build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE) runtime/$(UNAME)/release runtime/$(UNAME)/java-$(JAVA_TARGET_VER).stamp
 	@mkdir -p build/ECUxPlot; rm -rf build/ECUxPlot build/$(UNAME)/ECUxPlot$(APP_EXT)
 	tar -C build -xzf $(ARCHIVE)
 	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) $(PACKAGER_APP_OPTS_$(UNAME)) --type app-image \
@@ -60,7 +88,7 @@ build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE) $(MY_RUNTIME)/release
 	    --icon src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) \
 	    --main-jar $(TARGET).jar \
 	    --main-class org.nyet.ecuxplot.ECUxPlot \
-	    --runtime-image $(MY_RUNTIME)
+	    --runtime-image runtime/$(UNAME)
 
 $(MAC_INSTALLER): build/$(UNAME)/ECUxPlot$(APP_EXT)
 	@if [ "$(UNAME)" != "Darwin" ]; then \
