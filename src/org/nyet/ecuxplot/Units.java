@@ -14,7 +14,7 @@ public final class Units {
 	    {"EGTbank2OXS", "\u00B0C"},
 	    {"FuelInjectorOnTime", "ms"},
 	    {"FuelInjectorDutyCycle", "%"},
-	    {"IntakeAirTemperature", "\u00B0F"},
+	    {"IntakeAirTemperature", "\u00B0C"}, // If not otherwise specified, assume C
 	    {"MassAirFlow", "g/sec"},
 	    {"ThrottlePlateAngle", "%"},
 	    {"VehicleSpeed", "kph"},
