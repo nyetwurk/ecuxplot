@@ -1,0 +1,22 @@
+{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchFiles": ["scripts/launch4j-version.txt"],
+      "groupName": "launch4j",
+      "schedule": ["before 6am on monday"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "datasourceTemplate": "sourceforge",
+      "packageNameTemplate": "launch4j",
+      "extractVersionTemplate": "^3\\.(?<minor>\\d+)$",
+      "currentValueTemplate": "3.{{minor}}",
+      "newValueTemplate": "3.{{minor}}"
+    }
+  ],
+  "ignorePaths": ["lib/", "build/", "runtime/"],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
+}

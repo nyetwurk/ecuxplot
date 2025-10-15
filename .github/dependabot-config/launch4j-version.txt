@@ -1,3 +1,0 @@
-# Launch4j version for Windows executable creation
-# This file is monitored by Dependabot for version updates
-launch4j-3.14

@@ -1,0 +1,3 @@
+# Launch4j version for Windows executable creation
+# This file is monitored by Renovate for version updates
+3.50

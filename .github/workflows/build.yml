@@ -7,83 +7,17 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-
-    - name: Set up JDK 18
-      uses: actions/setup-java@v5
-      with:
-        java-version: '18'
-        distribution: 'temurin'
-
-    - name: Cache Homebrew packages
-      uses: actions/cache@v3
-      with:
-        path: |
-          /opt/homebrew/Cellar
-          /opt/homebrew/Caskroom
-          /opt/homebrew/var/homebrew/locks
-        key: brew-cache-macos-${{ runner.os }}-${{ hashFiles('.github/workflows/build.yml') }}
-        restore-keys: |
-          brew-cache-macos-${{ runner.os }}-
-
-    - name: Install Make
-      run: |
-        brew install make && brew link make
-        echo "/opt/homebrew/bin" >> $GITHUB_PATH
-
-    - name: Build macOS targets
-      run: |
-        make all
-      env:
-        DISPLAY: ""
-
-    - name: Upload macOS artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-builds
-        path: |
-          ECUxPlot-*.jar
-          mapdump.jar
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: macos
+      build-target: all
 
   build-linux:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-
-    - name: Set up JDK 18
-      uses: actions/setup-java@v5
-      with:
-        java-version: '18'
-        distribution: 'temurin'
-
-    - name: Install build tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends make ant nsis mingw-w64 binutils-mingw-w64
-        # Install Launch4j manually (not available in Ubuntu repos)
-        # Version managed by Renovate via .github/dependabot-config/launch4j-version.txt
-        LAUNCH4J_VERSION=$(cat .github/dependabot-config/launch4j-version.txt | grep -v '^#' | head -1)
-        wget -O /tmp/launch4j.tar.gz "https://sourceforge.net/projects/launch4j/files/launch4j-3/3.14/${LAUNCH4J_VERSION}-linux-x64.tgz/download"
-        tar -xzf /tmp/launch4j.tar.gz -C /tmp
-        sudo mv /tmp/launch4j /opt/launch4j
-
-    - name: Build Linux/Windows targets
-      run: |
-        export PATH="/opt/launch4j:$PATH"
-        make exes
-
-    - name: Upload Linux/Windows artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: linux-windows-builds
-        path: |
-          build/CYGWIN_NT/*.exe
-          ECUxPlot-*.jar
-          mapdump.jar
-
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: linux
+      build-target: exes
+      artifact-paths: |
+        build/CYGWIN_NT/*.exe
+        ECUxPlot-*.jar
+        mapdump.jar

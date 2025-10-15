@@ -42,25 +42,10 @@ runtime/jdk-%.$(FILE_EXT_%): runtime/%/java-$(JAVA_TARGET_VER).stamp
 		"https://github.com/adoptium/temurin$(JAVA_TARGET_VER)-binaries/releases/download/$$LATEST_VERSION/OpenJDK$(JAVA_TARGET_VER)U-jdk_x64_$(PLATFORM_NAME_$*)_hotspot_$$FILE_VERSION.$(FILE_EXT_$*)"
 
 # Create runtime for a specific platform
-runtime/%/release: runtime/jdk-%.$(FILE_EXT_%)
+runtime/%/release: runtime/%/java-$(JAVA_TARGET_VER).stamp
 	@echo "Creating runtime for $*..."
 	@mkdir -p runtime
-	@echo "Creating runtime for $*..."; \
-	rm -rf runtime/$*; \
-	rm -f runtime/$*/java-*.stamp; \
-	cd runtime; \
-	if [ "$*" = "CYGWIN_NT" ]; then \
-		unzip -q jdk-$*.zip; \
-	else \
-		tar -xzf jdk-$*.tar.gz; \
-	fi; \
-	for dir in jdk-*; do mv "$$dir" $*; done; \
-		echo "JAVA_VERSION=\"$(JAVA_TARGET_VER)\"" > $*/release; \
-		echo "MODULES=\"$(JLINK_MODULES)\"" >> $*/release; \
-		touch $*/java-$(JAVA_TARGET_VER).stamp; \
-	echo "Successfully created runtime for $*";
-
-
+	scripts/download-jre.sh $(JAVA_TARGET_VER) $*
 
 ifeq ($(UNAME),Darwin)
 .PHONY: stub-archive

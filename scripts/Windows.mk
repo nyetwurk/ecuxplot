@@ -1,3 +1,17 @@
+# Install Launch4j for Linux
+install-launch4j:
+	@echo "Installing Launch4j..."
+	@LAUNCH4J_VERSION=$$(cat scripts/launch4j-version.txt | grep -v '^#' | head -1); \
+	LAUNCH4J_VER_NUM=$$(echo $$LAUNCH4J_VERSION | sed 's/launch4j-//'); \
+	LAUNCH4J_URL="https://sourceforge.net/projects/launch4j/files/launch4j-3/$$LAUNCH4J_VER_NUM/launch4j-$$LAUNCH4J_VERSION-linux-x64.tgz/download"; \
+	echo "Installing Launch4j $$LAUNCH4J_VER_NUM..."; \
+	rm -rf /tmp/launch4j; \
+	curl -sSL $$LAUNCH4J_URL | tar xzf - -C /tmp; \
+	dos2unix /tmp/launch4j/launch4j /tmp/launch4j/launch4jc; \
+	sudo rm -rf /usr/local/launch4j; \
+	sudo mv /tmp/launch4j /usr/local
+
+
 EXES:=build/CYGWIN_NT/ECUxPlot.exe build/CYGWIN_NT/mapdump.exe
 
 WIN_INSTALLER:=build/$(TARGET)-setup.exe

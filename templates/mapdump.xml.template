@@ -6,7 +6,7 @@
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <priority>normal</priority>
-  <downloadUrl>http://java.com/download</downloadUrl>
+  <downloadUrl>https://docs.microsoft.com/en-us/java/openjdk/</downloadUrl>
   <supportUrl></supportUrl>
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
@@ -16,12 +16,12 @@
     <cp>.:lib</cp>
   </classPath>
   <jre>
-    <path>runtime</path>
+    <path>runtime;%JAVA_HOME%;%PATH%</path>
     <minVersion>1.%JAVA_TARGET_VER.0</minVersion>
     <maxVersion></maxVersion>
-    <dontUsePrivateJres>false</dontUsePrivateJres>
     <initialHeapSize>0</initialHeapSize>
     <maxHeapSize>0</maxHeapSize>
+    <opt>-Djava.awt.headless=true</opt>
   </jre>
   <versionInfo>
     <fileVersion>%VERSION.0</fileVersion>

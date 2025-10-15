@@ -1,0 +1,72 @@
+---
+name: Build Platform
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+        description: 'Platform to build for (linux, macos)'
+      build-target:
+        required: true
+        type: string
+        description: 'Make target to run (all, exes, dmg, installers)'
+      artifact-paths:
+        required: false
+        type: string
+        description: 'Semicolon-separated list of artifact paths to upload'
+      use-cache:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether to use runtime caching'
+
+jobs:
+  build:
+    runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Set up JDK 18
+      uses: actions/setup-java@v5
+      with:
+        java-version: '18'
+        distribution: 'temurin'
+
+    - name: Cache runtime directories
+      if: inputs.use-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          runtime/*/bin
+          runtime/*/lib
+          runtime/*/release
+          runtime/*/java-*.stamp
+        key: runtime-cache-${{ inputs.platform }}-${{ hashFiles('Makefile', 'scripts/jpackage.mk') }}
+        restore-keys: |
+          runtime-cache-${{ inputs.platform }}-
+
+    - name: Install build tools
+      run: |
+        if [ "${{ inputs.platform }}" = "linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends make ant nsis mingw-w64 binutils-mingw-w64 dos2unix
+          make install-launch4j
+        fi
+
+    - name: Build targets
+      run: |
+        make ${{ inputs.build-target }}
+      env:
+        DISPLAY: ""
+
+    - name: Upload artifacts
+      if: inputs.artifact-paths != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.platform == 'linux' && 'linux-windows-builds' || 'macos-builds' }}
+        path: |
+          ${{ inputs.artifact-paths }}
