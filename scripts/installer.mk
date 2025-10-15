@@ -22,7 +22,7 @@ INSTALL_FILES:= $(TARGET).jar mapdump.jar \
 		gpl-3.0.txt flanagan-license.txt
 
 .PHONY: archive install tag
-archive $(ARCHIVE): $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh mapdump.sh build/version.txt Makefile
+archive $(ARCHIVE): all $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh mapdump.sh build/version.txt Makefile
 	@rm -f $@
 	@rm -rf build/ECUxPlot
 	mkdir -p build/ECUxPlot
