@@ -13,7 +13,6 @@ COMMONS_TEXT_VER := $(call jar_version,commons-text)
 
 JAVA_TARGET_VER := 18
 
-PWD := $(shell pwd)
 UNAME := $(shell uname -s | cut -f 1 -d -)
 
 READLINK_Linux_flags:=-e
@@ -89,8 +88,8 @@ help:
 	@echo "Most commonly used targets:"
 	@echo ""
 	@echo "  make all        - Build everything for current platform"
-	@echo "  make installers - Build platform-appropriate installers"
 	@echo "  make archive    - Create compressed archive (Unix/Linux/macOS)"
+	@echo "  make installers - Build platform-appropriate installers"
 	@echo "  make clean      - Clean build artifacts"
 	@echo ""
 	@echo "Platform-specific targets:"
@@ -158,6 +157,6 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 # Behaves the same on all hosts
 include scripts/installer.mk
 
-# Used to create runtime and stub tar files
+# Used to create runtime tar files
 # Behaves differently on each host type
 include scripts/jpackage.mk

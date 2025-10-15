@@ -74,6 +74,7 @@ else
 fi
 
 # Find the extracted directory and move its contents up
+# Note: We keep macOS JDK structure as-is (Contents/Home) - MacOS.mk handles flattening
 cd "$RUNTIME_DIR"
 for dir in jdk-*; do
     if [ -d "$dir" ]; then

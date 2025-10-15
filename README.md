@@ -70,7 +70,7 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 4. Scroll down to the bottom of the page
 5. Look for a message about ECUxPlot being blocked
 6. Click **"Allow Anyway"** or **"Open Anyway"**
-7. If you don't see the message, try running the application again and then check Privacy & Security settings
+7. If you don't see the message, run `xattr -c /Applications/ECUxPlot.app` then try running the application again and then check Privacy & Security settings
 
 **Note**: After clicking "Cancel", macOS will show a message telling you that running the app was refused. You can then go to Privacy & Security settings to override this restriction.
 

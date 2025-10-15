@@ -50,6 +50,7 @@ ECUxPlot supports building installers and packages for multiple platforms:
 | `installers` | macOS/Linux | Build platform-appropriate installer | Platform-specific |
 | `dmg` | macOS | Create DMG installer with Applications folder | `build/$(TARGET).dmg` |
 | `exes` | Linux | Create Windows executable files | `build/CYGWIN_NT/*.exe` |
+| `sanity-check` | macOS | Run sanity checks on app bundle at different stages | Console output |
 
 ## Platform Support Matrix
 
@@ -61,6 +62,7 @@ ECUxPlot supports building installers and packages for multiple platforms:
 |  | `exes` | ❌ | ✅ | ✅ |
 | macOS | `installers` | ✅ | ❌ | ❌ |
 |  | `dmg` | ✅ | ❌ | ❌ |
+|  | `sanity-check` | ✅ | ❌ | ❌ |
 
 **Note**: Targets automatically check platform compatibility and will show clear error messages if run on unsupported platforms.
 
@@ -78,7 +80,6 @@ make help    # Show summary of most commonly used targets
 make all
 make installers
 ```
-
 
 ## Output Files
 
@@ -145,6 +146,25 @@ If you see errors like "DMG creation only supported on macOS", you're trying to 
 - **Ant**: Install Apache Ant
 - **NSIS**: Install from [nsis.sourceforge.io](https://nsis.sourceforge.io/)
 - **Launch4j**: Install from [launch4j.sourceforge.net](https://launch4j.sourceforge.net/)
+
+### macOS DMG Creation Issues
+
+ECUxPlot now uses `jpackage` for macOS app bundle creation, which provides better compatibility and eliminates many common issues.
+
+**Key improvements**:
+
+- Uses `jpackage` launcher instead of custom stub
+- Automatic runtime management with proper Java module handling
+- Simplified build process with better error detection
+- Built-in sanity checking at each build stage
+
+**For debugging**: Use `make sanity-check` to verify the build process at each stage.
+
+**Common issues**:
+
+- Ensure `JAVA_HOME` points to JDK 18+
+- Verify Xcode Command Line Tools are installed
+- Check that `hdiutil` is available in PATH
 
 ### Build Failures
 
@@ -260,24 +280,28 @@ This approach eliminates shell conditionals and uses Make's built-in capabilitie
 The system is **CI-ready** with built-in GitHub Actions caching:
 
 #### **Build Workflow** (`.github/workflows/build.yml`)
+
 - **Linux Job**: Builds Linux + Windows executables (`make exes`)
 - **macOS Job**: Builds macOS application (`make all`)
 - **Caches**: Homebrew packages (macOS only)
 - **Purpose**: Continuous integration testing
 
 #### **Release Workflow** (`.github/workflows/release.yml`)
+
 - **Linux Job**: Builds Linux + Windows installers (`make installers`)
 - **macOS Job**: Builds macOS installers (`make dmg`)
 - **Caches**: Runtime directories (`runtime/*/bin`, `runtime/*/lib`, `runtime/*/release`, `runtime/*/java-*.stamp`)
 - **Purpose**: Release builds with full installer creation
 
 #### **Cache Strategy**
+
 - **What's Cached**: Runtime directories (created runtimes)
 - **What's Not Cached**: JDK downloads (downloaded fresh each time)
 - **Cache Invalidation**: Automatic when Makefile or jpackage.mk changes
 - **Fallback**: If cache miss, runtimes are recreated automatically
 
 #### **CI Benefits**
+
 - **Fast Builds**: Runtime directories cached between runs
 - **Reliable**: No external dependencies, works offline
 - **Cross-Platform**: Linux CI builds Windows, macOS CI builds macOS

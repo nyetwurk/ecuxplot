@@ -8,14 +8,9 @@ build/Darwin/%: templates/Darwin/%.template build/version.txt Makefile scripts/M
 	@mkdir -p $(dir $(MAC_CONFIGS))
 	@cat $< | $(GEN) > $@
 
-$(MAC_APP)/.stamp: runtime/Darwin/release $(ARCHIVE)
+$(MAC_APP)/.stamp: $(ARCHIVE)
 	@rm -rf $(MAC_APP)
 	@$(MAKE) $(MAC_CONFIGS)
-	@echo "Installing stubs to $(MAC_APP)"
-	@tar -xzf templates/Darwin/stub.tar.gz
-	@echo "Installing runtime to $(MACv0.9.9-rc3_APP)/Contents/runtime"
-	@mkdir -p $(MAC_APP)/Contents/runtime/Contents/Home
-	@rsync -a --delete runtime/Darwin/* $(MAC_APP)/Contents/runtime/Contents/Home
 	@echo "Installing app to $(MAC_APP)/Contents/app"
 	@tar -C $(MAC_APP)/Contents/app -xzf $(ARCHIVE) --strip-components=1
 	@mkdir -p $(MAC_APP)/Contents/Resources
