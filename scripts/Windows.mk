@@ -34,9 +34,14 @@ build/CYGWIN_NT/mapdump.exe: mapdump.jar build/mapdump.xml
 .PHONY: exes
 exes: $(EXES)
 
-$(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runtime/CYGWIN_NT/release
+# delay evaluation of JDK_VER
+JRE_DIR=$(shell ls -d1 runtime/CYGWIN_NT/jdk-* | sort -r | head -1)
+
+# Requires windows runtime
+$(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runtime/CYGWIN_NT/java-$(JAVA_TARGET_VER).stamp
 	@[ -x $(MAKENSIS) ] || (echo "Can't find NSIS!"; false)
 	$(MAKENSIS) $(OPT_PRE)NOCD \
+	    $(OPT_PRE)DJRE_DIR=$(JRE_DIR) \
 	    $(OPT_PRE)DVERSION=$(ECUXPLOT_VER) \
 	    $(OPT_PRE)DJFREECHART_VER=$(JFREECHART_VER) \
 	    $(OPT_PRE)DJCOMMON_VER=$(JCOMMON_VER) \

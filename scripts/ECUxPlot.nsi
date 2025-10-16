@@ -114,7 +114,7 @@ Section "install" InstallationInfo
   File "lib\flanagan.jar"
 
   SetOutPath "$INSTDIR\runtime"
-  File /r "runtime\CYGWIN_NT\*.*"
+  File /r "${JRE_DIR}\*.*"
 
 ;create desktop shortcut
   CreateShortCut "$DESKTOP\${MUI_FILE}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""
