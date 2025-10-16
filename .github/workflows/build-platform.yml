@@ -41,13 +41,8 @@ jobs:
       uses: actions/cache@v4
       with:
         path: |
-          runtime/*/bin
-          runtime/*/lib
-          runtime/*/release
-          runtime/*/java-*.stamp
-        key: runtime-cache-${{ inputs.platform }}-${{ hashFiles('Makefile', 'scripts/jpackage.mk') }}
-        restore-keys: |
-          runtime-cache-${{ inputs.platform }}-
+          runtime/${{ inputs.platform == 'macos' && 'Darwin' || '*' }}/*
+        key: runtime-cache-${{ inputs.platform }}-${{ hashFiles('scripts/java-target.mk', 'scripts/download-jre.sh') }}
 
     - name: Install build tools
       run: |

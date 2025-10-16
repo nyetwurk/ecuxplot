@@ -15,6 +15,7 @@ case "$PLATFORM" in
         ;;
     "Darwin")
         ASSET_PATTERN="mac"
+        RELEASE_FILE="Contents/Home/release"
         ;;
     "CYGWIN_NT")
         ASSET_PATTERN="windows"
@@ -28,17 +29,49 @@ case "$PLATFORM" in
 esac
 
 # Get API response from GitHub
+echo "Downloading manifest from $RUNTIME_API"
 API_RESPONSE=$(curl -sL "$RUNTIME_API")
+
+# Verify API response is valid JSON
+if ! echo "$API_RESPONSE" | jq empty 2>/dev/null; then
+    echo "Error: API response is not valid JSON"
+    echo "First few lines of response:"
+    echo "$API_RESPONSE" | head -5
+    exit 1
+fi
+
+# Verify API response is an array (expected GitHub releases format)
+if ! echo "$API_RESPONSE" | jq -e 'type == "array"' >/dev/null 2>&1; then
+    echo "Error: API response is not an array as expected"
+    echo "Response type: $(echo "$API_RESPONSE" | jq -r 'type')"
+
+    # Check if it's a GitHub API error with a message field
+    if echo "$API_RESPONSE" | jq -e '.message' >/dev/null 2>&1; then
+        echo "GitHub API Error: $(echo "$API_RESPONSE" | jq -r '.message')"
+    else
+        echo "First few lines of response:"
+        echo "$API_RESPONSE" | head -5
+    fi
+    exit 1
+fi
+
+# Check if array is empty
+if ! echo "$API_RESPONSE" | jq -e 'length > 0' >/dev/null 2>&1; then
+    echo "Error: API response contains no releases"
+    echo "Response:"
+    echo "$API_RESPONSE"
+    exit 1
+fi
 
 # Set up variables for cleaner code
 RUNTIME_DIR="runtime/$PLATFORM"
-RELEASE_FILE="$RUNTIME_DIR/release"
 STAMP_FILE="$RUNTIME_DIR/java-${JAVA_TARGET_VER}.stamp"
 
 # Find JRE files (x64 architecture, tar.gz or zip format)
 DOWNLOAD_URL=""
 RELEASE_FILTER=".[] | select(.tag_name | startswith(\"jdk-${JAVA_TARGET_VER}\")) | .tag_name"
 
+echo "Searching for releases..."
 for release in $(echo "$API_RESPONSE" | jq -r "$RELEASE_FILTER" | head -5); do
     ASSET_FILTER=".[] | select(.tag_name == \"$release\") | .assets[]? | .name"
     ASSETS=$(echo "$API_RESPONSE" | jq -r "$ASSET_FILTER" 2>/dev/null | \
@@ -48,6 +81,7 @@ for release in $(echo "$API_RESPONSE" | jq -r "$RELEASE_FILTER" | head -5); do
     if [ -n "$ASSETS" ]; then
         URL_FILTER=".[] | select(.tag_name == \"$release\") | .assets[]? | select(.name == \"$ASSETS\") | .browser_download_url"
         DOWNLOAD_URL=$(echo "$API_RESPONSE" | jq -r "$URL_FILTER" 2>/dev/null)
+        echo "Found download URL: $DOWNLOAD_URL"
         break
     fi
 done
@@ -59,7 +93,7 @@ fi
 
 # Download the file
 FILENAME=$(basename "$DOWNLOAD_URL")
-wget -O "runtime/$FILENAME" "$DOWNLOAD_URL"
+wget -q -O "runtime/$FILENAME" "$DOWNLOAD_URL"
 
 echo "Extracting $FILENAME..."
 
@@ -86,9 +120,9 @@ done
 cd - > /dev/null # Go back to original directory
 
 # Create release file
-echo "JAVA_VERSION=\"${JAVA_TARGET_VER}\"" > "$RELEASE_FILE"
-echo "MODULES=\"java.base,java.desktop,java.datatransfer\"" >> "$RELEASE_FILE"
+[ -n "$RELEASE_FILE" ] && cp "$RUNTIME_DIR/$RELEASE_FILE" "$RUNTIME_DIR/release"
 touch "$STAMP_FILE"
 
 # Clean up downloaded file
 rm -f "runtime/$FILENAME"
+echo Success.

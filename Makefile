@@ -1,3 +1,5 @@
+include scripts/java-target.mk
+
 ECUXPLOT_UID := 20150620L
 ECUXPLOT_VER := $(shell git describe --tags --abbrev=4 --dirty --always)
 VERSION := $(subst v,,$(shell echo $(ECUXPLOT_VER) | cut -f 1 -d -))
@@ -10,8 +12,6 @@ OPENCSV_VER := $(call jar_version,opencsv)
 COMMONS_CLI_VER := $(call jar_version,commons-cli)
 COMMONS_LANG3_VER := $(call jar_version,commons-lang3)
 COMMONS_TEXT_VER := $(call jar_version,commons-text)
-
-JAVA_TARGET_VER := 18
 
 UNAME := $(shell uname -s | cut -f 1 -d -)
 
