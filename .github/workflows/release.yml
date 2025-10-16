@@ -14,7 +14,7 @@ jobs:
       artifact-paths: |
         build/*-MacOS.zip
         build/*.dmg
-      use-cache: true
+      use-cache: false
 
   build-linux:
     uses: ./.github/workflows/build-platform.yml

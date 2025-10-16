@@ -41,7 +41,7 @@ include scripts/Windows.mk
 include scripts/MacOS.mk
 
 .PHONY: archive installers rsync
-installers: $(WIN_INSTALLER) $(MAC_ZIP) runtime/Linux/release
+installers: $(WIN_INSTALLER) $(MAC_ZIP)
 	@echo "All installers and runtimes built successfully"
 
 rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_ZIP)

@@ -111,3 +111,5 @@ If you plan to use Zeitronix logs, make sure to check the **"Include initial sum
 ## Installation
 
 For detailed installation instructions, build targets, and platform-specific information, see [INSTALL.md](INSTALL.md).
+
+**Note**: JRE download is only required for Windows builds. macOS and Linux builds use the system JDK.

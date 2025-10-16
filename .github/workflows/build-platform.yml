@@ -41,7 +41,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: |
-          runtime/${{ inputs.platform == 'macos' && 'Darwin' || '*' }}/*
+          runtime/*
         key: runtime-cache-${{ inputs.platform }}-${{ hashFiles('scripts/java-target.mk', 'scripts/download-jre.sh') }}
 
     - name: Install build tools

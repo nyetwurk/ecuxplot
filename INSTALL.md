@@ -196,48 +196,17 @@ make binclean   # Remove only binary files
 make vars       # Show build configuration
 ```
 
-## Runtime Management System
-
-ECUxPlot uses a self-contained runtime management system that automatically creates Java runtimes for cross-platform builds without requiring external dependencies.
-
-### Runtime Strategy
-
-The system uses a **file-based dependency approach** where every target creates actual files, ensuring robust dependency tracking:
-
-- **Current Platform**: Uses `jlink` to create a custom runtime locally from system Java
-- **Other Platforms**: Automatically downloads JDKs and creates runtimes from scratch
-- **No External Dependencies**: Everything is created locally - no hosted runtime server needed
-
 ### Runtime Creation Process
 
-The system follows a clean dependency chain:
+1. **JRE Download** (`runtime/%/`):
+   - Downloads latest JRE from Adoptium GitHub releases (Windows only)
+   - Determines filename for a given version/platform pair using the GitHub API
+   - macOS/Linux builds use system JDK (no download needed)
 
-1. **JDK Download** (`runtime/jdk-%.$(FILE_EXT_%)`):
-   - Downloads latest JDK from Adoptium GitHub releases
-   - Uses platform-specific file extensions (`.tar.gz` for Linux/macOS, `.zip` for Windows)
-   - Fetches actual version dynamically from GitHub API
-
-2. **Runtime Creation** (`runtime/%/release`):
-   - Extracts downloaded JDK
-   - Creates custom runtime using `jlink` with minimal modules
-   - Generates `release` file with version and module information
-
-### Platform Support
-
-The system supports three platforms defined in `UNAMES`:
-
-| Platform | JDK File | Runtime Directory | Creation Method |
-|----------|----------|-------------------|-----------------|
-| Linux | `runtime/jdk-Linux.tar.gz` | `runtime/Linux/` | Download JDK + `jlink` |
-| Darwin (macOS) | `runtime/jdk-Darwin.tar.gz` | `runtime/Darwin/` | Download JDK + `jlink` |
-| CYGWIN_NT (Windows) | `runtime/jdk-CYGWIN_NT.zip` | `runtime/CYGWIN_NT/` | Download JDK + `jlink` |
-
-### Runtime Management Targets
-
-| Target | Description | Usage |
-|--------|-------------|-------|
-| `runtime/%/release` | Create runtime for specific platform | `make runtime/Linux/release` |
-| `runtime/jdk-%.$(FILE_EXT_%)` | Download JDK for specific platform | `make runtime/jdk-Darwin.tar.gz` |
+2. **Runtime Creation** (`runtime/%/java-$(JAVA_TARGET_VER).stamp`):
+   - Extracts downloaded JDK (Windows only)
+   - Creates `java-$(JAVA_TARGET_VER).stamp` file
+   - macOS/Linux: Uses system JDK, no runtime download
 
 ### Runtime Compatibility
 
@@ -245,35 +214,8 @@ The system automatically ensures compatibility:
 
 - **JAVA_TARGET_VER**: 18 (configurable in Makefile)
 - **Downloaded JDKs**: Latest available from Adoptium (automatically fetched)
-- **Runtime versions**: Actual versions from downloaded JDKs (not hardcoded)
-
-### Technical Implementation
-
-The system uses **Make pattern rules** with **proper variable expansion**:
-
-```makefile
-# Platform-specific variables
-FILE_EXT_Linux:=tar.gz
-FILE_EXT_CYGWIN_NT:=zip
-FILE_EXT_Darwin:=tar.gz
-PLATFORM_NAME_Linux:=linux
-PLATFORM_NAME_CYGWIN_NT:=windows
-PLATFORM_NAME_Darwin:=mac
-
-# Pattern rules with variable expansion
-runtime/jdk-%.$(FILE_EXT_%):  # Downloads JDK
-runtime/%/release: runtime/jdk-%.$(FILE_EXT_%)  # Creates runtime
-```
-
-This approach eliminates shell conditionals and uses Make's built-in capabilities for clean, maintainable code.
-
-### Benefits of Self-Contained System
-
-- **No External Dependencies**: No need for hosted runtime server
-- **Always Up-to-Date**: Automatically fetches latest JDK versions
-- **Cross-Platform**: Works on any platform that can run Make
-- **Reliable**: No network dependencies for runtime creation
-- **Simple**: Single `make installers` command handles everything
+- **Runtime versions**: Windows uses downloaded JDK versions, macOS/Linux use system JDK
+- **Platform support**: Windows downloads JRE, macOS/Linux use system JDK
 
 ### CI/CD Integration
 
@@ -290,21 +232,21 @@ The system is **CI-ready** with built-in GitHub Actions caching:
 
 - **Linux Job**: Builds Linux + Windows installers (`make installers`)
 - **macOS Job**: Builds macOS installers (`make dmg`)
-- **Caches**: Runtime directories (`runtime/*/bin`, `runtime/*/lib`, `runtime/*/release`, `runtime/*/java-*.stamp`)
+- **Caches**: Runtime directories (`runtime/*`) (currently only CYGWIN_NT is needed)
 - **Purpose**: Release builds with full installer creation
 
 #### **Cache Strategy**
 
-- **What's Cached**: Runtime directories (created runtimes)
+- **What's Cached**: Windows runtime directories (created runtimes)
 - **What's Not Cached**: JDK downloads (downloaded fresh each time)
 - **Cache Invalidation**: Automatic when Makefile or jpackage.mk changes
 - **Fallback**: If cache miss, runtimes are recreated automatically
 
 #### **CI Benefits**
 
-- **Fast Builds**: Runtime directories cached between runs
-- **Reliable**: No external dependencies, works offline
-- **Cross-Platform**: Linux CI builds Windows, macOS CI builds macOS
+- **Fast Builds**: Windows runtime directories cached between runs
+- **Reliable**: No external dependencies for macOS/Linux (system JDK)
+- **Cross-Platform**: Linux CI builds Linux+Windows, macOS CI builds macOS
 - **Automatic**: No manual cache management needed
 
 ## File Structure

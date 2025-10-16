@@ -30,24 +30,6 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Function to dump directory structure
-dump_structure() {
-    local path="$1"
-    local title="$2"
-
-    print_info "=== $title ==="
-    if [ -d "$path" ]; then
-        find "$path" -type d | head -20 | sed 's/^/  /'
-        local count=$(find "$path" -type d | wc -l)
-        if [ "$count" -gt 20 ]; then
-            echo "  ... and $((count - 20)) more directories"
-        fi
-    else
-        print_error "Path does not exist: $path"
-    fi
-    echo
-}
-
 # Function to check file existence and permissions
 check_file() {
     local file="$1"
@@ -149,45 +131,64 @@ check_jars_from_build_properties() {
     done
 }
 
-# Function to find main JAR file dynamically
-find_main_jar() {
-    local app_dir="$1"
-    local version="$2"
+# Function to perform jpackage stage checks
+check_jpackage() {
+    local mac_app="$1"
+    local contents_dir="$mac_app/Contents"
+    local macos_dir="$contents_dir/MacOS"
+    local resources_dir="$contents_dir/Resources"
 
-    # Try exact version match first
-    local exact_jar="$app_dir/ECUxPlot-$version.jar"
-    if [ -f "$exact_jar" ]; then
-        echo "$exact_jar"
-        return 0
+    # Basic structure check
+    print_info "=== Basic Structure ==="
+    check_dir "$mac_app" "App bundle root"
+    check_dir "$contents_dir" "Contents directory"
+    check_file "$contents_dir/Info.plist" "Info.plist"
+    check_dir "$macos_dir" "MacOS directory"
+    check_dir "$resources_dir" "Resources directory"
+    echo
+
+    # Executable check
+    local executable="$macos_dir/ECUxPlot"
+    print_info "=== Executable ==="
+    check_file "$executable" "Main executable"
+    if [ -f "$executable" ]; then
+        local arch=$(file "$executable" | grep -o 'x86_64\|arm64')
+        print_info "Architecture: $arch"
     fi
+    echo
 
-    # Fallback to wildcard pattern
-    local wildcard_jar=$(find "$app_dir" -name "ECUxPlot-*.jar" | head -1)
-    if [ -n "$wildcard_jar" ]; then
-        echo "$wildcard_jar"
-        return 0
+    # App structure check
+    local app_dir="$contents_dir/app"
+    print_info "=== App Structure ==="
+    check_dir "$app_dir" "App directory"
+    if [ -d "$app_dir" ]; then
+        local main_jar=$(find "$app_dir" -name "ECUxPlot-*.jar" | head -1)
+        check_file "$main_jar" "Main JAR"
+        check_file "$app_dir/mapdump.jar" "mapdump JAR"
+        check_file "$app_dir/ECUxPlot.cfg" "ECUxPlot.cfg"
+
+        local jar_count=$(find "$app_dir/lib" -name "*.jar" 2>/dev/null | wc -l)
+        print_info "Library JARs: $jar_count"
     fi
-
-    return 1
 }
 
-# Function to check JAR file with wildcard support
-check_jar_file() {
-    local pattern="$1"
-    local description="$2"
+# Function to perform runtime stage checks
+check_runtime() {
+    local mac_app="$1"
+    local contents_dir="$mac_app/Contents"
+    local runtime_dir="$contents_dir/runtime"
 
-    local jar_file=$(find "$(dirname "$pattern")" -name "$(basename "$pattern")" 2>/dev/null | head -1)
-    if [ -n "$jar_file" ] && [ -f "$jar_file" ]; then
-        local perms=$(ls -l "$jar_file" | awk '{print $1}')
-        local size=$(ls -lh "$jar_file" | awk '{print $5}')
-        print_success "$description: $jar_file ($perms, $size)"
-        return 0
-    else
-        print_error "$description: $pattern (NOT FOUND)"
-        return 1
+    print_info "=== Runtime ==="
+    check_dir "$runtime_dir" "Runtime directory"
+    if [ -d "$runtime_dir" ]; then
+        local runtime_home_dir="$runtime_dir/Contents/Home"
+	check_file "$runtime_dir/Contents/Info.plist" "Runtime contents Info.plist"
+        check_dir "$runtime_home_dir" "Runtime Home directory"
+        check_dir "$runtime_home_dir/conf" "Runtime Home conf directory"
+        check_dir "$runtime_home_dir/lib" "Runtime Home lib directory"
+        check_file "$runtime_home_dir/lib/libjli.dylib" "libjli.dylib"
     fi
 }
-
 
 # Main sanity check function
 sanity_check() {
@@ -196,72 +197,22 @@ sanity_check() {
 
     # Detect version dynamically
     local version=$(detect_version "$mac_app")
+    print_info "=== Starting sanity check for stage: $stage ==="
     print_info "Detected version: $version"
-    print_info "Starting sanity check for stage: $stage"
     print_info "Checking app bundle: $mac_app"
     echo
 
-    # Common path variables
-    local contents_dir="$mac_app/Contents"
-    local macos_dir="$contents_dir/MacOS"
-    local runtime_dir="$contents_dir/runtime"
-    local app_dir="$contents_dir/app"
-    local resources_dir="$contents_dir/Resources"
-    local executable="$macos_dir/ECUxPlot"
-    local info_plist="$contents_dir/Info.plist"
-
-    # Basic structure check
-    print_info "=== Basic Structure ==="
-    check_dir "$mac_app" "App bundle root"
-    check_dir "$contents_dir" "Contents directory"
-    check_file "$info_plist" "Info.plist"
-    check_dir "$macos_dir" "MacOS directory"
-    check_dir "$resources_dir" "Resources directory"
+    # Call appropriate check function based on stage
+    if [ "$stage" = "jpackage" ]; then
+        check_jpackage "$mac_app"
+    elif [ "$stage" = "runtime" ]; then
+        check_runtime "$mac_app"
+    else
+        print_error "Unknown stage: $stage"
+        return 1
+    fi
+    print_info "=== Sanity check complete for stage: $stage ==="
     echo
-
-    # Executable check (after jpackage)
-    if [ "$stage" = "jpackage" ] || [ "$stage" = "runtime" ]; then
-        print_info "=== Executable ==="
-        check_file "$executable" "Main executable"
-        if [ -f "$executable" ]; then
-            local arch=$(file "$executable" | grep -o 'x86_64\|arm64')
-            print_info "Architecture: $arch"
-        fi
-        echo
-    fi
-
-    # Runtime check (only after runtime installation)
-    if [ "$stage" = "runtime" ]; then
-        print_info "=== Runtime ==="
-        check_dir "$runtime_dir" "Runtime directory"
-        if [ -d "$runtime_dir" ]; then
-            check_file "$runtime_dir/bin/java" "Java executable"
-            check_file "$runtime_dir/lib/libjli.dylib" "libjli.dylib"
-        fi
-        echo
-    fi
-
-    # App structure check (after jpackage)
-    if [ "$stage" = "jpackage" ] || [ "$stage" = "runtime" ]; then
-        print_info "=== App Structure ==="
-        check_dir "$app_dir" "App directory"
-        if [ -d "$app_dir" ]; then
-            local main_jar=$(find "$app_dir" -name "ECUxPlot-*.jar" | head -1)
-            check_file "$main_jar" "Main JAR"
-            check_file "$app_dir/mapdump.jar" "mapdump JAR"
-            check_file "$app_dir/ECUxPlot.cfg" "ECUxPlot.cfg"
-
-            local jar_count=$(find "$app_dir/lib" -name "*.jar" 2>/dev/null | wc -l)
-            print_info "Library JARs: $jar_count"
-        fi
-        echo
-    fi
-
-    # Summary
-    print_info "=== Summary ==="
-    print_info "Stage: $stage"
-    print_info "App bundle: $mac_app"
-    print_info "Check completed at: $(date)"
 }
 
 # Main execution
