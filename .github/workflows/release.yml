@@ -39,9 +39,13 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
+          linux-windows-builds/build/*.md
+          linux-windows-builds/build/*.exe
+          linux-windows-builds/build/*.jar
+          linux-windows-builds/build/*.tar.gz
           macos-builds/*.dmg
-          linux-windows-builds/build/*
-          linux-windows-builds/*.jar
+          macos-builds/*.zip
         generate_release_notes: true
+        draft: ${{ contains(github.ref_name, '-rc') }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

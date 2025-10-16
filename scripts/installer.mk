@@ -28,7 +28,7 @@ archive $(ARCHIVE): all $(INSTALL_FILES) $(PROFILES) ECUxPlot.sh mapdump.sh buil
 	mkdir -p build/ECUxPlot
 	$(RSYNC) --del -aR $(INSTALL_FILES) $(PROFILES) build/ECUxPlot
 	install -m 755 ECUxPlot.sh mapdump.sh build/version.txt build/ECUxPlot
-	tar -C build -czf $@ ECUxPlot
+	tar -C build -czf $(ARCHIVE) ECUxPlot
 
 install: $(ARCHIVE)
 	mkdir -p $(INSTALL_DIR)
@@ -45,7 +45,7 @@ include scripts/Windows.mk
 endif
 
 .PHONY: archive installers rsync
-installers: $(WIN_INSTALLER) $(MAC_ZIP) $(MAC_INSTALLER)
+installers: $(WIN_INSTALLER) $(MAC_ZIP) $(MAC_INSTALLER) $(ARCHIVE)
 	@echo "All installers and runtimes built successfully"
 
 rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_ZIP)
