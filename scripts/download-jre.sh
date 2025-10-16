@@ -30,7 +30,11 @@ esac
 
 # Get API response from GitHub
 echo "Downloading manifest from $RUNTIME_API"
-API_RESPONSE=$(curl -sL "$RUNTIME_API")
+if [ -n "$GITHUB_TOKEN" ]; then
+  API_RESPONSE=$(curl -sL -H "Authorization: token $GITHUB_TOKEN" "$RUNTIME_API")
+else
+  API_RESPONSE=$(curl -sL "$RUNTIME_API")
+fi
 
 # Verify API response is valid JSON
 if ! echo "$API_RESPONSE" | jq empty 2>/dev/null; then

@@ -58,6 +58,7 @@ jobs:
         make ${{ inputs.build-target }}
       env:
         DISPLAY: ""
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload artifacts
       if: inputs.artifact-paths != ''
