@@ -9,7 +9,7 @@ jobs:
     uses: ./.github/workflows/build-platform.yml
     with:
       platform: macos
-      build-target: all
+      build-target: archive
 
   build-linux:
     uses: ./.github/workflows/build-platform.yml

@@ -36,12 +36,16 @@ install: $(ARCHIVE)
 	rm -rf $(INSTALL_DIR)/lib
 	tar -C $(INSTALL_DIR) -xzf $(ARCHIVE) --strip-components=1
 
-# These behave the same on all hosts
-include scripts/Windows.mk
+# Platform-specific includes
+ifeq ($(UNAME),Darwin)
 include scripts/MacOS.mk
+else ifeq ($(UNAME),Linux)
+# We build Windows installers on Linux hosts
+include scripts/Windows.mk
+endif
 
 .PHONY: archive installers rsync
-installers: $(WIN_INSTALLER) $(MAC_ZIP)
+installers: $(WIN_INSTALLER) $(MAC_ZIP) $(MAC_INSTALLER)
 	@echo "All installers and runtimes built successfully"
 
 rsync: $(ARCHIVE) $(WIN_INSTALLER) $(MAC_ZIP)

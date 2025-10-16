@@ -10,7 +10,7 @@ jobs:
     uses: ./.github/workflows/build-platform.yml
     with:
       platform: macos
-      build-target: dmg
+      build-target: installers
       artifact-paths: |
         build/*-MacOS.zip
         build/*.dmg
