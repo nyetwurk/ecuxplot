@@ -12,6 +12,9 @@ OPENCSV_VER := $(call jar_version,opencsv)
 COMMONS_CLI_VER := $(call jar_version,commons-cli)
 COMMONS_LANG3_VER := $(call jar_version,commons-lang3)
 COMMONS_TEXT_VER := $(call jar_version,commons-text)
+SLF4J_API_VER := $(call jar_version,slf4j-api)
+LOGBACK_CLASSIC_VER := $(call jar_version,logback-classic)
+LOGBACK_CORE_VER := $(call jar_version,logback-core)
 
 UNAME := $(shell uname -s | cut -f 1 -d -)
 
@@ -38,7 +41,10 @@ ECUXPLOT_JARS := \
     jcommon-$(JCOMMON_VER).jar \
     jfreechart-$(JFREECHART_VER).jar \
     jspline.jar \
-    flanagan.jar
+    flanagan.jar \
+    slf4j-api-$(SLF4J_API_VER).jar \
+    logback-classic-$(LOGBACK_CLASSIC_VER).jar \
+    logback-core-$(LOGBACK_CORE_VER).jar
 
 COMMON_JARS := \
     opencsv-$(OPENCSV_VER).jar \
@@ -147,7 +153,10 @@ GEN:=	sed -e 's/%VERSION/$(VERSION)/g' \
 	-e 's/%OPENCSV_VER/$(OPENCSV_VER)/g' \
 	-e 's/%COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g' \
 	-e 's/%COMMONS_TEXT_VER/$(COMMONS_TEXT_VER)/g' \
-	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g'
+	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g' \
+	-e 's/%SLF4J_API_VER/$(SLF4J_API_VER)/g' \
+	-e 's/%LOGBACK_CLASSIC_VER/$(LOGBACK_CLASSIC_VER)/g' \
+	-e 's/%LOGBACK_CORE_VER/$(LOGBACK_CORE_VER)/g'
 
 %: %.template Makefile
 	@echo Creating $@

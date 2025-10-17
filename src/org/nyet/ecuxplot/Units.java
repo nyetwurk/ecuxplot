@@ -1,8 +1,11 @@
 package org.nyet.ecuxplot;
 
 import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class Units {
+    private static final Logger logger = LoggerFactory.getLogger(Units.class);
     public final static String find(String id) {
 	if (id == null) return null;
 	final String[][] legend = {
@@ -71,7 +74,7 @@ public final class Units {
 	return u.trim();
      }
 
-     public final static String[] processUnits(String h[], String u[], int verbose) {
+     public final static String[] processUnits(String h[], String u[]) {
 	// Fill pad out any units missing to match length of h
 	if(u.length<h.length) {
 	    u = Arrays.copyOf(u, h.length);
@@ -83,8 +86,8 @@ public final class Units {
 	    if(h[i].length()>0 && (u[i]==null || u[i].length()==0)) {
 		// Whatever is missing, try to guess from name
 		u[i]=Units.find(h[i]);
-		if (verbose>0 && (u[i]==null || u[i].length()==0))
-		    System.out.printf("Can't find units for '%s'\n", h[i]);
+		if (u[i]==null || u[i].length()==0)
+		    logger.warn("Can't find units for '{}'", h[i]);
 	    }
 	}
 	return u;

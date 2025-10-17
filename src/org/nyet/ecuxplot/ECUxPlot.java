@@ -19,6 +19,9 @@ import org.jfree.chart.plot.XYPlot;
 
 import org.jfree.data.xy.DefaultXYDataset;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
@@ -30,16 +33,21 @@ import org.nyet.logfile.Dataset.DatasetId;
 public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost,
     OpenFilesHandler, QuitHandler
     /* AboutHandler, PreferencesHandler */ {
+    private static final Logger logger = LoggerFactory.getLogger(ECUxPlot.class);
+
     /**
      *
      */
+    TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
+
     private static final long serialVersionUID = 1L;
     // each file loaded has an associated dataset
-    private TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
     private ArrayList<String> files = new ArrayList<String>();
 
+    FATSChartFrame fatsFrame;
     private ECUxChartPanel chartPanel;
-    private FATSChartFrame fatsFrame;
+    private DebugLogWindow debugLogWindow;
+    private FilterDebugPanel filterDebugPanel;
 
     // Menus
     private final JMenuBar menuBar;
@@ -73,6 +81,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     public ECUxPlot(final String title, ArrayList<ECUxPlot> plotlist) { this(title, new Options(), plotlist, false); }
     public ECUxPlot(final String title, final Options o, ArrayList<ECUxPlot> plotlist, boolean exitOnClose) {
 	super(title);
+	logger.info("Initializing ECUxPlot: {}", title);
 	this.options=o;
 	ToolTipManager.sharedInstance().setInitialDelay(0);
 	ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
@@ -537,6 +546,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		this.fatsFrame.setVisible(s);
 	    }
 	    rebuild();
+	} else if(source.getText().equals("Show Debug Logs...")) {
+	    if(this.debugLogWindow == null) {
+		this.debugLogWindow = new DebugLogWindow();
+	    }
+	    this.debugLogWindow.showWindow();
+	} else if(source.getText().equals("Show Filter Debug Panel...")) {
+	    if(this.filterDebugPanel == null) {
+		this.filterDebugPanel = new FilterDebugPanel();
+	    }
+	    // Set all datasets for multi-file support
+	    this.filterDebugPanel.setDatasets(this.fileDatasets);
+	    this.filterDebugPanel.showWindow();
 	} else {
 	    JOptionPane.showMessageDialog(this,
 		"unhandled getText=" + source.getText() +
@@ -821,6 +842,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	this.prefsPutWindowSize();
 	if(this.fatsFrame!=null)
 	    this.fatsFrame.dispose();
+	if(this.debugLogWindow!=null)
+	    this.debugLogWindow.dispose();
+	if(this.filterDebugPanel!=null)
+	    this.filterDebugPanel.dispose();
 	System.exit(0);
     }
 
@@ -849,10 +874,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	public boolean nogui = false;
 
 	private static void usage() {
-	    System.out.println(
-		"usage:\n" +
-		"ECUxPlot [-l] [-v[v...]] [--no-gui] [-p Preset] [-o OutputFile] " +
-		"[--width width] [--height height] [LogFiles ... ]");
+	    System.out.println("usage:");
+	    System.out.println("ECUxPlot [-l] [-v[v...]] [--no-gui] [-p Preset] [-o OutputFile] [--width width] [--height height] [LogFiles ... ]");
 	    System.out.println("         -l          : list presets");
 	    System.out.println("         -v...       : verbosity level");
 	    System.out.println("         --no-gui    : just parse file and exit");
@@ -953,6 +976,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    @Override
 	    public void run() {
 		final Options o = new Options(args);
+
+		// Configure logging level based on verbosity
+		ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+		ch.qos.logback.classic.Logger ecuxLogger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("org.nyet.ecuxplot");
+
+		if (o.verbose > 1) {
+		    rootLogger.setLevel(ch.qos.logback.classic.Level.TRACE);
+		    ecuxLogger.setLevel(ch.qos.logback.classic.Level.TRACE);
+		} else if (o.verbose > 0) {
+		    rootLogger.setLevel(ch.qos.logback.classic.Level.DEBUG);
+		    ecuxLogger.setLevel(ch.qos.logback.classic.Level.DEBUG);
+		} else {
+		    rootLogger.setLevel(ch.qos.logback.classic.Level.INFO);
+		    ecuxLogger.setLevel(ch.qos.logback.classic.Level.INFO);
+		}
 
 		// exit on close
 		final ECUxPlot plot = new ECUxPlot("ECUxPlot", o, true);
