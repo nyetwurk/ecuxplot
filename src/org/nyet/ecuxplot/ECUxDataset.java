@@ -562,9 +562,18 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "HP", value);
 /*****************************************************************************/
 	} else if(id.equals("VehicleSpeed (MPH)")) {
+	    Column rawVehicleSpeed = this.get("VehicleSpeed");
+	    if (rawVehicleSpeed != null) {
+		// Case 1: Convert raw VehicleSpeed to MPH
 		final double mph_per_kph = 0.621371192;
-	    final DoubleArray a = this.get("VehicleSpeed").data.mult(mph_per_kph);
-	    c = new Column(id, "MPH", a);
+		final DoubleArray a = rawVehicleSpeed.data.mult(mph_per_kph);
+		c = new Column(id, "MPH", a);
+	    } else {
+		// Case 2: Calculate VehicleSpeed from RPM
+		final DoubleArray rpm = this.get("RPM").data;
+		final DoubleArray calculatedMph = rpm.div(this.env.c.rpm_per_mph());
+		c = new Column(id, "MPH", calculatedMph);
+	    }
 	} else if(id.equals("Calc Velocity")) {
 	    // TODO: make a user adjustable checkbox for this
 	    // Also, make sure we test units of VehicleSpeed

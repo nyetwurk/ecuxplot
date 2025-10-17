@@ -255,8 +255,8 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
 	    addToSubmenu("O2 Sensor(s)", item);
 	} else if(id.matches("VehicleSpeed")) {
-	    this.add(item);  /* Must add self - standalone item with derived MPH version */
-	    this.add(new DatasetId("VehicleSpeed (MPH)", null, "MPH"));
+	    addToSubmenu("Vehicle Speed", item);
+	    addToSubmenu("Vehicle Speed", "VehicleSpeed (MPH)");
 	} else if(id.matches("Engine torque")) {
 	    this.add(item);  /* Must add self - standalone item with derived ft-lb and HP versions */
 	    this.add("Engine torque (ft-lb)");
@@ -319,6 +319,11 @@ public class AxisMenu extends JMenu {
 		if(ids[i].id.length()>0 && !this.members.containsKey(ids[i].id)) {
 		    this.add(ids[i]);
 		}
+	    }
+
+	    // Always add VehicleSpeed (MPH) to Vehicle Speed submenu - ECUxDataset will handle raw vs calculated
+	    if (!this.members.containsKey("VehicleSpeed (MPH)")) {
+		addToSubmenu("Vehicle Speed", "VehicleSpeed (MPH)");
 	    }
 
 	    // put ME7Log next
