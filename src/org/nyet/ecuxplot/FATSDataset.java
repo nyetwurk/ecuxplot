@@ -3,10 +3,13 @@ package org.nyet.ecuxplot;
 import java.util.TreeMap;
 
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.nyet.util.Files;
 
 public class FATSDataset extends DefaultCategoryDataset {
+    private static final Logger logger = LoggerFactory.getLogger(FATSDataset.class);
     /**
      *
      */
@@ -25,22 +28,12 @@ public class FATSDataset extends DefaultCategoryDataset {
 
     private void updateFromFATS() {
 	if (this.fats.useMph()) {
-	    // Check if we have actual VehicleSpeed data available
-	    boolean hasVehicleSpeed = hasVehicleSpeedData();
-
-	    if (hasVehicleSpeed) {
-		// Use actual VehicleSpeed data - no conversion needed
-		// The MPH values are used directly as speed ranges
-		this.start = (int) Math.round(this.fats.startMph());
-		this.end = (int) Math.round(this.fats.endMph());
-	    } else {
-		// Fall back to RPM-based calculation using rpm_per_mph constant
-		if (!this.fileDatasets.isEmpty()) {
-		    ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
-		    double rpmPerMph = firstDataset.getEnv().c.rpm_per_mph();
-		    this.start = this.fats.mphToRpm(this.fats.startMph(), rpmPerMph);
-		    this.end = this.fats.mphToRpm(this.fats.endMph(), rpmPerMph);
-		}
+	    // Always convert MPH to RPM for calculation, regardless of VehicleSpeed data availability
+	    if (!this.fileDatasets.isEmpty()) {
+		ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
+		double rpmPerMph = firstDataset.getEnv().c.rpm_per_mph();
+		this.start = this.fats.mphToRpm(this.fats.startMph(), rpmPerMph);
+		this.end = this.fats.mphToRpm(this.fats.endMph(), rpmPerMph);
 	    }
 	} else {
 	    this.start = this.fats.start();
@@ -69,6 +62,7 @@ public class FATSDataset extends DefaultCategoryDataset {
     }
 
     private void rebuild() {
+	clear();
 	for(final ECUxDataset data : this.fileDatasets.values()) {
 	    setValue(data);
 	}
@@ -76,27 +70,79 @@ public class FATSDataset extends DefaultCategoryDataset {
 
     // set one (calls super)
     public void setValue(ECUxDataset data, int series, double value) {
-	final String xkey = Files.stem(data.getFileId());
-	final String ykey = "Run " + (series+1);
-	// System.out.println("adding " + xkey + "," + ykey + "=" + value);
+	final String xkey = "Run " + (series+1);
+	final String ykey = Files.stem(data.getFileId());
+        // System.out.println("adding " + xkey + "," + ykey + "=" + value);p
+
 	super.setValue(value, xkey, ykey);
     }
-    // remove one (calls super)
+    /**
+     * Remove FATS data for a specific run in a dataset
+     * @param data The dataset containing the FATS run
+     * @param series The run number (0-based)
+     */
     public void removeValue(ECUxDataset data, int series) {
-	final String xkey = Files.stem(data.getFileId());
-	final String ykey = "Run " + (series+1);
+	final String xkey = "Run " + (series+1);
+	final String ykey = Files.stem(data.getFileId());
 	// System.out.println("removing " + xkey + "," + ykey);
 	super.removeValue(xkey, ykey);
     }
 
+    /**
+     * Log a concise FATS calculation summary
+     * @param data The dataset being processed
+     * @param series The run number (0-based)
+     * @param value The calculated FATS time in seconds
+     * @param rpmStart The RPM start value used in calculation
+     * @param rpmEnd The RPM end value used in calculation
+     */
+    private void logFATSSummary(ECUxDataset data, int series, double value, int rpmStart, int rpmEnd) {
+	String filename = Files.stem(data.getFileId());
+	String runNumber = "run " + (series + 1);
+
+	// Always show RPM range with MPH conversion in parentheses
+	double startMph, endMph;
+	if (this.fats.useMph()) {
+	    // MPH mode: use the configured MPH values
+	    startMph = this.fats.startMph();
+	    endMph = this.fats.endMph();
+	} else {
+	    // RPM mode: convert RPM to MPH using rpm_per_mph constant
+	    ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
+	    double rpmPerMph = firstDataset.getEnv().c.rpm_per_mph();
+	    startMph = rpmStart / rpmPerMph;
+	    endMph = rpmEnd / rpmPerMph;
+	}
+
+	String message = String.format("FATS: %s %s, %d (%.0fmph) - %d (%.0fmph) = %.1f seconds",
+	    filename, runNumber, rpmStart, startMph, rpmEnd, endMph, value);
+	logger.info(message);
+    }
+
     // helpers
+    /**
+     * Set FATS data for all runs in a dataset
+     * @param data The dataset containing FATS runs
+     */
     public void setValue(ECUxDataset data) {
-	try { removeRow(Files.stem(data.getFileId()));
+	try { removeColumn(Files.stem(data.getFileId()));
 	} catch (final Exception e) {}
 	for(int i=0;i<data.getRanges().size();i++)
 	    setValue(data, i);
     }
+    /**
+     * Set FATS data for a specific run in a dataset
+     * @param data The dataset containing the FATS run
+     * @param series The run number (0-based)
+     */
     public void setValue(ECUxDataset data, int series) {
+	// Don't calculate FATS when filter is disabled - FATS depends on filtered data
+	if (!data.getFilter().enabled()) {
+	    logger.info("FATS calculation skipped for {} run {}: filter disabled", Files.stem(data.getFileId()), series);
+	    removeValue(data, series);
+	    return;
+	}
+
 	try {
 	    double value;
 	    if (this.fats.useMph()) {
@@ -107,17 +153,16 @@ public class FATSDataset extends DefaultCategoryDataset {
 		value = data.calcFATS(series, this.start, this.end);
 	    }
 	    setValue(data, series, value);
+
+	    // Log successful FATS calculation with concise summary
+	    logFATSSummary(data, series, value, this.start, this.end);
 	} catch (final Exception e) {
-	    // System.out.println(e);
+	    logger.warn("FATS calculation failed for {} run {}: {}", Files.stem(data.getFileId()), series, e.getMessage());
 	    removeValue(data, series);
 	}
     }
 
     // helpers
-    public void removeValue(ECUxDataset data) {
-	for(int i=0;i<data.getRanges().size();i++)
-	    removeValue(data, i);
-    }
 
     public void setStart(int start) {
 	if (this.fats.useMph()) {
