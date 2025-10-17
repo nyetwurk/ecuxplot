@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.renderer.xy.*;
 import org.jfree.chart.plot.XYPlot;
@@ -226,10 +228,19 @@ public class ECUxChartFactory {
     }
 
     public static JFreeChart createFATSChart (FATSDataset dataset) {
-	return ChartFactory.createBarChart3D (
+	JFreeChart chart = ChartFactory.createBarChart3D (
 	    dataset.getTitle(), "", "",
 	    dataset,
 	    PlotOrientation.VERTICAL,
 	    true, true, false);
+
+	// Configure the CategoryAxis to show more of the labels
+	CategoryPlot plot = chart.getCategoryPlot();
+	CategoryAxis domainAxis = plot.getDomainAxis();
+
+	// Allow labels to take up more space (default is usually 0.8)
+	domainAxis.setMaximumCategoryLabelWidthRatio(1.2f);
+
+	return chart;
     }
 }

@@ -136,6 +136,10 @@ public final class ProfileMenu extends JMenu {
 		    Preferences.importPreferences(new FileInputStream(p));
 		}
 		if(pm.plotFrame!=null) pm.plotFrame.rebuild();
+		// Update FATS window after profile load
+		if(pm.plotFrame.fatsFrame != null) {
+		    pm.plotFrame.fatsFrame.updateRpmPerMphFromConstants();
+		}
 	    } catch (final Exception e) {
 		JOptionPane.showMessageDialog(pm.plotFrame, e.toString());
 		e.printStackTrace();
