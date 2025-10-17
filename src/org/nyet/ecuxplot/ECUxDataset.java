@@ -961,7 +961,7 @@ public class ECUxDataset extends Dataset {
 
 	if (!ret) {
 	    this.lastFilterReasons = reasons;
-	    // System.out.println(reasons);
+	    logger.trace("Filter rejected data point {}: {}", i, String.join(", ", reasons));
 	}
 
 	return ret;
@@ -990,7 +990,7 @@ public class ECUxDataset extends Dataset {
 
 	if (!ret) {
 	    this.lastFilterReasons = reasons;
-	    // System.out.println(reasons);
+	    logger.trace("Filter rejected range {}: {}", r, String.join(", ", reasons));
 	}
 
 	return ret;
@@ -1029,96 +1029,60 @@ public class ECUxDataset extends Dataset {
     }
 
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
-	final ArrayList<Dataset.Range> ranges = this.getRanges();
-	if(run<0 || run>=ranges.size())
-	    throw new Exception("no run found");
-
-	if(this.splines[run]==null)
-	    throw new Exception("run interpolation failed");
-
-	final Dataset.Range r=ranges.get(run);
-	final double [] rpm = this.getData("RPM", r);
-
-	if(rpm[0]-100>RPMStart || rpm[rpm.length-1]+100<RPMEnd)
-	    throw new Exception("run " + rpm[0] + "-" + rpm[rpm.length-1] +
-		    " not long enough");
-
-	final double et = this.splines[run].interpolate(RPMEnd) -
-		this.splines[run].interpolate(RPMStart);
-	if(et<=0)
-	    throw new Exception("don't cross the streams");
-
-	return et;
+	return calcFATSRPM(run, RPMStart, RPMEnd);
     }
 
     // New method for FATS calculation using VehicleSpeed when available
     public double calcFATSBySpeed(int run, double speedStart, double speedEnd) throws Exception {
-	final ArrayList<Dataset.Range> ranges = this.getRanges();
-	if(run<0 || run>=ranges.size())
-	    throw new Exception("no run found");
-
-	if(this.splines[run]==null)
-	    throw new Exception("run interpolation failed");
-
-	final Dataset.Range r=ranges.get(run);
-
-	// Check if we have VehicleSpeed data
-	final Column vehicleSpeed = this.get("VehicleSpeed");
-	if (vehicleSpeed != null) {
-	    // Use actual VehicleSpeed data
-	    final double [] speed = this.getData("VehicleSpeed", r);
-	    final double [] time = this.getData("TIME", r);
-
-	    if(speed[0]-5>speedStart || speed[speed.length-1]+5<speedEnd)
-		throw new Exception("run " + speed[0] + "-" + speed[speed.length-1] +
-			" mph not long enough");
-
-	    // Find time points for the speed range
-	    double timeStart = interpolateTimeForSpeed(time, speed, speedStart);
-	    double timeEnd = interpolateTimeForSpeed(time, speed, speedEnd);
-
-	    final double et = timeEnd - timeStart;
-	    if(et<=0)
-		throw new Exception("don't cross the streams");
-
-	    return et;
-	} else {
-	    // Fall back to RPM-based calculation
-	    double rpmPerMph = this.env.c.rpm_per_mph();
-	    int rpmStart = (int) Math.round(speedStart * rpmPerMph);
-	    int rpmEnd = (int) Math.round(speedEnd * rpmPerMph);
-
-	    // Check if the converted RPM range is within the actual data range
-	    final double [] rpm = this.getData("RPM", r);
-	    double actualRpmMin = rpm[0];
-	    double actualRpmMax = rpm[rpm.length-1];
-
-	    // Adjust the range to fit within the actual data if needed
-	    if (rpmStart < actualRpmMin) {
-		rpmStart = (int) Math.ceil(actualRpmMin); // Use ceil to ensure we're above the minimum
-	    }
-	    if (rpmEnd > actualRpmMax) {
-		rpmEnd = (int) Math.floor(actualRpmMax); // Use floor to ensure we're below the maximum
-	    }
-
-	    return calcFATS(run, rpmStart, rpmEnd);
-	}
+	return calcFATSMPH(run, speedStart, speedEnd);
     }
 
-    private double interpolateTimeForSpeed(double[] time, double[] speed, double targetSpeed) {
-	// Simple linear interpolation to find time for target speed
-	for (int i = 0; i < speed.length - 1; i++) {
-	    if (speed[i] <= targetSpeed && speed[i + 1] >= targetSpeed) {
-		double ratio = (targetSpeed - speed[i]) / (speed[i + 1] - speed[i]);
-		return time[i] + ratio * (time[i + 1] - time[i]);
-	    }
-	}
-	// If not found, return closest time
-	if (Math.abs(speed[0] - targetSpeed) < Math.abs(speed[speed.length - 1] - targetSpeed)) {
-	    return time[0];
-	} else {
-	    return time[time.length - 1];
-	}
+    // RPM-based FATS calculation
+    private double calcFATSRPM(int run, int RPMStart, int RPMEnd) throws Exception {
+	final ArrayList<Dataset.Range> ranges = this.getRanges();
+	if(run<0 || run>=ranges.size())
+	    throw new Exception("FATS run " + run + " not found (available: 0-" + (ranges.size()-1) + ")");
+
+	if(this.splines[run]==null)
+	    throw new Exception("FATS run " + run + " interpolation failed - check filter settings");
+
+	final Dataset.Range r=ranges.get(run);
+	logger.trace("FATS RPM calculation: run={}, range={}-{}", run, r.start, r.end);
+
+	// RPM-based calculation using filter range
+	logger.trace("FATS RPM calculation: {} RPM -> {} RPM", RPMStart, RPMEnd);
+	// Trust the filter - if we have a valid range, use spline interpolation
+	final double et = this.splines[run].interpolate(RPMEnd) -
+		this.splines[run].interpolate(RPMStart);
+	if(et<=0)
+	    throw new Exception("FATS RPM calculation failed: timeEnd <= timeStart for RPM range " + RPMStart + "-" + RPMEnd);
+
+	return et;
+    }
+
+    // MPH-based FATS calculation (converts to RPM then uses RPM calculation)
+    private double calcFATSMPH(int run, double speedStart, double speedEnd) throws Exception {
+	final ArrayList<Dataset.Range> ranges = this.getRanges();
+	if(run<0 || run>=ranges.size())
+	    throw new Exception("FATS run " + run + " not found (available: 0-" + (ranges.size()-1) + ")");
+
+	if(this.splines[run]==null)
+	    throw new Exception("FATS run " + run + " interpolation failed - check filter settings");
+
+	final Dataset.Range r=ranges.get(run);
+	logger.trace("FATS MPH calculation: run={}, range={}-{}", run, r.start, r.end);
+
+	double rpmPerMph = this.env.c.rpm_per_mph();
+
+	// Convert MPH to RPM then use RPM calculation
+	int rpmStart = (int) Math.round(speedStart * rpmPerMph);
+	int rpmEnd = (int) Math.round(speedEnd * rpmPerMph);
+
+	logger.trace("FATS MPH->RPM conversion: {} mph -> {} RPM, {} mph -> {} RPM",
+	    speedStart, rpmStart, speedEnd, rpmEnd);
+
+	// Use RPM calculation
+	return calcFATSRPM(run, rpmStart, rpmEnd);
     }
 
     public double[] calcFATS(int RPMStart, int RPMEnd) {

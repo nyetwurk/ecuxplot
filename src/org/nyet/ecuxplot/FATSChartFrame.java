@@ -31,6 +31,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     private JLabel endLabel;
     private JTextField rpmPerMphField;
     private JLabel rpmPerMphLabel;
+    private JLabel unitLabel;
 
     public static FATSChartFrame createFATSChartFrame(
 	    TreeMap<String, ECUxDataset> fileDatasets, ECUxPlot plotFrame) {
@@ -86,18 +87,14 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.LINE_AXIS));
 
 	// Initialize labels and text fields based on current FATS mode
-	this.startLabel = new JLabel();
-	this.endLabel = new JLabel();
+	this.startLabel = new JLabel("Start");
+	this.endLabel = new JLabel("End");
 	if (this.fats.useMph()) {
 	    this.start=new JTextField(""+this.fats.startMph(), 3);
 	    this.end=new JTextField(""+this.fats.endMph(), 3);
-	    this.startLabel.setText("Start MPH:");
-	    this.endLabel.setText("End MPH:");
 	} else {
 	    this.start=new JTextField(""+this.fats.start(), 3);
 	    this.end=new JTextField(""+this.fats.end(), 3);
-	    this.startLabel.setText("Start RPM:");
-	    this.endLabel.setText("End RPM:");
 	}
 
 	inputPanel.add(this.startLabel);
@@ -108,7 +105,11 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
 	inputPanel.add(this.end);
 	inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
-	inputPanel.add(this.endLabel);
+
+	// Add unit label (will be updated dynamically)
+	this.unitLabel = new JLabel();
+	updateUnitLabel(this.unitLabel);
+	inputPanel.add(this.unitLabel);
 
 	// Add rpm_per_mph field (always create, show/hide as needed)
 	inputPanel.add(Box.createRigidArea(new Dimension(10,0)));
@@ -133,6 +134,11 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 		FATSChartFrame.this.fats.useMph(useMphCheckbox.isSelected());
 		updateLabelsAndValues(FATSChartFrame.this.startLabel, FATSChartFrame.this.endLabel, FATSChartFrame.this.start, FATSChartFrame.this.end);
 		updateRpmPerMphVisibility();
+		// Update unit label
+		updateUnitLabel(FATSChartFrame.this.unitLabel);
+		// Refresh the FATS dataset to show updated results
+		FATSChartFrame.this.dataset.refreshFromFATS();
+		FATSChartFrame.this.getChartPanel().getChart().setTitle(FATSChartFrame.this.dataset.getTitle());
 	    }
 	});
 	buttonPanel.add(this.useMphCheckbox);
@@ -178,8 +184,9 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 
     public void setDatasets(TreeMap<String, ECUxDataset> fileDatasets) {
 	this.dataset.clear();
-	for(final ECUxDataset data : fileDatasets.values())
+	for(final ECUxDataset data : fileDatasets.values()) {
 	    setDataset(data);
+	}
     }
 
     public void setDataset(ECUxDataset data) {
@@ -208,13 +215,13 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	    if (this.fats.useMph()) {
 		this.fats.startMph(Double.valueOf(this.start.getText()));
 		this.fats.endMph(Double.valueOf(this.end.getText()));
-		// Update rpm_per_mph if field is visible
-		if (this.rpmPerMphField != null && this.rpmPerMphField.isVisible()) {
-		    this.plotFrame.env.c.rpm_per_mph(Double.valueOf(this.rpmPerMphField.getText()));
-		}
 	    } else {
 		this.fats.start(Integer.valueOf(this.start.getText()));
 		this.fats.end(Integer.valueOf(this.end.getText()));
+	    }
+	    // Update rpm_per_mph if field is visible (regardless of mode)
+	    if (this.rpmPerMphField != null && this.rpmPerMphField.isVisible()) {
+		this.plotFrame.env.c.rpm_per_mph(Double.valueOf(this.rpmPerMphField.getText()));
 	    }
 	    this.dataset.refreshFromFATS();
 	} else if(event.getActionCommand().equals("Defaults")) {
@@ -233,27 +240,43 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     }
 
     private void updateLabelsAndValues(JLabel startLabel, JLabel endLabel, JTextField start, JTextField end) {
+	// Labels are now static "Start" and "End" - no need to change them
+	// Values are updated based on current mode
 	if (this.fats.useMph()) {
-	    startLabel.setText("Start MPH:");
-	    endLabel.setText("End MPH:");
 	    start.setText("" + this.fats.startMph());
 	    end.setText("" + this.fats.endMph());
 	} else {
-	    startLabel.setText("Start RPM:");
-	    endLabel.setText("End RPM:");
 	    start.setText("" + this.fats.start());
 	    end.setText("" + this.fats.end());
 	}
     }
 
+    private void updateUnitLabel(JLabel unitLabel) {
+	if (this.fats.useMph()) {
+	    unitLabel.setText("MPH");
+	} else {
+	    unitLabel.setText("RPM");
+	}
+    }
+
     private void updateRpmPerMphVisibility() {
 	if (this.rpmPerMphField != null && this.rpmPerMphLabel != null) {
-	    boolean shouldShow = this.fats.useMph() && this.dataset.needsRpmPerMphConversion();
+	    // Show rpm_per_mph field when using MPH mode
+	    boolean shouldShow = this.fats.useMph();
 	    this.rpmPerMphField.setVisible(shouldShow);
 	    this.rpmPerMphLabel.setVisible(shouldShow);
 	    if (shouldShow) {
 		this.rpmPerMphField.setText("" + this.plotFrame.env.c.rpm_per_mph());
 	    }
+	}
+    }
+
+    /**
+     * Update the rpm_per_mph field from the Constants when it changes
+     */
+    public void updateRpmPerMphFromConstants() {
+	if (this.rpmPerMphField != null) {
+	    this.rpmPerMphField.setText("" + this.plotFrame.env.c.rpm_per_mph());
 	}
     }
 

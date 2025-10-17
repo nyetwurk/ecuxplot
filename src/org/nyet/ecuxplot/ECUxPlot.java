@@ -67,7 +67,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     final Preferences prefs = getPreferences();
 
     final Env env;
-    private final Filter filter;
+    final Filter filter;
     final FATS fats;
 
     private Options options = new Options();
@@ -521,7 +521,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	} else if(source.getText().equals("Edit constants...")) {
 	    if(this.ce == null) this.ce =
 		new ConstantsEditor(this.prefs, this.env.c);
-	    this.ce.showDialog(this, "Constants");
+	    boolean changesMade = this.ce.showDialog(this, "Constants");
+	    // Update FATS window if constants were changed
+	    if (changesMade && this.fatsFrame != null) {
+		this.fatsFrame.updateRpmPerMphFromConstants();
+	    }
 	} else if(source.getText().equals("Edit fueling...")) {
 	    if(this.fle == null) this.fle =
 		new FuelingEditor(this.prefs, this.env.f);
