@@ -915,6 +915,19 @@ public class ECUxDataset extends Dataset {
 		    "<0");
 	    ret=false;
 	}
+	// Check for negative boost pressure (wheel spin detection)
+	final Column boostActual = this.get("BoostPressureActual");
+	if(boostActual!=null && boostActual.data.get(i)<1000) {
+	    reasons.add("boost actual " + boostActual.data.get(i) +
+		    "<1000 mBar (vacuum)");
+	    ret=false;
+	}
+	final Column boostDesired = this.get("BoostPressureDesired");
+	if(boostDesired!=null && boostDesired.data.get(i)<1000) {
+	    reasons.add("boost desired " + boostDesired.data.get(i) +
+		    "<1000 mBar (vacuum)");
+	    ret=false;
+	}
 	if(this.rpm!=null) {
 	    if(this.rpm.data.get(i)<this.filter.minRPM()) {
 		reasons.add("rpm " + this.rpm.data.get(i) +
