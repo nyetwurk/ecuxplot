@@ -13,11 +13,16 @@ import javax.swing.JOptionPane;
 import com.opencsv.CSVReader;
 import flanagan.interpolation.CubicSpline;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
 import org.nyet.ecuxplot.Loggers.LoggerType;
 
 public class ECUxDataset extends Dataset {
+    private static final Logger logger = LoggerFactory.getLogger(ECUxDataset.class);
+
     private final Column rpm;
     private Column pedal;
     private Column throttle;
@@ -108,9 +113,8 @@ public class ECUxDataset extends Dataset {
 		u[i]=matcher.group(2).trim();
 	    }
 	}
-	if (verbose>1)
-	    for(int i=0;i<h.length;i++)
-		 System.out.printf("pu: '%s' [%s]\n", h[i], u[i]);
+	for(int i=0;i<h.length;i++)
+	    logger.trace("pu: '{}' [{}]", h[i], u[i]);
 	return u;
     }
 
@@ -131,14 +135,13 @@ public class ECUxDataset extends Dataset {
 	    h = reader.readNext();
 	    if (h==null)
 		throw new Exception(this.getFileId() + ": read failed parsing CSV headers");
-	    if (verbose>0)
-		for(int i=0;i<h.length;i++)
-		    System.out.println("h[" + i + "]: " + h[i]);
+	    for(int i=0;i<h.length;i++)
+		logger.debug("h[" + i + "]: " + h[i]);
 	} while (h.length<1 || h[0].trim().length() == 0 || h[0].trim().matches("^#.+"));
 
 	Loggers.DetectResult r = Loggers.detect(h);
-	if (verbose>0 && r.type != LoggerType.LOG_UNKNOWN)
-	    System.out.printf("Detected %s based on \"%s\"\n", r.type, r.message);
+	if (r.type != LoggerType.LOG_UNKNOWN)
+	    logger.info("Detected {} based on \"{}\"", r.type, r.message);
 
 	this.log_detected = r.type;
 
@@ -154,8 +157,7 @@ public class ECUxDataset extends Dataset {
 
 	final LoggerType log_use = (log_req==LoggerType.LOG_DETECT)?log_detected:log_req;
 
-	if (verbose>0)
-	    System.out.printf("Using %s\n", log_use);
+	logger.info("Using {}", log_use);
 
 	this.time_ticks_per_sec = 1;
 	switch(log_use) {
@@ -169,10 +171,8 @@ public class ECUxDataset extends Dataset {
 		h2 = reader.readNext();	// 6: headers 2 or units or headers
 		u = reader.readNext();	// 7: units
 
-		if (verbose>0)
-		    System.out.println("in e:"
-			+ e.length + ", b:" + b.length + ", g:" + g.length + ", h:"
-			+ h.length + ", h2:" + h2.length + ", u:" + u.length);
+		logger.debug("in e:{}, b:{}, g:{}, h:{}, h2:{}, u:{}",
+		    e.length, b.length, g.length, h.length, h2.length, u.length);
 
 		if(g.length<=1) {
 		    // g is blank. move everything up one
@@ -188,18 +188,15 @@ public class ECUxDataset extends Dataset {
 		    g=newg;
 		}
 
-		if (verbose>0)
-		    System.out.println("out e:"
-			+ e.length + ", b:" + b.length + ", g:" + g.length + ", h:"
-			+ h.length + ", h2:" + h2.length + ", u:" + u.length);
+		logger.debug("out e:{}, b:{}, g:{}, h:{}, h2:{}, u:{}",
+		    e.length, b.length, g.length, h.length, h2.length, u.length);
 
 		for(int i=0;i<h.length;i++) {
 		    g[i]=(g[i]!=null)?g[i].trim():"";
 		    h[i]=(h[i]!=null)?h[i].trim():"";
 		    h2[i]=(h2[i]!=null)?h2[i].trim():"";
 		    u[i]=(u[i]!=null)?u[i].trim():"";
-		    if (verbose>0)
-			System.out.printf("in %d (g:h:h2:[u]): '%s' '%s' [%s]\n", i, g[i], h[i], h2[i], u[i]);
+		    logger.debug("in {} (g:h:h2:[u]): '{}' '{}' [{}]", i, g[i], h[i], h2[i], u[i]);
 		    // g=TIME and h=STAMP means this is a TIME column
 		    if(g[i].equals("TIME") && h[i].equals("STAMP")) {
 			g[i]="";
@@ -220,8 +217,7 @@ public class ECUxDataset extends Dataset {
 		    // blacklist Group 24 Accelerator position, it has max of 80%?
 		    if(g[i].matches("^Group 24.*") && h[i].equals("Accelerator position"))
 			h[i]=("Accelerator position (G024)");
-		    if (verbose>0)
-			System.out.printf("out %d (g:h:h2:[u]): '%s' '%s' [%s]\n", i, g[i], h[i], h2[i], u[i]);
+		    logger.debug("out {} (g:h:h2:[u]): '{}' '{}' [{}]", i, g[i], h[i], h2[i], u[i]);
 		}
 		break;
 	    case LOG_ZEITRONIX:
@@ -294,9 +290,8 @@ public class ECUxDataset extends Dataset {
 		    v[i]=v[i].trim();
 		}
 
-		if (verbose>0)
-		    for(int i=0;i<h.length;i++)
-			System.out.printf("in: '%s' (%s) [%s]\n", v[i], h[i], u[i]);
+		for(int i=0;i<h.length;i++)
+		    logger.debug("in: '{}' ({}) [{}]", v[i], h[i], u[i]);
 
 		Loggers.processAliases(h, log_use);
 
@@ -363,14 +358,12 @@ public class ECUxDataset extends Dataset {
 	//
 	// Common to all logs
 	//
-	u = Units.processUnits(h, u, verbose);
-	if (verbose>0) {
-	    for(int i=0;i<h.length;i++) {
-		if (v!=null && i<v.length) {
-		    System.out.printf("out: '%s' (%s) [%s]\n", h[i], v[i], u[i]);
-		} else {
-		    System.out.printf("out: '%s' [%s]\n", h[i], u[i]);
-		}
+	u = Units.processUnits(h, u);
+	for(int i=0;i<h.length;i++) {
+	    if (v!=null && i<v.length) {
+		logger.debug("out: '{}' ({}) [{}]", h[i], v[i], u[i]);
+	    } else {
+		logger.debug("out: '{}' [{}]", h[i], u[i]);
 	    }
 	}
 
