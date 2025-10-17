@@ -130,6 +130,9 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Calc Power", "Acceleration (m/s^2)");
 	    addToSubmenu("Calc Power", "Acceleration (g)");
 
+	} else if(id.matches("TIME")) {
+	    this.add(item, 2);	// always add time third!
+
 	// goes before .*Load.* to catch CalcLoad
 	} else if(id.matches(".*(MAF|Mass *Air|Air *Mass|Mass *Air *Flow).*")) {
 	    addToSubmenu("MAF", item);
