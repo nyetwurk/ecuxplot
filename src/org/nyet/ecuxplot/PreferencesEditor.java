@@ -181,7 +181,8 @@ public class PreferencesEditor extends JPanel {
 	    final Point where = owner.getLocation();
 	    where.translate(20,20);
 	    this.dialog.setLocation(where);
-	    this.dialog.setResizable(false);
+	    this.dialog.setResizable(true);
+	    this.dialog.setMinimumSize(new Dimension(300, 200));
 	}
 	this.dialog.setTitle(title);
 	this.dialog.setVisible(true);

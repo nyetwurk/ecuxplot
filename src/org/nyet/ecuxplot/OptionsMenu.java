@@ -23,6 +23,7 @@ public final class OptionsMenu extends JMenu {
     private final JMenu loadPresetsMenu;
     private final JMenu savePresetsMenu;
     private final JMenu deletePresetsMenu;
+    private JCheckBox fatsCheckBox;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
 	super(id);
@@ -81,6 +82,9 @@ public final class OptionsMenu extends JMenu {
 	jcb = new JCheckBox("Show FATS window...", prefs.getBoolean("showfats", false));
 	jcb.addActionListener(plotFrame);
 	this.add(jcb);
+
+	// Store reference to FATS checkbox for dynamic updates
+	this.fatsCheckBox = jcb;
 
 	this.add(new JSeparator());
 
@@ -217,6 +221,13 @@ public final class OptionsMenu extends JMenu {
 		ECUxPreset.getPreferencesStatic().node(s).removeNode();
 		updatePresets();
 	    } catch (final Exception e) {}
+	}
+    }
+
+    public void updateFATSCheckbox() {
+	if (this.fatsCheckBox != null) {
+	    final Preferences prefs = ECUxPlot.getPreferences();
+	    this.fatsCheckBox.setSelected(prefs.getBoolean("showfats", false));
 	}
     }
 }

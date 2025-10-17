@@ -45,6 +45,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private final JMenuBar menuBar;
     private AxisMenu xAxis;
     private AxisMenu yAxis[] = new AxisMenu[2];
+    OptionsMenu optionsMenu;
 
     // Dialog boxes
     private JFileChooser fc;
@@ -55,10 +56,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private SAEEditor sae;
 
     // Preferences
-    private final Preferences prefs = getPreferences();
+    final Preferences prefs = getPreferences();
 
-    private final Env env;
+    final Env env;
     private final Filter filter;
+    final FATS fats;
 
     private Options options = new Options();
     private boolean exitOnClose = true;
@@ -84,6 +86,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 	this.filter = new Filter(this.prefs);
 	this.env = new Env(this.prefs);
+	this.fats = new FATS(this.prefs);
 
 	final java.net.URL imageURL =
 	    getClass().getResource("icons/ECUxPlot2-64.png");
@@ -92,7 +95,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 	this.menuBar.add(new FileMenu("File", this));
 	this.menuBar.add(new ProfileMenu("Vehicle Profiles", this));
-	this.menuBar.add(new OptionsMenu("Options", this));
+	this.optionsMenu = new OptionsMenu("Options", this);
+	this.menuBar.add(this.optionsMenu);
 
 	this.menuBar.add(Box.createHorizontalGlue());
 	final HelpMenu helpMenu = new HelpMenu("Help", this);

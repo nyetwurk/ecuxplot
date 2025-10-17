@@ -25,21 +25,29 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     private final ECUxPlot plotFrame;
     private final JTextField start;
     private final JTextField end;
+    private final FATS fats;
+    private JCheckBox useMphCheckbox;
+    private JLabel startLabel;
+    private JLabel endLabel;
+    private JTextField rpmPerMphField;
+    private JLabel rpmPerMphLabel;
 
     public static FATSChartFrame createFATSChartFrame(
 	    TreeMap<String, ECUxDataset> fileDatasets, ECUxPlot plotFrame) {
-	final FATSDataset dataset = new FATSDataset(fileDatasets);
+	final FATS fats = plotFrame.fats; // Use the FATS instance from ECUxPlot
+	final FATSDataset dataset = new FATSDataset(fileDatasets, fats);
 	final JFreeChart chart =
 	    ECUxChartFactory.createFATSChart(dataset);
-	return new FATSChartFrame(chart, dataset, plotFrame);
+	return new FATSChartFrame(chart, dataset, plotFrame, fats);
     }
 
     public FATSChartFrame (JFreeChart chart, FATSDataset dataset,
-	    ECUxPlot plotFrame) {
+	    ECUxPlot plotFrame, FATS fats) {
 	super("FATS Time", chart);
 
 	this.dataset=dataset;
 	this.plotFrame=plotFrame;
+	this.fats = fats;
 
 	final CategoryPlot plot = chart.getCategoryPlot();
 	plot.getRangeAxis().setLabel("seconds");
@@ -57,36 +65,100 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	final ECUxChartPanel chartPanel = new ECUxChartPanel(chart);
 	// chartPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 	chartPanel.setBorder(BorderFactory.createLoweredBevelBorder());
+
+	// Disable zoom and pan functionality for FATS chart
+	chartPanel.setDomainZoomable(false);
+	chartPanel.setRangeZoomable(false);
+	chartPanel.setMouseZoomable(false);
+
+	// Disable the popup menu (context menu) to prevent zoom options
+	chartPanel.setPopupMenu(null);
+
 	panel.add(chartPanel, BorderLayout.CENTER);
 
 
-	final JPanel rpmPanel = new JPanel();
-	rpmPanel.setLayout(new BoxLayout(rpmPanel, BoxLayout.LINE_AXIS));
-	rpmPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-	this.start=new JTextField(""+dataset.getStart(), 5);
-	this.end=new JTextField(""+dataset.getEnd(), 5);
-	rpmPanel.add(this.start);
-	rpmPanel.add(new JLabel(" to "));
-	rpmPanel.add(this.end);
+	final JPanel controlPanel = new JPanel();
+	controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
+	controlPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-	rpmPanel.add(Box.createRigidArea(new Dimension(5,0)));
+	// Create input panel
+	final JPanel inputPanel = new JPanel();
+	inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.LINE_AXIS));
+
+	// Initialize labels and text fields based on current FATS mode
+	this.startLabel = new JLabel();
+	this.endLabel = new JLabel();
+	if (this.fats.useMph()) {
+	    this.start=new JTextField(""+this.fats.startMph(), 3);
+	    this.end=new JTextField(""+this.fats.endMph(), 3);
+	    this.startLabel.setText("Start MPH:");
+	    this.endLabel.setText("End MPH:");
+	} else {
+	    this.start=new JTextField(""+this.fats.start(), 3);
+	    this.end=new JTextField(""+this.fats.end(), 3);
+	    this.startLabel.setText("Start RPM:");
+	    this.endLabel.setText("End RPM:");
+	}
+
+	inputPanel.add(this.startLabel);
+	inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
+	inputPanel.add(this.start);
+	inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
+	inputPanel.add(new JLabel(" to "));
+	inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
+	inputPanel.add(this.end);
+	inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
+	inputPanel.add(this.endLabel);
+
+	// Add rpm_per_mph field (always create, show/hide as needed)
+	inputPanel.add(Box.createRigidArea(new Dimension(10,0)));
+	this.rpmPerMphLabel = new JLabel("RPM/MPH:");
+	this.rpmPerMphField = new JTextField(""+this.plotFrame.env.c.rpm_per_mph(), 4);
+	inputPanel.add(this.rpmPerMphLabel);
+	inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
+	inputPanel.add(this.rpmPerMphField);
+
+	controlPanel.add(inputPanel);
+
+	// Add buttons panel
+	final JPanel buttonPanel = new JPanel();
+	buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
+
+	// Add MPH checkbox
+	this.useMphCheckbox = new JCheckBox("Use MPH");
+	this.useMphCheckbox.setSelected(this.fats.useMph());
+	this.useMphCheckbox.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		// Toggle MPH mode
+		FATSChartFrame.this.fats.useMph(useMphCheckbox.isSelected());
+		updateLabelsAndValues(FATSChartFrame.this.startLabel, FATSChartFrame.this.endLabel, FATSChartFrame.this.start, FATSChartFrame.this.end);
+		updateRpmPerMphVisibility();
+	    }
+	});
+	buttonPanel.add(this.useMphCheckbox);
+
+	buttonPanel.add(Box.createRigidArea(new Dimension(10,0)));
 
 	final JButton apply = new JButton("Apply");
 	apply.addActionListener(this);
 	this.getRootPane().setDefaultButton(apply);
-	rpmPanel.add(apply);
+	buttonPanel.add(apply);
 
-	rpmPanel.add(Box.createRigidArea(new Dimension(5,0)));
+	buttonPanel.add(Box.createRigidArea(new Dimension(5,0)));
 
 	final JButton defaults = new JButton("Defaults");
 	defaults.addActionListener(this);
-	rpmPanel.add(defaults);
+	buttonPanel.add(defaults);
 
-	panel.add(rpmPanel, BorderLayout.PAGE_END);
+	controlPanel.add(buttonPanel);
+	panel.add(controlPanel, BorderLayout.PAGE_END);
 
 	this.setContentPane(panel);
 	this.setPreferredSize(this.windowSize());
 	restoreLocation();
+
+	// Set initial visibility of rpm_per_mph field
+	updateRpmPerMphVisibility();
     }
 
     private void restoreLocation() {
@@ -117,16 +189,72 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 	this.dataset.clear();
     }
 
+    public void refreshFromFATS() {
+	this.dataset.refreshFromFATS();
+	// Update text fields to show current values
+	if (this.fats.useMph()) {
+	    this.start.setText("" + this.fats.startMph());
+	    this.end.setText("" + this.fats.endMph());
+	} else {
+	    this.start.setText("" + this.fats.start());
+	    this.end.setText("" + this.fats.end());
+	}
+	this.getChartPanel().getChart().setTitle(this.dataset.getTitle());
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
 	if(event.getActionCommand().equals("Apply")) {
-	    this.dataset.setStart(Integer.valueOf(this.start.getText()));
-	    this.dataset.setEnd(Integer.valueOf(this.end.getText()));
+	    if (this.fats.useMph()) {
+		this.fats.startMph(Double.valueOf(this.start.getText()));
+		this.fats.endMph(Double.valueOf(this.end.getText()));
+		// Update rpm_per_mph if field is visible
+		if (this.rpmPerMphField != null && this.rpmPerMphField.isVisible()) {
+		    this.plotFrame.env.c.rpm_per_mph(Double.valueOf(this.rpmPerMphField.getText()));
+		}
+	    } else {
+		this.fats.start(Integer.valueOf(this.start.getText()));
+		this.fats.end(Integer.valueOf(this.end.getText()));
+	    }
+	    this.dataset.refreshFromFATS();
 	} else if(event.getActionCommand().equals("Defaults")) {
-	    this.dataset.setStart(4200);
-	    this.dataset.setEnd(6500);
+	    this.fats.useMph(false);
+	    this.fats.start(4200);
+	    this.fats.end(6500);
+	    this.dataset.refreshFromFATS();
+	    // Update text fields to show defaults
+	    this.start.setText("4200");
+	    this.end.setText("6500");
+	    // Update checkbox to reflect defaults
+	    this.useMphCheckbox.setSelected(false);
+	    updateRpmPerMphVisibility();
 	}
 	this.getChartPanel().getChart().setTitle(this.dataset.getTitle());
+    }
+
+    private void updateLabelsAndValues(JLabel startLabel, JLabel endLabel, JTextField start, JTextField end) {
+	if (this.fats.useMph()) {
+	    startLabel.setText("Start MPH:");
+	    endLabel.setText("End MPH:");
+	    start.setText("" + this.fats.startMph());
+	    end.setText("" + this.fats.endMph());
+	} else {
+	    startLabel.setText("Start RPM:");
+	    endLabel.setText("End RPM:");
+	    start.setText("" + this.fats.start());
+	    end.setText("" + this.fats.end());
+	}
+    }
+
+    private void updateRpmPerMphVisibility() {
+	if (this.rpmPerMphField != null && this.rpmPerMphLabel != null) {
+	    boolean shouldShow = this.fats.useMph() && this.dataset.needsRpmPerMphConversion();
+	    this.rpmPerMphField.setVisible(shouldShow);
+	    this.rpmPerMphLabel.setVisible(shouldShow);
+	    if (shouldShow) {
+		this.rpmPerMphField.setText("" + this.plotFrame.env.c.rpm_per_mph());
+	    }
+	}
     }
 
     private java.awt.Dimension windowSize() {
@@ -163,6 +291,10 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     public void dispose() {
 	putWindowSize();
 	putWindowLocation();
+	// Uncheck "Show FATS window..." in Options menu when window is closed
+	this.plotFrame.prefs.putBoolean("showfats", false);
+	// Update the menu checkbox to reflect the change
+	this.plotFrame.optionsMenu.updateFATSCheckbox();
 	super.dispose();
     }
 
