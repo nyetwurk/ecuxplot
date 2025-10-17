@@ -289,7 +289,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     public void setMyVisible(boolean b) {
 	super.setVisible(b);
 	if(this.fatsFrame==null) return;
-	if(!this.filter.enabled()) b=false;
+	// Don't hide FATS window when filter is disabled - let user adjust settings
+	// if(!this.filter.enabled()) b=false;
 	if(b!=this.fatsFrame.isShowing() && this.showFATS())
 	    this.fatsFrame.setVisible(b);
     }
