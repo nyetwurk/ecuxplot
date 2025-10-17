@@ -91,6 +91,11 @@ public class ECUxDataset extends Dataset {
 	return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.HPTQMAW());
     }
 
+    private int AccelMAW() {
+	/* assume 10 == 1 sec smoothing */
+	return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.accelMAW());
+    }
+
     private String [] ParseUnits(String [] h, int verbose) {
 	final String [] u = new String[h.length];
 	for(int i=0;i<h.length;i++) {
@@ -575,7 +580,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("Acceleration (RPM/s)")) {
 	    final DoubleArray y = this.get("RPM").data;
 	    final DoubleArray x = this.get("TIME").data;
-	    c = new Column(id, "RPM/s", y.derivative(x, this.MAW()).max(0));
+	    c = new Column(id, "RPM/s", y.derivative(x, this.AccelMAW()).max(0));
 	} else if(id.equals("Acceleration - raw (RPM/s)")) {
 	    final DoubleArray y = this.get("RPM - raw").data;
 	    final DoubleArray x = this.get("TIME").data;
@@ -909,6 +914,14 @@ public class ECUxDataset extends Dataset {
 	    reasons.add("throttle " + this.throttle.data.get(i) +
 		    "<" + this.filter.minThrottle());
 	    ret=false;
+	}
+	if(this.filter.minAcceleration()>0) {
+	    final Column accel = this.get("Acceleration (RPM/s)");
+	    if(accel!=null && accel.data.get(i)<this.filter.minAcceleration()) {
+		reasons.add("acceleration " + accel.data.get(i) +
+		    "<" + this.filter.minAcceleration() + " RPM/s");
+		ret=false;
+	    }
 	}
 	if(this.zboost!=null && this.zboost.data.get(i)<0) {
 	    reasons.add("zboost " + this.zboost.data.get(i) +

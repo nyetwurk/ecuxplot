@@ -20,6 +20,8 @@ public class FilterEditor extends PreferencesEditor {
     public JTextField monotonicRPMfuzz;
     public JTextField minPedal;
     public JTextField minThrottle;
+    public JTextField minAcceleration;
+    public JTextField accelMAW;
     public JTextField minPoints;
     public JTextField HPTQMAW;
     public JTextField ZeitMAW;
@@ -38,6 +40,8 @@ public class FilterEditor extends PreferencesEditor {
 	{"RPM fuzz tolerance", "monotonicRPMfuzz"},
 	{"Minimum Pedal", "minPedal"},
 	{"Minimum Throttle", "minThrottle"},
+	{"Minimum Acceleration (RPM/s)", "minAcceleration"},
+	{"Acceleration Smoothing Window", "accelMAW"},
 	{"Minimum Points", "minPoints"},
 	{"HP/TQ smoothing", "HPTQMAW"},
 	{"Zeitronix smoothing", "ZeitMAW"},

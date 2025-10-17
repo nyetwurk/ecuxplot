@@ -14,6 +14,8 @@ public class Filter {
     private static final int defaultMinRPMRange = 1200;
     private static final int defaultMinPedal = 95;
     private static final int defaultMinThrottle = 40;	// allow for bad throttle cut
+    private static final int defaultMinAcceleration = 100;	// RPM/s minimum acceleration
+    private static final int defaultAccelMAW = 5;		// acceleration moving average window
     private static final int defaultGear = -1;
     private static final int defaultMinPoints = 5;
     private static final int defaultHPTQMAW = 5; // hp/tq moving average window
@@ -95,6 +97,20 @@ public class Filter {
     }
     public void minThrottle(Integer val) {
 	this.prefs.putInt("minThrottle", val);
+    }
+
+    public int minAcceleration() {
+	return this.prefs.getInt("minAcceleration", defaultMinAcceleration);
+    }
+    public void minAcceleration(Integer val) {
+	this.prefs.putInt("minAcceleration", val);
+    }
+
+    public int accelMAW() {
+	return this.prefs.getInt("accelMAW", defaultAccelMAW);
+    }
+    public void accelMAW(Integer val) {
+	this.prefs.putInt("accelMAW", val);
     }
 
     public int gear() {
