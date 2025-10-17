@@ -501,8 +501,17 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("AirFuelRatioCurrent (AFR)")) {
 	    final DoubleArray abs = super.get("AirFuelRatioCurrent").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
+	} else if(id.equals("AirFuelRatioCurrentBank1 (AFR)")) {
+	    final DoubleArray abs = super.get("AirFuelRatioCurrentBank1").data;
+	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("AirFuelRatioCurrentBank2 (AFR)")) {
 	    final DoubleArray abs = super.get("AirFuelRatioCurrentBank2").data;
+	    c = new Column(id, "AFR", abs.mult(14.7));
+	} else if(id.equals("Lambda Bank 1 (AFR)")) {
+	    final DoubleArray abs = super.get("Lambda Bank 1").data;
+	    c = new Column(id, "AFR", abs.mult(14.7));
+	} else if(id.equals("Lambda Bank 2 (AFR)")) {
+	    final DoubleArray abs = super.get("Lambda Bank 2").data;
 	    c = new Column(id, "AFR", abs.mult(14.7));
 	} else if(id.equals("Sim AFR")) {
 	    final DoubleArray a = this.get("Sim MAF").data;
@@ -547,6 +556,10 @@ public class ECUxDataset extends Dataset {
 	    final DoubleArray value = tq.div(5252).mult(rpm);
 	    c = new Column(id, "HP", value);
 /*****************************************************************************/
+	} else if(id.equals("VehicleSpeed (MPH)")) {
+		final double mph_per_kph = 0.621371192;
+	    final DoubleArray a = this.get("VehicleSpeed").data.mult(mph_per_kph);
+	    c = new Column(id, "MPH", a);
 	} else if(id.equals("Calc Velocity")) {
 	    // TODO: make a user adjustable checkbox for this
 	    // Also, make sure we test units of VehicleSpeed

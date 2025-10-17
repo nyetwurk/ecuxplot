@@ -158,8 +158,20 @@ public class AxisMenu extends JMenu {
 	    if(id.matches("AirFuelRatioCurrent")) {
 		this.add("AirFuelRatioCurrent (AFR)");
 	    }
+	    if(id.matches("AirFuelRatioCurrentBank1")) {
+		this.add("AirFuelRatioCurrentBank1 (AFR)");
+	    }
 	    if(id.matches("AirFuelRatioCurrentBank2")) {
 		this.add("AirFuelRatioCurrentBank2 (AFR)");
+	    }
+	    if(id.matches("Lambda")) {
+		this.add("Lambda (AFR)");
+	    }
+	    if(id.matches("Lambda Bank 1")) {
+		this.add("Lambda Bank 1 (AFR)");
+	    }
+	    if(id.matches("Lambda Bank 2")) {
+		this.add("Lambda Bank 2 (AFR)");
 	    }
 	    if(id.matches("FuelInjectorOnTime")) {	// ti
 		this.add("FuelInjectorDutyCycle");
@@ -242,8 +254,11 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("Misfires", item);
 	} else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
 	    addToSubmenu("O2 Sensor(s)", item);
+	} else if(id.matches("VehicleSpeed")) {
+	    this.add(item);  /* Must add self - standalone item with derived MPH version */
+	    this.add(new DatasetId("VehicleSpeed (MPH)", null, "MPH"));
 	} else if(id.matches("Engine torque")) {
-	    this.add(item);
+	    this.add(item);  /* Must add self - standalone item with derived ft-lb and HP versions */
 	    this.add("Engine torque (ft-lb)");
 	    this.add("Engine HP");
 	} else if(id.matches("IntakeAirTemperature")) {

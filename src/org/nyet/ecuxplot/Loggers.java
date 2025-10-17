@@ -193,9 +193,6 @@ public class Loggers {
 	{"^Manifold Pressure$", "BoostPressureActual"},
 	// We now assume the default IntakeAirTemperature is C
 	{"^Intake air temperature$", "IntakeAirTemperature"},
-	{"^Lambda Bank 1$", "AirFuelRatioCurrent"},
-	// ME7L oddity - bank 1 has no suffix, but bank 2 has a full suffix
-	{"^Lambda Bank 2$", "AirFuelRatioCurrentBank2"},
 	{"^Ignition Angle Actual$", "IgnitionTimingAngleOverall"},
 	{"^Relative Load$", "EngineLoad"},
 	{"^Actual Ignition Angle$", "IgnitionTimingAngleOverall"},

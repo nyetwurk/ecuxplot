@@ -21,6 +21,7 @@ public final class Units {
 	    {"TPS", "%"},
 
 	    {"RPM", "RPM"},
+	    {"TIME", "s"},
 	    {"Time", "s"},
 
 	    {"Zeitronix TPS", "%"},
@@ -32,12 +33,13 @@ public final class Units {
 	    {".*BoostPressure.*", "mBar"},
 	    {".*DutyCycle.*", "%"},
 	    {".*Angle.*", "\u00B0"},
-	    {".*IgnitionRetard.*", "\u00B0"},
-	    {".*IgnitionTiming.*", "\u00B0"},
+	    {".*Ignition.*Retard.*", "\u00B0"},
+	    {".*Ignition.*Timing.*", "\u00B0"},
 	    {".*Load.*", "%"},
 	    {".*Pressure.*", "mBar"},
 	    {".*Voltage.*", "V"},
 	    {".*AFR.*", "AFR"},
+	    {".*AirFuelRatio.*", "AFR"},
 	    {".*[Ll]ambda.*", "lambda"},
 	};
 
