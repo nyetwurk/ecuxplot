@@ -15,7 +15,7 @@ public class PreferencesEditor extends JPanel {
     private JDialog dialog;
     private final JButton jbtnOK;
     private boolean ok;
-    private ECUxPlot eplot;
+    protected ECUxPlot eplot;
 
     private final JPanel prefsPanel;
 

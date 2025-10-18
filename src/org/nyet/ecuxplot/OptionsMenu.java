@@ -25,6 +25,7 @@ public final class OptionsMenu extends JMenu {
     private final JMenu deletePresetsMenu;
     private JCheckBox fatsCheckBox;
     private JCheckBox scatterCheckBox;
+    private JCheckBox filterCheckBox;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
 	super(id);
@@ -68,6 +69,9 @@ public final class OptionsMenu extends JMenu {
 	jcb = new JCheckBox("Filter data", Filter.enabled(prefs));
 	jcb.addActionListener(plotFrame);
 	this.add(jcb);
+
+	// Store reference to filter checkbox for dynamic updates
+	this.filterCheckBox = jcb;
 	jcb = new JCheckBox("Show all ranges", Filter.showAllRanges(prefs));
 	jcb.addActionListener(plotFrame);
 	this.add(jcb);
@@ -249,6 +253,13 @@ public final class OptionsMenu extends JMenu {
 	if (this.scatterCheckBox != null) {
 	    final Preferences prefs = ECUxPlot.getPreferences();
 	    this.scatterCheckBox.setSelected(ECUxPlot.scatter(prefs));
+	}
+    }
+
+    public void updateFilterCheckbox() {
+	if (this.filterCheckBox != null) {
+	    final Preferences prefs = ECUxPlot.getPreferences();
+	    this.filterCheckBox.setSelected(Filter.enabled(prefs));
 	}
     }
 }
