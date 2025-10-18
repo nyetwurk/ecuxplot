@@ -846,6 +846,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     private void exitApp() {
 	this.prefsPutWindowSize();
+
+	// Save last loaded files for auto-loading on next startup
+	saveLastLoadedFiles();
+
 	if(this.fatsFrame!=null)
 	    this.fatsFrame.dispose();
 	if(this.debugLogWindow!=null)
@@ -857,6 +861,46 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     public static final Preferences getPreferences() {
 	return Preferences.userNodeForPackage(ECUxPlot.class);
+    }
+
+    /**
+     * Save the currently loaded files to preferences for auto-loading on next startup
+     */
+    private void saveLastLoadedFiles() {
+	if (this.files != null && !this.files.isEmpty()) {
+	    // Store the number of files
+	    this.prefs.putInt("lastFileCount", this.files.size());
+
+	    // Store each file path
+	    for (int i = 0; i < this.files.size(); i++) {
+		this.prefs.put("lastFile" + i, this.files.get(i));
+	    }
+	} else {
+	    // Clear any previously saved files
+	    this.prefs.remove("lastFileCount");
+	    for (int i = 0; i < 10; i++) { // Clear up to 10 previous files
+		this.prefs.remove("lastFile" + i);
+	    }
+	}
+    }
+
+    /**
+     * Load the last loaded files from preferences
+     * @return ArrayList of file paths, or empty list if none saved
+     */
+    private static ArrayList<String> loadLastLoadedFiles() {
+	final Preferences prefs = getPreferences();
+	final int fileCount = prefs.getInt("lastFileCount", 0);
+	final ArrayList<String> files = new ArrayList<String>();
+
+	for (int i = 0; i < fileCount; i++) {
+	    final String filePath = prefs.get("lastFile" + i, null);
+	    if (filePath != null && new File(filePath).exists()) {
+		files.add(filePath);
+	    }
+	}
+
+	return files;
     }
 
     public static final String showInputDialog(String message) {
@@ -1028,7 +1072,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 		plot.pack();
 		RefineryUtilities.centerFrameOnScreen(plot);
-		plot.loadFiles(o.files);
+
+		// Load files from command line, or auto-load last files if none provided
+		if (o.files != null && !o.files.isEmpty()) {
+		    plot.loadFiles(o.files);
+		} else {
+		    // Auto-load last files if no files provided via command line
+		    final ArrayList<String> lastFiles = loadLastLoadedFiles();
+		    if (!lastFiles.isEmpty()) {
+			ecuxLogger.info("Auto-loading {} files from last session", lastFiles.size());
+			plot.loadFiles(lastFiles);
+		    }
+		}
 
 		if(o.preset!=null)
 		    plot.loadPreset(o.preset);
