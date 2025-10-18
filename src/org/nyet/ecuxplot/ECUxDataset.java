@@ -30,8 +30,6 @@ public class ECUxDataset extends Dataset {
     private final Column zboost;
     private final Env env;
     private final Filter filter;
-    private final double hp_per_watt = 0.00134102209;
-    private final double mbar_per_psi = 68.9475729;
     private double time_ticks_per_sec;	// ECUx has time in ms, JB4 in 1/10s
     public double samples_per_sec=0;
     private CubicSpline [] splines;	// rpm vs time splines
@@ -386,23 +384,23 @@ public class ECUxDataset extends Dataset {
 	    this.env.c.FA());
 
 	final DoubleArray rollingDrag = v.mult(this.env.c.rolling_drag() *
-	    this.env.c.mass() * 9.80665);
+	    this.env.c.mass() * UnitConstants.STANDARD_GRAVITY);
 
 	return windDrag.add(rollingDrag);
     }
 
     private DoubleArray toPSI(DoubleArray abs) {
 	final Column ambient = this.get("BaroPressure");
-	if(ambient==null) return abs.add(-1013).div(this.mbar_per_psi);
-	return abs.sub(ambient.data).div(this.mbar_per_psi);
+	if(ambient==null) return abs.add(-UnitConstants.MBAR_PER_ATM).div(UnitConstants.MBAR_PER_PSI);
+	return abs.sub(ambient.data).div(UnitConstants.MBAR_PER_PSI);
     }
 
     private static DoubleArray toCelcius(DoubleArray f) {
-	return f.add(-32).mult(5.0/9.0);
+	return f.add(-UnitConstants.CELSIUS_TO_FAHRENHEIT_OFFSET).mult(1.0/UnitConstants.CELSIUS_TO_FAHRENHEIT_FACTOR);
     }
 
     private static DoubleArray toFahrenheit(DoubleArray c) {
-	return c.mult(9.0/5.0).add(32);
+	return c.mult(UnitConstants.CELSIUS_TO_FAHRENHEIT_FACTOR).add(UnitConstants.CELSIUS_TO_FAHRENHEIT_OFFSET);
     }
 
     // given a list of id's, find the first that exists
@@ -447,14 +445,14 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "RPM", super.get("RPM").data);
 	} else if(id.equals("Sim Load")) {
 	    // g/sec to kg/hr
-	    final DoubleArray a = super.get("MassAirFlow").data.mult(3.6);
+	    final DoubleArray a = super.get("MassAirFlow").data.mult(UnitConstants.GPS_PER_KGH);
 	    final DoubleArray b = super.get("RPM").data.smooth();
 
 	    // KUMSRL
 	    c = new Column(id, "%", a.div(b).div(.001072));
 	} else if(id.equals("Sim Load Corrected")) {
 	    // g/sec to kg/hr
-	    final DoubleArray a = this.get("Sim MAF").data.mult(3.6);
+	    final DoubleArray a = this.get("Sim MAF").data.mult(UnitConstants.GPS_PER_KGH);
 	    final DoubleArray b = this.get("RPM").data;
 
 	    // KUMSRL
@@ -462,7 +460,7 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("MassAirFlow (kg/hr)")) {
 	    // mass in g/sec
 	    final DoubleArray maf = super.get("MassAirFlow").data;
-	    c = new Column(id, "kg/hr", maf.mult(60.0*60.0/1000.0));
+	    c = new Column(id, "kg/hr", maf.mult(UnitConstants.GPS_PER_KGH));
 	} else if(id.equals("Sim MAF")) {
 	    // mass in g/sec
 	    final DoubleArray a = super.get("MassAirFlow").data.
@@ -492,31 +490,31 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "g/sec", a);
 	} else if(id.equals("TargetAFRDriverRequest (AFR)")) {
 	    final DoubleArray abs = super.get("TargetAFRDriverRequest").data;
-	    c = new Column(id, "AFR", abs.mult(14.7));
+	    c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("AirFuelRatioDesired (AFR)")) {
 	    final DoubleArray abs = super.get("AirFuelRatioDesired").data;
-	    c = new Column(id, "AFR", abs.mult(14.7));
+	    c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("AirFuelRatioCurrent (AFR)")) {
 	    final DoubleArray abs = super.get("AirFuelRatioCurrent").data;
-	    c = new Column(id, "AFR", abs.mult(14.7));
+	    c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("AirFuelRatioCurrentBank1 (AFR)")) {
 	    final DoubleArray abs = super.get("AirFuelRatioCurrentBank1").data;
-	    c = new Column(id, "AFR", abs.mult(14.7));
+	    c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("AirFuelRatioCurrentBank2 (AFR)")) {
 	    final DoubleArray abs = super.get("AirFuelRatioCurrentBank2").data;
-	    c = new Column(id, "AFR", abs.mult(14.7));
+	    c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("Lambda Bank 1 (AFR)")) {
 	    final DoubleArray abs = super.get("Lambda Bank 1").data;
-	    c = new Column(id, "AFR", abs.mult(14.7));
+	    c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("Lambda Bank 2 (AFR)")) {
 	    final DoubleArray abs = super.get("Lambda Bank 2").data;
-	    c = new Column(id, "AFR", abs.mult(14.7));
+	    c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("Sim AFR")) {
 	    final DoubleArray a = this.get("Sim MAF").data;
 	    final DoubleArray b = this.get("Sim Fuel Mass").data;
 	    c = new Column(id, "AFR", a.div(b));
 	} else if(id.equals("Sim lambda")) {
-	    final DoubleArray a = this.get("Sim AFR").data.div(14.7);
+	    final DoubleArray a = this.get("Sim AFR").data.div(UnitConstants.STOICHIOMETRIC_AFR);
 	    c = new Column(id, "lambda", a);
 	} else if(id.equals("Sim lambda error")) {
 	    final DoubleArray a = super.get("AirFuelRatioDesired").data;
@@ -546,20 +544,19 @@ public class ECUxDataset extends Dataset {
 	/* if log contains Engine torque */
 	} else if(id.equals("Engine torque (ft-lb)")) {
 	    final DoubleArray tq = this.get("Engine torque").data;
-	    final DoubleArray value = tq.mult(0.737562149);	// nm to ft-lb
+	    final DoubleArray value = tq.mult(UnitConstants.NM_PER_FTLB);	// nm to ft-lb
 	    c = new Column(id, "ft-lb", value);
 	} else if(id.equals("Engine HP")) {
 	    final DoubleArray tq = this.get("Engine torque (ft-lb)").data;
 	    final DoubleArray rpm = this.get("RPM").data;
-	    final DoubleArray value = tq.div(5252).mult(rpm);
+	    final DoubleArray value = tq.div(UnitConstants.HP_CALCULATION_FACTOR).mult(rpm);
 	    c = new Column(id, "HP", value);
 /*****************************************************************************/
 	} else if(id.equals("VehicleSpeed (MPH)")) {
 	    Column rawVehicleSpeed = this.get("VehicleSpeed");
 	    if (rawVehicleSpeed != null) {
 		// Case 1: Convert raw VehicleSpeed to MPH
-		final double mph_per_kph = 0.621371192;
-		final DoubleArray a = rawVehicleSpeed.data.mult(mph_per_kph);
+		final DoubleArray a = rawVehicleSpeed.data.mult(UnitConstants.KMH_PER_MPH);
 		c = new Column(id, "MPH", a);
 	    } else {
 		// Case 2: Calculate VehicleSpeed from RPM
@@ -571,10 +568,9 @@ public class ECUxDataset extends Dataset {
 	    // TODO: give user option to use raw VehicleSpeed or calculated from RPM
 	    // VehicleSpeed sensors are notorioiusly inaccurate.
 	    // Better to depend on RPM and user specified rpm_per_mph
-	    final double mph_per_mps = 2.23693629;
 	    final DoubleArray rpm = this.get("RPM").data;
 	    c = new Column(id, "m/s", rpm.div(this.env.c.rpm_per_mph()).
-		div(mph_per_mps));
+		div(UnitConstants.MPS_PER_MPH));
 	} else if(id.equals("Acceleration (RPM/s)")) {
 	    final DoubleArray y = this.get("RPM").data;
 	    final DoubleArray x = this.get("TIME").data;
@@ -589,7 +585,7 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "m/s^2", y.derivative(x, this.MAW()).max(0));
 	} else if(id.equals("Acceleration (g)")) {
 	    final DoubleArray a = this.get("Acceleration (m/s^2)").data;
-	    c = new Column(id, "g", a.div(9.80665));
+	    c = new Column(id, "g", a.div(UnitConstants.STANDARD_GRAVITY));
 /*****************************************************************************/
 	} else if(id.equals("WHP")) {
 	    final DoubleArray a = this.get("Acceleration (m/s^2)").data;
@@ -597,7 +593,7 @@ public class ECUxDataset extends Dataset {
 	    final DoubleArray whp = a.mult(v).mult(this.env.c.mass()).
 		add(this.drag(v));	// in watts
 
-	    DoubleArray value = whp.mult(this.hp_per_watt);
+	    DoubleArray value = whp.mult(1.0 / UnitConstants.HP_PER_WATT);
 	    String l = "HP";
 	    if(this.env.sae.enabled()) {
 		value = value.mult(this.env.sae.correction());
@@ -614,21 +610,21 @@ public class ECUxDataset extends Dataset {
 	} else if(id.equals("WTQ")) {
 	    final DoubleArray whp = this.get("WHP").data;
 	    final DoubleArray rpm = this.get("RPM").data;
-	    final DoubleArray value = whp.mult(5252).div(rpm);
+	    final DoubleArray value = whp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
 	    String l = "ft-lb";
 	    if(this.env.sae.enabled()) l += " (SAE)";
 	    c = new Column(id, l, value);
 	} else if(id.equals("TQ")) {
 	    final DoubleArray hp = this.get("HP").data;
 	    final DoubleArray rpm = this.get("RPM").data;
-	    final DoubleArray value = hp.mult(5252).div(rpm);
+	    final DoubleArray value = hp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
 	    String l = "ft-lb";
 	    if(this.env.sae.enabled()) l += " (SAE)";
 	    c = new Column(id, l, value);
 	} else if(id.equals("Drag")) {
 	    final DoubleArray v = this.get("Calc Velocity").data;
 	    final DoubleArray drag = this.drag(v);
-	    c = new Column(id, "HP", drag.mult(this.hp_per_watt));
+	    c = new Column(id, "HP", drag.mult(1.0 / UnitConstants.HP_PER_WATT));
 	} else if(id.equals("IntakeAirTemperature")) {
 	    c = super.get(id);
 	    if (c.getUnits().matches(".*C$"))
@@ -658,13 +654,13 @@ public class ECUxDataset extends Dataset {
 	    c = new Column(id, "PSI", boost.movingAverage(this.filter.ZeitMAW()));
 	} else if(id.equals("Zeitronix Boost")) {
 	    final DoubleArray boost = this.get("Zeitronix Boost (PSI)").data;
-	    c = new Column(id, "mBar", boost.mult(this.mbar_per_psi).add(1013));
+	    c = new Column(id, "mBar", boost.mult(UnitConstants.MBAR_PER_PSI).add(UnitConstants.MBAR_PER_ATM));
 	} else if(id.equals("Zeitronix AFR (lambda)")) {
 	    final DoubleArray abs = super.get("Zeitronix AFR").data;
-	    c = new Column(id, "lambda", abs.div(14.7));
+	    c = new Column(id, "lambda", abs.div(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("Zeitronix Lambda (AFR)")) {
 	    final DoubleArray abs = super.get("Zeitronix Lambda").data;
-	    c = new Column(id, "AFR", abs.mult(14.7));
+	    c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
 	} else if(id.equals("BoostDesired PR")) {
 	    final Column act = super.get("BoostPressureDesired");
 	    try {
@@ -672,9 +668,9 @@ public class ECUxDataset extends Dataset {
 		c = new Column(id, "PR", act.data.div(ambient));
 	    } catch (final Exception e) {
 		if (act.getUnits().matches("PSI"))
-		    c = new Column(id, "PR", act.data.div(14.7));
+		    c = new Column(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
 		else
-		    c = new Column(id, "PR", act.data.div(1013));
+		    c = new Column(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
 	    }
 
 	} else if(id.equals("BoostActual PR")) {
@@ -684,9 +680,9 @@ public class ECUxDataset extends Dataset {
 		c = new Column(id, "PR", act.data.div(ambient));
 	    } catch (final Exception e) {
 		if (act.getUnits().matches("PSI"))
-		    c = new Column(id, "PR", act.data.div(14.7));
+		    c = new Column(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
 		else
-		    c = new Column(id, "PR", act.data.div(1013));
+		    c = new Column(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
 	    }
 	} else if(id.equals("Sim evtmod")) {
 	    final DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
@@ -736,7 +732,7 @@ public class ECUxDataset extends Dataset {
 		ps = super.get("BoostPressureActual").data;
 	    }
 
-	    DoubleArray ambient = ps.ident(1013); // pu
+	    DoubleArray ambient = ps.ident(UnitConstants.MBAR_PER_ATM); // pu
 	    try {
 		ambient	= super.get("BaroPressure").data;
 	    } catch (final Exception e) { }
@@ -748,8 +744,8 @@ public class ECUxDataset extends Dataset {
 		fupsrl = fupsrl.mult(ftbr);
 	    } catch (final Exception e) {}
 
-	    // pirg = fho * KFPRG = (pu/1013) * 70
-	    final DoubleArray pirg = ambient.mult(70/1013.0);
+	    // pirg = fho * KFPRG = (pu/UnitConstants.MBAR_PER_ATM) * 70
+	    final DoubleArray pirg = ambient.mult(70/UnitConstants.MBAR_PER_ATM);
 
 	    if (!SY_BDE) {
 		//load = load.sub(rlr);
@@ -1028,16 +1024,47 @@ public class ECUxDataset extends Dataset {
 	}
     }
 
+    /**
+     * Calculate FATS (Fast Acceleration Time System) for a specific run using RPM values
+     *
+     * @param run The run number (0-based index into the ranges array)
+     * @param RPMStart The starting RPM value for the calculation
+     * @param RPMEnd The ending RPM value for the calculation
+     * @return The elapsed time in seconds between the specified RPM points
+     * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
+     */
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
 	return calcFATSRPM(run, RPMStart, RPMEnd);
     }
 
-    // New method for FATS calculation using VehicleSpeed when available
+    /**
+     * Calculate FATS (Fast Acceleration Time System) for a specific run using speed values
+     *
+     * This method converts the provided speed values to RPM using the rpm_per_mph constant,
+     * then performs the FATS calculation using RPM-based interpolation for consistency.
+     *
+     * @param run The run number (0-based index into the ranges array)
+     * @param speedStart The starting speed value (in MPH)
+     * @param speedEnd The ending speed value (in MPH)
+     * @return The elapsed time in seconds between the specified speed points
+     * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
+     */
     public double calcFATSBySpeed(int run, double speedStart, double speedEnd) throws Exception {
 	return calcFATSMPH(run, speedStart, speedEnd);
     }
 
-    // RPM-based FATS calculation
+    /**
+     * Internal RPM-based FATS calculation method
+     *
+     * This method performs the core FATS calculation using cubic spline interpolation
+     * on RPM vs time data. It is used by both RPM and MPH modes for consistency.
+     *
+     * @param run The run number (0-based index into the ranges array)
+     * @param RPMStart The starting RPM value for the calculation
+     * @param RPMEnd The ending RPM value for the calculation
+     * @return The elapsed time in seconds between the specified RPM points
+     * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
+     */
     private double calcFATSRPM(int run, int RPMStart, int RPMEnd) throws Exception {
 	final ArrayList<Dataset.Range> ranges = this.getRanges();
 	if(run<0 || run>=ranges.size())
@@ -1060,7 +1087,18 @@ public class ECUxDataset extends Dataset {
 	return et;
     }
 
-    // MPH-based FATS calculation (converts to RPM then uses RPM calculation)
+    /**
+     * Internal MPH-based FATS calculation method
+     *
+     * This method converts MPH values to RPM using the rpm_per_mph constant,
+     * then delegates to the RPM calculation method for consistency.
+     *
+     * @param run The run number (0-based index into the ranges array)
+     * @param speedStart The starting speed value (in MPH)
+     * @param speedEnd The ending speed value (in MPH)
+     * @return The elapsed time in seconds between the specified speed points
+     * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
+     */
     private double calcFATSMPH(int run, double speedStart, double speedEnd) throws Exception {
 	final ArrayList<Dataset.Range> ranges = this.getRanges();
 	if(run<0 || run>=ranges.size())
