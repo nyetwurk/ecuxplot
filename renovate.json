@@ -11,8 +11,7 @@
       "datasourceTemplate": "sourceforge",
       "packageNameTemplate": "launch4j",
       "extractVersionTemplate": "^3\\.(?<minor>\\d+)$",
-      "currentValueTemplate": "3.{{minor}}",
-      "newValueTemplate": "3.{{minor}}"
+      "currentValueTemplate": "3.{{minor}}"
     }
   ],
   "ignorePaths": ["lib/", "build/", "runtime/"],
