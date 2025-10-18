@@ -781,6 +781,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	this.xAxis.setSelected(p.xkey());
 	this.yAxis[0].setOnlySelected(p.ykeys(0));
 	this.yAxis[1].setOnlySelected(p.ykeys(1));
+
+	// update scatter checkbox to reflect the preset's scatter setting
+	this.optionsMenu.updateScatterCheckbox();
     }
 
     @Override
