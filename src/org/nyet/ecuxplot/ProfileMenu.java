@@ -25,6 +25,7 @@ public final class ProfileMenu extends JMenu {
     private final ECUxPlot plotFrame;
     private final JMenu loadProfilesMenu;
     private final JMenu saveProfilesMenu;
+    private final JMenu deleteProfilesMenu;
 
     public ProfileMenu(String id, ECUxPlot plotFrame) {
 	super(id);
@@ -43,9 +44,11 @@ public final class ProfileMenu extends JMenu {
 
 	this.loadProfilesMenu = new JMenu("Load Profile...");
 	this.saveProfilesMenu = new JMenu("Save Profile...");
+	this.deleteProfilesMenu = new JMenu("Delete Profile...");
 	updateProfiles();
 	this.add(this.loadProfilesMenu);
 	this.add(this.saveProfilesMenu);
+	this.add(this.deleteProfilesMenu);
     }
 
     private void updateProfiles() {
@@ -97,6 +100,7 @@ public final class ProfileMenu extends JMenu {
 
 	if (dir.isDirectory()) {
 	    final SaveProfileAction spa = new SaveProfileAction(dir);
+	    final DeleteProfileAction dpa = new DeleteProfileAction(dir);
 	    final File profiles[] = dir.listFiles();
 	    if(profiles!=null && profiles.length>0) {
 		// add separator to load menu (divide static from custom)
@@ -111,6 +115,9 @@ public final class ProfileMenu extends JMenu {
 			jmi = new JMenuItem(p.getName());
 			jmi.addActionListener(spa);
 			this.saveProfilesMenu.add(jmi);
+			jmi = new JMenuItem(p.getName());
+			jmi.addActionListener(dpa);
+			this.deleteProfilesMenu.add(jmi);
 		    }
 		}
 		// add separator to save menu (divide custom from new)
@@ -188,6 +195,69 @@ public final class ProfileMenu extends JMenu {
 		JOptionPane.showMessageDialog(pm.plotFrame, e.toString());
 		e.printStackTrace();
 	    };
+	}
+    }
+
+    private class DeleteProfileAction implements ActionListener {
+	private final File dir;
+	public DeleteProfileAction(File dir) {this.dir=dir;}
+	@Override
+	public void actionPerformed(ActionEvent event) {
+	    final String profileName = event.getActionCommand();
+	    final ProfileMenu pm = ProfileMenu.this;
+
+	    // Show confirmation dialog
+	    final int result = JOptionPane.showConfirmDialog(
+		pm.plotFrame,
+		"Are you sure you want to delete the profile '" + profileName + "'?\n\nThis action cannot be undone.",
+		"Delete Profile",
+		JOptionPane.YES_NO_OPTION,
+		JOptionPane.WARNING_MESSAGE
+	    );
+
+	    if (result != JOptionPane.YES_OPTION) {
+		return; // User cancelled
+	    }
+
+	    try {
+		final File profileDir = new File(this.dir, profileName);
+		if (profileDir.isDirectory()) {
+		    // Delete all files in the profile directory
+		    final File[] files = profileDir.listFiles();
+		    if (files != null) {
+			for (final File file : files) {
+			    if (!file.delete()) {
+				JOptionPane.showMessageDialog(pm.plotFrame,
+				    "Failed to delete file: " + file.getName());
+				return;
+			    }
+			}
+		    }
+
+		    // Delete the profile directory itself
+		    if (!profileDir.delete()) {
+			JOptionPane.showMessageDialog(pm.plotFrame,
+			    "Failed to delete profile directory");
+			return;
+		    }
+
+		    // Refresh the menus
+		    pm.saveProfilesMenu.removeAll();
+		    pm.loadProfilesMenu.removeAll();
+		    pm.deleteProfilesMenu.removeAll();
+		    pm.updateProfiles();
+
+		    JOptionPane.showMessageDialog(pm.plotFrame,
+			"Profile '" + profileName + "' deleted successfully");
+		} else {
+		    JOptionPane.showMessageDialog(pm.plotFrame,
+			"Profile directory not found: " + profileDir.getPath());
+		}
+	    } catch (final Exception e) {
+		JOptionPane.showMessageDialog(pm.plotFrame,
+		    "Error deleting profile: " + e.getMessage());
+		e.printStackTrace();
+	    }
 	}
     }
 }
