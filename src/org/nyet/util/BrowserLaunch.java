@@ -1,7 +1,8 @@
 package org.nyet.util;
 
 import java.lang.reflect.Method;
-import javax.swing.JOptionPane;
+
+import org.nyet.ecuxplot.MessageDialog;
 
 public class BrowserLaunch {
 
@@ -52,7 +53,7 @@ public class BrowserLaunch {
 		    new ProcessBuilder(browser, url).start();
 	    }
         } catch (final Exception e) {
-	    JOptionPane.showMessageDialog(null,
+	    MessageDialog.showMessageDialog(null,
 		errMsg + ":\n" + e.getLocalizedMessage());
 	}
     }
