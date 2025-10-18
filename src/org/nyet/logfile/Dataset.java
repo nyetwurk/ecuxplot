@@ -257,6 +257,11 @@ public class Dataset {
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
 
+	// Do detection on raw text lines FIRST, before CSV parsing
+	try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+	    this.detectLoggerType(reader);
+	}
+
 	CSVReader reader = DatasetReader(filename);
 	try {
 	    ParseHeaders(reader, verbose);
@@ -289,6 +294,11 @@ public class Dataset {
     }
 
     public ArrayList<Column> getColumns() {return this.columns;}
+
+    // Default implementation - subclasses can override
+    protected void detectLoggerType(BufferedReader reader) throws Exception {
+	// Default: do nothing - subclasses can override for specific detection
+    }
 
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
 	final String [] line = reader.readNext();

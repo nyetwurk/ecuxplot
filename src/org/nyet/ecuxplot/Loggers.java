@@ -22,7 +22,8 @@ public class Loggers {
 	LOG_VOLVOLOGGER,
 	LOG_LOGWORKS,
 	LOG_JB4,
-	LOG_COBB_AP
+	LOG_COBB_AP,
+	LOG_SWCOMM
     }
 
     public static class DetectResult {
@@ -181,6 +182,73 @@ public class Loggers {
 	{"^Vehicle Speed", "VehicleSpeed"},
     };
 
+    private static final String[][] SWCOMM_aliases = new String[][] {
+	// Time
+	{"^TimeStamp$", "TIME"},
+
+	// Engine Speed
+	{"^N$", "RPM"},
+
+	// Temperatures
+	{"^TIA$", "IntakeAirTemperature"},
+	{"^TCO$", "CoolantTemperature"},
+	{"^TOIL$", "OilTemperature"},
+	{"^Ambient air temperature$", "AmbientTemperature"},
+
+	// Pressures
+	{"^AMP$", "BaroPressure"},
+	{"^MAP$", "BoostPressureActual"},
+	{"^MAP_MES$", "BoostPressureActual2"},
+	{"^MAP_SP$", "BoostPressureDesired"},
+	{"^FUP$", "FuelPressureHigh"},
+	{"^FUP_SP$", "FuelPressureHighSP"},
+	{"^FUP_EFP$", "FuelPressureHighEFP"},
+	{"^RFP_AV$", "RailPressureActual"},
+
+	// Air Flow
+	{"^MAF_THR$", "MassAirFlow"},
+	{"^MAF$", "MassAirFlowActual"},
+
+	// Throttle and Pedal
+	{"^PV_AV$", "AccelPedalPosition"},
+	{"^TPS_AV$", "ThrottlePlateAngle"},
+
+	// Torque
+	{"^TQI_AV$", "TorqueActual"},
+
+	// Ignition
+	{"^IGA_AV_MV$", "IgnitionTimingAngle"},
+	{"^IGA_IGC\\[0\\]$", "IgnitionTimingAngle1"},
+	{"^IGA_IGC\\[4\\]$", "IgnitionTimingAngle5"},
+	{"^IGA_ADJ_KNK\\[0\\]$", "IgnitionRetardCyl1"},
+	{"^IGA_ADJ_KNK\\[3\\]$", "IgnitionRetardCyl4"},
+	{"^IGA_ADJ_KNK\\[5\\]$", "IgnitionRetardCyl6"},
+
+	// Injection
+	{"^TI_1_HOM\\[0\\]$", "FuelInjectorOnTime1"},
+	{"^TI_1_HOM\\[2\\]$", "FuelInjectorOnTime2"},
+
+	// Lambda/AFR
+	{"^LAMB_LS_UP\\[1\\]$", "O2SVoltageSensor1"},
+	{"^LAMB_LS_UP\\[2\\]$", "O2SVoltageSensor1Bank2"},
+	{"^LAMB_SP\\[1\\]$", "AirFuelRatioDesired"},
+	{"^LAMB_SP\\[2\\]$", "AirFuelRatioDesired2"},
+
+	// Fuel Trims
+	{"^STFT Bank 1$", "STFT"},
+	{"^LTFT Bank 1$", "LTFT"},
+	{"^STFT Bank 2$", "STFTBank2"},
+	{"^LTFT Bank 2$", "LTFTBank2"},
+
+	// Other
+	{"^GEAR$", "SelectedGear"},
+	{"^VS$", "VehicleSpeed"},
+	{"^CAM_PHA\\[IN\\]\\[1\\]$", "IntakeCamPosition"},
+	{"^PWM_CWP_2$", "WastegateDutyCycle"},
+	{"^EFPPWM$", "WastegateDutyCycle2"},
+	{"^FAC_LAM_CP$", "LambdaControl"}
+    };
+
     private static final String[][] DEFAULT_aliases = new String[][] {
 	{"^[Tt]ime$", "TIME"},
 	{"^[Ee]ngine [Ss]peed$", "RPM"},
@@ -212,6 +280,7 @@ public class Loggers {
 	    put(LoggerType.LOG_LOGWORKS, LOGWORKS_aliases);
 	    put(LoggerType.LOG_JB4, JB4_aliases);
 	    put(LoggerType.LOG_COBB_AP, COBB_AP_aliases);
+	    put(LoggerType.LOG_SWCOMM, SWCOMM_aliases);
 	}
     };
 
@@ -258,19 +327,18 @@ public class Loggers {
 	}
     }
 
-    public static DetectResult detect(String[] h) {
-	for(int i=0;i<h.length;i++) {
-	    h[i]=h[i].trim();
-	    if(h[i].matches("^VCDS.*")) return new DetectResult(LoggerType.LOG_VCDS, h[i]);
-	    if(h[i].matches("^AP Info:.*")) return new DetectResult(LoggerType.LOG_COBB_AP, h[i]);
-	}
-	LoggerType t = detect(h[0]);
-	if(t==LoggerType.LOG_UNKNOWN)
-	    return new DetectResult(t);
-	return new DetectResult(t, h[0]);
-    }
 
     public static LoggerType detect(String h) {
+	// Comment-based detection patterns
+	if(h.matches(".*SWComm.*ECUTools.*")) return LoggerType.LOG_SWCOMM;
+	if(h.matches(".*ME7-Logger.*")) return LoggerType.LOG_ME7LOGGER;
+	if(h.matches("^VCDS.*")) return LoggerType.LOG_VCDS;
+
+	// Data-based detection patterns (more specific first)
+	if(h.matches("^AP Info:.*")) return LoggerType.LOG_COBB_AP;
+	if(h.matches("^Firmware$")) return LoggerType.LOG_JB4;
+
+	// Legacy patterns (keep for backward compatibility)
 	if(h.matches("^.*(day|tag)$")) return LoggerType.LOG_VCDS;	// Day of week, possibly German lol
 	if(h.matches("^Filename:.*")) {
 	    if(Files.extension(h).equals("zto") ||
@@ -280,15 +348,11 @@ public class Loggers {
 	}
 	if(h.matches("^TIME$")) return LoggerType.LOG_ECUX;
 
-	if(h.matches(".*ME7-Logger.*")) return LoggerType.LOG_ME7LOGGER;
-
 	if(h.matches("^LogID$")) return LoggerType.LOG_EVOSCAN;
 
 	if(h.matches("^Time\\s*\\(sec\\)$")) return LoggerType.LOG_VOLVOLOGGER;
 
 	if(h.matches("^Session: Session [0-8]+$")) return LoggerType.LOG_LOGWORKS;
-
-	if(h.matches("^Firmware$")) return LoggerType.LOG_JB4;
 
 	return LoggerType.LOG_UNKNOWN;
     }

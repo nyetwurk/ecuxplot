@@ -2,6 +2,7 @@ package org.nyet.ecuxplot;
 
 import java.io.PrintStream;
 import java.io.OutputStream;
+import java.io.BufferedReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,74 @@ public class ECUxDataset extends Dataset {
     public double samples_per_sec=0;
     private CubicSpline [] splines;	// rpm vs time splines
     private LoggerType log_detected = LoggerType.LOG_UNKNOWN;
+
+    @Override
+    protected void detectLoggerType(BufferedReader reader) throws Exception {
+	logger.info("Starting detection for file");
+	String line;
+	int lineNum = 0;
+	while ((line = reader.readLine()) != null) {
+	    lineNum++;
+	    logger.debug("Line {}: {}", lineNum, line);
+	    // Skip empty lines
+	    if (line.trim().length() == 0) continue;
+
+	    // Try detection on individual fields of this CSV line
+	    String[] fields = line.split(",");
+	    LoggerType bestMatch = LoggerType.LOG_UNKNOWN;
+	    String bestField = "";
+	    int bestFieldIndex = -1;
+
+	    for (int i = 0; i < fields.length; i++) {
+		String field = fields[i].trim();
+		if (field.length() == 0) continue;
+
+		LoggerType t = Loggers.detect(field);
+		if (t != LoggerType.LOG_UNKNOWN) {
+		    // Prioritize more specific patterns over general ones
+		    boolean shouldUpdate = false;
+		    switch (t) {
+		    case LOG_COBB_AP:
+			// Cobb AP has highest priority
+			shouldUpdate = true;
+			break;
+		    case LOG_JB4:
+			// JB4 has second priority (but not if Cobb AP already found)
+			shouldUpdate = (bestMatch != LoggerType.LOG_COBB_AP);
+			break;
+		    case LOG_SWCOMM:
+		    case LOG_ME7LOGGER:
+		    case LOG_VCDS:
+		    case LOG_ZEITRONIX:
+		    case LOG_EVOSCAN:
+		    case LOG_VOLVOLOGGER:
+		    case LOG_LOGWORKS:
+			// Other loggers have lower priority (only if no higher priority found)
+			shouldUpdate = (bestMatch == LoggerType.LOG_UNKNOWN);
+			break;
+		    default:
+			// Unknown or other types - only if nothing else found
+			shouldUpdate = (bestMatch == LoggerType.LOG_UNKNOWN);
+			break;
+		    }
+
+		    if (shouldUpdate) {
+			bestMatch = t;
+			bestField = field;
+			bestFieldIndex = i;
+		    }
+		}
+	    }
+
+	    if (bestMatch != LoggerType.LOG_UNKNOWN) {
+		logger.info("Detected {} based on field {} in line {}: \"{}\"", bestMatch, bestFieldIndex, lineNum, bestField);
+		this.log_detected = bestMatch;
+		return;
+	    }
+	}
+	logger.info("No logger type detected");
+	this.log_detected = LoggerType.LOG_UNKNOWN;
+    }
 
     public ECUxDataset(String filename, Env env, Filter filter, int verbose)
 	    throws Exception {
@@ -117,12 +186,17 @@ public class ECUxDataset extends Dataset {
     }
 
     public void ParseHeaders(CSVReader reader) throws Exception {
-	ParseHeaders(reader, LoggerType.LOG_DETECT, 0);
+	// Detection was already done in constructor
+	ParseHeaders(reader, this.log_detected, 0);
     }
 
     @Override
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
-	ParseHeaders(reader, LoggerType.LOG_DETECT, verbose);
+	logger.info("ECUxDataset.ParseHeaders called with verbose={}", verbose);
+	logger.info("Using detected logger type: {}", this.log_detected);
+
+	// Now continue with normal CSV parsing
+	ParseHeaders(reader, this.log_detected, verbose);
     }
     public void ParseHeaders(CSVReader reader, LoggerType log_req, int verbose)
 	    throws Exception {
@@ -135,13 +209,7 @@ public class ECUxDataset extends Dataset {
 		throw new Exception(this.getFileId() + ": read failed parsing CSV headers");
 	    for(int i=0;i<h.length;i++)
 		logger.debug("h[" + i + "]: " + h[i]);
-	} while (h.length<1 || h[0].trim().length() == 0 || h[0].trim().matches("^#.+"));
-
-	Loggers.DetectResult r = Loggers.detect(h);
-	if (r.type != LoggerType.LOG_UNKNOWN)
-	    logger.info("Detected {} based on \"{}\"", r.type, r.message);
-
-	this.log_detected = r.type;
+	} while (h.length<1 || h[0].trim().length() == 0);
 
 	/*
 	  passed       detected
@@ -346,6 +414,11 @@ public class ECUxDataset extends Dataset {
 		/* hack: use process Aliases to generate units in () for use in ParseUnits */
 		Loggers.processAliases(h, log_use);
 		u = ParseUnits(h, verbose);
+		break;
+	    case LOG_SWCOMM:
+		// SWComm ECUTools format - headers are already read, just process aliases
+		u = ParseUnits(h, verbose);
+		Loggers.processAliases(h, log_use);
 		break;
 	    default:
 		u = ParseUnits(h, verbose);
