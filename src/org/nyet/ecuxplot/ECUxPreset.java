@@ -109,12 +109,24 @@ public class ECUxPreset extends Preset {
     }
     public static String[] getPresets() {
 	String [] ret = null;
-	for(int i=0; i<2; i++) {
-	    try { ret = getPreferencesStatic().childrenNames();
-	    } catch (final Exception e) { }
-	    if (ret!=null && ret.length>0) return ret;
-	    ECUxPreset.createDefaultECUxPresets();
+	try {
+	    ret = getPreferencesStatic().childrenNames();
+	} catch (final Exception e) {
+	    // If we can't read preferences, return empty array
+	    return new String[0];
 	}
-        return new String[0];
+	if (ret!=null && ret.length>0) return ret;
+
+	// Only create default presets if none exist and we haven't already tried
+	// This prevents infinite recursion when xkey() calls getPresets()
+	ECUxPreset.createDefaultECUxPresets();
+
+	// Try one more time after creating defaults
+	try {
+	    ret = getPreferencesStatic().childrenNames();
+	} catch (final Exception e) {
+	    return new String[0];
+	}
+	return ret != null ? ret : new String[0];
     }
 }
