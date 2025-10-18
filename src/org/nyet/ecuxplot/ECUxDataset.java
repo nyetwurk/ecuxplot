@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import javax.swing.JOptionPane;
-
 import com.opencsv.CSVReader;
 import flanagan.interpolation.CubicSpline;
 
@@ -1018,7 +1016,7 @@ public class ECUxDataset extends Dataset {
 		    this.splines[i] = new CubicSpline(rpm, time);
 		    System.setOut(original);
 		} else
-		    JOptionPane.showMessageDialog(null,
+		    MessageDialog.showMessageDialog(null,
 			"length problem " + time.length + ":" + rpm.length);
 	    } catch (final Exception e) {}
 	}

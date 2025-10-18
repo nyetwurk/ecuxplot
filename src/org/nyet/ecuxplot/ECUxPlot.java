@@ -291,7 +291,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    this.fileDatasets.put(file.getName(), data);
 	    this.files.add(file.getAbsolutePath());
 	} catch (final Exception e) {
-	    JOptionPane.showMessageDialog(this, e);
+	    MessageDialog.showMessageDialog(this, e);
 	    e.printStackTrace();
 	    return;
 	}
@@ -375,18 +375,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    exitApp();
 	} else if(source.getText().equals("Export Chart")) {
 	    if(this.chartPanel == null) {
-		JOptionPane.showMessageDialog(this, "Open a CSV first");
+		MessageDialog.showMessageDialog(this, "Open a CSV first");
 	    } else {
 		try {
 		    this.chartPanel.doSaveAs(getExportStem());
 		} catch (final Exception e) {
-		    JOptionPane.showMessageDialog(this, e);
+		    MessageDialog.showMessageDialog(this, e);
 		    e.printStackTrace();
 		}
 	    }
 	} else if(source.getText().equals("Export All Charts")) {
 	    if (this.plotlist == null || this.plotlist.isEmpty()) {
-		JOptionPane.showMessageDialog(this, "No charts to export");
+		MessageDialog.showMessageDialog(this, "No charts to export");
 		return;
 	    }
 	    boolean ok = false;
@@ -398,7 +398,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    }
 
 	    if (!ok) {
-		JOptionPane.showMessageDialog(this, "No charts to export");
+		MessageDialog.showMessageDialog(this, "No charts to export");
 		return;
 	    }
 
@@ -1041,6 +1041,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    rootLogger.setLevel(ch.qos.logback.classic.Level.INFO);
 		    ecuxLogger.setLevel(ch.qos.logback.classic.Level.INFO);
 		}
+
+		// Set up MessageDialog for --no-gui mode
+		MessageDialog.setNoGui(o.nogui);
 
 		// exit on close
 		final ECUxPlot plot = new ECUxPlot("ECUxPlot", o, true);
