@@ -6,7 +6,9 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 
 - **Data Visualization**: Plot engine parameters from CSV log files
 - **Performance Analysis**: Calculate horsepower estimates and airflow metrics
-- **Filtering**: Advanced filtering for wide-open-throttle (WOT) runs
+- **FATS Analysis**: Fast Acceleration Time System for 60-90 mph performance measurement
+- **Advanced Filtering**: Acceleration-based filtering with wheel spin detection
+- **Debug Tools**: Real-time filter debugging and log analysis
 - **Multi-Platform**: Runs on Windows, macOS, and Linux
 - **Customizable**: Vehicle profiles and configurable parameters
 
@@ -23,11 +25,14 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 
 **Problem**: With the filter on, I don't see anything!
 
-**Solution**: The filter option searches for a WOT run of a certain length in 3rd gear. If you don't meet that criterion, you won't see any data if you enable the filter.
+**Solution**: The filter now uses acceleration-based filtering to find valid acceleration runs. If you don't meet the criteria, you won't see any data.
 
+- Use **"Options → Show Filter Debug Panel"** to see exactly why data points are being filtered out
 - Adjust filter parameters in "Options → Configure filter" menu
+- Check minimum acceleration threshold (default: 100 RPM/s)
 - Ensure you're logging gear and accelerator pedal position
 - Check that your run starts low enough and has sufficient RPM range
+- Use **"Options → Show Debug Logs"** to see detailed filter analysis
 - If problems persist, post your log file for assistance
 
 ### Performance Calculations
@@ -50,6 +55,28 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 - **Non-stock intake**: Increase MAF diameter if ECU uses underscaled MAF values
 - **Verification**: Check the correction value shown in the box under the MAF parameter
 - **Calibration**: Compare Calc AFR with wideband data if unsure
+
+### FATS Issues
+
+**Problem**: FATS calculation fails or shows no results!
+
+**Solution**: FATS requires valid acceleration runs that meet filter criteria.
+
+- Use **"Options → Show Filter Debug Panel"** to verify data quality
+- Check that acceleration threshold is met (default: 100 RPM/s)
+- Ensure RPM range covers the configured FATS range
+- Verify `rpm_per_mph` constant is correct for your vehicle
+- Use **"Options → Show Debug Logs"** to see detailed FATS calculation logs
+- Check that filter is enabled and finding valid ranges
+
+**Problem**: FATS results seem inconsistent between runs!
+
+**Solution**: This may indicate data quality issues or wheel spin.
+
+- Check for wheel spin using Filter Debug Panel (look for negative boost pressure)
+- Verify consistent acceleration patterns across runs
+- Ensure similar starting conditions (gear, throttle position)
+- Compare raw vs calculated MPH values for consistency
 
 ### macOS Installation Issues
 
@@ -76,13 +103,30 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 
 ### FATS (For the Advancement of the S4)
 
-FATS is ET (Elapsed Time) from 4200-6500 RPM in 3rd gear, by B5S4 convention.
+FATS measures elapsed time for acceleration runs, providing consistent performance comparisons across different vehicles and conditions.
+
+#### FATS Features
+
+- **Dual Mode Operation**:
+  - **RPM Mode**: Direct RPM range measurement (e.g., 4200-6500 RPM)
+  - **MPH Mode**: Speed-based measurement (e.g., 60-90 mph) with automatic RPM conversion
+- **Advanced Filtering**: Acceleration-based filtering eliminates slow runs and wheel spin
+- **Real-time Analysis**: Live calculation with detailed logging and error reporting
+- **Multi-file Support**: Compare FATS results across multiple log files
+- **Debug Tools**: Filter debugging panel for troubleshooting data quality
+
+#### Configuration
+
+FATS can be configured in two ways:
+
+1. **RPM Mode**: Set start and end RPM values directly
+2. **MPH Mode**: Set start and end speed values (automatically converted to RPM using `rpm_per_mph`)
+
+The `rpm_per_mph` constant in your vehicle profile determines the RPM-to-speed conversion ratio.
 
 #### Apples-to-Apples Comparison
 
-FATS is intended to approximate 60-90 mph ET in 3rd gear.
-
-For accurate performance comparisons between different vehicles, the FATS RPM range should be adjusted based on each vehicle's `rpm_per_mph` to ensure all vehicles are measured over the same speed range.
+For accurate performance comparisons between different vehicles, adjust the FATS range based on each vehicle's `rpm_per_mph` to ensure all vehicles are measured over the same speed range.
 
 **Examples**:
 
@@ -90,13 +134,45 @@ For accurate performance comparisons between different vehicles, the FATS RPM ra
 
 - 60 mph = 60 × 72.1 = 4326 RPM (~4300 RPM)
 - 90 mph = 90 × 72.1 = 6489 RPM (~6500 RPM)
-- **Standard FATS Range**: 4300-6500 RPM (intends to cover 60-90 mph)
+- **Standard FATS Range**: 4300-6500 RPM (covers 60-90 mph)
 
 **Example Vehicle** - `rpm_per_mph = 67`:
 
 - 60 mph = 60 × 67 = 4020 RPM (~4000 RPM)
 - 90 mph = 90 × 67 = 6030 RPM (~6000 RPM)
 - **Adjusted FATS Range**: 4000-6000 RPM (correctly covers 60-90 mph)
+
+#### Usage
+
+1. **Load Data**: Import your ECU log file
+2. **Configure Filter**: Set minimum acceleration threshold (default: 100 RPM/s)
+3. **Open FATS**: Use "Options → Show FATS Chart" menu
+4. **Set Range**: Configure RPM or MPH range for measurement
+5. **Analyze**: View FATS results with detailed logging
+
+### Debug Tools
+
+ECUxPlot includes comprehensive debugging tools to help troubleshoot data quality and filter issues:
+
+#### Filter Debug Panel
+
+Access via "Options → Show Filter Debug Panel" to:
+
+- **Real-time Analysis**: View filtered data points with color-coded ranges
+- **Data Validation**: See which data points pass/fail filter criteria
+- **Column Comparison**: Compare raw vs calculated MPH values
+- **Multi-file Support**: Switch between multiple loaded datasets
+- **Clipboard Export**: Copy selected data for external analysis
+
+#### Debug Log Window
+
+Access via "Options → Show Debug Logs" to:
+
+- **Live Logging**: Real-time display of application logs
+- **Level Filtering**: Filter by log level (TRACE, DEBUG, INFO, WARN, ERROR)
+- **Search Function**: Find specific log entries
+- **Export Capability**: Save logs to file for analysis
+- **Auto-scroll**: Automatically follow new log entries
 
 ## Getting Help
 
