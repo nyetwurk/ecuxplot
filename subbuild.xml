@@ -21,7 +21,23 @@
 	<classpath refid="common-jars"/>
     </manifestclasspath>
 
-    <target name="test">
+    <target name="test" depends="compile">
+	<java classname="test.java.LoggerDetectionTest" fork="true" failonerror="true">
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
+    </target>
+
+    <target name="test-detection" depends="compile">
+	<java classname="test.java.LoggerDetectionTest" fork="true" failonerror="true">
+	    <arg value="detection"/>
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
     </target>
 
     <target name="compile">
@@ -34,6 +50,10 @@
 	    deprecation="on"
 	    debug="on"
 	/>
+	<!-- Copy XML resources to build directory -->
+	<copy todir="build/classes">
+	    <fileset dir="src" includes="**/*.xml"/>
+	</copy>
     </target>
 
     <target name="ecuxplot" depends="compile">
@@ -44,6 +64,8 @@
         <jar destfile="${TARGET}.jar">
 	    <fileset dir="build/classes" excludes="mapdump*.class"/>
 	    <fileset dir="src" includes="org/nyet/**/*-*.png"/>
+	    <fileset dir="src" includes="org/nyet/**/*.properties"/>
+	    <fileset dir="src" includes="org/nyet/**/*.xml"/>
             <manifest>
                 <attribute name="Main-Class" value="${main-class}"/>
                 <attribute name="Class-Path" value="${classpath.list}"/>

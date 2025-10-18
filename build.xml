@@ -3,18 +3,24 @@
 
     <target name="properties">
 	<mkdir dir="build" />
-	<exec executable="make">
+	<exec executable="make" failonerror="true">
 	    <arg value="build/build.properties" />
 	</exec>
     </target>
 
     <target name="version">
-	<exec executable="make">
+	<exec executable="make" failonerror="true">
 	    <arg value="src/org/nyet/util/Version.java" />
 	</exec>
     </target>
 
-    <target name="prep" depends="properties,version">
+    <target name="convert-loggers" depends="properties">
+	<exec executable="make" failonerror="true">
+	    <arg value="src/org/nyet/ecuxplot/loggers.xml" />
+	</exec>
+    </target>
+
+    <target name="prep" depends="properties,version,convert-loggers">
         <mkdir dir="build/classes"/>
     </target>
 
@@ -30,8 +36,16 @@
 	<ant antfile="subbuild.xml" target="run"/>
     </target>
 
+    <target name="test" depends="prep">
+	<ant antfile="subbuild.xml" target="test"/>
+    </target>
+
+    <target name="test-detection" depends="prep">
+	<ant antfile="subbuild.xml" target="test-detection"/>
+    </target>
+
     <target name="clean">
-	<exec executable="make">
+	<exec executable="make" failonerror="true">
 	    <arg value="clean" />
 	</exec>
     </target>

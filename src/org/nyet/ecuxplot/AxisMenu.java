@@ -18,7 +18,6 @@ import javax.swing.ButtonGroup;
 import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 import org.nyet.logfile.Dataset.DatasetId;
-import org.nyet.ecuxplot.Loggers.LoggerType;
 
 public class AxisMenu extends JMenu {
     /**
@@ -139,7 +138,7 @@ public class AxisMenu extends JMenu {
 	    addToSubmenu("MAF", item);
 	    if(id.matches("MassAirFlow")) {
 		this.add("MassAirFlow (kg/hr)");
-		if (dsid.type == LoggerType.LOG_ME7LOGGER) {
+		if (dsid.type.equals("ME7LOGGER")) {
 		    addToSubmenu("Calc MAF", "Sim Load");
 		    addToSubmenu("Calc MAF", "Sim Load Corrected");
 		    addToSubmenu("Calc MAF", "Sim MAF");
@@ -268,7 +267,7 @@ public class AxisMenu extends JMenu {
 	} else if(id.matches("IntakeAirTemperature")) {
 	    addToSubmenu("Temperature", item);
 	    this.add("IntakeAirTemperature (C)");
-	    if (dsid.type == LoggerType.LOG_ME7LOGGER) {
+	    if (dsid.type.equals("ME7LOGGER")) {
 		addToSubmenu("Calc IAT", "Sim evtmod");
 		addToSubmenu("Calc IAT", "Sim ftbr");
 		addToSubmenu("Calc IAT", "Sim BoostIATCorrection");

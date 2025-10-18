@@ -1,0 +1,4 @@
+Time,Engine Speed,Intake air temperature,Relative Load,Relative Load Setpoint,Lambda Bank 1,Lambda Bank 2,Manifold Absolute Pressure,Throttle Inlet Pressure,Cylinder 1 Ignition Retard,Cylinder 2 Ignition Retard,Cylinder 3 Ignition Retard,Cylinder 4 Ignition Retard,Cylinder 5 Ignition Retard,Cylinder 6 Ignition Retard,Actual Ignition Angle,Vehicle Speed
+0.290,2611,42.00,26.13,26.9297,7.90723,6.74780,487.7344,1019.2188,0.000,0.000,0.000,0.000,0.000,0.000,-9.000,61.41
+0.415,2604,42.00,24.96,26.1328,15.34082,15.99976,490.4688,1023.1250,0.000,0.000,0.000,0.000,0.000,0.000,-6.800,61.16
+0.540,2593,42.00,24.38,25.0547,15.99976,15.99976,484.7656,1025.8594,0.000,0.000,0.000,0.000,0.000,0.000,-6.000,60.80

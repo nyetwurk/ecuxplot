@@ -54,24 +54,44 @@ public final class Units {
 
     public final static String normalize(String u) {
 	if(u==null) return "";
+	u = u.trim();
+	// Extract units from parentheses: "(sec)" -> "sec"
+	if (u.matches("\\(.+\\)")) {
+	    u = u.replaceAll("\\((.+)\\)", "$1");
+	}
 	final String[][] map = {
 	    {"^1/min$", "RPM"},
-	    {"\u00B0KW","\u00B0"},
+	    {"^/min$", "RPM"},  // VCDS RPM unit format
+	    {"^g/s$", "g/sec"},  // VCDS mass flow unit format
+	    {"^°BTDC$", "\u00B0"},  // VCDS ignition timing unit (degrees before top dead center)
+	    {"^[^\u00B0]BTDC$", "\u00B0"},  // VCDS corrupted ignition timing unit (corrupted degree + BTDC)
+	    {"^\u00FF$", "\u00B0"},  // VCDS corrupted degree symbol (U+00FF)
+	    {"^\uFFFD$", "\u00B0"},  // VCDS corrupted degree symbol (U+FFFD - replacement character)
+	    {"^[^\u00B0]KW$", "\u00B0"},  // Fix for ME7L degree symbol encoding issue (non-degree char + KW)
+	    {"^[^\u00B0]C$", "\u00B0C"},  // Fix for ME7L temperature degree symbol encoding issue (non-degree char + C)
 	    {"^DK$", "\u00B0"},
+	    {"^°CRK$", "\u00B0"},  // Convert °CRK to ° (crank degrees)
+	    {"^°TPS$", "%"},  // Convert °TPS to % (throttle position sensor)
+	    //{"^°RFP$", "mBar"},  // SWCOMM oddity? Leave as is.
 	    {"^[Dd]egrees$", "\u00B0"},
 	    {"^PED$", "\u00B0"},
+	    {"^degC$", "\u00B0C"},
 	    {"^C$", "\u00B0C"},
 	    {"^F$", "\u00B0F"},
 	    {"^mbar$", "mBar"},
+	    {"^hPa$", "mBar"},  // Convert hPa to mBar (1 hPa = 1 mBar)
+	    {"^km/h$", "kph"},  // Convert km/h to kph
 	    {"^psi$", "PSI"},
 	    {"^PSI/.*", "PSI"},
+	    {"^sec\\.ms$", "s"},  // ME7L time unit normalization
+	    {"^sec$", "s"},       // VOLVO time unit normalization
 	    {"^rpm", "RPM"},
-	    {"^-$", ""}
+	    {"^(-|Marker|Markierung|STAMP)$", ""} // Random junk we don't need
 	};
 	for (final String[] element : map) {
-	    if(u.trim().matches(element[0])) return element[1];
+	    if(u.matches(element[0])) return element[1];
 	}
-	return u.trim();
+	return u;
      }
 
      public final static String[] processUnits(String h[], String u[]) {

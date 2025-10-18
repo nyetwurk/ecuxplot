@@ -1,0 +1,8 @@
+# Real VOLVO logger format based on VolvoTools source code https://github.com/prometey1982/VolvoTools
+Time (sec),Engine Speed(RPM) RPM,Boost Pressure(mBar) BoostPressure,Throttle Position(%) ThrottlePos,Vehicle Speed(kph) VehicleSpeed
+0.00,800,0.0,0.0,0
+0.10,850,0.1,2.5,5
+0.20,900,0.2,5.0,10
+0.30,950,0.3,7.5,15
+0.40,1000,0.4,10.0,20
+0.50,1050,0.5,12.5,25

@@ -214,9 +214,9 @@ public class FilterDebugPanel extends JFrame {
             // Check data availability for all columns
             boolean hasDerivedMph = dataset.get("VehicleSpeed (MPH)") != null;
             boolean hasRpm = dataset.get("RPM") != null;
-            boolean hasPedal = dataset.get(Loggers.pedalnames) != null;
-            boolean hasThrottle = dataset.get(Loggers.throttlenames) != null;
-            boolean hasGear = dataset.get(Loggers.gearnames) != null;
+            boolean hasPedal = dataset.get(DataLogger.pedal()) != null;
+            boolean hasThrottle = dataset.get(DataLogger.throttle()) != null;
+            boolean hasGear = dataset.get(DataLogger.gear()) != null;
             boolean hasAcceleration = dataset.get("Acceleration (RPM/s)") != null;
 
             // Build status string with data availability
@@ -404,13 +404,13 @@ public class FilterDebugPanel extends JFrame {
         columnHasData[Column.idx(Column.ACCELERATION)] = dataset.get("Acceleration (RPM/s)") != null;
 
         // Pedal - check if available
-        columnHasData[Column.idx(Column.PEDAL)] = dataset.get(Loggers.pedalnames) != null;
+        columnHasData[Column.idx(Column.PEDAL)] = dataset.get(DataLogger.pedal()) != null;
 
         // Throttle - check if available
-        columnHasData[Column.idx(Column.THROTTLE)] = dataset.get(Loggers.throttlenames) != null;
+        columnHasData[Column.idx(Column.THROTTLE)] = dataset.get(DataLogger.throttle()) != null;
 
         // Gear - check if available
-        columnHasData[Column.idx(Column.GEAR)] = dataset.get(Loggers.gearnames) != null;
+        columnHasData[Column.idx(Column.GEAR)] = dataset.get(DataLogger.gear()) != null;
 
         // Filter Status - always available
         columnHasData[Column.idx(Column.FILTER_STATUS)] = true;
@@ -469,9 +469,9 @@ public class FilterDebugPanel extends JFrame {
         if (mphCol == null) {
             mphCol = dataset.get("VehicleSpeed");
         }
-        Dataset.Column pedalCol = dataset.get(Loggers.pedalnames);
-        Dataset.Column throttleCol = dataset.get(Loggers.throttlenames);
-        Dataset.Column gearCol = dataset.get(Loggers.gearnames);
+        Dataset.Column pedalCol = dataset.get(DataLogger.pedal());
+        Dataset.Column throttleCol = dataset.get(DataLogger.throttle());
+        Dataset.Column gearCol = dataset.get(DataLogger.gear());
 
         if (timeCol == null || timeCol.data.size() == 0) {
             rangeAnalysisArea.setText("No TIME data available");

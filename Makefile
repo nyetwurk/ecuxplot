@@ -55,19 +55,32 @@ COMMON_JARS := \
 JARS:=$(addprefix lib/,$(ECUXPLOT_JARS) $(COMMON_JARS))
 
 VERSION_JAVA:=src/org/nyet/util/Version.java
+LOGGERS_XML:=src/org/nyet/ecuxplot/loggers.xml
 TARGET:=ECUxPlot-$(ECUXPLOT_VER)
+
+.PHONY: all compile run test test-detection binclean clean help
 
 # ant build target
 all $(TARGET).jar mapdump.jar: build/version.txt
 	@$(ANT) all
 
 # ant compile target
-compile: build.xml build/build.properties $(VERSION_JAVA)
+compile: build.xml build/build.properties $(VERSION_JAVA) $(LOGGERS_XML)
 	@$(ANT) compile
 
 # ant run target
 run: $(TARGET).jar
 	@$(ANT) run
+
+# Test logger detection and parsing
+test: compile
+	@echo "Running unit tests..."
+	@$(ANT) test
+
+# Test only logger detection (faster, for debugging detection issues)
+test-detection: compile
+	@echo "Running detection-only tests..."
+	@$(ANT) test-detection
 
 # clean targets
 binclean:
@@ -82,10 +95,15 @@ clean: binclean
 .PHONY: FORCE
 .PRECIOUS: $(VERSION_JAVA)
 $(VERSION_JAVA): FORCE
+	@echo Creating $@
+	@cat $@.template | $(GEN) > $@
+
+%.xml: scripts/yaml_to_xml.py %.yaml
+	@echo Converting $*.yaml to $@
+	@python3 scripts/yaml_to_xml.py $*.yaml $@
 
 ANT:=ant
 RSYNC:=rsync
-.PHONY: all compile run binclean clean help
 
 help:
 	@echo "ECUxPlot Build System"
@@ -97,6 +115,11 @@ help:
 	@echo "  make archive    - Create compressed archive (Unix/Linux/macOS)"
 	@echo "  make installers - Build platform-appropriate installers"
 	@echo "  make clean      - Clean build artifacts"
+	@echo ""
+	@echo "Testing targets:"
+	@echo ""
+	@echo "  make test           - Run full tests (detection + parsing + validation)"
+	@echo "  make test-detection - Run detection-only tests (faster, for debugging)"
 	@echo ""
 	@echo "Platform-specific targets:"
 	@echo ""

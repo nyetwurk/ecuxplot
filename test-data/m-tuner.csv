@@ -1,0 +1,5 @@
+Time,Cylinder 1 Ignition Retard,Cylinder 6 Ignition Retard,Cylinder 2 Ignition Retard,Cylinder 4 Ignition Retard,Cylinder 3 Ignition Retard,Cylinder 5 Ignition Retard,Engine Speed,Ignition Angle Actual,Lambda Bank 1,Lambda Bank 2,Target Position Throttle,Intake air temperature,Manifold Absolute Pressure
+0.254,0.000,0.000,0.000,0.000,0.000,0.000,4115,0.700,2.16699,2.11011,20.6719,17.25,468.7500
+0.359,0.000,0.000,0.000,0.000,0.000,0.000,4111,-3.800,8.07886,8.64111,23.3281,17.25,723.2031
+0.464,0.000,0.000,0.000,0.000,0.000,0.000,4106,-3.800,15.99976,15.99976,24.2266,17.25,788.6719
+0.569,0.000,0.000,0.000,0.000,0.000,0.000,4090,-3.800,15.99976,15.99976,23.9141,17.25,802.9688

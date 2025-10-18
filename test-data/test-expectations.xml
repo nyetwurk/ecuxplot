@@ -1,0 +1,1344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test_expectations>
+    <!-- Cobb AP Logger Test Expectations -->
+    <test_case file="cobb-ap.csv">
+        <expected_type>COBB_AP</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">AirFuelRatio</id>
+            <id index="2">AirFuelRatioDesired</id>
+            <id index="3">AcceleratorPedalPosition</id>
+            <id index="4">Air Mass IM Per Stroke</id>
+            <id index="5">Air Mass Per Stroke SP</id>
+            <id index="6">AmbientTemperature</id>
+            <id index="7">Ambient Pressure</id>
+            <id index="8">BoostPressureActual</id>
+            <id index="9">Brake Switch</id>
+            <id index="10">COBB Spark Reduction</id>
+            <id index="11">Combustion Mode</id>
+            <id index="12">WaterTemperature</id>
+            <id index="13">Gear</id>
+            <id index="14">Driver Requested Torque</id>
+            <id index="15">EGT Upstream Turbo</id>
+            <id index="16">OilTemperature</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">Time (sec)</id2>
+            <id2 index="1">AFR (AFR)</id2>
+            <id2 index="2">AFR Set Point (AFR)</id2>
+            <id2 index="3">Accel Pedal Position (%)</id2>
+            <id2 index="4">Air Mass IM Per Stroke (mg/stk)</id2>
+            <id2 index="5">Air Mass Per Stroke SP (mg/stk)</id2>
+            <id2 index="6">Ambient Air Temp. (F)</id2>
+            <id2 index="7">Ambient Pressure (psi)</id2>
+            <id2 index="8">Boost Press. (psi)</id2>
+            <id2 index="9">Brake Switch (-)</id2>
+            <id2 index="10">COBB Spark Reduction (Degrees)</id2>
+            <id2 index="11">Combustion Mode (-)</id2>
+            <id2 index="12">Coolant Temp. (F)</id2>
+            <id2 index="13">Current Gear (-)</id2>
+            <id2 index="14">Driver Requested Torque  (ft-lb)</id2>
+            <id2 index="15">EGT Upstream Turbo (F)</id2>
+            <id2 index="16">Engine Oil Temp. (F)</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">AFR</unit>
+            <unit index="2">lambda</unit>
+            <unit index="3">%</unit>
+            <unit index="4">mg/stk</unit>
+            <unit index="5">mg/stk</unit>
+            <unit index="6">°F</unit>
+            <unit index="7">PSI</unit>
+            <unit index="8">mBar</unit>
+            <unit index="9"></unit>
+            <unit index="10">°</unit>
+            <unit index="11"></unit>
+            <unit index="12">°F</unit>
+            <unit index="13"></unit>
+            <unit index="14">ft-lb</unit>
+            <unit index="15">°F</unit>
+            <unit index="16">°F</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.0</sanity_check>
+    </test_case>
+
+    <!-- ECUx Logger Test Expectations -->
+    <test_case file="ecux.csv">
+        <expected_type>ECUX</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">RPM</id>
+            <id index="2">ThrottlePlateAngle</id>
+            <id index="3">MassAirFlow</id>
+            <id index="4">OXSVoltS1B1</id>
+            <id index="5">EGTbank1OXS</id>
+            <id index="6">BoostPressureDesired</id>
+            <id index="7">BoostPressureActual</id>
+            <id index="8">IgnitionTimingAngleOverall</id>
+            <id index="9">AcceleratorPedalPosition</id>
+            <id index="10">KnockVoltCyl1</id>
+            <id index="11">KnockVoltCyl2</id>
+            <id index="12">KnockVoltCyl3</id>
+            <id index="13">KnockVoltCyl4</id>
+            <id index="14">KnockVoltCyl5</id>
+            <id index="15">KnockVoltCyl6</id>
+            <id index="16">BoostFrequencyValveDutyCycle</id>
+            <id index="17">IntakeAirTemperature</id>
+            <id index="18">FuelInjectorOnTime</id>
+            <id index="19">IgnitionRetardCyl1</id>
+            <id index="20">IgnitionRetardCyl2</id>
+            <id index="21">IgnitionRetardCyl3</id>
+            <id index="22">IgnitionRetardCyl4</id>
+            <id index="23">IgnitionTimingCyl1</id>
+            <id index="24">IgnitionTimingCyl2</id>
+            <id index="25">IgnitionTimingCyl3</id>
+            <id index="26">IgnitionTimingCyl4</id>
+            <id index="27">OXSVoltS1B2</id>
+            <id index="28">IgnitionRetardCyl5</id>
+            <id index="29">IgnitionRetardCyl6</id>
+            <id index="30">IgnitionTimingCyl5</id>
+            <id index="31">IgnitionTimingCyl6</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">TIME</id2>
+            <id2 index="1">RPM</id2>
+            <id2 index="2">ThrottlePlateAngle</id2>
+            <id2 index="3">MassAirFlow</id2>
+            <id2 index="4">OXSVoltS1B1</id2>
+            <id2 index="5">EGTbank1OXS</id2>
+            <id2 index="6">BoostPressureDesired</id2>
+            <id2 index="7">BoostPressureActual</id2>
+            <id2 index="8">IgnitionTimingAngleOverall</id2>
+            <id2 index="9">AcceleratorPedalPosition</id2>
+            <id2 index="10">KnockVoltCyl1</id2>
+            <id2 index="11">KnockVoltCyl2</id2>
+            <id2 index="12">KnockVoltCyl3</id2>
+            <id2 index="13">KnockVoltCyl4</id2>
+            <id2 index="14">KnockVoltCyl5</id2>
+            <id2 index="15">KnockVoltCyl6</id2>
+            <id2 index="16">BoostFrequencyValveDutyCycle</id2>
+            <id2 index="17">IntakeAirTemperature</id2>
+            <id2 index="18">FuelInjectorOnTime</id2>
+            <id2 index="19">IgnitionRetardCyl1</id2>
+            <id2 index="20">IgnitionRetardCyl2</id2>
+            <id2 index="21">IgnitionRetardCyl3</id2>
+            <id2 index="22">IgnitionRetardCyl4</id2>
+            <id2 index="23">IgnitionTimingCyl1</id2>
+            <id2 index="24">IgnitionTimingCyl2</id2>
+            <id2 index="25">IgnitionTimingCyl3</id2>
+            <id2 index="26">IgnitionTimingCyl4</id2>
+            <id2 index="27">OXSVoltS1B2</id2>
+            <id2 index="28">IgnitionRetardCyl5</id2>
+            <id2 index="29">IgnitionRetardCyl6</id2>
+            <id2 index="30">IgnitionTimingCyl5</id2>
+            <id2 index="31">IgnitionTimingCyl6</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">RPM</unit>
+            <unit index="2">%</unit>
+            <unit index="3">g/sec</unit>
+            <unit index="4">V</unit>
+            <unit index="5">°C</unit>
+            <unit index="6">mBar</unit>
+            <unit index="7">mBar</unit>
+            <unit index="8">°</unit>
+            <unit index="9">%</unit>
+            <unit index="10">V</unit>
+            <unit index="11">V</unit>
+            <unit index="12">V</unit>
+            <unit index="13">V</unit>
+            <unit index="14">V</unit>
+            <unit index="15">V</unit>
+            <unit index="16">%</unit>
+            <unit index="17">°C</unit>
+            <unit index="18">ms</unit>
+            <unit index="19">°</unit>
+            <unit index="20">°</unit>
+            <unit index="21">°</unit>
+            <unit index="22">°</unit>
+            <unit index="23">°</unit>
+            <unit index="24">°</unit>
+            <unit index="25">°</unit>
+            <unit index="26">°</unit>
+            <unit index="27">V</unit>
+            <unit index="28">°</unit>
+            <unit index="29">°</unit>
+            <unit index="30">°</unit>
+            <unit index="31">°</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">91.0</sanity_check>
+    </test_case>
+
+    <!-- Evoscan Logger Test Expectations -->
+    <test_case file="evoscan.csv">
+        <expected_type>EVOSCAN</expected_type>
+        <expected_ids>
+            <id index="0">LogID</id>
+            <id index="1">TIME</id>
+            <id index="2">RPM</id>
+            <id index="3">ThrottlePlateAngle</id>
+            <id index="4">AcceleratorPedalPosition</id>
+            <id index="5">IntakeAirTemperature</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">LogID</id2>
+            <id2 index="1">LogEntrySeconds</id2>
+            <id2 index="2">RPM</id2>
+            <id2 index="3">TPS</id2>
+            <id2 index="4">APP</id2>
+            <id2 index="5">IAT</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0"></unit>
+            <unit index="1">s</unit>
+            <unit index="2">RPM</unit>
+            <unit index="3">%</unit>
+            <unit index="4">%</unit>
+            <unit index="5">°C</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">1.0</sanity_check>
+    </test_case>
+
+    <!-- JB4 Logger Test Expectations -->
+    <test_case file="jb4.csv">
+        <expected_type>JB4</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">RPM</id>
+            <id index="2">ECUBoostPressureActual</id>
+            <id index="3">BoostPressureDesiredDelta</id>
+            <id index="4">BoostPressureActual</id>
+            <id index="5">AcceleratorPedalPosition</id>
+            <id index="6">IntakeAirTemperature</id>
+            <id index="7">FuelEnrichment</id>
+            <id index="8">WastegateDutyCycle</id>
+            <id index="9">ThrottlePlateAngle</id>
+            <id index="10">FuelPressureHigh</id>
+            <id index="11">IgnitionTimingAngle1</id>
+            <id index="12">AverageIgnitionRetard</id>
+            <id index="13">CalculatedTorque</id>
+            <id index="14">FuelTrim</id>
+            <id index="15">ECUBoostPressureDesired</id>
+            <id index="16">MethanolFlow</id>
+            <id index="17">FuelPressureLow</id>
+            <id index="18">AirFuelRatio</id>
+            <id index="19">Gear</id>
+            <id index="20">BoostFeedForward</id>
+            <id index="21">EngineLoad</id>
+            <id index="22">clock</id>
+            <id index="23">SelectedMap</id>
+            <id index="24">AirFuelRatio2</id>
+            <id index="25">IgnitionTimingAngle2</id>
+            <id index="26">IgnitionTimingAngle3</id>
+            <id index="27">IgnitionTimingAngle4</id>
+            <id index="28">IgnitionTimingAngle5</id>
+            <id index="29">IgnitionTimingAngle6</id>
+            <id index="30">OilTemperature</id>
+            <id index="31">WaterTemperature</id>
+            <id index="32">TransmissionTemperature</id>
+            <id index="33">E85</id>
+            <id index="34">BoostPressureActual2</id>
+            <id index="35">FuelTrim2</id>
+            <id index="36">VehicleSpeed</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">timestamp</id2>
+            <id2 index="1">rpm</id2>
+            <id2 index="2">ecu_psi</id2>
+            <id2 index="3">target</id2>
+            <id2 index="4">boost</id2>
+            <id2 index="5">pedal</id2>
+            <id2 index="6">iat</id2>
+            <id2 index="7">fuelen</id2>
+            <id2 index="8">wgdc</id2>
+            <id2 index="9">throttle</id2>
+            <id2 index="10">fp_h</id2>
+            <id2 index="11">ign_1</id2>
+            <id2 index="12">avg_ign</id2>
+            <id2 index="13">calc_torque</id2>
+            <id2 index="14">trims</id2>
+            <id2 index="15">dme_bt</id2>
+            <id2 index="16">meth</id2>
+            <id2 index="17">fp_l</id2>
+            <id2 index="18">afr</id2>
+            <id2 index="19">gear</id2>
+            <id2 index="20">ff</id2>
+            <id2 index="21">load</id2>
+            <id2 index="22">clock</id2>
+            <id2 index="23">map</id2>
+            <id2 index="24">afr2</id2>
+            <id2 index="25">ign_2</id2>
+            <id2 index="26">ign_3</id2>
+            <id2 index="27">ign_4</id2>
+            <id2 index="28">ign_5</id2>
+            <id2 index="29">ign_6</id2>
+            <id2 index="30">oilf</id2>
+            <id2 index="31">waterf</id2>
+            <id2 index="32">transf</id2>
+            <id2 index="33">e85</id2>
+            <id2 index="34">boost2</id2>
+            <id2 index="35">trims2</id2>
+            <id2 index="36">mph</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">RPM</unit>
+            <unit index="2">PSI</unit>
+            <unit index="3">PSI</unit>
+            <unit index="4">PSI</unit>
+            <unit index="5">%</unit>
+            <unit index="6">°F</unit>
+            <unit index="7">%</unit>
+            <unit index="8">%</unit>
+            <unit index="9">%</unit>
+            <unit index="10">PSI</unit>
+            <unit index="11">°</unit>
+            <unit index="12">°</unit>
+            <unit index="13"></unit>
+            <unit index="14">%</unit>
+            <unit index="15">PSI</unit>
+            <unit index="16">%</unit>
+            <unit index="17">PSI</unit>
+            <unit index="18">AFR</unit>
+            <unit index="19"></unit>
+            <unit index="20"></unit>
+            <unit index="21">%</unit>
+            <unit index="22"></unit>
+            <unit index="23"></unit>
+            <unit index="24">AFR</unit>
+            <unit index="25">°</unit>
+            <unit index="26">°</unit>
+            <unit index="27">°</unit>
+            <unit index="28">°</unit>
+            <unit index="29">°</unit>
+            <unit index="30">°F</unit>
+            <unit index="31">°F</unit>
+            <unit index="32">°F</unit>
+            <unit index="33"></unit>
+            <unit index="34">PSI</unit>
+            <unit index="35">%</unit>
+            <unit index="36">mph</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">57.25</sanity_check>
+    </test_case>
+
+    <!-- Logworks Logger Test Expectations -->
+    <test_case file="logworks.csv">
+        <expected_type>LOGWORKS</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">AirFuelRatioCurrent</id>
+            <id index="2">RPM</id>
+            <id index="3">EGT</id>
+            <id index="4">Oil_Press</id>
+            <id index="5">BoostPressureActual</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">time</id2>
+            <id2 index="1">LC1_O2WB</id2>
+            <id2 index="2">RPM</id2>
+            <id2 index="3">EGT</id2>
+            <id2 index="4">Oil_Press</id2>
+            <id2 index="5">Boost</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">AFR</unit>
+            <unit index="2">RPM</unit>
+            <unit index="3">°C</unit>
+            <unit index="4">PSI</unit>
+            <unit index="5">PSI</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.0</sanity_check>
+    </test_case>
+
+    <!-- M-Tuner Logger Test Expectations -->
+    <test_case file="m-tuner.csv">
+        <expected_type>UNKNOWN</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">IgnitionRetardCyl1</id>
+            <id index="2">IgnitionRetardCyl6</id>
+            <id index="3">IgnitionRetardCyl2</id>
+            <id index="4">IgnitionRetardCyl4</id>
+            <id index="5">IgnitionRetardCyl3</id>
+            <id index="6">IgnitionRetardCyl5</id>
+            <id index="7">RPM</id>
+            <id index="8">IgnitionTimingAngleOverall</id>
+            <id index="9">Lambda Bank 1</id>
+            <id index="10">Lambda Bank 2</id>
+            <id index="11">ThrottlePlateAngle</id>
+            <id index="12">IntakeAirTemperature</id>
+            <id index="13">BoostPressureActual</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">Time</id2>
+            <id2 index="1">Cylinder 1 Ignition Retard</id2>
+            <id2 index="2">Cylinder 6 Ignition Retard</id2>
+            <id2 index="3">Cylinder 2 Ignition Retard</id2>
+            <id2 index="4">Cylinder 4 Ignition Retard</id2>
+            <id2 index="5">Cylinder 3 Ignition Retard</id2>
+            <id2 index="6">Cylinder 5 Ignition Retard</id2>
+            <id2 index="7">Engine Speed</id2>
+            <id2 index="8">Ignition Angle Actual</id2>
+            <id2 index="9">Lambda Bank 1</id2>
+            <id2 index="10">Lambda Bank 2</id2>
+            <id2 index="11">Target Position Throttle</id2>
+            <id2 index="12">Intake air temperature</id2>
+            <id2 index="13">Manifold Absolute Pressure</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">°</unit>
+            <unit index="2">°</unit>
+            <unit index="3">°</unit>
+            <unit index="4">°</unit>
+            <unit index="5">°</unit>
+            <unit index="6">°</unit>
+            <unit index="7">RPM</unit>
+            <unit index="8">°</unit>
+            <unit index="9">lambda</unit>
+            <unit index="10">lambda</unit>
+            <unit index="11">%</unit>
+            <unit index="12">°C</unit>
+            <unit index="13">mBar</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.254</sanity_check>
+    </test_case>
+
+    <!-- M-Tuner Speed Logger Test Expectations -->
+    <test_case file="m-tuner-speed.csv">
+        <expected_type>UNKNOWN</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">RPM</id>
+            <id index="2">IntakeAirTemperature</id>
+            <id index="3">EngineLoad</id>
+            <id index="4">EngineLoadDesired</id>
+            <id index="5">Lambda Bank 1</id>
+            <id index="6">Lambda Bank 2</id>
+            <id index="7">BoostPressureActual</id>
+            <id index="8">ThrottleInletPressure</id>
+            <id index="9">IgnitionRetardCyl1</id>
+            <id index="10">IgnitionRetardCyl2</id>
+            <id index="11">IgnitionRetardCyl3</id>
+            <id index="12">IgnitionRetardCyl4</id>
+            <id index="13">IgnitionRetardCyl5</id>
+            <id index="14">IgnitionRetardCyl6</id>
+            <id index="15">IgnitionTimingAngleOverall</id>
+            <id index="16">VehicleSpeed</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">Time</id2>
+            <id2 index="1">Engine Speed</id2>
+            <id2 index="2">Intake air temperature</id2>
+            <id2 index="3">Relative Load</id2>
+            <id2 index="4">Relative Load Setpoint</id2>
+            <id2 index="5">Lambda Bank 1</id2>
+            <id2 index="6">Lambda Bank 2</id2>
+            <id2 index="7">Manifold Absolute Pressure</id2>
+            <id2 index="8">Throttle Inlet Pressure</id2>
+            <id2 index="9">Cylinder 1 Ignition Retard</id2>
+            <id2 index="10">Cylinder 2 Ignition Retard</id2>
+            <id2 index="11">Cylinder 3 Ignition Retard</id2>
+            <id2 index="12">Cylinder 4 Ignition Retard</id2>
+            <id2 index="13">Cylinder 5 Ignition Retard</id2>
+            <id2 index="14">Cylinder 6 Ignition Retard</id2>
+            <id2 index="15">Actual Ignition Angle</id2>
+            <id2 index="16">Vehicle Speed</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">RPM</unit>
+            <unit index="2">°C</unit>
+            <unit index="3">%</unit>
+            <unit index="4">%</unit>
+            <unit index="5">lambda</unit>
+            <unit index="6">lambda</unit>
+            <unit index="7">mBar</unit>
+            <unit index="8">mBar</unit>
+            <unit index="9">°</unit>
+            <unit index="10">°</unit>
+            <unit index="11">°</unit>
+            <unit index="12">°</unit>
+            <unit index="13">°</unit>
+            <unit index="14">°</unit>
+            <unit index="15">°</unit>
+            <unit index="16">kph</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.29</sanity_check>
+    </test_case>
+    <test_case file="me7l.csv">
+        <expected_type>ME7LOGGER</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">IgnitionRetardCyl1</id>
+            <id index="2">IgnitionRetardCyl5</id>
+            <id index="3">IgnitionRetardCyl3</id>
+            <id index="4">IgnitionRetardCyl2</id>
+            <id index="5">IgnitionRetardCyl6</id>
+            <id index="6">IgnitionRetardCyl4</id>
+            <id index="7">EtaIgnitionAngleAvg</id>
+            <id index="8">ME7L fldrrx_w</id>
+            <id index="9">LambdaControlBank2</id>
+            <id index="10">LambdaControl</id>
+            <id index="11">LambdaControlAvgBank2</id>
+            <id index="12">LambdaControlAvg</id>
+            <id index="13">LoadCorrectFactorCoolantTemp</id>
+            <id index="14">LoadCorrectFactorIntakeTemp</id>
+            <id index="15">SelectedGear</id>
+            <id index="16">LambdaPartProtection</id>
+            <id index="17">TargetAFRDriverRequest</id>
+            <id index="18">ME7L lamfaw_w</id>
+            <id index="19">AirFuelRatioDesired</id>
+            <id index="20">BoostPID-I-Min</id>
+            <id index="21">BoostPID-I-Max</id>
+            <id index="22">BoostPID-I-Result</id>
+            <id index="23">BoostPID-P-Result</id>
+            <id index="24">BoostPID-D-Result</id>
+            <id index="25">WastegateDutyCycle</id>
+            <id index="26">WastegateDutyCycleBeforeLin</id>
+            <id index="27">EngineLossTorque</id>
+            <id index="28">RequestedTorqueTractionControl</id>
+            <id index="29">ME7L miszul_w</id>
+            <id index="30">MassAirFlow</id>
+            <id index="31">RPM</id>
+            <id index="32">CPU-Load</id>
+            <id index="33">BoostPressureDesired</id>
+            <id index="34">ME7L ps_w</id>
+            <id index="35">BaroPressure</id>
+            <id index="36">BoostPressureActual</id>
+            <id index="37">Inj-Reduction</id>
+            <id index="38">EngineLoad_8</id>
+            <id index="39">EngineLoad</id>
+            <id index="40">EngineLoadCorrected</id>
+            <id index="41">EngineLoadSpecified</id>
+            <id index="42">ME7L rlroh_w</id>
+            <id index="43">EngineLoadRequested</id>
+            <id index="44">EGTModelBeforeCat</id>
+            <id index="45">IntakeAirTemperature</id>
+            <id index="46">EGTSensorBank2</id>
+            <id index="47">EGTSensor</id>
+            <id index="48">EffInjectionTimeBank2</id>
+            <id index="49">EffInjectionTime</id>
+            <id index="50">FuelInjectorOnTime</id>
+            <id index="51">FuelInjectorOnTimeBank2</id>
+            <id index="52">CoolantTemperature</id>
+            <id index="53">MAFSensorVoltage</id>
+            <id index="54">O2SVoltageSensor1</id>
+            <id index="55">O2SVoltageSensor1Bank2</id>
+            <id index="56">ThrottlePlateAngle</id>
+            <id index="57">AvgIgnitionRetardKnockControl</id>
+            <id index="58">AccelPedalPosition</id>
+            <id index="59">ME7L zwgru</id>
+            <id index="60">IgnitionTimingAngle</id>
+            <id index="61">ME7L zwopt</id>
+            <id index="62">IgnitionTimingAngleOverall</id>
+            <id index="63">ME7L zwsol</id>
+            <id index="64">ME7L etazws</id>
+            <id index="65">ME7L dmar_w</id>
+            <id index="66">ME7L zwbas</id>
+            <id index="67">ME7L mizsol_w</id>
+            <id index="68">ME7L dzwb</id>
+            <id index="69">ME7L zaldy</id>
+            <id index="70">ME7L dmzms_w</id>
+            <id index="71">ME7L ldimxr_w</id>
+            <id index="72">ME7L dzws</id>
+            <id index="73">ME7L wkrdy</id>
+            <id index="74">ME7L dmaufr_w</id>
+            <id index="75">ME7L mizsolv_w</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">TimeStamp</id2>
+            <id2 index="1">dwkrz_0</id2>
+            <id2 index="2">dwkrz_1</id2>
+            <id2 index="3">dwkrz_2</id2>
+            <id2 index="4">dwkrz_3</id2>
+            <id2 index="5">dwkrz_4</id2>
+            <id2 index="6">dwkrz_5</id2>
+            <id2 index="7">etazwbm</id2>
+            <id2 index="8">fldrrx_w</id2>
+            <id2 index="9">fr2_w</id2>
+            <id2 index="10">fr_w</id2>
+            <id2 index="11">frm2_w</id2>
+            <id2 index="12">frm_w</id2>
+            <id2 index="13">frxt</id2>
+            <id2 index="14">frxta_w</id2>
+            <id2 index="15">gangi</id2>
+            <id2 index="16">lambts_w</id2>
+            <id2 index="17">lamfa_w</id2>
+            <id2 index="18">lamfaw_w</id2>
+            <id2 index="19">lamsbg_w</id2>
+            <id2 index="20">ldimn_w</id2>
+            <id2 index="21">ldimx_w</id2>
+            <id2 index="22">lditv_w</id2>
+            <id2 index="23">ldptv</id2>
+            <id2 index="24">ldrdtv</id2>
+            <id2 index="25">ldtvm</id2>
+            <id2 index="26">ldtvr_w</id2>
+            <id2 index="27">mdverl_w</id2>
+            <id2 index="28">miasrl_w</id2>
+            <id2 index="29">miszul_w</id2>
+            <id2 index="30">mshfm_w</id2>
+            <id2 index="31">nmot_w</id2>
+            <id2 index="32">perffilt_w</id2>
+            <id2 index="33">plsol_w</id2>
+            <id2 index="34">ps_w</id2>
+            <id2 index="35">pu_w</id2>
+            <id2 index="36">pvdkds_w</id2>
+            <id2 index="37">redist</id2>
+            <id2 index="38">rl</id2>
+            <id2 index="39">rl_w</id2>
+            <id2 index="40">rlmax_w</id2>
+            <id2 index="41">rlmx_w</id2>
+            <id2 index="42">rlroh_w</id2>
+            <id2 index="43">rlsol_w</id2>
+            <id2 index="44">tabgm_w</id2>
+            <id2 index="45">tanslin</id2>
+            <id2 index="46">tats2_w</id2>
+            <id2 index="47">tats_w</id2>
+            <id2 index="48">te2_w</id2>
+            <id2 index="49">te_w</id2>
+            <id2 index="50">ti_b1</id2>
+            <id2 index="51">ti_b2</id2>
+            <id2 index="52">tmotlin</id2>
+            <id2 index="53">uhfm_w</id2>
+            <id2 index="54">usvk</id2>
+            <id2 index="55">usvk2</id2>
+            <id2 index="56">wdkba</id2>
+            <id2 index="57">wkrm</id2>
+            <id2 index="58">wped_w</id2>
+            <id2 index="59">zwgru</id2>
+            <id2 index="60">zwist</id2>
+            <id2 index="61">zwopt</id2>
+            <id2 index="62">zwout</id2>
+            <id2 index="63">zwsol</id2>
+            <id2 index="64">etazws</id2>
+            <id2 index="65">dmar_w</id2>
+            <id2 index="66">zwbas</id2>
+            <id2 index="67">mizsol_w</id2>
+            <id2 index="68">dzwb</id2>
+            <id2 index="69">zaldy</id2>
+            <id2 index="70">dmzms_w</id2>
+            <id2 index="71">ldimxr_w</id2>
+            <id2 index="72">dzws</id2>
+            <id2 index="73">wkrdy</id2>
+            <id2 index="74">dmaufr_w</id2>
+            <id2 index="75">mizsolv_w</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">°</unit>
+            <unit index="2">°</unit>
+            <unit index="3">°</unit>
+            <unit index="4">°</unit>
+            <unit index="5">°</unit>
+            <unit index="6">°</unit>
+            <unit index="7">°</unit>
+            <unit index="8"></unit>
+            <unit index="9">lambda</unit>
+            <unit index="10">lambda</unit>
+            <unit index="11">lambda</unit>
+            <unit index="12">lambda</unit>
+            <unit index="13">%</unit>
+            <unit index="14">%</unit>
+            <unit index="15">gear</unit>
+            <unit index="16">lambda</unit>
+            <unit index="17">AFR</unit>
+            <unit index="18"></unit>
+            <unit index="19">lambda</unit>
+            <unit index="20"></unit>
+            <unit index="21"></unit>
+            <unit index="22"></unit>
+            <unit index="23"></unit>
+            <unit index="24"></unit>
+            <unit index="25">%</unit>
+            <unit index="26">%</unit>
+            <unit index="27"></unit>
+            <unit index="28"></unit>
+            <unit index="29"></unit>
+            <unit index="30">g/sec</unit>
+            <unit index="31">RPM</unit>
+            <unit index="32">%</unit>
+            <unit index="33">mBar</unit>
+            <unit index="34">mBar</unit>
+            <unit index="35">mBar</unit>
+            <unit index="36">mBar</unit>
+            <unit index="37"></unit>
+            <unit index="38">%</unit>
+            <unit index="39">%</unit>
+            <unit index="40">%</unit>
+            <unit index="41">%</unit>
+            <unit index="42"></unit>
+            <unit index="43">%</unit>
+            <unit index="44">°C</unit>
+            <unit index="45">°C</unit>
+            <unit index="46">°C</unit>
+            <unit index="47">°C</unit>
+            <unit index="48">ms</unit>
+            <unit index="49">ms</unit>
+            <unit index="50">ms</unit>
+            <unit index="51">ms</unit>
+            <unit index="52">°C</unit>
+            <unit index="53">V</unit>
+            <unit index="54">V</unit>
+            <unit index="55">V</unit>
+            <unit index="56">°</unit>
+            <unit index="57">°</unit>
+            <unit index="58">°</unit>
+            <unit index="59">°</unit>
+            <unit index="60">°</unit>
+            <unit index="61">°</unit>
+            <unit index="62">°</unit>
+            <unit index="63">°</unit>
+            <unit index="64"></unit>
+            <unit index="65"></unit>
+            <unit index="66">°</unit>
+            <unit index="67"></unit>
+            <unit index="68">°</unit>
+            <unit index="69">°</unit>
+            <unit index="70"></unit>
+            <unit index="71"></unit>
+            <unit index="72">°</unit>
+            <unit index="73">°</unit>
+            <unit index="74"></unit>
+            <unit index="75"></unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.0</sanity_check>
+    </test_case>
+    <test_case file="me7l-semicolons.csv">
+        <expected_type>ME7LOGGER</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">IgnitionRetardCyl1</id>
+            <id index="2">IgnitionRetardCyl5</id>
+            <id index="3">IgnitionRetardCyl3</id>
+            <id index="4">IgnitionRetardCyl2</id>
+            <id index="5">IgnitionRetardCyl6</id>
+            <id index="6">IgnitionRetardCyl4</id>
+            <id index="7">EtaIgnitionAngleAvg</id>
+            <id index="8">ME7L fldrrx_w</id>
+            <id index="9">LambdaControlBank2</id>
+            <id index="10">LambdaControl</id>
+            <id index="11">LambdaControlAvgBank2</id>
+            <id index="12">LambdaControlAvg</id>
+            <id index="13">LoadCorrectFactorCoolantTemp</id>
+            <id index="14">LoadCorrectFactorIntakeTemp</id>
+            <id index="15">SelectedGear</id>
+            <id index="16">LambdaPartProtection</id>
+            <id index="17">TargetAFRDriverRequest</id>
+            <id index="18">ME7L lamfaw_w</id>
+            <id index="19">AirFuelRatioDesired</id>
+            <id index="20">BoostPID-I-Min</id>
+            <id index="21">BoostPID-I-Max</id>
+            <id index="22">BoostPID-I-Result</id>
+            <id index="23">BoostPID-P-Result</id>
+            <id index="24">BoostPID-D-Result</id>
+            <id index="25">WastegateDutyCycle</id>
+            <id index="26">WastegateDutyCycleBeforeLin</id>
+            <id index="27">EngineLossTorque</id>
+            <id index="28">RequestedTorqueTractionControl</id>
+            <id index="29">ME7L miszul_w</id>
+            <id index="30">MassAirFlow</id>
+            <id index="31">RPM</id>
+            <id index="32">CPU-Load</id>
+            <id index="33">BoostPressureDesired</id>
+            <id index="34">ME7L ps_w</id>
+            <id index="35">BaroPressure</id>
+            <id index="36">BoostPressureActual</id>
+            <id index="37">Inj-Reduction</id>
+            <id index="38">EngineLoad_8</id>
+            <id index="39">EngineLoad</id>
+            <id index="40">EngineLoadCorrected</id>
+            <id index="41">EngineLoadSpecified</id>
+            <id index="42">ME7L rlroh_w</id>
+            <id index="43">EngineLoadRequested</id>
+            <id index="44">EGTModelBeforeCat</id>
+            <id index="45">IntakeAirTemperature</id>
+            <id index="46">EGTSensorBank2</id>
+            <id index="47">EGTSensor</id>
+            <id index="48">EffInjectionTimeBank2</id>
+            <id index="49">EffInjectionTime</id>
+            <id index="50">FuelInjectorOnTime</id>
+            <id index="51">FuelInjectorOnTimeBank2</id>
+            <id index="52">CoolantTemperature</id>
+            <id index="53">MAFSensorVoltage</id>
+            <id index="54">O2SVoltageSensor1</id>
+            <id index="55">O2SVoltageSensor1Bank2</id>
+            <id index="56">ThrottlePlateAngle</id>
+            <id index="57">AvgIgnitionRetardKnockControl</id>
+            <id index="58">AccelPedalPosition</id>
+            <id index="59">ME7L zwgru</id>
+            <id index="60">IgnitionTimingAngle</id>
+            <id index="61">ME7L zwopt</id>
+            <id index="62">IgnitionTimingAngleOverall</id>
+            <id index="63">ME7L zwsol</id>
+            <id index="64">ME7L etazws</id>
+            <id index="65">ME7L dmar_w</id>
+            <id index="66">ME7L zwbas</id>
+            <id index="67">ME7L mizsol_w</id>
+            <id index="68">ME7L dzwb</id>
+            <id index="69">ME7L zaldy</id>
+            <id index="70">ME7L dmzms_w</id>
+            <id index="71">ME7L ldimxr_w</id>
+            <id index="72">ME7L dzws</id>
+            <id index="73">ME7L wkrdy</id>
+            <id index="74">ME7L dmaufr_w</id>
+            <id index="75">ME7L mizsolv_w</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">TimeStamp</id2>
+            <id2 index="1">dwkrz_0</id2>
+            <id2 index="2">dwkrz_1</id2>
+            <id2 index="3">dwkrz_2</id2>
+            <id2 index="4">dwkrz_3</id2>
+            <id2 index="5">dwkrz_4</id2>
+            <id2 index="6">dwkrz_5</id2>
+            <id2 index="7">etazwbm</id2>
+            <id2 index="8">fldrrx_w</id2>
+            <id2 index="9">fr2_w</id2>
+            <id2 index="10">fr_w</id2>
+            <id2 index="11">frm2_w</id2>
+            <id2 index="12">frm_w</id2>
+            <id2 index="13">frxt</id2>
+            <id2 index="14">frxta_w</id2>
+            <id2 index="15">gangi</id2>
+            <id2 index="16">lambts_w</id2>
+            <id2 index="17">lamfa_w</id2>
+            <id2 index="18">lamfaw_w</id2>
+            <id2 index="19">lamsbg_w</id2>
+            <id2 index="20">ldimn_w</id2>
+            <id2 index="21">ldimx_w</id2>
+            <id2 index="22">lditv_w</id2>
+            <id2 index="23">ldptv</id2>
+            <id2 index="24">ldrdtv</id2>
+            <id2 index="25">ldtvm</id2>
+            <id2 index="26">ldtvr_w</id2>
+            <id2 index="27">mdverl_w</id2>
+            <id2 index="28">miasrl_w</id2>
+            <id2 index="29">miszul_w</id2>
+            <id2 index="30">mshfm_w</id2>
+            <id2 index="31">nmot_w</id2>
+            <id2 index="32">perffilt_w</id2>
+            <id2 index="33">plsol_w</id2>
+            <id2 index="34">ps_w</id2>
+            <id2 index="35">pu_w</id2>
+            <id2 index="36">pvdkds_w</id2>
+            <id2 index="37">redist</id2>
+            <id2 index="38">rl</id2>
+            <id2 index="39">rl_w</id2>
+            <id2 index="40">rlmax_w</id2>
+            <id2 index="41">rlmx_w</id2>
+            <id2 index="42">rlroh_w</id2>
+            <id2 index="43">rlsol_w</id2>
+            <id2 index="44">tabgm_w</id2>
+            <id2 index="45">tanslin</id2>
+            <id2 index="46">tats2_w</id2>
+            <id2 index="47">tats_w</id2>
+            <id2 index="48">te2_w</id2>
+            <id2 index="49">te_w</id2>
+            <id2 index="50">ti_b1</id2>
+            <id2 index="51">ti_b2</id2>
+            <id2 index="52">tmotlin</id2>
+            <id2 index="53">uhfm_w</id2>
+            <id2 index="54">usvk</id2>
+            <id2 index="55">usvk2</id2>
+            <id2 index="56">wdkba</id2>
+            <id2 index="57">wkrm</id2>
+            <id2 index="58">wped_w</id2>
+            <id2 index="59">zwgru</id2>
+            <id2 index="60">zwist</id2>
+            <id2 index="61">zwopt</id2>
+            <id2 index="62">zwout</id2>
+            <id2 index="63">zwsol</id2>
+            <id2 index="64">etazws</id2>
+            <id2 index="65">dmar_w</id2>
+            <id2 index="66">zwbas</id2>
+            <id2 index="67">mizsol_w</id2>
+            <id2 index="68">dzwb</id2>
+            <id2 index="69">zaldy</id2>
+            <id2 index="70">dmzms_w</id2>
+            <id2 index="71">ldimxr_w</id2>
+            <id2 index="72">dzws</id2>
+            <id2 index="73">wkrdy</id2>
+            <id2 index="74">dmaufr_w</id2>
+            <id2 index="75">mizsolv_w</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">°KW</unit>
+            <unit index="2">°KW</unit>
+            <unit index="3">°KW</unit>
+            <unit index="4">°KW</unit>
+            <unit index="5">°KW</unit>
+            <unit index="6">°KW</unit>
+            <unit index="7">°</unit>
+            <unit index="8"></unit>
+            <unit index="9">lambda</unit>
+            <unit index="10">lambda</unit>
+            <unit index="11">lambda</unit>
+            <unit index="12">lambda</unit>
+            <unit index="13">%</unit>
+            <unit index="14">%</unit>
+            <unit index="15">gear</unit>
+            <unit index="16">lambda</unit>
+            <unit index="17">AFR</unit>
+            <unit index="18"></unit>
+            <unit index="19">lambda</unit>
+            <unit index="20"></unit>
+            <unit index="21"></unit>
+            <unit index="22"></unit>
+            <unit index="23"></unit>
+            <unit index="24"></unit>
+            <unit index="25">%</unit>
+            <unit index="26">%</unit>
+            <unit index="27"></unit>
+            <unit index="28"></unit>
+            <unit index="29"></unit>
+            <unit index="30">g/sec</unit>
+            <unit index="31">RPM</unit>
+            <unit index="32">%</unit>
+            <unit index="33">mBar</unit>
+            <unit index="34">mBar</unit>
+            <unit index="35">mBar</unit>
+            <unit index="36">mBar</unit>
+            <unit index="37"></unit>
+            <unit index="38">%</unit>
+            <unit index="39">%</unit>
+            <unit index="40">%</unit>
+            <unit index="41">%</unit>
+            <unit index="42"></unit>
+            <unit index="43">%</unit>
+            <unit index="44">°C</unit>
+            <unit index="45">°C</unit>
+            <unit index="46">°C</unit>
+            <unit index="47">°C</unit>
+            <unit index="48">ms</unit>
+            <unit index="49">ms</unit>
+            <unit index="50">ms</unit>
+            <unit index="51">ms</unit>
+            <unit index="52">°C</unit>
+            <unit index="53">V</unit>
+            <unit index="54">V</unit>
+            <unit index="55">V</unit>
+            <unit index="56">°</unit>
+            <unit index="57">°KW</unit>
+            <unit index="58">°</unit>
+            <unit index="59">°KW</unit>
+            <unit index="60">°KW</unit>
+            <unit index="61">°KW</unit>
+            <unit index="62">°KW</unit>
+            <unit index="63">°KW</unit>
+            <unit index="64"></unit>
+            <unit index="65"></unit>
+            <unit index="66">°KW</unit>
+            <unit index="67"></unit>
+            <unit index="68">°KW</unit>
+            <unit index="69">°KW</unit>
+            <unit index="70"></unit>
+            <unit index="71"></unit>
+            <unit index="72">°KW</unit>
+            <unit index="73">°KW</unit>
+            <unit index="74"></unit>
+            <unit index="75"></unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.0</sanity_check>
+    </test_case>
+
+    <!-- SWComm Logger Test Expectations -->
+    <test_case file="swcomm.csv">
+        <expected_type>SWCOMM</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">IntakeAirTemperature</id>
+            <id index="2">AccelPedalPosition</id>
+            <id index="3">LAMB_LS_UP[1]</id>
+            <id index="4">LAMB_LS_UP[2]</id>
+            <id index="5">CoolantTemperature</id>
+            <id index="6">WastegateDutyCycle</id>
+            <id index="7">FuelPressureHigh</id>
+            <id index="8">FuelPressureHighSP</id>
+            <id index="9">WastegateDutyCycle2</id>
+            <id index="10">IgnitionTimingAngle</id>
+            <id index="11">IGA_IGC[0]</id>
+            <id index="12">IGA_IGC[4]</id>
+            <id index="13">TI_1_HOM[2]</id>
+            <id index="14">TI_1_HOM[0]</id>
+            <id index="15">BaroPressure</id>
+            <id index="16">MassAirFlow</id>
+            <id index="17">BoostPressureActual</id>
+            <id index="18">BoostPressureActual2</id>
+            <id index="19">MassAirFlowActual</id>
+            <id index="20">IGA_ADJ_KNK[0]</id>
+            <id index="21">LAMB_SP[1]</id>
+            <id index="22">LAMB_SP[2]</id>
+            <id index="23">ThrottlePlateAngle</id>
+            <id index="24">TorqueActual</id>
+            <id index="25">SelectedGear</id>
+            <id index="26">CAM_PHA[IN][1]</id>
+            <id index="27">BoostPressureDesired</id>
+            <id index="28">OilTemperature</id>
+            <id index="29">RailPressureActual</id>
+            <id index="30">RPM</id>
+            <id index="31">VehicleSpeed</id>
+            <id index="32">STFT</id>
+            <id index="33">LTFT</id>
+            <id index="34">STFTBank2</id>
+            <id index="35">LTFTBank2</id>
+            <id index="36">AmbientTemperature</id>
+            <id index="37">LambdaControl</id>
+            <id index="38">IGA_ADJ_KNK[3]</id>
+            <id index="39">IGA_ADJ_KNK[5]</id>
+            <id index="40">FuelPressureHighEFP</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">TimeStamp</id2>
+            <id2 index="1">TIA</id2>
+            <id2 index="2">PV_AV</id2>
+            <id2 index="3">LAMB_LS_UP[1]</id2>
+            <id2 index="4">LAMB_LS_UP[2]</id2>
+            <id2 index="5">TCO</id2>
+            <id2 index="6">PWM_CWP_2</id2>
+            <id2 index="7">FUP</id2>
+            <id2 index="8">FUP_SP</id2>
+            <id2 index="9">EFPPWM</id2>
+            <id2 index="10">IGA_AV_MV</id2>
+            <id2 index="11">IGA_IGC[0]</id2>
+            <id2 index="12">IGA_IGC[4]</id2>
+            <id2 index="13">TI_1_HOM[2]</id2>
+            <id2 index="14">TI_1_HOM[0]</id2>
+            <id2 index="15">AMP</id2>
+            <id2 index="16">MAF_THR</id2>
+            <id2 index="17">MAP</id2>
+            <id2 index="18">MAP_MES</id2>
+            <id2 index="19">MAF</id2>
+            <id2 index="20">IGA_ADJ_KNK[0]</id2>
+            <id2 index="21">LAMB_SP[1]</id2>
+            <id2 index="22">LAMB_SP[2]</id2>
+            <id2 index="23">TPS_AV</id2>
+            <id2 index="24">TQI_AV</id2>
+            <id2 index="25">GEAR</id2>
+            <id2 index="26">CAM_PHA[IN][1]</id2>
+            <id2 index="27">MAP_SP</id2>
+            <id2 index="28">TOIL</id2>
+            <id2 index="29">RFP_AV</id2>
+            <id2 index="30">N</id2>
+            <id2 index="31">VS</id2>
+            <id2 index="32">STFT Bank 1</id2>
+            <id2 index="33">LTFT Bank 1</id2>
+            <id2 index="34">STFT Bank 2</id2>
+            <id2 index="35">LTFT Bank 2</id2>
+            <id2 index="36">Ambient air temperature</id2>
+            <id2 index="37">FAC_LAM_CP</id2>
+            <id2 index="38">IGA_ADJ_KNK[3]</id2>
+            <id2 index="39">IGA_ADJ_KNK[5]</id2>
+            <id2 index="40">FUP_EFP</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">°C</unit>
+            <unit index="2">%</unit>
+            <unit index="3"></unit>
+            <unit index="4"></unit>
+            <unit index="5">°C</unit>
+            <unit index="6">%</unit>
+            <unit index="7">mBar</unit>
+            <unit index="8">mBar</unit>
+            <unit index="9">%</unit>
+            <unit index="10">°</unit>
+            <unit index="11">°</unit>
+            <unit index="12">°</unit>
+            <unit index="13">ms</unit>
+            <unit index="14">ms</unit>
+            <unit index="15">mBar</unit>
+            <unit index="16">kg/h</unit>
+            <unit index="17">mBar</unit>
+            <unit index="18">mBar</unit>
+            <unit index="19">mg/stk</unit>
+            <unit index="20">°</unit>
+            <unit index="21"></unit>
+            <unit index="22"></unit>
+            <unit index="23">%</unit>
+            <unit index="24">Nm</unit>
+            <unit index="25"></unit>
+            <unit index="26">°</unit>
+            <unit index="27">mBar</unit>
+            <unit index="28">°C</unit>
+            <unit index="29">°RFP</unit>
+            <unit index="30">RPM</unit>
+            <unit index="31">kph</unit>
+            <unit index="32">%</unit>
+            <unit index="33">%</unit>
+            <unit index="34">%</unit>
+            <unit index="35">%</unit>
+            <unit index="36">°C</unit>
+            <unit index="37">%</unit>
+            <unit index="38">°</unit>
+            <unit index="39">°</unit>
+            <unit index="40">mBar</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.4375</sanity_check>
+    </test_case>
+
+    <!-- VCDS English Logger Test Expectations -->
+    <test_case file="vcds-1.csv">
+        <expected_type>VCDS</expected_type>
+        <expected_ids>
+            <id index="0"></id>
+            <id index="1">TIME</id>
+            <id index="2">VehicleSpeed</id>
+            <id index="3">TIME 2</id>
+            <id index="4">AcceleratorPedalPosition (G024)</id>
+            <id index="5">TIME 3</id>
+            <id index="6">RPM</id>
+            <id index="7">TIME 4</id>
+            <id index="8">Load</id>
+            <id index="9">TIME 5</id>
+            <id index="10">RPMActual</id>
+            <id index="11">TIME 6</id>
+            <id index="12">RPMSpecified</id>
+            <id index="13">TIME 7</id>
+            <id index="14">Intake air change-over; pressure</id>
+            <id index="15">TIME 8</id>
+            <id index="16">Charge pressure control; charge press.before throttle valve</id>
+            <id index="17">TIME 9</id>
+            <id index="18">Accelerator position</id>
+            <id index="19">TIME 10</id>
+            <id index="20">Engine torque</id>
+            <id index="21">TIME 11</id>
+            <id index="22">VehicleSpeedActual</id>
+            <id index="23">TIME 12</id>
+            <id index="24">VehicleSpeedFiltered</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0"></id2>
+            <id2 index="1">STAMP</id2>
+            <id2 index="2">Vehicle speed</id2>
+            <id2 index="3">STAMP</id2>
+            <id2 index="4">Accelerator position</id2>
+            <id2 index="5">STAMP</id2>
+            <id2 index="6">Engine Speed</id2>
+            <id2 index="7">STAMP</id2>
+            <id2 index="8">Engine load</id2>
+            <id2 index="9">STAMP</id2>
+            <id2 index="10">Engine speed; actual</id2>
+            <id2 index="11">STAMP</id2>
+            <id2 index="12">Engine speed; specified</id2>
+            <id2 index="13">STAMP</id2>
+            <id2 index="14">Intake air change-over; pressure</id2>
+            <id2 index="15">STAMP</id2>
+            <id2 index="16">Charge pressure control; charge press.before throttle valve</id2>
+            <id2 index="17">STAMP</id2>
+            <id2 index="18">Accelerator position</id2>
+            <id2 index="19">STAMP</id2>
+            <id2 index="20">Engine torque</id2>
+            <id2 index="21">STAMP</id2>
+            <id2 index="22">Vehicle speed; actual</id2>
+            <id2 index="23">STAMP</id2>
+            <id2 index="24">Vehicle speed; filtered</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0"></unit>
+            <unit index="1">s</unit>
+            <unit index="2">kph</unit>
+            <unit index="3">s</unit>
+            <unit index="4">%</unit>
+            <unit index="5">s</unit>
+            <unit index="6">RPM</unit>
+            <unit index="7">s</unit>
+            <unit index="8">%</unit>
+            <unit index="9">s</unit>
+            <unit index="10">RPM</unit>
+            <unit index="11">s</unit>
+            <unit index="12">RPM</unit>
+            <unit index="13">s</unit>
+            <unit index="14">mBar</unit>
+            <unit index="15">s</unit>
+            <unit index="16">mBar</unit>
+            <unit index="17">s</unit>
+            <unit index="18">%</unit>
+            <unit index="19">s</unit>
+            <unit index="20">Nm</unit>
+            <unit index="21">s</unit>
+            <unit index="22">kph</unit>
+            <unit index="23">s</unit>
+            <unit index="24">kph</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.39</sanity_check>
+    </test_case>
+
+    <!-- VCDS English Logger Test Expectations (Second File) -->
+    <test_case file="vcds-2.csv">
+        <expected_type>VCDS</expected_type>
+        <expected_ids>
+            <id index="0"></id>
+            <id index="1">TIME</id>
+            <id index="2">RPM</id>
+            <id index="3">MassAirFlow</id>
+            <id index="4">ThrottleAngle</id>
+            <id index="5">IgnitionTiming</id>
+            <id index="6">TIME 2</id>
+            <id index="7">TIME 3</id>
+            <id index="8">TIME 4</id>
+            <id index="9">TIME 5</id>
+            <id index="10">DutyCycle</id>
+            <id index="11">TIME 6</id>
+            <id index="12">Knock Reg.</id>
+            <id index="13">Knock Reg. 2</id>
+            <id index="14">Knock Reg. 3</id>
+            <id index="15">Knock Reg. 4</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0"></id2>
+            <id2 index="1"></id2>
+            <id2 index="2">RPM</id2>
+            <id2 index="3">Mass Flow</id2>
+            <id2 index="4">T.B. Angle</id2>
+            <id2 index="5">Ign. Timing</id2>
+            <id2 index="6"></id2>
+            <id2 index="7">Time</id2>
+            <id2 index="8">Time</id2>
+            <id2 index="9">Time</id2>
+            <id2 index="10">Duty Cycle</id2>
+            <id2 index="11"></id2>
+            <id2 index="12">Knock Reg.</id2>
+            <id2 index="13">Knock Reg.</id2>
+            <id2 index="14">Knock Reg.</id2>
+            <id2 index="15">Knock Reg.</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0"></unit>
+            <unit index="1">s</unit>
+            <unit index="2">RPM</unit>
+            <unit index="3">g/sec</unit>
+            <unit index="4">°</unit>
+            <unit index="5">°</unit>
+            <unit index="6">s</unit>
+            <unit index="7">s</unit>
+            <unit index="8">s</unit>
+            <unit index="9">s</unit>
+            <unit index="10">%</unit>
+            <unit index="11">s</unit>
+            <unit index="12">°</unit>
+            <unit index="13">°</unit>
+            <unit index="14">°</unit>
+            <unit index="15">°</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0</sanity_check>
+    </test_case>
+
+    <!-- VCDS German Logger Test Expectations -->
+    <test_case file="vcds-german.csv">
+        <expected_type>VCDS</expected_type>
+        <expected_ids>
+            <id index="0"></id>
+            <id index="1">TIME</id>
+            <id index="2">RPM</id>
+            <id index="3">EngineLoad</id>
+            <id index="4">FuelInjectorOnTime</id>
+            <id index="5">angesaugte</id>
+            <id index="6">TIME 2</id>
+            <id index="7">Lambda</id>
+            <id index="8">Lambdasonden-</id>
+            <id index="9">Tastverh�ltnis</id>
+            <id index="10">Lambda 2</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0"></id2>
+            <id2 index="1"></id2>
+            <id2 index="2">Motordrehzahl</id2>
+            <id2 index="3">Motorlast</id2>
+            <id2 index="4">Einspritzzeit</id2>
+            <id2 index="5">angesaugte</id2>
+            <id2 index="6"></id2>
+            <id2 index="7">Lambda</id2>
+            <id2 index="8">Lambdasonden-</id2>
+            <id2 index="9">Tastverh�ltnis</id2>
+            <id2 index="10">Lambda</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0"></unit>
+            <unit index="1">s</unit>
+            <unit index="2">RPM</unit>
+            <unit index="3">ms</unit>
+            <unit index="4">ms</unit>
+            <unit index="5">g/sec</unit>
+            <unit index="6">s</unit>
+            <unit index="7">%</unit>
+            <unit index="8">V</unit>
+            <unit index="9">%</unit>
+            <unit index="10">lambda</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.25</sanity_check>
+    </test_case>
+    <!-- Volvo Logger Test Expectations -->
+    <test_case file="volvologger.csv">
+        <expected_type>VOLVOLOGGER</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">RPM</id>
+            <id index="2">BoostPressureActual</id>
+            <id index="3">ThrottlePlateAngle</id>
+            <id index="4">VehicleSpeed</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0"></id2>
+            <id2 index="1">RPM</id2>
+            <id2 index="2">BoostPressure</id2>
+            <id2 index="3">ThrottlePos</id2>
+            <id2 index="4">VehicleSpeed</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">RPM</unit>
+            <unit index="2">mBar</unit>
+            <unit index="3">%</unit>
+            <unit index="4">kph</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">0.0</sanity_check>
+    </test_case>
+
+    <!-- Zeitronix Logger Test Expectations -->
+    <test_case file="zeitronix.csv">
+        <expected_type>ZEITRONIX</expected_type>
+        <expected_ids>
+            <id index="0">ZeitronixTime</id>
+            <id index="1">ZeitronixIAT</id>
+            <id index="2">ZeitronixSPARKADV</id>
+            <id index="3">ZeitronixThrottlePlateAngle</id>
+            <id index="4">ZeitronixMAP</id>
+            <id index="5">RPM</id>
+            <id index="6">ZeitronixAFR</id>
+            <id index="7">ZeitronixEGT</id>
+            <id index="8">ZeitronixMAP 2</id>
+            <id index="9">ZeitronixAFR 2</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">Time</id2>
+            <id2 index="1">IAT</id2>
+            <id2 index="2">SPARKADV</id2>
+            <id2 index="3">TPS</id2>
+            <id2 index="4">MAP</id2>
+            <id2 index="5">RPM</id2>
+            <id2 index="6">AFR</id2>
+            <id2 index="7">EGT</id2>
+            <id2 index="8">MAP</id2>
+            <id2 index="9">AFR</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1"></unit>
+            <unit index="2"></unit>
+            <unit index="3">%</unit>
+            <unit index="4"></unit>
+            <unit index="5">RPM</unit>
+            <unit index="6">AFR</unit>
+            <unit index="7"></unit>
+            <unit index="8"></unit>
+            <unit index="9">AFR</unit>
+        </expected_units>
+        <sanity_check row="0" col="0">65955.004</sanity_check>
+    </test_case>
+</test_expectations>

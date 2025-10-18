@@ -1,0 +1,326 @@
+# Field categories shared by all loggers
+field_categories:
+  pedal:
+    - "AcceleratorPedalPosition"
+    - "AccelPedalPosition"
+    - "Zeitronix TPS"
+    - "Accelerator position"
+    - "Pedal Position"
+  throttle:
+    - "ThrottlePlateAngle"
+    - "Throttle Angle"
+    - "Throttle Valve Angle"
+    - "TPS"
+  gear:
+    - "Gear"
+    - "SelectedGear"
+    - "Engaged Gear"
+
+loggers:
+  DEFAULT:
+    aliases:
+      - ["^[Tt]ime$", "TIME"]
+      - ["^[Ee]ngine [Ss]peed$", "RPM"]
+      - ["^[Mm]ass air flow$", "MassAirFlow"]
+      # We now assume the default IntakeAirTemperature is C
+      - ["^Intake air temperature$", "IntakeAirTemperature"]
+      # M-Tuner Logger mappings - no easy way to detect an M-Tuner logger, so we have to hardcode these in DEFAULT_aliases
+      - ["^Actual Ignition Angle$", "IgnitionTimingAngleOverall"]
+      - ["^Engine Speed$", "RPM"]
+      - ["^Ignition Angle Actual$", "IgnitionTimingAngleOverall"]
+      # Don't let ecuxplot change the lamda units to AFR, this column is always lambda
+      #- ["^Lambda Bank 1$", "AirFuelRatioCurrent"]
+      #- ["^Lambda Bank 2$", "AirFuelRatioCurrentBank2"]
+      - ["^Manifold Absolute Pressure$", "BoostPressureActual"]
+      - ["^Manifold Pressure$", "BoostPressureActual"]
+      - ["^Relative Load$", "EngineLoad"]
+      - ["^Relative Load Setpoint$", "EngineLoadDesired"]
+      - ["^Target Position Throttle$", "ThrottlePlateAngle"]
+      - ["^Throttle Inlet Pressure$", "ThrottleInletPressure"]
+      - ["^Vehicle Speed$", "VehicleSpeed"]
+      # Additional M-Tuner cylinder-specific aliases
+      - ["^Cylinder 1 Ignition Retard$", "IgnitionRetardCyl1"]
+      - ["^Cylinder 2 Ignition Retard$", "IgnitionRetardCyl2"]
+      - ["^Cylinder 3 Ignition Retard$", "IgnitionRetardCyl3"]
+      - ["^Cylinder 4 Ignition Retard$", "IgnitionRetardCyl4"]
+      - ["^Cylinder 5 Ignition Retard$", "IgnitionRetardCyl5"]
+      - ["^Cylinder 6 Ignition Retard$", "IgnitionRetardCyl6"]
+
+  COBB_AP:
+    field_signatures:
+      - regex: "^AP Info:.*"
+
+    aliases:
+      - ["^AP Info:.*", ""]
+      - ["^Time.*", "TIME"]
+      - ["^Engine Speed.*", "RPM"]
+      - ["^Current Gear.*", "Gear"]
+      - ["^Accel Pedal Position.*", "AcceleratorPedalPosition"]
+      - ["^TPS.*", "ThrottlePlateAngle"]
+      - ["^AFR.*", "AirFuelRatio"]
+      - ["^AFR Set Point.*", "AirFuelRatioDesired"]
+      - ["^Trgt\\. Boost Press\\..*", "BoostPressureDesired"]
+      - ["^Boost Press\\..*", "BoostPressureActual"]
+      - ["^Ambient Air Temp\\..*", "AmbientTemperature (°F)"]
+      - ["^Coolant Temp\\..*", "WaterTemperature (°F)"]
+      - ["^Engine Oil Temp\\..*", "OilTemperature (°F)"]
+      - ["^IAT.*", "IntakeAirTemperature (°F)"]
+      - ["^Ignition Timing Final.*", "IgnitionTimingAngle"]
+      - ["^Knock Retard Cylinder 1.*", "IgnitionRetardCyl1"]
+      - ["^Knock Retard Cylinder 2.*", "IgnitionRetardCyl2"]
+      - ["^Knock Retard Cylinder 3.*", "IgnitionRetardCyl3"]
+      - ["^Knock Retard Cylinder 4.*", "IgnitionRetardCyl4"]
+      - ["^Knock Retard Cylinder 5.*", "IgnitionRetardCyl5"]
+      - ["^Knock Retard Cylinder 6.*", "IgnitionRetardCyl6"]
+      - ["^Knock Retard Cylinder 7.*", "IgnitionRetardCyl7"]
+      - ["^Knock Retard Cylinder 8.*", "IgnitionRetardCyl8"]
+      - ["^Turbine Act\\. Base Value.*", "WastegateDutyCycleBase"]
+      - ["^Turbine Act\\. Final Value.*", "WastegateDutyCycle"]
+      - ["^Vehicle Speed.*", "VehicleSpeed"]
+
+  ECUX:
+    field_signatures:
+      - regex: "^TIME$"
+        column_index: 0
+    time_ticks_per_sec: 1000
+
+    aliases:
+      - ["^BstActual$", "BoostPressureActual"]
+      - ["^BstDesired$", "BoostPressureDesired"]
+
+  EVOSCAN:
+    field_signatures:
+      - regex: "^LogID$"
+    aliases:
+      - [".*RPM$", "RPM"]
+      - ["^LogEntrySeconds$", "TIME"]
+      - ["^TPS$", "ThrottlePlateAngle"]
+      - ["^APP$", "AcceleratorPedalPosition"]
+      - ["^IAT$", "IntakeAirTemperature"]
+
+  JB4:
+    field_signatures:
+      - regex: "^Firmware$"
+    # Skip 4 lines: 1) Settings names, 2) Settings values, 3) More settings names, 4) More settings values
+    time_ticks_per_sec: 10
+    skip_lines: 4
+
+    aliases:
+      - ["^timestamp$", "TIME"]
+      - ["^rpm$", "RPM"]
+      - ["^pedal$", "AcceleratorPedalPosition"]  # Use ME7 canonical name, Units.java has %
+      - ["^mph$", "VehicleSpeed (mph)"]  # JB4 uses mph, ME7 uses kph
+      - ["^throttle$", "ThrottlePlateAngle"]
+      - ["^ecu_psi$", "ECUBoostPressureActual (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["^dme_bt$", "ECUBoostPressureDesired (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["^target$", "BoostPressureDesiredDelta (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["^boost$", "BoostPressureActual (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["^boost2$", "BoostPressureActual2 (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["^ff$", "BoostFeedForward"]
+      - ["^map$", "SelectedMap"]
+      - ["^wgdc$", "WastegateDutyCycle"]
+      - ["^iat$", "IntakeAirTemperature (°F)"]  # JB4 uses °F, ME7 uses °C
+      - ["^fp_h$", "FuelPressureHigh (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["^fp_l$", "FuelPressureLow (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["^waterf$", "WaterTemperature (°F)"]  # JB4 uses °F, ME7 uses °C
+      - ["^oilf$", "OilTemperature (°F)"]  # JB4 uses °F, ME7 uses °C
+      - ["^transf$", "TransmissionTemperature (°F)"]  # JB4 uses °F, ME7 uses °C
+      - ["^gear$", "Gear"]
+      - ["^load$", "EngineLoad"]
+      - ["^calc_torque$", "CalculatedTorque"]
+      - ["^afr$", "AirFuelRatio"]
+      - ["^afr2$", "AirFuelRatio2"]
+      - ["^trims$", "FuelTrim (%)"]  # JB4 uses %, ME7 uses %
+      - ["^trims2$", "FuelTrim2 (%)"]  # JB4 uses %, ME7 uses %
+      - ["^fuelen$", "FuelEnrichment (%)"]  # JB4 uses %, ME7 uses %
+      - ["^meth$", "MethanolFlow (%)"]  # JB4 uses %, ME7 uses %
+      - ["^e85$", "E85"]
+      - ["^avg_ign$", "AverageIgnitionRetard"]
+      - ["^ign_1$", "IgnitionTimingAngle1"]
+      - ["^ign_2$", "IgnitionTimingAngle2"]
+      - ["^ign_3$", "IgnitionTimingAngle3"]
+      - ["^ign_4$", "IgnitionTimingAngle4"]
+      - ["^ign_5$", "IgnitionTimingAngle5"]
+      - ["^ign_6$", "IgnitionTimingAngle6"]
+      - ["^ign_7$", "IgnitionTimingAngle7"]
+      - ["^ign_8$", "IgnitionTimingAngle8"]
+
+  LOGWORKS:
+    field_signatures:
+      - regex: "^Session: Session [0-8]+$"
+    # Skip 1 line: Session header to get to actual data header
+    skip_lines: 1
+    header_format: "id,u"
+    aliases:
+      - ["^time$", "TIME"]
+      - ["^Boost$", "BoostPressureActual"]
+      - ["^LC1_O2WB$", "AirFuelRatioCurrent"]  # Use ME7 canonical name, Units.java has AFR pattern
+
+  ME7LOGGER:
+    field_signatures:
+      - regex: ".*ME7-Logger.*"
+
+    skip_lines: 20 # maximum lines to skip with skip_regex
+    # Dynamic header finding using regex patterns (more robust than fixed skip_lines)
+    skip_regex:
+      - regex: "^TimeStamp$"
+        column: 0
+
+    # Header structure configuration (Level 1 - ready for implementation)
+    header_format: "id2,u,id"  # ME7LOGGER: raw names, units, canonical names (3 header lines)
+
+    # Conditional prepend for empty field names
+    field_transformations:
+      prepend: "ME7L "
+      if_empty: true
+
+    aliases:
+      - ["^Engine[Ss]peed$", "RPM"]
+      - ["^BoostPressureSpecified$", "BoostPressureDesired"]
+      - ["^EngineLoadCorrectedSpecified$", "EngineLoadCorrected"]
+      - ["^AtmosphericPressure$", "BaroPressure"]
+      - ["^AirFuelRatioRequired$", "AirFuelRatioDesired"]
+      - ["^InjectionTime$", "EffInjectionTime"]
+      - ["^InjectionTimeBank2$", "EffInjectionTimeBank2"]
+
+  SWCOMM:
+    comment_signatures:
+      - regex: ".*SWComm.*ECUTools.*"
+    # Header structure configuration (Level 1 - ready for implementation)
+    header_format: "id,u"  # SWCOMM: field names, units (2 header lines, skip aliases line)
+    aliases:
+      - ["^TimeStamp$", "TIME"]
+      - ["^N$", "RPM"]
+      - ["^TIA$", "IntakeAirTemperature"]
+      - ["^TCO$", "CoolantTemperature"]
+      - ["^TOIL$", "OilTemperature"]
+      - ["^Ambient air temperature$", "AmbientTemperature"]
+      - ["^AMP$", "BaroPressure"]
+      - ["^MAP$", "BoostPressureActual"]
+      - ["^MAP_MES$", "BoostPressureActual2"]
+      - ["^MAP_SP$", "BoostPressureDesired"]
+      - ["^FUP$", "FuelPressureHigh"]
+      - ["^FUP_SP$", "FuelPressureHighSP"]
+      - ["^FUP_EFP$", "FuelPressureHighEFP"]
+      - ["^RFP_AV$", "RailPressureActual"]
+      - ["^MAF_THR$", "MassAirFlow"]
+      - ["^MAF$", "MassAirFlowActual"]
+      - ["^PV_AV$", "AccelPedalPosition"]
+      - ["^TPS_AV$", "ThrottlePlateAngle"]
+      - ["^TQI_AV$", "TorqueActual"]
+      - ["^IGA_AV_MV$", "IgnitionTimingAngle"]
+      - ['^IGA_IGC\\[0\\]$', "IgnitionTimingAngle1"]
+      - ['^IGA_IGC\\[4\\]$', "IgnitionTimingAngle5"]
+      - ['^IGA_ADJ_KNK\\[0\\]$', "IgnitionRetardCyl1"]
+      - ['^IGA_ADJ_KNK\\[3\\]$', "IgnitionRetardCyl4"]
+      - ['^IGA_ADJ_KNK\\[5\\]$', "IgnitionRetardCyl6"]
+      - ['^TI_1_HOM\\[0\\]$', "FuelInjectorOnTime1"]
+      - ['^TI_1_HOM\\[2\\]$', "FuelInjectorOnTime2"]
+      - ['^LAMB_LS_UP\\[1\\]$', "O2SVoltageSensor1"]
+      - ['^LAMB_LS_UP\\[2\\]$', "O2SVoltageSensor1Bank2"]
+      - ['^LAMB_SP\\[1\\]$', "AirFuelRatioDesired"]
+      - ['^LAMB_SP\\[2\\]$', "AirFuelRatioDesired2"]
+      - ["^STFT Bank 1$", "STFT"]
+      - ["^LTFT Bank 1$", "LTFT"]
+      - ["^STFT Bank 2$", "STFTBank2"]
+      - ["^LTFT Bank 2$", "LTFTBank2"]
+      - ["^GEAR$", "SelectedGear"]
+      - ["^VS$", "VehicleSpeed"]
+      - ['^CAM_PHA\\[IN\\]\\[1\\]$', "IntakeCamPosition"]
+      - ["^PWM_CWP_2$", "WastegateDutyCycle"]
+      - ["^EFPPWM$", "WastegateDutyCycle2"]
+      - ["^FAC_LAM_CP$", "LambdaControl"]
+
+  VCDS:
+    field_signatures:
+      - regex: ".*VCDS Version:.*"
+      - regex: ".*(Block|Group) [A-Z0-9]+.*"
+
+    # Skip up to 10 lines to find Groups line (skip_lines is now max when skip_regex is defined)
+    # skip_regex will find the line containing Groups within this range
+    skip_lines: 10
+
+    # TEMPORARY: Use skip_regex to find line with Groups so VCDS case block can process them
+    # Normally skip_regex would skip directly to clean headers, but VCDS case block needs access to Groups
+    # to remove Group columns and convert field names. This will be removed when YAML field_transformations
+    # can handle Group skipping and field name conversion.
+    skip_regex:
+      - regex: ".*(Block|Group) [A-Z0-9]+.*"
+
+    # Header structure configuration (Level 1 - ready for implementation)
+    # NOTE: VCDS files have varying header formats - some have the unit line on the 3rd, some on the 4th.
+    # ECUXDataset will refuse to accept the 4th line u if it has all numbers.
+    header_format: "id2,id,u,u"  # VCDS: Group line, field names, units line 1, units line 2 (4 header lines)
+
+    # Proposed field transformations (Level 2 - may be needed later)
+    # field_transformations:
+    #   append: " (G024)"       # VCDS adds group suffix to some fields
+
+    aliases:
+      - ["^Boost Pressure \\(actual\\)$", "BoostPressureActual"]
+      - ["^Boost Pressure \\(specified\\)$", "BoostPressureDesired"]
+      - ["^Duty Cycle$", "DutyCycle"]
+      - ["^(Engine RPM|Engine [Ss]peed|Motordrehzahl).*", "RPM"]
+      - ["^Engine load$", "Load"]
+      - ["^Engine speed; actual$", "RPMActual"]
+      - ["^Engine speed; specified$", "RPMSpecified"]
+      - ["^Ign timing.*", "IgnitionTimingAngle"]
+      - ["^Ign\\. Timing$", "IgnitionTiming"]
+      - ["^Idle (RPM|[Ss]peed).*", "Idle RPM"]
+      #- ["^Knock Reg\\.$", "KnockRegulation"] # Leave this as is, VCDS generate a lot of these, one per group, all the same name
+      - ["^Mass [Aa]ir [Ff]low.*", "MassAirFlow"]
+      - ["^Mass [Aa]ir [Tt]aken [Ii]n.*", "MassAirFlow"]
+      - ["^Mass Flow$", "MassAirFlow"]
+      - ["^T\\.B\\. Angle$", "ThrottleAngle"]
+      - ["^Throttle [Aa]ngle.*", "ThrottleAngle"]
+      - ["^Throttle [Vv]alve [Aa]ngle.*", "ThrottleAngle"]
+      - ["^Vehicle speed$", "VehicleSpeed"]
+      - ["^Vehicle speed; actual$", "VehicleSpeedActual"]
+      - ["^Vehicle speed; filtered$", "VehicleSpeedFiltered"]
+      - ["^Zeit$", "TIME"]
+      # German VCDS field name aliases
+      - ["^angesaugte Luftmasse$", "MassAirFlow"]
+      - ["^Einspritzzeit$", "FuelInjectorOnTime"]
+      - ["^Einspritzzeit \\(korrigiert\\)$", "FuelInjectorOnTimeCorrected"]
+      - ["^Lambda$", "Lambda"]
+      - ["^Lambda Korrekturfaktor$", "LambdaCorrectionFactor"]
+      - ["^Lambdasonden-Regler$", "LambdaControl"]
+      - ["^Lambdasonden-spannung$", "O2SVoltageSensor1"]
+      - ["^Motorlast$", "EngineLoad"]
+      - ["^Tastverhältnis Magnetventil 1$", "WastegateDutyCycle"]
+
+  VOLVOLOGGER:
+    field_signatures:
+      - regex: "^Time \\(sec\\)$"
+
+    # Extract field name and unit using regex
+    unit_regex: "([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)"
+
+    aliases:
+      - ["^Time$", "TIME"]
+      - ["^Engine Speed.*", "RPM"]
+      - ["^Boost Pressure.*", "BoostPressureActual"]
+      - ["^Throttle Pos.*", "ThrottlePlateAngle"]
+      - ["^Vehicle Speed.*", "VehicleSpeed"]
+
+  ZEITRONIX:
+    # This will not work for files without headers, but user can always force zeitronix logger type
+    field_signatures:
+      - regex: ".*Zeitronix.*"  # Filename line contains "Zeitronix"
+      - regex: "Date Exported:.*"  # Date exported line
+    # Skip lines until we find the field names line
+    # Works for both files with headers (skips filename/date) and without headers (finds field line directly)
+    skip_lines: 10  # Max lines to check
+    skip_regex:
+      - regex: "MAP"
+
+    # Field transformations for Zeitronix overlay compatibility
+    field_transformations:
+      prepend: "Zeitronix"     # Add Zeitronix prefix to field names for overlay compatibility
+      exclude_fields: ["RPM"]  # Don't prefix RPM field
+
+    aliases:
+      - [".*RPM$", "RPM"]
+      - [".*Boost$", "Boost"]
+      - [".*TPS$", "ThrottlePlateAngle"]
+      - [".*Lambda$", "Lambda"]

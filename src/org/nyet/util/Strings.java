@@ -24,4 +24,16 @@ public class Strings {
 	}
 	return out;
     }
+
+    /**
+     * Trims all non-null elements in a String array in-place.
+     * @param array the String array to trim (modified in-place)
+     */
+    public static void trimArray(String[] array) {
+	for (int i = 0; i < array.length; i++) {
+	    if (array[i] != null) {
+		array[i] = array[i].trim();
+	    }
+	}
+    }
 }

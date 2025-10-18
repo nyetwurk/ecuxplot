@@ -1,0 +1,12 @@
+Mittwoch,13,Mai,2020,20:12:42:14802,VCDS Version: DRV 12.12.2,Datenstand: 20140410
+06A 906 018 R,,1.8L R4/5VT MOTR HS D03,
+
+,Block A:,'002,,,,Block B:,'007,,,,Block C:, Läuft nicht
+,,Motordrehzahl,Motorlast,Einspritzzeit,angesaugte,,Lambda,Lambdasonden-,Tastverhältnis,Lambda,,,,,
+,Zeit,,,(korrigiert),Luftmasse,Zeit,Regler,spannung,Magnetventil 1,Korrekturfaktor,Zeit,,,,
+Markierung,MARKE, /min, ms, ms, g/s,MARKE, %, V, %,,MARKE,,,,
+,0.25,2080,3.80,8.13,25.28,0.01,1.6,0.215,0.0,1.00,,,,,
+,0.75,2160,4.40,9.54,30.34,0.50,0.0,0.845,99.6,1.00,,,,,
+,1.27,2240,5.05,10.82,36.18,1.00,0.0,0.860,99.6,1.00,,,,,
+,1.80,2360,5.90,12.61,44.23,1.54,0.0,0.855,99.6,1.00,,,,,
+,2.31,2480,6.90,15.30,54.65,2.06,0.0,0.865,99.6,1.00,,,,,

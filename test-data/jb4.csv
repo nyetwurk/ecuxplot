@@ -1,0 +1,8 @@
+Firmware,Interface,Engine,TMAP_V,AvgIgn,DWP,MethTriggerMode,FF,MethSafeMode,MethAdd,MethScale,MethPSI,VIN,E85_Setup,VFF_Offset,,fuel_30,fuel_35,fuel_40,fuel_45,fuel_50,fuel_55,fuel_60,fuel_65,fuel_70,,,,,,,,,,,,
+4/15//5,JB4 Android A217,F Series - ALL,1.2,0,0,0,60,0,0,0,36.1,,0,0,,0,0,0,0,0,0,0,0,0,,,,,,,,,,,,
+BoostSafety,PID Gain,AutoShiftRed,Fuel_OL,FUA,1st_limiter,2nd_limiter,3rd_limiter,FUD,N20_TMAP,6CylMode,LastSafety,,duty_15,duty_20,duty_25,duty_30,duty_35,duty_40,duty_45,duty_50,duty_55,duty_60,duty_65,duty_70,,,,,,,,,,,,
+28,10,10,60,0,0,0,0,0,1,0,0,,0,0,0,0,0,0,0,0,0,0,0,0,,,,,,,,,,,,
+timestamp,rpm,ecu_psi,target,boost,pedal,iat,fuelen,wgdc,throttle,fp_h,ign_1,avg_ign,calc_torque,trims,dme_bt,meth,fp_l,afr,gear,ff,load,clock,map,afr2,ign_2,ign_3,ign_4,ign_5,ign_6,oilf,waterf,transf,e85,boost2,trims2,mph
+57.25,3228,0.2,4,0.1,17,75,0,0,19,4,33,0,0,24,0,78,41,14.1,3,0,19.9,4,1,0,0,0,32.6,0,0,0,0,0,0,0,0,42.19607843
+59.25,3198,0.2,4,0.1,17,75,0,0,20,4,33,0,0,26,0,78,41,14,3,0,19.9,4,1,0,0,0,32.6,0,0,0,0,0,0,0,0,41.80392157
+62,3200,0.1,4,0.1,19,75,0,0,20,4,33,0,0,27,0,78,41,13.8,3,0,19.9,4,1,0,0,0,33.1,0,0,0,0,0,0,0,0,41.83006536

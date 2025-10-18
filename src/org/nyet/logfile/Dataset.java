@@ -34,11 +34,13 @@ public class Dataset {
     }
 
     private DatasetId[] ids;
-    private final String fileId;
+    private final String filePath; // Full file path for detection and other purposes
+    private final String fileId; // This was never meant to be a filename. It is just a key used to identify the dataset. If you want path, use filePath instead.
     private final ArrayList<Column> columns;
     private ArrayList<Range> range_cache = new ArrayList<Range>();
     private int rows;
     protected ArrayList<String> lastFilterReasons = new ArrayList<String>();
+    private ArrayList<String> comments = new ArrayList<String>();
 
     public class Range {
 	public int start;
@@ -252,19 +254,92 @@ public class Dataset {
 	    .build();
     }
 
+    // Check if this is a comment line (starts with #, *)
+    public static boolean IsLineComment(String line) {
+	line = line.trim();
+	if (line.length() == 0) return false; // technically and empty line is not a comment
+	return line.startsWith("#") ||
+	    line.startsWith("*") ||
+	    line.startsWith("//");
+    }
+
+    // Functional interface for CSV operations
+    @FunctionalInterface
+    public interface CSVOperation {
+	void execute(CSVReader reader) throws Exception;
+    }
+
+    // Reusable function for CSV operations with separator fallback
+    public static CSVReader createCSVReaderWithFallback(String content, CSVOperation operation) throws Exception {
+	// Try comma separator first
+	StringReader stringReader = new StringReader(content);
+	CSVReader csvReader = new CSVReaderBuilder(stringReader)
+	    .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
+	    .build();
+	try {
+	    operation.execute(csvReader);
+	    return csvReader;
+	} catch ( final Exception e ) {
+	    // Try semicolon separator
+	    StringReader stringReader2 = new StringReader(content);
+	    csvReader = new CSVReaderBuilder(stringReader2)
+		.withCSVParser(new CSVParserBuilder().withSeparator(';').build())
+		.build();
+	    operation.execute(csvReader);
+	    return csvReader;
+	}
+    }
+
+    // Common CSV parsing method with separator fallback (comma -> semicolon)
+    public static String[] parseCSVLineWithFallback(String line) throws Exception {
+	// Try comma separator first
+	StringReader stringReader = new StringReader(line + "\n");
+	CSVReader csvReader = new CSVReaderBuilder(stringReader)
+	    .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
+	    .build();
+	String[] csvLine = csvReader.readNext();
+
+	// If comma parsing failed or produced empty results, try semicolon separator
+	if (csvLine == null || csvLine.length == 0) {
+	    stringReader = new StringReader(line + "\n");
+	    csvReader = new CSVReaderBuilder(stringReader)
+		.withCSVParser(new CSVParserBuilder().withSeparator(';').build())
+		.build();
+	    csvLine = csvReader.readNext();
+	}
+
+	return csvLine;
+    }
+
     public Dataset(String filename, int verbose) throws Exception {
-	this.fileId = org.nyet.util.Files.filename(filename);
+	this.filePath = filename; // Store full path for detection purposes
+	this.fileId = org.nyet.util.Files.filename(filename); // This was never meant to be a filename. It is just a key used to identify the dataset.
 	this.rows = 0;
 	this.columns = new ArrayList<Column>();
 
-	CSVReader reader = DatasetReader(filename);
-	try {
-	    ParseHeaders(reader, verbose);
-	} catch ( final Exception e ) {
-	    /* try semicolon separated */
-	    reader = DatasetReader(filename, ';');
-	    ParseHeaders(reader, verbose);
+	// Read file and separate comments from CSV data
+	StringBuilder csvContent = new StringBuilder();
+	try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+	    String line;
+
+	    while ((line = reader.readLine()) != null) {
+		line = line.trim();
+		if (line.length() == 0) continue; // skip empty lines
+		if (IsLineComment(line)) {
+		    this.comments.add(line);
+		} else {
+		    csvContent.append(line).append("\n");
+		}
+	    }
 	}
+
+	// Do detection using collected comment lines BEFORE ParseHeaders
+	this.detectLoggerType();
+
+	// Create CSVReader from the filtered content
+	CSVReader csvReader = createCSVReaderWithFallback(csvContent.toString(), (reader) -> {
+	    ParseHeaders(reader, verbose);
+	});
 
 	for (final DatasetId id : this.ids)
 	    this.columns.add(new Column(id.id,
@@ -272,13 +347,14 @@ public class Dataset {
 		id.unit));
 
 	String [] nextLine;
-	while((nextLine = reader.readNext()) != null) {
+	while((nextLine = csvReader.readNext()) != null) {
 	    if (nextLine.length>0) {
 		boolean gotone=false;
 		for(int i=0;i<nextLine.length;i++) {
 		    if (nextLine[i].trim().length()>0
 			&& this.columns.size() > i) {
-			this.columns.get(i).add(nextLine[i]);
+			// Automatically trim all CSV data values at the source
+			this.columns.get(i).add(nextLine[i].trim());
 			gotone=true;
 		    }
 		}
@@ -289,13 +365,21 @@ public class Dataset {
     }
 
     public ArrayList<Column> getColumns() {return this.columns;}
+    public ArrayList<String> getComments() {return this.comments;}
+
+    // Default implementation - subclasses can override
+    protected void detectLoggerType() throws Exception {
+	// Default: do nothing - subclasses can override for specific detection
+	// Subclasses can use this.comments for detection
+    }
 
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
 	final String [] line = reader.readNext();
 	if (line.length>0 && line[0].trim().length()>0) {
 	    this.ids = new DatasetId[line.length];
 	    for(int i=0;i<line.length;i++) {
-		this.ids[i].id = line[i];
+		// Automatically trim all CSV fields at the source
+		this.ids[i].id = line[i].trim();
 	    }
 	}
     }
@@ -395,6 +479,7 @@ public class Dataset {
 	return c.data.toArray(r.start, r.end);
     }
 
+    public String getFilePath() { return this.filePath; }
     public String getFileId() { return this.fileId; }
 
     public DatasetId [] getIds() { return this.ids; }

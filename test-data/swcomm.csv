@@ -1,0 +1,11 @@
+
+*******************************************************************************
+**Log File Created by SWComm ECUTools - Copyright Starkenwagen LLC, 2017-2019**
+**Log Started 9/20/2019 2:45:00 PM**
+*******************************************************************************
+
+TimeStamp,TIA,PV_AV,LAMB_LS_UP[1],LAMB_LS_UP[2],TCO,PWM_CWP_2,FUP,FUP_SP,EFPPWM,IGA_AV_MV,IGA_IGC[0],IGA_IGC[4],TI_1_HOM[2],TI_1_HOM[0],AMP,MAF_THR,MAP,MAP_MES,MAF,IGA_ADJ_KNK[0],LAMB_SP[1],LAMB_SP[2],TPS_AV,TQI_AV,GEAR,CAM_PHA[IN][1],MAP_SP,TOIL,RFP_AV,N,VS,STFT Bank 1,LTFT Bank 1,STFT Bank 2,LTFT Bank 2,Ambient air temperature,FAC_LAM_CP,IGA_ADJ_KNK[3],IGA_ADJ_KNK[5],FUP_EFP
+sec.ms,°C,%,-,-,°C,%,hPa,hPa,%,°CRK,°CRK,°CRK,ms,ms,hPa,kg/h,hPa,hPa,mg/stk,°CRK,-,-,°TPS,Nm,-,°CRK,hPa,°C,°RFP,rpm,km/h,%,%,%,%,°C,%,°CRK,°CRK,hPa
+TIME,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+0.4375,54.75,0,4,4,94.5,89,37943.059,35000.482,26.028,-6,-6,-6,0.912,0.912,977.929,41.875,344.771,343.444,114.77,0,1,1,6.877,0,0,9,340.211,98,75.648,1988,45,0,2.344,0,3.125,27,0,0,0,5816.167
+0.5156,54.75,0,4,4,94.5,89,37943.059,35000.482,26.054,-5.625,-6,-6,0.888,0.888,977.929,37.938,344.108,342.366,112.226,0,1,1,6.417,0,0,8.25,328.022,98,75.341,1904,45,0,2.344,0,3.125,27,0,0,0,5813.514
