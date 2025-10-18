@@ -19,8 +19,12 @@ import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 import org.nyet.logfile.Dataset.DatasetId;
 import org.nyet.ecuxplot.Loggers.LoggerType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AxisMenu extends JMenu {
+    private static final Logger logger = LoggerFactory.getLogger(AxisMenu.class);
+
     /**
      *
      */
@@ -97,14 +101,16 @@ public class AxisMenu extends JMenu {
     /* string */
     /* process through this.add() to detect submenu */
     /* override add */
-    public JMenuItem add(String id) {
+    public AbstractButton addMenuItem(String id) {
 	return this.add(new DatasetId(id));
     }
 
     /* dsid */
-    private JMenuItem add(DatasetId dsid) {
-	/* FIXME: return something useful? */
-	if (this.members.containsKey(dsid.id)) return null;
+    private AbstractButton add(DatasetId dsid) {
+	if (this.members.containsKey(dsid.id)) {
+	    logger.warn("Menu item '{}' already exists, returning existing item", dsid.id);
+	    return this.members.get(dsid.id);
+	}
 
 	final String id = dsid.id;
 	final String tip = dsid.id2;
@@ -290,8 +296,7 @@ public class AxisMenu extends JMenu {
 
 	this.members.put(id, item);
 
-	/* FIXME: return something useful? */
-	return null;
+	return item;
     }
 
     // constructors
