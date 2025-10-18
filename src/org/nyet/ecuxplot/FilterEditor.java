@@ -29,7 +29,16 @@ public class FilterEditor extends PreferencesEditor {
     @Override
     protected void Process(ActionEvent event) {
 	processPairs(this.filter, pairs, Integer.class);
+
+	// Enable the filter when settings are applied
+	this.filter.enabled(true);
+
 	super.Process(event);
+
+	// Update the filter checkbox in the options menu after applying filter settings
+	if (this.eplot != null && this.eplot.optionsMenu != null) {
+	    this.eplot.optionsMenu.updateFilterCheckbox();
+	}
     }
 
     private static final String [][] pairs = {
