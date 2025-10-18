@@ -2,8 +2,6 @@ package org.nyet.ecuxplot;
 
 import java.util.prefs.Preferences;
 
-import javax.swing.JOptionPane;
-
 import org.nyet.util.Strings;
 
 public class ECUxPreset extends Preset {
@@ -24,7 +22,7 @@ public class ECUxPreset extends Preset {
 	}
 	if (ret) {
 	    createDefaultECUxPresets();
-	    JOptionPane.showMessageDialog(null, "Old presets detected. Resetting to default.");
+	    MessageDialog.showMessageDialog(null, "Old presets detected. Resetting to default.");
 	}
 	return ret;
     }
