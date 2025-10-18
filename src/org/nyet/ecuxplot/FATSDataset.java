@@ -26,6 +26,13 @@ public class FATSDataset extends DefaultCategoryDataset {
 	rebuild();
     }
 
+    /**
+     * Update internal RPM values from FATS configuration
+     *
+     * This method ensures that this.start and this.end always contain RPM values,
+     * regardless of whether FATS is configured in RPM or MPH mode. In MPH mode,
+     * the configured MPH values are converted to RPM using the rpm_per_mph constant.
+     */
     private void updateFromFATS() {
 	if (this.fats.useMph()) {
 	    // Always convert MPH to RPM for calculation, regardless of VehicleSpeed data availability
