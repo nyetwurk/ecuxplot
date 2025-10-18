@@ -130,14 +130,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     private Comparable<?> xkey() {
-	final Comparable<?> defaultXkey = new ECUxPreset("Power").xkey();
-	return this.prefs.get("xkey", defaultXkey.toString());
+	// Use a hardcoded default instead of creating ECUxPreset to avoid infinite recursion
+	final String defaultXkey = "RPM";
+	return this.prefs.get("xkey", defaultXkey);
     }
 
     private Comparable<?>[] ykeys(int index) {
-	final Comparable<?>[] ykeys = new ECUxPreset("Power").ykeys(0);
-	final Comparable<?>[] ykeys2 = new ECUxPreset("Power").ykeys(1);
-	final String[] defaultYkeys = { Strings.join(",", ykeys), Strings.join(",", ykeys2) };
+	// Use hardcoded defaults instead of creating ECUxPreset to avoid infinite recursion
+	final String[] defaultYkeys0 = {"WHP","WTQ","HP","TQ"};
+	final String[] defaultYkeys1 = {"BoostPressureDesired (PSI)","BoostPressureActual (PSI)"};
+	final String[] defaultYkeys = { Strings.join(",", defaultYkeys0), Strings.join(",", defaultYkeys1) };
 
 	final String k=this.prefs.get("ykeys"+index, defaultYkeys[index]);
 	return k.split(",");
