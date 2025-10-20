@@ -1008,17 +1008,24 @@ public class ECUxDataset extends Dataset {
 	for(int i=0;i<ranges.size();i++) {
 	    this.splines[i] = null;
 	    final Dataset.Range r=ranges.get(i);
+	    final double [] rpm = this.getData("RPM", r);
+	    final double [] time = this.getData("TIME", r);
+
+	    // Need three points for a spline
+	    if(rpm == null || time == null || time.length != rpm.length || rpm.length<3)
+		continue;
+
+	    PrintStream original = null;
 	    try {
-		final double [] rpm = this.getData("RPM", r);
-		final double [] time = this.getData("TIME", r);
-		if(time.length>0 && time.length==rpm.length) {
-		    PrintStream original = nullStdout();	// hack to disable junk that CubicSpline prints
-		    this.splines[i] = new CubicSpline(rpm, time);
-		    System.setOut(original);
-		} else
-		    MessageDialog.showMessageDialog(null,
-			"length problem " + time.length + ":" + rpm.length);
-	    } catch (final Exception e) {}
+		original = nullStdout();	// hack to disable junk that CubicSpline prints
+		this.splines[i] = new CubicSpline(rpm, time);
+		System.setOut(original);
+		original = null;
+	    } catch (final Exception e) {
+		// restore stdout if we caught something
+		if(original != null) System.setOut(original);
+		logger.warn("CubicSpline:", e);
+	    }
 	}
     }
 
