@@ -1,15 +1,25 @@
 # ECUxPlot
 
+[![Nightly Build](https://github.com/nyetwurk/ecuxplot/actions/workflows/nightly-build.yml/badge.svg)](https://github.com/nyetwurk/ecuxplot/actions/workflows/nightly-build.yml)
+[![Release](https://github.com/nyetwurk/ecuxplot/actions/workflows/release.yml/badge.svg)](https://github.com/nyetwurk/ecuxplot/actions/workflows/release.yml)
+[![Java](https://img.shields.io/badge/Java-18-orange.svg)](https://openjdk.java.net/)
+[![License](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/nyetwurk/ecuxplot)
+
+**Downloads**: [Latest Release](https://github.com/nyetwurk/ecuxplot/releases/latest) | [Nightly Build](https://github.com/nyetwurk/ecuxplot/releases/tag/latest-nightly)
+
+> **Note**: This README describes features in the `master` branch, which may not be available in the latest release or nightly build.
+
 ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log files. It provides visualization and analysis capabilities for engine performance data, including power estimation, boost control, and fuel system analysis.
 
 ## Features
 
 - **Data Visualization**: Plot engine parameters from CSV log files
 - **Performance Analysis**: Calculate horsepower estimates
-- **FATS Analysis**: "For the Advancement of the S4" ETs for 4200-6500 mph (60-90)
+- **FATS Analysis**: "For the Advancement of the S4" ETs for 4200-6500 RPM (60-90 mph)
 - **Advanced Filtering**: Acceleration-based filtering with wheel spin detection
 - **Debug Tools**: Real-time filter debugging and log analysis
-- **Multi-Platform**: Runs on Windows, macOS, and Linux
+- **Multi-Platform**: Runs on Windows, MacOS, and Linux
 - **Customizable**: Vehicle profiles and configurable parameters
 
 ## Quick Start

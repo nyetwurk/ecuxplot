@@ -1,0 +1,79 @@
+name: Windows Installer Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create a GitHub release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-windows-installer:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '18'
+          distribution: 'temurin'
+
+      - name: Install NSIS
+        run: |
+          # Download and install NSIS
+          $url = "https://sourceforge.net/projects/nsis/files/NSIS%203/3.08/nsis-3.08-setup.exe/download"
+          $output = "$env:TEMP\nsis-installer.exe"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Start-Process -FilePath $output -ArgumentList "/S" -Wait
+          # Add NSIS to PATH
+          $nsisPath = "C:\Program Files (x86)\NSIS"
+          echo "$nsisPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Install Launch4j
+        run: |
+          # Download and install Launch4j
+          $url = "https://sourceforge.net/projects/launch4j/files/launch4j-3/3.50/launch4j-3.50-win32.exe/download"
+          $output = "$env:TEMP\launch4j-installer.exe"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Start-Process -FilePath $output -ArgumentList "/S" -Wait
+          # Add Launch4j to PATH
+          $launch4jPath = "C:\Program Files (x86)\Launch4j"
+          echo "$launch4jPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build ECUxPlot
+        run: |
+          # Use WSL or Git Bash for make commands
+          bash -c "make clean && make all"
+
+      - name: Create Windows installer
+        run: |
+          # Create the full NSIS installer
+          bash -c "make exes"
+          # The Windows installer creation would need to be adapted for Windows environment
+          # For now, we'll create the executables
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecuplot-windows-installer-${{ github.run_number }}
+          path: |
+            build/CYGWIN_NT/*.exe
+            build/*.jar
+          retention-days: 30
+
+      - name: Create release
+        if: ${{ github.event.inputs.create_release == 'true' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: windows-${{ github.run_number }}
+          name: Windows Installer Build ${{ github.run_number }}
+          draft: true
+          files: |
+            build/CYGWIN_NT/*.exe
+            build/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

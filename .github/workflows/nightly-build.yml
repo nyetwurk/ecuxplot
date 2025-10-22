@@ -1,0 +1,98 @@
+name: Nightly Build
+
+on:
+  schedule:
+    # Run every night at 2 AM UTC (adjust timezone as needed)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+env:
+  BUILD_CACHE_KEY: nightly-build-cache
+
+jobs:
+  build-macos:
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: 'macos'
+      build-target: 'dmg'
+      artifact-paths: 'build/*.dmg'
+      use-cache: true
+    secrets: inherit
+
+  build-linux-windows:
+    strategy:
+      matrix:
+        include:
+          - platform: linux
+            build-target: archive
+            artifact-paths: build/*.tar.gz
+          - platform: linux
+            build-target: exes
+            artifact-paths: build/CYGWIN_NT/*.exe
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: ${{ matrix.platform }}
+      build-target: ${{ matrix.build-target }}
+      artifact-paths: ${{ matrix.artifact-paths }}
+      use-cache: true
+    secrets: inherit
+
+  notify:
+    needs: [build-macos, build-linux-windows]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on success
+        if: needs.build-macos.result == 'success' && needs.build-linux-windows.result == 'success'
+        run: |
+          echo "✅ Nightly build completed successfully"
+          echo "Artifacts created for macOS, Windows, and Linux"
+
+      - name: Notify on failure
+        if: needs.build-macos.result == 'failure' || needs.build-linux-windows.result == 'failure'
+        run: |
+          echo "❌ Nightly build failed"
+          exit 1
+
+  create-nightly-release:
+    needs: [build-macos, build-linux-windows]
+    if: needs.build-macos.result == 'success' && needs.build-linux-windows.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-builds
+          path: ./artifacts/macos
+
+      - name: Download Linux/Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-windows-builds
+          path: ./artifacts/linux-windows
+
+      - name: Create nightly release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest-nightly
+          name: Latest Nightly Build
+          draft: false
+          prerelease: true
+          files: |
+            ./artifacts/macos/*.dmg
+            ./artifacts/linux-windows/*.tar.gz
+            ./artifacts/linux-windows/*.exe
+          body: |
+            Latest nightly build from commit ${{ github.sha }}
+
+            **Downloads:**
+            - **macOS**: ECUxPlot.dmg
+            - **Linux**: ECUxPlot.tar.gz
+            - **Windows**: ECUxPlot.exe
+
+            Built on: ${{ github.run_number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
