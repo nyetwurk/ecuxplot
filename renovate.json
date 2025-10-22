@@ -1,10 +1,16 @@
 {
-  "extends": ["config:base"],
+  "extends": [
+    "config:recommended"
+  ],
   "packageRules": [
     {
-      "matchFiles": ["scripts/launch4j-version.txt"],
+      "matchFileNames": [
+        "scripts/launch4j-version.txt"
+      ],
       "groupName": "launch4j",
-      "schedule": ["before 6am on monday"],
+      "schedule": [
+        "before 6am on monday"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true,
@@ -14,7 +20,11 @@
       "currentValueTemplate": "3.{{minor}}"
     }
   ],
-  "ignorePaths": ["lib/", "build/", "runtime/"],
+  "ignorePaths": [
+    "lib/",
+    "build/",
+    "runtime/"
+  ],
   "vulnerabilityAlerts": {
     "enabled": true
   }
