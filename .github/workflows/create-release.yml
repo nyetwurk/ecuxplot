@@ -29,13 +29,13 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: macos-builds
           path: ./artifacts/macos
 
       - name: Download Linux/Windows artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: linux-windows-builds
           path: ./artifacts/linux-windows
