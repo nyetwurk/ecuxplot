@@ -368,18 +368,7 @@ case "NEW_LOGGER": {
 - Create test file in `test-data/new-logger.csv`
 - Add expectations to `test-data/test-expectations.xml`
 
-## Current Status
-
-### ✅ Implemented Features
-
-- YAML-driven logger detection
-- Dynamic line skipping with regex patterns
-- Multi-header format support
-- Field aliasing system
-- Build integration with YAML-to-XML conversion
-- Comprehensive test suite
-
-### ✅ Supported Logger Types
+## ✅ Supported Logger Types
 
 - **VCDS**: German and English variants with complex header processing
 - **ME7LOGGER**: Dynamic header finding with VARS/UNITS/ALIASES
@@ -392,7 +381,7 @@ case "NEW_LOGGER": {
 - **ZEITRONIX**: Field prefixing for overlay compatibility
 - **SWCOMM**: Multi-header with complex field processing
 
-### 🔄 Future Enhancements
+## 🔄 Future Enhancements
 
 - Complete migration of complex case statements to YAML
 - Position-aware parsing (know exact detection line)

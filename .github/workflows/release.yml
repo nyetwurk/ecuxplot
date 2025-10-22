@@ -1,0 +1,79 @@
+name: Release Management
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.2.3)'
+        required: true
+        type: string
+
+env:
+  JAVA_VERSION: '18'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get tag name
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "tag_name=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag_name }}
+          release_name: ECUxPlot ${{ steps.get_tag.outputs.tag_name }}
+          draft: true
+          prerelease: false
+
+      - name: Download all artifacts
+        run: |
+          mkdir -p release-artifacts
+          # This would download artifacts from previous build jobs
+          # For now, we'll trigger builds for this release
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release-artifacts/
+          asset_name: ecuplot-release-${{ steps.get_tag.outputs.tag_name }}
+          asset_content_type: application/zip
+
+  build-for-release:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - platform: macos
+            build-target: dmg
+            artifact-paths: build/*.dmg
+          - platform: linux
+            build-target: archive
+            artifact-paths: build/*.tar.gz
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: ${{ matrix.platform }}
+      build-target: ${{ matrix.build-target }}
+      artifact-paths: ${{ matrix.artifact-paths }}
+      use-cache: true
+    secrets: inherit
