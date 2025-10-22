@@ -15,7 +15,7 @@ endif
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
 
 # base installer (arch independent tar file only)
-ARCHIVE:=build/$(TARGET).tar.gz
+ARCHIVE:=build/$(ASSET_FILENAME).tar.gz
 INSTALL_DIR:=/usr/local/ecuxplot
 INSTALL_FILES:= $(TARGET).jar mapdump.jar \
 		$(subst :, ,$(JARS)) README.md \

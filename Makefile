@@ -1,5 +1,9 @@
 include scripts/java-target.mk
 
+# Filename for final assets (e.g. installers, archives)
+# Can override this with any version, e.g. 'nightly' or 'latest'
+ASSET_VER?=$(ECUXPLOT_VER)
+
 ECUXPLOT_UID := 20150620L
 ECUXPLOT_VER := $(shell git describe --tags --abbrev=4 --dirty --always)
 VERSION := $(subst v,,$(shell echo $(ECUXPLOT_VER) | cut -f 1 -d -))
@@ -56,13 +60,18 @@ JARS:=$(addprefix lib/,$(ECUXPLOT_JARS) $(COMMON_JARS))
 
 VERSION_JAVA:=src/org/nyet/util/Version.java
 LOGGERS_XML:=src/org/nyet/ecuxplot/loggers.xml
-TARGET:=ECUxPlot-$(ECUXPLOT_VER)
+# This MUST be in the same dir as ./lib or classpath will not be created correctly
+TARGET:=ECUxPlot
+
+# Filename for final assets (e.g. installers, archives)
+ASSET_FILENAME:=$(TARGET)-$(ASSET_VER)
 
 .PHONY: all compile run test test-detection binclean clean help
 
 # ant build target
-all $(TARGET).jar mapdump.jar: build/version.txt
+all $(TARGET).jar build/$(TARGET)-$(ECUXPLOT_VER).jar mapdump.jar: build/version.txt
 	@$(ANT) all
+	@cp $(TARGET).jar build/$(TARGET)-$(ECUXPLOT_VER).jar
 
 # ant compile target
 compile: build.xml build/build.properties $(VERSION_JAVA) $(LOGGERS_XML)

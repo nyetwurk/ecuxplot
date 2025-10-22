@@ -19,7 +19,7 @@
 ;--------------------------------
 ;General
 
-  OutFile "build/${MUI_FILE}-${VERSION}-setup.exe"
+  OutFile "build/${MUI_FILE}-${ASSET_VER}-setup.exe"
   RequestExecutionLevel admin
   ShowInstDetails "nevershow"
   ShowUninstDetails "nevershow"
@@ -95,7 +95,7 @@ Section "install" InstallationInfo
   SetOutPath "$INSTDIR"
   File "build\CYGWIN_NT\${MUI_FILE}.exe"
   File "${MUI_FILE}.sh"
-  File "${MUI_FILE}-${VERSION}.jar"
+  File "${MUI_FILE}.jar"
   File "build\CYGWIN_NT\mapdump.exe"
   File "mapdump.jar"
   File "build\version.txt"

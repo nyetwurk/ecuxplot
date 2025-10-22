@@ -6,11 +6,7 @@ PROG=$(realpath "$0" 2>/dev/null || true)
 [ -z "$PROG" ] && PROG=$0
 DIR=`dirname "$PROG"`
 
-for i in build/version.txt version.txt; do
-    [ -r "$DIR/$i" ] && VER=$(cat "$DIR/$i")
-done
-
-jar=$DIR/ECUxPlot-$VER.jar
+jar=$DIR/ECUxPlot.jar
 
     IFS=$','
 if [ ! -z $(which cygpath) ]; then

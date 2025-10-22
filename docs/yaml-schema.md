@@ -4,7 +4,7 @@
 
 This document describes the complete YAML schema for ECUxPlot's logger configuration system. The schema defines how logger types are detected, parsed, and processed.
 
-## Current Schema (Implemented)
+## Schema Description
 
 ### Logger Definition Structure
 

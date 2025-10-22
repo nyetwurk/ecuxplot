@@ -1,0 +1,45 @@
+name: Build All Platforms
+
+on:
+  workflow_call:
+    inputs:
+      use-cache:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether to use runtime caching'
+      asset-version:
+        required: false
+        type: string
+        default: 'nightly'
+        description: 'Asset version suffix (nightly for nightly builds, empty for releases)'
+
+jobs:
+  build-macos:
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: 'macos'
+      build-target: 'installers'
+      artifact-paths: |
+        build/*-MacOS.zip
+        build/*.dmg
+        ECUxPlot.dmg
+      use-cache: ${{ inputs.use-cache }}
+      asset-version: ${{ inputs.asset-version }}
+    secrets: inherit
+
+  build-linux-windows:
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: linux
+      build-target: installers
+      artifact-paths: |
+        build/*.tar.gz
+        build/*-setup.exe
+        build/ECUxPlot-*.jar
+        ECUxPlot.jar
+        mapdump.jar
+        ECUxPlot-setup.exe
+      use-cache: ${{ inputs.use-cache }}
+      asset-version: ${{ inputs.asset-version }}
+    secrets: inherit

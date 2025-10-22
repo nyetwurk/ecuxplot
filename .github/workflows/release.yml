@@ -1,0 +1,57 @@
+name: Release Management
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.2.3)'
+        required: true
+        type: string
+
+env:
+  JAVA_VERSION: '18'
+
+jobs:
+  get-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.get_tag.outputs.tag_name }}
+    steps:
+      - name: Get tag name
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "tag_name=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          fi
+
+  build-for-release:
+    needs: get-tag
+    uses: ./.github/workflows/build-matrix.yml
+    with:
+      use-cache: true
+      asset-version: ''
+    secrets: inherit
+
+  create-release:
+    needs: [get-tag, build-for-release]
+    uses: ./.github/workflows/create-release.yml
+    with:
+      tag-name: ${{ needs.get-tag.outputs.tag_name }}
+      release-name: ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
+      is-prerelease: ${{ contains(needs.get-tag.outputs.tag_name, 'rc') || contains(needs.get-tag.outputs.tag_name, 'beta') || contains(needs.get-tag.outputs.tag_name, 'alpha') }}
+      # This is a SUBSET of the actual release artifacts, for simplicity. DO NOT ADD ALL THE FILES.
+      release-body: |
+        ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
+
+        **Downloads:**
+        - **macOS**: ECUxPlot.dmg
+        - **Linux**: ECUxPlot-v*.tar.gz
+        - **Windows**: ECUxPlot.exe
+
+        Built from tag: ${{ needs.get-tag.outputs.tag_name }}
+    secrets: inherit

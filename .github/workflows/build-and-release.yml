@@ -1,0 +1,57 @@
+name: Build and Release
+
+on:
+  schedule:
+    # Run every night at 2 AM UTC (adjust timezone as needed)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual triggering
+  push:
+    branches: [ '*' ]
+
+env:
+  BUILD_CACHE_KEY: nightly-build-cache
+
+jobs:
+  build-all-platforms:
+    uses: ./.github/workflows/build-matrix.yml
+    with:
+      use-cache: true
+    secrets: inherit
+
+  notify:
+    needs: [build-all-platforms]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on success
+        if: needs.build-all-platforms.result == 'success'
+        run: |
+          echo "✅ Build completed successfully"
+          echo "Artifacts created for macOS, Windows, and Linux"
+
+      - name: Notify on failure
+        if: needs.build-all-platforms.result == 'failure'
+        run: |
+          echo "❌ Build failed"
+          exit 1
+
+  create-nightly-release:
+    needs: [build-all-platforms]
+    if: needs.build-all-platforms.result == 'success' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    uses: ./.github/workflows/create-release.yml
+    with:
+      tag-name: latest-nightly
+      release-name: Latest Nightly Build
+      is-prerelease: true
+      is-nightly: true
+      release-body: |
+        Latest build from commit ${{ github.sha }}
+
+        **Downloads:**
+        - **macOS**: ECUxPlot-nightly.dmg, ECUxPlot-nightly-MacOS.zip
+        - **Linux**: ECUxPlot-nightly.tar.gz
+        - **Windows**: ECUxPlot-nightly-setup.exe
+        - **Portable**: ECUxPlot-nightly.jar, ECUxPlot.jar, mapdump.jar
+
+        Built on: ${{ github.run_number }}
+    secrets: inherit

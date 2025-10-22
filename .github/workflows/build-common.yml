@@ -21,6 +21,11 @@ on:
         type: boolean
         default: false
         description: 'Whether to use runtime caching'
+      asset-version:
+        required: false
+        type: string
+        default: ''
+        description: 'Asset version suffix (nightly for nightly builds, empty for releases)'
 
 jobs:
   build:
@@ -57,7 +62,11 @@ jobs:
 
     - name: Build targets
       run: |
-        make ${{ inputs.build-target }}
+        if [ -n "${{ inputs.asset-version }}" ]; then
+          make ${{ inputs.build-target }} ASSET_VER=${{ inputs.asset-version }}
+        else
+          make ${{ inputs.build-target }}
+        fi
       env:
         DISPLAY: ""
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,15 +79,25 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create simple installer names
-      if: inputs.platform == 'linux'
       run: |
-        # Create simple names for Windows installer
-        for setup in build/ECUxPlot-*-setup.exe; do
-          if [ -f "$setup" ]; then
-            cp "$setup" build/setup.exe
-            echo "Created setup.exe from $(basename $setup)"
-          fi
-        done
+        # Create simple names for main installers only
+        if [ "${{ inputs.platform }}" = "macos" ]; then
+          # macOS DMG
+          for dmg in build/ECUxPlot-*.dmg; do
+            if [ -f "$dmg" ]; then
+              cp "$dmg" ECUxPlot.dmg
+              echo "Created ECUxPlot.dmg from $(basename $dmg)"
+            fi
+          done
+        elif [ "${{ inputs.platform }}" = "linux" ]; then
+          # Windows setup.exe
+          for exe in build/ECUxPlot-*-setup.exe; do
+            if [ -f "$exe" ]; then
+              cp "$exe" ECUxPlot-setup.exe
+              echo "Created ECUxPlot-setup.exe from $(basename $exe)"
+            fi
+          done
+        fi
 
     - name: Upload artifacts
       if: inputs.artifact-paths != ''

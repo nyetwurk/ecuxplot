@@ -1,4 +1,4 @@
-MAC_ZIP:=build/$(TARGET)-MacOS.zip
+MAC_ZIP:=build/$(ASSET_FILENAME)-MacOS.zip
 
 # Development version of the app without a bundled runtime (stripped from jpackage)
 # TODO: Issue #55 - Investigate building macos-bare.app w/o jpackager (regression)
@@ -25,7 +25,7 @@ $(MAC_APP)/.stamp: build/$(UNAME)/ECUxPlot.app
 $(MAC_ZIP): $(MAC_APP)/.stamp
 	(cd $(dir $(MAC_APP)); zip -qr ../$(notdir $(MAC_ZIP)) $(MAC_BARE_NAME))
 
-MAC_INSTALLER:=build/$(TARGET).dmg
+MAC_INSTALLER:=build/$(ASSET_FILENAME).dmg
 .PHONY: dmg latest-links-dmg rsync-dmg
 dmg: $(MAC_INSTALLER)
 

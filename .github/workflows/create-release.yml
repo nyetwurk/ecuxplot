@@ -1,0 +1,58 @@
+name: Create Release
+
+on:
+  workflow_call:
+    inputs:
+      tag-name:
+        required: true
+        type: string
+        description: 'Tag name for the release'
+      release-name:
+        required: true
+        type: string
+        description: 'Display name for the release'
+      is-prerelease:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether this is a prerelease'
+      release-body:
+        required: false
+        type: string
+        description: 'Release body text'
+      is-nightly:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether this is a nightly build (affects which files are included)'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v5
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag-name }}
+          name: ${{ inputs.release-name }}
+          draft: false
+          prerelease: ${{ inputs.is-prerelease }}
+          files: |
+            macos-builds/build/*.dmg
+            macos-builds/ECUxPlot.dmg
+            macos-builds/build/*.zip
+            ${{ inputs.is-nightly && 'linux-windows-builds/build/ECUxPlot-nightly.jar' || 'linux-windows-builds/build/ECUxPlot-*.jar' }}
+            linux-windows-builds/build/*.tar.gz
+            linux-windows-builds/build/*.exe
+            linux-windows-builds/ECUxPlot-setup.exe
+            linux-windows-builds/ECUxPlot.jar
+            linux-windows-builds/mapdump.jar
+          body: ${{ inputs.release-body }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

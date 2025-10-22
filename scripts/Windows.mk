@@ -14,16 +14,16 @@ install-launch4j:
 
 EXES:=build/CYGWIN_NT/ECUxPlot.exe build/CYGWIN_NT/mapdump.exe
 
-WIN_INSTALLER:=build/$(TARGET)-setup.exe
+WIN_INSTALLER:=build/$(ASSET_FILENAME)-setup.exe
 
 build/%.xml: templates/%.xml.template build/version.txt Makefile scripts/Windows.mk
 	@mkdir -p build
 	cat $< | $(GEN) > $@
 
-build/CYGWIN_NT/ECUxPlot.exe: ECUxPlot-$(ECUXPLOT_VER).jar build/ECUxPlot.xml
+build/CYGWIN_NT/ECUxPlot.exe: ECUxPlot.jar build/ECUxPlot.xml
 	@[ -x $(LAUNCH4J) ] || ( echo "Can't find launch4j!"; false)
 	@mkdir -p build/CYGWIN_NT
-	cp -f ECUxPlot-$(ECUXPLOT_VER).jar build/
+	cp -f ECUxPlot.jar build/
 	$(LAUNCH4J) build/ECUxPlot.xml
 
 build/CYGWIN_NT/mapdump.exe: mapdump.jar build/mapdump.xml
@@ -38,7 +38,9 @@ exes: $(EXES)
 JRE_DIR=$(shell ls -d1 runtime/CYGWIN_NT/jdk-* | sort -r | head -1)
 
 # Requires windows runtime
+# ASSET_VER is the target filename (should match WIN_INSTALLER)
 $(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runtime/CYGWIN_NT/java-$(JAVA_TARGET_VER).stamp
+	@echo Building $(WIN_INSTALLER) with ASSET_VER=$(ASSET_VER)
 	@[ -x $(MAKENSIS) ] || (echo "Can't find NSIS!"; false)
 	$(MAKENSIS) $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DJRE_DIR=$(JRE_DIR) \
@@ -52,5 +54,6 @@ $(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runt
 	    $(OPT_PRE)DSLF4J_API_VER=$(SLF4J_API_VER) \
 	    $(OPT_PRE)DLOGBACK_CLASSIC_VER=$(LOGBACK_CLASSIC_VER) \
 	    $(OPT_PRE)DLOGBACK_CORE_VER=$(LOGBACK_CORE_VER) \
+	    $(OPT_PRE)DASSET_VER=$(ASSET_VER) \
 	    scripts/ECUxPlot.nsi
 	@chmod +x $(WIN_INSTALLER)

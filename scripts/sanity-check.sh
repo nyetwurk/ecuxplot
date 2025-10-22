@@ -162,7 +162,7 @@ check_jpackage() {
     print_info "=== App Structure ==="
     check_dir "$app_dir" "App directory"
     if [ -d "$app_dir" ]; then
-        local main_jar=$(find "$app_dir" -name "ECUxPlot-*.jar" | head -1)
+        local main_jar="$app_dir/ECUxPlot.jar"
         check_file "$main_jar" "Main JAR"
         check_file "$app_dir/mapdump.jar" "mapdump JAR"
         check_file "$app_dir/ECUxPlot.cfg" "ECUxPlot.cfg"
