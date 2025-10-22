@@ -75,12 +75,12 @@ run: $(TARGET).jar
 # Test logger detection and parsing
 test: compile
 	@echo "Running unit tests..."
-	@$(ANT) test
+	@$(ANT) -e test || (echo "Tests failed!" && exit 1)
 
 # Test only logger detection (faster, for debugging detection issues)
 test-detection: compile
 	@echo "Running detection-only tests..."
-	@$(ANT) test-detection
+	@$(ANT) -e test-detection || (echo "Detection tests failed!" && exit 1)
 
 # clean targets
 binclean:

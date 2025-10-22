@@ -1,0 +1,154 @@
+---
+name: Build, Test and Release ECUxPlot
+
+on:
+  push:
+    branches: [ '*' ]
+    tags: [ 'v*' ]
+
+jobs:
+  build-macos:
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: macos
+      build-target: installers
+      artifact-paths: |
+        build/*-MacOS.zip
+        build/*.dmg
+        README.md
+        INSTALL.md
+      use-cache: false
+
+  build-linux:
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: linux
+      build-target: installers
+      artifact-paths: |
+        build/*.tar.gz
+        build/*-setup.exe
+        build/setup.exe
+        ECUxPlot-*.jar
+        mapdump.jar
+        README.md
+        INSTALL.md
+      use-cache: true
+
+  test-windows-installer:
+    runs-on: windows-latest
+    needs: [build-linux]
+    if: false  # Disabled - test manually on Windows machine
+    steps:
+    - name: Download Windows installer
+      uses: actions/download-artifact@v5
+      with:
+        name: linux-windows-builds
+        path: installer/
+
+    - name: Install ECUxPlot
+      run: |
+        # Find the setup.exe file
+        $setupExe = Get-ChildItem -Path "installer" -Filter "setup.exe" -Recurse | Select-Object -First 1
+        if (-not $setupExe) {
+          Write-Error "No setup.exe found in installer directory"
+          exit 1
+        }
+
+        Write-Host "Found installer: $($setupExe.FullName)"
+
+        # Install silently
+        Write-Host "Installing ECUxPlot silently..."
+        $process = Start-Process -FilePath $setupExe.FullName -ArgumentList "/S", "/D=C:\Program Files\ECUxPlot", "/NCRC", "/NORESTART" -Wait -NoNewWindow -PassThru
+        $exitCode = $process.ExitCode
+        Write-Host "Installer exit code: $exitCode"
+
+        if ($exitCode -ne 0) {
+          Write-Error "Installer failed with exit code $exitCode"
+          exit 1
+        }
+
+        # Verify installation
+        $installPath = "C:\Program Files\ECUxPlot"
+        if (-not (Test-Path $installPath)) {
+          Write-Error "Installation failed - ECUxPlot directory not found"
+          exit 1
+        }
+
+        Write-Host "Installation successful - ECUxPlot found at $installPath"
+
+    - name: Test ECUxPlot execution
+      run: |
+        $installPath = "C:\Program Files\ECUxPlot"
+        $ecuXPlotExe = Join-Path $installPath "ECUxPlot.exe"
+
+        if (-not (Test-Path $ecuXPlotExe)) {
+          Write-Error "ECUxPlot.exe not found at $ecuXPlotExe"
+          exit 1
+        }
+
+        Write-Host "Testing ECUxPlot execution with --help flag"
+
+        # Test execution with --help flag (should show usage and exit cleanly)
+        & $ecuXPlotExe --help
+        $exitCode = $LASTEXITCODE
+
+        Write-Host "ECUxPlot exited with code: $exitCode"
+
+        # Exit code 0 or 1 is acceptable (0 = success, 1 = help shown)
+        if ($exitCode -gt 1) {
+          Write-Error "ECUxPlot execution failed with exit code $exitCode"
+          exit 1
+        }
+
+        Write-Host "ECUxPlot execution test passed"
+
+    - name: Test mapdump execution
+      run: |
+        $installPath = "C:\Program Files\ECUxPlot"
+        $mapdumpExe = Join-Path $installPath "mapdump.exe"
+
+        if (-not (Test-Path $mapdumpExe)) {
+          Write-Error "mapdump.exe not found at $mapdumpExe"
+          exit 1
+        }
+
+        Write-Host "Testing mapdump execution"
+
+        # Test mapdump execution
+        & $mapdumpExe --help
+        $exitCode = $LASTEXITCODE
+
+        Write-Host "mapdump exited with code: $exitCode"
+
+        # Exit code 0 or 1 is acceptable (0 = success, 1 = help shown)
+        if ($exitCode -gt 1) {
+          Write-Error "mapdump execution failed with exit code $exitCode"
+          exit 1
+        }
+
+        Write-Host "mapdump execution test passed"
+
+  create-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    needs: [build-macos, build-linux]
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v5
+
+    - name: Create release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          linux-windows-builds/build/*.exe
+          linux-windows-builds/build/*.tar.gz
+          linux-windows-builds/ECUxPlot-*.jar
+          linux-windows-builds/mapdump.jar
+          linux-windows-builds/README.md
+          linux-windows-builds/INSTALL.md
+          macos-builds/build/*.dmg
+          macos-builds/build/*-MacOS.zip
+        generate_release_notes: true
+        draft: ${{ contains(github.ref_name, '-rc') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

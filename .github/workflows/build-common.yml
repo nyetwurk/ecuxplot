@@ -49,8 +49,10 @@ jobs:
         if [ "${{ inputs.platform }}" = "linux" ]; then
           sudo apt-get update
           sudo rm -f /var/lib/man-db/auto-update
-          sudo apt-get install -y --no-install-recommends make ant nsis mingw-w64 binutils-mingw-w64 dos2unix
+          sudo apt-get install -y --no-install-recommends make ant nsis mingw-w64 binutils-mingw-w64 dos2unix python3-yaml
           make install-launch4j
+        elif [ "${{ inputs.platform }}" = "macos" ]; then
+          pip3 install --break-system-packages pyyaml
         fi
 
     - name: Build targets
@@ -59,6 +61,24 @@ jobs:
       env:
         DISPLAY: ""
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Run tests
+      run: |
+        make test
+      env:
+        DISPLAY: ""
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create simple installer names
+      if: inputs.platform == 'linux'
+      run: |
+        # Create simple names for Windows installer
+        for setup in build/ECUxPlot-*-setup.exe; do
+          if [ -f "$setup" ]; then
+            cp "$setup" build/setup.exe
+            echo "Created setup.exe from $(basename $setup)"
+          fi
+        done
 
     - name: Upload artifacts
       if: inputs.artifact-paths != ''
