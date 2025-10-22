@@ -119,24 +119,63 @@ ECUxPlot uses `jpackage` for macOS app bundle creation, which provides better co
 
 ### CI/CD
 
-- **Build Workflow**: Runs on every commit, builds for current platform
-- **Release Workflow**: Runs on tags, creates full installers
+- **Build and Release Workflow**: Runs on every push to any branch and nightly, builds all platforms using `build-matrix.yml` → `build-common.yml`
+- **Release Workflow**: Runs on tags, creates full installers using `build-matrix.yml` → `build-common.yml`
+- **Build Common**: Reusable workflow for single-platform builds + tests
+- **Build Matrix**: Shared multi-platform build orchestration
+- **Create Release**: Shared workflow for consistent release creation across build and release workflows
 - **Caching**: Windows runtime directories cached between runs
 
-### File Structure
+### Build Artifacts
+
+The build process creates different artifacts depending on the platform and build type:
+
+#### Nightly Build Artifacts
+
+```text
+GitHub Actions Artifacts (30-day retention):
+├── macos-builds/
+│   └── ECUxPlot-*.dmg           # macOS DMG installer
+└── linux-windows-builds/
+    ├── ECUxPlot-*.tar.gz        # Linux archive
+    └── ECUxPlot.exe             # Windows executable
+
+GitHub Release (latest-nightly):
+├── ECUxPlot.dmg                 # macOS installer
+├── ECUxPlot.tar.gz              # Linux archive
+└── ECUxPlot.exe                 # Windows executable
+```
+
+#### Release Build Artifacts
+
+```text
+GitHub Actions Artifacts (90-day retention):
+├── macos-builds/
+│   └── ECUxPlot-*.dmg           # macOS DMG installer
+└── linux-windows-builds/
+    ├── ECUxPlot-*.tar.gz        # Linux archive
+    └── ECUxPlot.exe             # Windows executable
+
+GitHub Release (tagged version):
+├── ECUxPlot-*.dmg               # macOS installer
+├── ECUxPlot-*.tar.gz            # Linux archive
+└── ECUxPlot-*.exe               # Windows executable
+```
+
+#### Local Build Artifacts
 
 ```text
 build/
-├── Darwin/                 # macOS builds
-│   ├── ECUxPlot.app/       # Full app bundle (jpackage)
-│   ├── ECUxPlot-bare.app/  # Bare app bundle (no runtime)
-│   ├── *.zip               # ZIP archives
-│   └── *.dmg               # DMG installers
-├── CYGWIN_NT/              # Windows builds
-│   ├── ECUxPlot.exe        # Main executable
-│   └── mapdump.exe         # Map dump utility
-├── *.tar.gz                # Cross-platform archives
-└── *.jar                   # JAR files
+├── Darwin/                      # macOS builds
+│   ├── ECUxPlot.app/            # Full app bundle (jpackage)
+│   ├── ECUxPlot-bare.app/       # Bare app bundle (no runtime)
+│   ├── *.zip                    # ZIP archives
+│   └── *.dmg                    # DMG installers
+├── CYGWIN_NT/                   # Windows builds
+│   ├── ECUxPlot.exe             # Main executable
+│   └── mapdump.exe              # Map dump utility
+├── *.tar.gz                     # Cross-platform archives
+└── *.jar                        # JAR files
 ```
 
 ## Advanced Usage

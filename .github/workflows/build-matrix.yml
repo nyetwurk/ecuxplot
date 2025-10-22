@@ -1,0 +1,29 @@
+name: Build All Platforms
+
+on:
+  workflow_call:
+    inputs:
+      use-cache:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether to use runtime caching'
+
+jobs:
+  build-macos:
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: 'macos'
+      build-target: 'dmg'
+      artifact-paths: 'build/*.dmg'
+      use-cache: ${{ inputs.use-cache }}
+    secrets: inherit
+
+  build-linux-windows:
+    uses: ./.github/workflows/build-common.yml
+    with:
+      platform: linux
+      build-target: installers
+      artifact-paths: 'build/*.tar.gz;build/CYGWIN_NT/*.exe'
+      use-cache: ${{ inputs.use-cache }}
+    secrets: inherit

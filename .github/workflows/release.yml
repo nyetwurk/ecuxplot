@@ -1,0 +1,55 @@
+name: Release Management
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.2.3)'
+        required: true
+        type: string
+
+env:
+  JAVA_VERSION: '18'
+
+jobs:
+  get-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.get_tag.outputs.tag_name }}
+    steps:
+      - name: Get tag name
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "tag_name=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          fi
+
+  build-for-release:
+    needs: get-tag
+    uses: ./.github/workflows/build-matrix.yml
+    with:
+      use-cache: true
+    secrets: inherit
+
+  create-release:
+    needs: [get-tag, build-for-release]
+    uses: ./.github/workflows/create-release.yml
+    with:
+      tag-name: ${{ needs.get-tag.outputs.tag_name }}
+      release-name: ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
+      is-prerelease: false
+      release-body: |
+        ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
+
+        **Downloads:**
+        - **macOS**: ECUxPlot.dmg
+        - **Linux**: ECUxPlot.tar.gz
+        - **Windows**: ECUxPlot.exe
+
+        Built from tag: ${{ needs.get-tag.outputs.tag_name }}
+    secrets: inherit

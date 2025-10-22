@@ -1,0 +1,56 @@
+name: Create Release
+
+on:
+  workflow_call:
+    inputs:
+      tag-name:
+        required: true
+        type: string
+        description: 'Tag name for the release'
+      release-name:
+        required: true
+        type: string
+        description: 'Display name for the release'
+      is-prerelease:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether this is a prerelease'
+      release-body:
+        required: false
+        type: string
+        description: 'Release body text'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-builds
+          path: ./artifacts/macos
+
+      - name: Download Linux/Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-windows-builds
+          path: ./artifacts/linux-windows
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.tag-name }}
+          name: ${{ inputs.release-name }}
+          draft: false
+          prerelease: ${{ inputs.is-prerelease }}
+          files: |
+            ./artifacts/macos/*.dmg
+            ./artifacts/linux-windows/*.tar.gz
+            ./artifacts/linux-windows/*.exe
+          body: ${{ inputs.release-body }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
