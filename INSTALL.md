@@ -1,160 +1,123 @@
 # ECUxPlot Installation Guide
 
-This document explains how to build ECUxPlot installers and packages for different platforms.
+This document explains how to install ECUxPlot on different platforms.
 
 ## Quick Start
 
-```bash
-make help        # Show available targets
-make installers  # Build platform-appropriate installers (recommended)
-make all         # Build everything for current platform
-```
+1. **Download**: Get the appropriate installer for your platform from the [releases page](https://github.com/your-repo/releases)
+2. **Install**: Follow the platform-specific instructions below
+3. **Run**: Launch ECUxPlot and start analyzing your ECU data
 
-## Prerequisites
+## Platform-Specific Installation
 
-### Required Tools
+### macOS Installation
 
-- **Java Development Kit (JDK) 18** or later
-- **Make** (GNU Make)
-- **Ant** (Apache Ant)
+#### DMG Installer (Recommended)
 
-### Platform-Specific Tools
+1. Download the `.dmg` file from the releases page
+2. **Important**: Clear quarantine flags immediately after download:
 
-- **macOS**: Xcode Command Line Tools (for `hdiutil`)
-- **Linux/Windows**: NSIS, Launch4j, MinGW-w64
+   ```bash
+   xattr -c ECUxPlot-*.dmg
+   ```
 
-## Build Targets
+3. Open the DMG file
+4. Drag ECUxPlot.app to the Applications folder
+5. Eject the DMG
 
-| Target | Description | Platforms | Output |
-|--------|-------------|-----------|--------|
-| `all` | Build JAR files and core application | All | Platform-specific |
-| `archive` | Create compressed archive | All | `build/$(TARGET).tar.gz` |
-| `installers` | Build platform-appropriate installer | All | Auto-detects platform |
-| `dmg` | Create macOS DMG installer | macOS only | `build/$(TARGET).dmg` |
-| `exes` | Create Windows executables | Linux only | `build/CYGWIN_NT/*.exe` |
+#### ZIP Archive
 
-## Output Files
+1. Download the `.zip` file from the releases page
+2. Extract the ZIP file
+3. Drag ECUxPlot.app to Applications folder
 
-### macOS
+#### macOS Security Issues
 
-- `ECUxPlot-$(VERSION)-MacOS.zip` - ZIP archive (bare app, requires system Java)
-- `ECUxPlot-$(VERSION).dmg` - DMG installer (bundled app with Java runtime)
+**Problem**: "Application is damaged" error when trying to install or run ECUxPlot
 
-### Windows
+**Solution**: This is a macOS security feature that blocks unsigned applications.
 
-- `ECUxPlot-$(VERSION)-setup.exe` - NSIS installer
-- `CYGWIN_NT/ECUxPlot.exe` - Main executable
-- `CYGWIN_NT/mapdump.exe` - Map dump utility
+##### During installation
 
-### Cross-Platform
+You **must** do this immediately after you download the `.dmg`:
 
-- `ECUxPlot-$(VERSION).tar.gz` - Archive package (Unix/Linux/macOS)
+- Open Terminal and run: `xattr -c ECUxPlot-*.dmg` (or wherever you downloaded the dmg to)
+- Now open the `dmg` as usual, and drag the ECUxPlot icon to Applications
 
-## Installation Instructions
+##### Running after installation
 
-### macOS DMG Installer
+- Open Terminal and run: `sudo xattr -rc /Applications/ECUxPlot.app`
+- When you first try to run ECUxPlot, macOS will show a dialog saying: **"'ECUxPlot' is damaged and can't be opened. You should move it to the Trash."**
+- **Important**: Click **"Cancel"** - do NOT click "Move to Trash"
+- Go to **System Settings** → **Privacy & Security** (Note: On macOS Monterey and earlier, this is **System Preferences** → **Security & Privacy**)
+- Scroll down to the bottom of the page
+- Look for a message about ECUxPlot being blocked
+- Click **"Allow Anyway"** or **"Open Anyway"**
+- If you don't see the message, run `xattr -c /Applications/ECUxPlot.app` then try running the application again and then check Privacy & Security settings
 
-1. Open the DMG file
-2. Drag ECUxPlot.app to the Applications folder
-3. Eject the DMG
+**Note**: After clicking **"Cancel"**, macOS will show a message telling you that running the app was refused. You can then go to Privacy & Security settings to override this restriction.
 
-### macOS ZIP Archive
+### Windows Installation
 
-1. Extract the ZIP file
-2. Drag ECUxPlot.app to Applications folder
+#### NSIS Installer (Recommended)
 
-### Windows NSIS Installer
+1. Download the `ECUxPlot-*-setup.exe` file from the releases page
+2. Run the installer executable
+3. Follow the installation wizard
+4. ECUxPlot will be installed to `C:\Program Files\ECUxPlot`
 
-1. Run the ECUxPlot-$(VERSION)-setup.exe file
-2. Follow the installation wizard
+#### Manual Installation
 
-### Cross-Platform Archive
+1. Download the JAR files and scripts
+2. Extract to a directory of your choice
+3. Run `ECUxPlot.exe` from the installation directory
 
-1. Extract the tar.gz file
-2. Run `./ECUxPlot.sh` (Unix/Linux/macOS)
+### Linux Installation
+
+#### Archive Package
+
+1. Download the `.tar.gz` file from the releases page
+2. Extract the archive:
+
+   ```bash
+   tar -xzf ECUxPlot-*.tar.gz
+   ```
+
+3. Run the application:
+
+   ```bash
+   ./ECUxPlot.sh
+   ```
 
 ## Runtime Requirements
 
-### Windows Builds
+### Java Requirements
 
-- Downloads JRE automatically during build
-- No system Java required
+- **Windows**: JRE is automatically bundled with the installer
+- **macOS/Linux**: Requires Java 18+ installed on your system
 
-### macOS/Linux Builds
+### System Requirements
 
-- Uses system JDK (no download needed)
-- Requires Java 18+ installed
+- **Minimum RAM**: 2GB
+- **Disk Space**: 500MB for installation
+- **Operating System**: Windows 10+, macOS 10.15+, or Linux with modern kernel
 
-## Troubleshooting
+## Building from Source
 
-### Platform Errors
+For developers who want to build ECUxPlot from source code, see [BUILD.md](BUILD.md) for detailed build instructions.
 
-If you see errors like "DMG creation only supported on macOS", you're trying to run a platform-specific target on the wrong platform. Use `make installers` instead.
+## Troubleshooting Installation
 
-### Missing Tools
+### Common Issues
 
-- **macOS**: Install Xcode Command Line Tools: `xcode-select --install`
-- **Linux**: Install build tools: `sudo apt-get install build-essential`
-- **Windows**: Install NSIS and Launch4j
+- **Java not found**: Install Java 18+ from [Adoptium](https://adoptium.net/) or your system package manager
+- **Permission denied**: On Unix systems, ensure the scripts have execute permissions: `chmod +x *.sh`
+- **Antivirus blocking**: Some antivirus software may flag the application; add it to your exceptions list
 
-### macOS DMG Creation Issues
+### Getting Help
 
-ECUxPlot uses `jpackage` for macOS app bundle creation, which provides better compatibility. If you encounter issues:
+If you encounter installation issues not covered here, please:
 
-1. Ensure Xcode Command Line Tools are installed
-2. Check available disk space
-3. Verify Java 18+ is installed and accessible
-
-## Development Notes
-
-### Build Process
-
-1. **JAR Creation**: Ant builds the main application JAR files
-2. **Runtime Setup**: Windows downloads JRE, macOS/Linux use system JDK
-3. **Package Creation**: Platform-specific tools create installers
-
-### CI/CD
-
-- **Build Workflow**: Runs on every commit, builds for current platform
-- **Release Workflow**: Runs on tags, creates full installers
-- **Caching**: Windows runtime directories cached between runs
-
-### File Structure
-
-```text
-build/
-├── Darwin/                 # macOS builds
-│   ├── ECUxPlot.app/       # Full app bundle (jpackage)
-│   ├── ECUxPlot-bare.app/  # Bare app bundle (no runtime)
-│   ├── *.zip               # ZIP archives
-│   └── *.dmg               # DMG installers
-├── CYGWIN_NT/              # Windows builds
-│   ├── ECUxPlot.exe        # Main executable
-│   └── mapdump.exe         # Map dump utility
-├── *.tar.gz                # Cross-platform archives
-└── *.jar                   # JAR files
-```
-
-## Advanced Usage
-
-### Custom Builds
-
-```bash
-make clean          # Clean build artifacts
-make vars           # Show build variables
-make tag VER=1.2.3  # Create git tag
-```
-
-### Platform-Specific Builds
-
-```bash
-# On macOS
-make dmg                  # Create DMG only
-make archive             # Create tar.gz archive
-
-# On Linux
-make exes                # Create Windows executables
-make installers          # Create Windows installers
-```
-
-For more detailed information, see the source code and build scripts in the `scripts/` directory.
+1. Check the [troubleshooting section in README.md](README.md#troubleshooting)
+2. Post your issue on the project's issue tracker
+3. Include your operating system version and any error messages

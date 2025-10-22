@@ -1,12 +1,12 @@
 # ECUxPlot
 
-ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log files. It provides visualization and analysis capabilities for engine performance data, including power estimation, airflow calculations, and fuel system analysis.
+ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log files. It provides visualization and analysis capabilities for engine performance data, including power estimation, boost control, and fuel system analysis.
 
 ## Features
 
 - **Data Visualization**: Plot engine parameters from CSV log files
-- **Performance Analysis**: Calculate horsepower estimates and airflow metrics
-- **FATS Analysis**: Fast Acceleration Time System for 60-90 mph performance measurement
+- **Performance Analysis**: Calculate horsepower estimates
+- **FATS Analysis**: "For the Advancement of the S4" ETs for 4200-6500 mph (60-90)
 - **Advanced Filtering**: Acceleration-based filtering with wheel spin detection
 - **Debug Tools**: Real-time filter debugging and log analysis
 - **Multi-Platform**: Runs on Windows, macOS, and Linux
@@ -77,29 +77,6 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 - Verify consistent acceleration patterns across runs
 - Ensure similar starting conditions (gear, throttle position)
 - Compare raw vs calculated MPH values for consistency
-
-### macOS Installation Issues
-
-**Problem**: "Application is damaged" error when trying to run ECUxPlot
-
-**Solution**: This is a macOS security feature that blocks unsigned applications. The application is likely not damaged.
-
-**For macOS Mojave (10.14) and earlier**:
-
-- Open Terminal and run: `xattr -c /Applications/ECUxPlot.app`
-- Note: This method is less effective on macOS Catalina (10.15) and later
-
-**For macOS Catalina (10.15) and later**:
-
-1. When you first try to run ECUxPlot, macOS will show a dialog saying: **"'ECUxPlot' is damaged and can't be opened. You should move it to the Trash."**
-2. **Important**: Click **"Cancel"** - do NOT click "Move to Trash"
-3. Go to **System Settings** → **Privacy & Security** (Note: On macOS Monterey and earlier, this is **System Preferences** → **Security & Privacy**)
-4. Scroll down to the bottom of the page
-5. Look for a message about ECUxPlot being blocked
-6. Click **"Allow Anyway"** or **"Open Anyway"**
-7. If you don't see the message, run `xattr -c /Applications/ECUxPlot.app` then try running the application again and then check Privacy & Security settings
-
-**Note**: After clicking "Cancel", macOS will show a message telling you that running the app was refused. You can then go to Privacy & Security settings to override this restriction.
 
 ### FATS (For the Advancement of the S4)
 
@@ -178,6 +155,24 @@ Access via "Options → Show Debug Logs" to:
 
 If you encounter issues not covered here, please post your log file for assistance. In some cases, ECUxPlot may not detect pedal/gear data properly from the CSV header and may require adding your CSV format to the application.
 
+## Supported Log Formats
+
+ECUxPlot automatically detects and parses the following automotive ECU logging formats:
+
+- **VCDS** - [Ross-Tech VAG-COM Diagnostic System](https://www.ross-tech.com/)
+- **ME7-Logger** - [ME7Logger](http://nefariousmotorsports.com/forum/index.php/topic,837.0title,.html)
+- **SWComm/ECUTools** - [SWComm ECUTools](https://www.ecutools.com/)
+- **JB4** - [Burger Motorsports JB4](https://burgertuning.com/)
+- **Cobb Accessport** - [Cobb Tuning Accessport](https://www.cobbtuning.com/)
+- **ECUx** - [APR ECUx](https://www.goapr.com/)
+- **Zeitronix** - [Zeitronix wideband logging](https://www.zeitronix.com/)
+- **Evoscan** - [Mitsubishi EvoScan](https://www.evoscan.com/)
+- **LogWorks** - [Innovate Motorsports LogWorks](https://www.innovatemotorsports.com/)
+- **VolvoLogger** - [VolvoTools](https://github.com/prometey1982/VolvoTools)
+- **M-Tuner** - [M-Engineering M-Tuner](https://www.m-engineering.us/collections/m-tuner)
+
+All formats are automatically mapped to standardized field names (based on ECUx, for better or for worse). If your format isn't supported, ECUxPlot will attempt to parse it using basic field mapping.
+
 ## Data Sources
 
 ### Zeitronix Logs
@@ -186,6 +181,6 @@ If you plan to use Zeitronix logs, make sure to check the **"Include initial sum
 
 ## Installation
 
-For detailed installation instructions, build targets, and platform-specific information, see [INSTALL.md](INSTALL.md).
+For detailed installation instructions, see [INSTALL.md](INSTALL.md).
 
-**Note**: JRE download is only required for Windows builds. macOS and Linux builds use the system JDK.
+For build instructions and development information, see [BUILD.md](BUILD.md).
