@@ -1,6 +1,9 @@
 MAC_ZIP:=build/$(TARGET)-MacOS.zip
 
 # Development version of the app without a bundled runtime (stripped from jpackage)
+# TODO: Issue #55 - Investigate building macos-bare.app w/o jpackager (regression)
+# Current implementation strips runtime from jpackage output, but there may be
+# a way to build the bare app directly without jpackager dependency
 MAC_BARE_NAME:=ECUxPlot-bare.app
 MAC_APP:=build/Darwin/$(MAC_BARE_NAME)
 

@@ -699,6 +699,9 @@ public class ECUxDataset extends Dataset {
 		c = new Column(id, "MPH", calculatedMph);
 	    }
 	} else if(id.equals("Calc Velocity")) {
+	    // TODO: Issue #57 - Rework unit conversions to be based on units, not column name
+	    // Current conversions are hardcoded based on field names rather than actual units
+	    // This makes the system brittle and requires manual updates for each field
 	    // TODO: give user option to use raw VehicleSpeed or calculated from RPM
 	    // VehicleSpeed sensors are notorioiusly inaccurate.
 	    // Better to depend on RPM and user specified rpm_per_mph

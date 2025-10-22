@@ -85,6 +85,8 @@ public class Dataset {
 	    s=p.matcher(s).replaceAll("");
 
 	    // look for time stamps, convert to seconds
+	    // TODO: Issue #58 - Zeitronix timestamps are being read as integers, not timestamps
+	    // This affects Zeitronix logger files where timestamps may not match these patterns
 	    final Pattern p1 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}.\\d{1,3}");
 	    final Pattern p2 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}");
 	    final Pattern p3 = Pattern.compile("\\d{2}:\\d{2}.\\d{1,3}");

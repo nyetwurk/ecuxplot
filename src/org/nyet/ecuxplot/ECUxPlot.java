@@ -476,6 +476,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    System.getProperty("user.home"));
 		this.fc = new JFileChooser(dir);
 		this.fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
+		// TODO: Issue #56 - Failed to open file dialog is ugly, make it nicer
+		// Current implementation uses basic JFileChooser with minimal customization
+		// Consider adding better error handling, progress indicators, and user feedback
 	    }
 	    final int ret = this.fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
