@@ -154,7 +154,7 @@ public class ECUxChartFactory {
 	// add empty data in case we turn off filter, or we get some error
 	final double[][] empty = {{},{}};
 	if(ranges.size()==0) {
-	    filter.currentRange = 0;
+	    filter.setCurrentRange(0);
 	    final Dataset.Key key = data.new Key(ykey, data);
 	    key.hideRange();
 	    d.addSeries(key, empty);
@@ -162,12 +162,12 @@ public class ECUxChartFactory {
 	    return ret.toArray(new Integer[0]);
 	}
 
-	if(filter.currentRange >= ranges.size()) {
-	    filter.currentRange = data.getRanges().size() - 1;
+	if(filter.getCurrentRange() >= ranges.size()) {
+	    filter.setCurrentRange(data.getRanges().size() - 1);
 	}
 	final boolean showAllRanges = filter.showAllRanges();
-	for(int	i = (showAllRanges ? 0 : filter.currentRange);
-	        i < (showAllRanges ? ranges.size() : filter.currentRange + 1);
+	for(int	i = (showAllRanges ? 0 : filter.getCurrentRange());
+	        i < (showAllRanges ? ranges.size() : filter.getCurrentRange() + 1);
 	        i++) {
 	    final Dataset.Key key = data.new Key(ykey, i, data);
 	    if(ranges.size()==1) key.hideRange();

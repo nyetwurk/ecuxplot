@@ -38,7 +38,15 @@ public class Filter {
 	this.prefs.putBoolean("enabled", val);
     }
 
-    public int currentRange = 0;
+    private int currentRange = 0;
+
+    public int getCurrentRange() {
+	return this.currentRange;
+    }
+
+    public void setCurrentRange(int currentRange) {
+	this.currentRange = currentRange;
+    }
 
     public static boolean showAllRanges(Preferences prefs) {
     return prefs.node(PREFS_TAG).getBoolean("showAllRanges", defaultShowAllRanges);

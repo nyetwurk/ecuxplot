@@ -32,7 +32,7 @@ public class ECUxDataset extends Dataset {
     private final Env env;
     private final Filter filter;
     private double time_ticks_per_sec;	// ECUx has time in ms, JB4 in 1/10s
-    public double samples_per_sec=0;
+    private double samples_per_sec=0;
     private CubicSpline [] splines;	// rpm vs time splines
     private String log_detected;
 

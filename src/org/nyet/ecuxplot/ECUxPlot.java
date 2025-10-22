@@ -38,7 +38,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     /**
      *
      */
-    TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
+    private TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
 
     private static final long serialVersionUID = 1L;
     // each file loaded has an associated dataset
@@ -512,11 +512,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    this.filter.showAllRanges(source.isSelected());
 	    rebuild();
 	} else if(source.getText().equals("Next range...")) {
-	    this.filter.currentRange++;
+	    this.filter.setCurrentRange(this.filter.getCurrentRange() + 1);
 	    rebuild();
 	} else if(source.getText().equals("Previous range...")) {
-	    if(this.filter.currentRange > 0) {
-		this.filter.currentRange--;
+	    if(this.filter.getCurrentRange() > 0) {
+		this.filter.setCurrentRange(this.filter.getCurrentRange() - 1);
 	    }
 	    rebuild();
 	} else if(source.getText().equals("Configure filter...")) {
