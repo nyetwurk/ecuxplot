@@ -13,6 +13,7 @@ import javax.swing.*;
 
 import java.awt.desktop.*;
 import java.awt.Desktop;
+import java.io.FileNotFoundException;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
@@ -291,9 +292,78 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	    this.fileDatasets.put(file.getName(), data);
 	    this.files.add(file.getAbsolutePath());
 	} catch (final Exception e) {
-	    MessageDialog.showMessageDialog(this, e);
-	    e.printStackTrace();
+	    // Provide user-friendly error messages instead of raw stack traces
+	    String errorMessage;
+	    if (e instanceof FileNotFoundException) {
+		errorMessage = "File not found: " + file.getName() + "\n\nPlease check that the file exists and the path is correct.";
+	    } else if (e instanceof SecurityException) {
+		errorMessage = "Cannot read file: " + file.getName() + "\n\nPlease check file permissions.";
+	    } else if (e instanceof IOException && e.getMessage().contains("empty")) {
+		errorMessage = "File is empty: " + file.getName() + "\n\nPlease select a file with data.";
+	    } else {
+		errorMessage = "Error loading file: " + file.getName() + "\n\n" + e.getMessage();
+	    }
+
+	    MessageDialog.showMessageDialog(this, errorMessage, "File Loading Error", JOptionPane.ERROR_MESSAGE);
 	    return;
+	}
+    }
+
+    /**
+     * Load multiple files with error handling.
+     * @param files array of files to load
+     * @param replace whether to replace existing datasets
+     */
+    private void loadFilesWithProgress(File[] files, boolean replace) {
+	if (files == null || files.length == 0) {
+	    return;
+	}
+
+	int successCount = 0;
+	int errorCount = 0;
+	StringBuilder errorMessages = new StringBuilder();
+
+	for (int i = 0; i < files.length; i++) {
+	    File file = files[i];
+
+	    try {
+		// Load the file
+		_loadFile(file, replace && i == 0); // Only replace on first file
+		successCount++;
+
+	    } catch (Exception e) {
+		errorCount++;
+		String errorMsg = String.format("Failed to load %s: %s",
+		    file.getName(), e.getMessage());
+		errorMessages.append(errorMsg).append("\n");
+		logger.error("Error loading file: {}", file.getAbsolutePath(), e);
+	    }
+	}
+
+	// Show summary message (only in GUI mode)
+	if (files.length > 1 && !this.options.nogui) {
+	    String summary;
+	    if (errorCount == 0) {
+		summary = String.format("Successfully loaded %d file(s)", successCount);
+		MessageDialog.showMessageDialog(this, summary, "File Loading Complete",
+		    JOptionPane.INFORMATION_MESSAGE);
+	    } else if (successCount == 0) {
+		summary = String.format("Failed to load all %d file(s)", errorCount);
+		MessageDialog.showMessageDialog(this, summary + "\n\n" + errorMessages.toString(),
+		    "File Loading Failed", JOptionPane.ERROR_MESSAGE);
+	    } else {
+		summary = String.format("Loaded %d of %d file(s) successfully", successCount, files.length);
+		MessageDialog.showMessageDialog(this, summary + "\n\nErrors:\n" + errorMessages.toString(),
+		    "File Loading Partial Success", JOptionPane.WARNING_MESSAGE);
+	    }
+	} else if (this.options.nogui && errorCount > 0) {
+	    // In no-gui mode, log errors instead of showing dialogs
+	    logger.error("File loading errors: {}", errorMessages.toString());
+	}
+
+	// Update the display if any files were loaded successfully
+	if (successCount > 0) {
+	    fileDatasetsChanged();
 	}
     }
 
@@ -476,20 +546,26 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    System.getProperty("user.home"));
 		this.fc = new JFileChooser(dir);
 		this.fc.setFileFilter(new GenericFileFilter("csv", "CSV File"));
-		// TODO: Issue #56 - Failed to open file dialog is ugly, make it nicer
-		// Current implementation uses basic JFileChooser with minimal customization
-		// Consider adding better error handling, progress indicators, and user feedback
+		this.fc.setDialogTitle("Select CSV Log File");
+		this.fc.setApproveButtonText("Load File");
+		this.fc.setApproveButtonToolTipText("Load the selected CSV file");
+		this.fc.setMultiSelectionEnabled(true);
+		// Enhanced file dialog with better error handling, progress indicators, and user feedback
 	    }
 	    final int ret = this.fc.showOpenDialog(this);
 	    if(ret == JFileChooser.APPROVE_OPTION) {
 		final boolean replace =
 		    source.getText().equals("Open File")?true:false;
 
-		WaitCursor.startWaitCursor(this);
-		loadFile(this.fc.getSelectedFile(), replace);
+		// Handle multiple file selection
+		File[] selectedFiles = this.fc.getSelectedFiles();
+		if (selectedFiles.length == 0) {
+		    selectedFiles = new File[]{this.fc.getSelectedFile()};
+		}
+
+		loadFilesWithProgress(selectedFiles, replace);
 		// if somebody hid the fats frame, lets unhide it for them.
 		setMyVisible(true);
-		WaitCursor.stopWaitCursor(this);
 		this.prefs.put("chooserDir",
 		    this.fc.getCurrentDirectory().toString());
 	    }
