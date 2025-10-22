@@ -1,4 +1,4 @@
-# Generated test file - format based on master branch aliases
+# Generated test file - format based on master branch aliases - NOT CANONICAL
 LogID,LogEntrySeconds,RPM,TPS,APP,IAT
 1,0.000,800,0.0,0.0,75
 2,0.100,850,2.5,5.0,76

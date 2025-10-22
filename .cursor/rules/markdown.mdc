@@ -1,0 +1,38 @@
+# Markdown Writing Rules
+
+## Linting and Quality
+
+- Always lint all .md files
+- Use fenced code blocks with language specification
+- Ensure blank lines around code blocks and lists
+- Use consistent heading hierarchy
+
+## List Formatting
+
+- DO NOT USE NUMBERED HEADINGS
+- Prefer unnumbered lists to numbered lists, especially if numbered lists are expected to change, or you get lint errors
+- Numbered lists are still good if there is an explicit (and important) sequence to follow
+- Use consistent list markers (- for unnumbered, 1. for numbered)
+
+## Documentation Maintenance
+
+- When making large scale code changes, review all .md files for accuracy
+- Update documentation when making changes to ensure it stays current
+- Verify existing .md files are current and accurate - do not assume they are canonical
+
+## Examples
+
+### Good Examples
+
+- Use unnumbered lists for flexible content
+- Use numbered lists only for sequential steps
+- Always specify language in fenced code blocks
+
+### Code Block Example
+
+```java
+// Always specify the language
+public class Example {
+    // Code here
+}
+```

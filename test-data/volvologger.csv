@@ -1,4 +1,4 @@
-# Real VOLVO logger format based on VolvoTools source code https://github.com/prometey1982/VolvoTools
+# Generated VOLVO logger format based on VolvoTools source code https://github.com/prometey1982/VolvoTools - NOT CANONICAL
 Time (sec),Engine Speed(RPM) RPM,Boost Pressure(mBar) BoostPressure,Throttle Position(%) ThrottlePos,Vehicle Speed(kph) VehicleSpeed
 0.00,800,0.0,0.0,0
 0.10,850,0.1,2.5,5
