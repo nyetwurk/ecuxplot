@@ -1339,6 +1339,6 @@
             <unit index="8"></unit>
             <unit index="9">AFR</unit>
         </expected_units>
-        <sanity_check row="0" col="1">93.2</sanity_check>
+        <sanity_check row="0" col="0">37155.004</sanity_check>
     </test_case>
 </test_expectations>

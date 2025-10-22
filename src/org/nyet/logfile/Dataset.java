@@ -84,9 +84,8 @@ public class Dataset {
 	    final Pattern p = Pattern.compile("[^\\p{Print}]");
 	    s=p.matcher(s).replaceAll("");
 
-	    // look for time stamps, convert to seconds
-	    // TODO: Issue #58 - Zeitronix timestamps are being read as integers, not timestamps
-	    // This affects Zeitronix logger files where timestamps may not match these patterns
+	    // look for time stamps, convert to seconds since midnight with monotonicity
+	    // Issue #58 - Fixed: Zeitronix timestamps are now properly parsed as seconds since midnight
 	    final Pattern p1 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}.\\d{1,3}");
 	    final Pattern p2 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}");
 	    final Pattern p3 = Pattern.compile("\\d{2}:\\d{2}.\\d{1,3}");
@@ -101,8 +100,31 @@ public class Dataset {
 	    }
 	    if (fmt != null) {
 		try {
-		    final Date d = fmt.parse(s);
-		    this.data.append(Double.valueOf(d.getTime())/1000);
+		    // Parse timestamp directly as H:M:S without Date
+		    String[] parts = s.split(":");
+		    double secondsSinceMidnight = 0;
+
+		    if (parts.length >= 3) {
+			// HH:mm:ss.SSS format
+			secondsSinceMidnight = Integer.parseInt(parts[0]) * 3600.0 +
+			    Integer.parseInt(parts[1]) * 60.0 +
+			    Double.parseDouble(parts[2]);
+		    } else if (parts.length == 2) {
+			// mm:ss.SSS format
+			secondsSinceMidnight = Integer.parseInt(parts[0]) * 60.0 +
+			    Double.parseDouble(parts[1]);
+		    }
+
+		    // Keep adding 24 hours until timestamp is greater than last time
+		    double lastTimestamp = -1;
+		    if (this.data.size() > 0) {
+			lastTimestamp = this.data.get(this.data.size() - 1);
+		    }
+		    while (lastTimestamp >= 0 && secondsSinceMidnight <= lastTimestamp) {
+			secondsSinceMidnight += 24 * 3600; // Add 24 hours
+		    }
+
+		    this.data.append(secondsSinceMidnight);
 		} catch (final Exception e) {
 		}
 	    } else {
