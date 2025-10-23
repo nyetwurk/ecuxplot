@@ -26,6 +26,11 @@ on:
         default: false
         description: 'Whether this is a nightly build (affects which files are included)'
 
+permissions:
+  contents: write
+  packages: write
+  actions: read
+
 jobs:
   create-release:
     runs-on: ubuntu-latest

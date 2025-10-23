@@ -2,11 +2,16 @@ name: Build and Release
 
 on:
   schedule:
-    # Run every night at 2 AM UTC (adjust timezone as needed)
-    - cron: '0 2 * * *'
+    # Run every night at 2 AM PST (10 AM UTC)
+    - cron: '0 10 * * *'
   workflow_dispatch: # Allow manual triggering
   push:
     branches: [ '*' ]
+
+permissions:
+  contents: write
+  packages: write
+  actions: read
 
 env:
   BUILD_CACHE_KEY: nightly-build-cache
@@ -41,7 +46,7 @@ jobs:
     uses: ./.github/workflows/create-release.yml
     with:
       tag-name: latest-nightly
-      release-name: Latest Nightly Build
+      release-name: ECUxPlot nightly build
       is-prerelease: true
       is-nightly: true
       release-body: |
