@@ -1129,6 +1129,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		if (o.nogui) {
 		    // just load files and be done
 		    plot.loadFiles(o.files);
+
+		    // Handle output file if specified
+		    if(o.output!=null) {
+			if (!handleOutputFile(plot, o.output)) {
+			    System.exit(1);
+			}
+			System.exit(0);
+		    }
+
 		    System.exit(0);
 		}
 
@@ -1171,13 +1180,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		    plot.loadPreset(o.preset);
 
 		if(o.output!=null) {
-		    try {
-			plot.pack();
-			plot.chartPanel.saveChartAsPNG(o.output);
-			System.exit(0);
-		    } catch (final IOException e) {
-			e.printStackTrace();
+		    if (!handleOutputFile(plot, o.output)) {
+			System.exit(1);
 		    }
+		    System.exit(0);
 		}
 
 		plot.setMyVisible(true);
@@ -1186,4 +1192,27 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     public Env getEnv() { return this.env; }
+
+    /**
+     * Handle the -o output file option by saving the chart as PNG.
+     * @param plot the ECUxPlot instance
+     * @param outputFile the output file to save to
+     * @return true if successful, false if chartPanel is null
+     */
+    private static boolean handleOutputFile(ECUxPlot plot, File outputFile) {
+	try {
+	    plot.pack();
+	    if (plot.chartPanel == null) {
+		System.err.println("Error: No chart data loaded. Cannot save chart to " + outputFile.getName());
+		System.err.println("Please provide CSV files to load data before using -o option.");
+		return false;
+	    }
+	    plot.chartPanel.saveChartAsPNG(outputFile);
+	    return true;
+	} catch (final IOException e) {
+	    System.err.println("Error saving chart to " + outputFile.getName() + ": " + e.getMessage());
+	    e.printStackTrace();
+	    return false;
+	}
+    }
 }
