@@ -36,7 +36,29 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v5
 
+      - name: Backup and delete existing tag
+        id: backup_tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          # Check if tag exists and backup its commit hash
+          if git rev-parse "${{ inputs.tag-name }}" >/dev/null 2>&1; then
+            BACKUP_COMMIT=$(git rev-parse "${{ inputs.tag-name }}")
+            echo "backup_commit=$BACKUP_COMMIT" >> $GITHUB_OUTPUT
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+            echo "Backing up ${{ inputs.tag-name }} at commit $BACKUP_COMMIT"
+          else
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+            echo "No existing tag to backup"
+          fi
+
+          # Delete the tag
+          echo "Deleting remote tag ${{ inputs.tag-name }}"
+          git push origin --delete "${{ inputs.tag-name }}" 2>/dev/null || echo "Remote tag didn't exist or already deleted"
+
       - name: Create release
+        id: create_release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag-name }}
@@ -56,3 +78,13 @@ jobs:
           body: ${{ inputs.release-body }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore backup tag if release failed
+        if: steps.create_release.outcome != 'success' && steps.backup_tag.outputs.tag_exists == 'true'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          echo "Release failed, restoring backup tag ${{ inputs.tag-name }} to commit ${{ steps.backup_tag.outputs.backup_commit }}"
+          git tag -a "${{ inputs.tag-name }}" "${{ steps.backup_tag.outputs.backup_commit }}" -m "Restored backup tag"
+          git push origin "${{ inputs.tag-name }}"
