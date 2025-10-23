@@ -14,7 +14,7 @@ permissions:
   actions: read
 
 env:
-  BUILD_CACHE_KEY: nightly-build-cache
+  BUILD_CACHE_KEY: latest-build-cache
 
 jobs:
   build-all-platforms:
@@ -40,23 +40,25 @@ jobs:
           echo "❌ Build failed"
           exit 1
 
-  create-nightly-release:
+  create-latest-release:
     needs: [build-all-platforms]
     if: needs.build-all-platforms.result == 'success' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     uses: ./.github/workflows/create-release.yml
     with:
-      tag-name: latest-nightly
-      release-name: ECUxPlot nightly build
+      # Only here to ensure order of releases is correct in the UI
+      # Side benefit is that we can tell the last time this jobs was triggered and ran successfully
+      tag-name: latest
+      release-name: ECUxPlot latest build
       is-prerelease: true
-      is-nightly: true
+      is-latest: true
       release-body: |
         Latest build from commit ${{ github.sha }}
 
         **Downloads:**
-        - **Windows**: ECUxPlot-nightly-setup.exe
-        - **macOS**: ECUxPlot-nightly.dmg, ECUxPlot-nightly-MacOS.zip
-        - **Linux**: ECUxPlot-nightly.tar.gz
-        - **Portable**: ECUxPlot-nightly.jar, ECUxPlot.jar, mapdump.jar
+        - **Windows**: ECUxPlot-latest-setup.exe
+        - **macOS**: ECUxPlot-latest.dmg, ECUxPlot-latest-MacOS.zip
+        - **Linux**: ECUxPlot-latest.tar.gz
+        - **Portable**: ECUxPlot-latest.jar, ECUxPlot.jar, mapdump.jar
 
         Built on: ${{ github.run_number }}
     secrets: inherit

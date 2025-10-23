@@ -34,7 +34,6 @@ jobs:
     uses: ./.github/workflows/build-matrix.yml
     with:
       use-cache: true
-      asset-version: ''
     secrets: inherit
 
   create-release:

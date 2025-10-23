@@ -1,6 +1,6 @@
 # ECUxPlot Build and Release System
 
-Automatically creates installers (DMG for macOS and EXE for Windows) on every push and nightly.
+Automatically creates installers (DMG for macOS and EXE for Windows) on every push and latest.
 
 ## Overview
 
@@ -31,7 +31,7 @@ The build and release system runs on every push to any branch and every night at
 - **Push**: Runs on every push to any branch
 - **Manual**: Can be triggered manually via GitHub Actions UI (creates releases)
 - **Platforms**: macOS (ZIP/DMG), Windows (EXE), Linux (tar.gz)
-- **Releases**: Creates/updates "latest-nightly" release for direct downloads
+- **Releases**: Creates/updates "latest" release for direct downloads
 - **Artifacts**: 30-day retention for CI purposes
 
 ## Build Behavior
@@ -39,12 +39,12 @@ The build and release system runs on every push to any branch and every night at
 ### Scheduled Runs (Every night at 2 AM UTC)
 
 - ✅ **Builds**: All platforms, runs tests, creates artifacts
-- ✅ **Creates Release**: Updates "latest-nightly" release for users
+- ✅ **Creates Release**: Updates "latest" release for users
 
 ### Manual Triggers (GitHub Actions UI or script)
 
 - ✅ **Builds**: All platforms, runs tests, creates artifacts
-- ✅ **Creates Release**: Updates "latest-nightly" release (useful for testing)
+- ✅ **Creates Release**: Updates "latest" release (useful for testing)
 
 ### Push Triggers (Every push to any branch)
 
@@ -66,7 +66,7 @@ The build and release system runs on every push to any branch and every night at
 1. Builds latest code for all platforms using `build-matrix.yml` → `build-common.yml`
 2. Creates platform-specific installers (macOS ZIP/DMG, Linux/Windows artifacts)
 3. Uploads artifacts for CI purposes
-4. Creates/updates "latest-nightly" release using shared `create-release.yml` (scheduled and manual triggers only)
+4. Creates/updates "latest" release using shared `create-release.yml` (scheduled and manual triggers only)
 
 ### Release Management (`release.yml`)
 
@@ -84,16 +84,16 @@ The build and release system runs on every push to any branch and every night at
 
 ## Downloads
 
-### Nightly Builds
+### Latest Builds
 
-**Direct Download**: [Latest Nightly Build](https://github.com/nyetwurk/ecuxplot/releases/tag/latest-nightly)
+**Direct Download**: [Latest Build](https://github.com/nyetwurk/ecuxplot/releases/tag/latest)
 
-The nightly build creates a "latest-nightly" release that gets updated with each build, providing:
+The latest build creates a "latest" release that gets updated with each build, providing:
 
-- **macOS**: ECUxPlot-nightly.dmg, ECUxPlot-nightly-MacOS.zip
-- **Linux**: ECUxPlot-nightly.tar.gz
-- **Windows**: ECUxPlot-nightly-setup.exe
-- **Portable**: ECUxPlot-nightly.jar, ECUxPlot.jar, mapdump.jar
+- **macOS**: ECUxPlot-latest.dmg, ECUxPlot-latest-MacOS.zip
+- **Linux**: ECUxPlot-latest.tar.gz
+- **Windows**: ECUxPlot-latest-setup.exe
+- **Portable**: ECUxPlot-latest.jar, ECUxPlot.jar, mapdump.jar
 
 ### Stable Releases
 

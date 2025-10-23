@@ -22,7 +22,7 @@ runtime/%/java-$(JAVA_TARGET_VER).stamp:
 PACKAGER_OPTS:=\
     --name ECUxPlot \
     --description "ECUxPlot $(ECUXPLOT_VER)" \
-    --app-version $(VERSION) \
+    --app-version $(JPACKAGE_VER) \
     --dest build/$(UNAME)
 
 # Not supported on windows or linux(?) in app
@@ -56,11 +56,11 @@ $(MAC_INSTALLER): build/$(UNAME)/ECUxPlot$(APP_EXT)
 	ln -s /Applications build/$(UNAME)/dmg-temp/Applications
 	cd build/$(UNAME) && \
 		hdiutil create -srcfolder dmg-temp \
-			-volname "ECUxPlot $(VERSION)" \
+			-volname "ECUxPlot $(SEM_VER)" \
 			-fs HFS+ \
 			-fsargs "-c c=64,a=16,e=16" \
 			-format UDZO \
-			ECUxPlot-$(VERSION).dmg && \
+			ECUxPlot-$(SEM_VER).dmg && \
 		rm -rf dmg-temp
-	@mv build/$(UNAME)/ECUxPlot-$(VERSION).dmg $(MAC_INSTALLER)
+	@mv build/$(UNAME)/ECUxPlot-$(SEM_VER).dmg $(MAC_INSTALLER)
 	@echo "moved to: $(MAC_INSTALLER)"

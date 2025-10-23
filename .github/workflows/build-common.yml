@@ -21,11 +21,6 @@ on:
         type: boolean
         default: false
         description: 'Whether to use runtime caching'
-      asset-version:
-        required: false
-        type: string
-        default: ''
-        description: 'Asset version suffix (nightly for nightly builds, empty for releases)'
 
 jobs:
   build:
@@ -61,17 +56,13 @@ jobs:
         fi
     - name: Run tests
       run: |
-        make test
+        make vars test
       env:
         DISPLAY: ""
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Build targets
       run: |
-        if [ -n "${{ inputs.asset-version }}" ]; then
-          make ${{ inputs.build-target }} ASSET_VER=${{ inputs.asset-version }}
-        else
-          make ${{ inputs.build-target }}
-        fi
+        make ${{ inputs.build-target }}
       env:
         DISPLAY: ""
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

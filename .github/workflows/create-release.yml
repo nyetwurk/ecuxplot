@@ -20,11 +20,11 @@ on:
         required: false
         type: string
         description: 'Release body text'
-      is-nightly:
+      is-latest:
         required: false
         type: boolean
         default: false
-        description: 'Whether this is a nightly build (affects which files are included)'
+        description: 'Whether this is a latest build (affects which files are included)'
 
 permissions:
   contents: write
@@ -47,20 +47,37 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-          # Check if tag exists and backup its commit hash
+          # Check if local tag exists and backup its commit hash
           if git rev-parse "${{ inputs.tag-name }}" >/dev/null 2>&1; then
             BACKUP_COMMIT=$(git rev-parse "${{ inputs.tag-name }}")
             echo "backup_commit=$BACKUP_COMMIT" >> $GITHUB_OUTPUT
-            echo "tag_exists=true" >> $GITHUB_OUTPUT
-            echo "Backing up ${{ inputs.tag-name }} at commit $BACKUP_COMMIT"
+            echo "local_tag_exists=true" >> $GITHUB_OUTPUT
+            echo "Backing up local ${{ inputs.tag-name }} at commit $BACKUP_COMMIT"
           else
-            echo "tag_exists=false" >> $GITHUB_OUTPUT
-            echo "No existing tag to backup"
+            echo "local_tag_exists=false" >> $GITHUB_OUTPUT
+            echo "No local tag to backup"
           fi
 
-          # Delete the tag
-          echo "Deleting remote tag ${{ inputs.tag-name }}"
-          git push origin --delete "${{ inputs.tag-name }}" 2>/dev/null || echo "Remote tag didn't exist or already deleted"
+          # Check if remote tag exists
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ inputs.tag-name }}$"; then
+            echo "remote_tag_exists=true" >> $GITHUB_OUTPUT
+            echo "Remote tag ${{ inputs.tag-name }} exists"
+          else
+            echo "remote_tag_exists=false" >> $GITHUB_OUTPUT
+            echo "No remote tag ${{ inputs.tag-name }} exists"
+          fi
+
+          # Delete local tag if it exists
+          if git rev-parse "${{ inputs.tag-name }}" >/dev/null 2>&1; then
+            echo "Deleting local tag ${{ inputs.tag-name }}"
+            git tag -d "${{ inputs.tag-name }}"
+          fi
+
+          # Delete remote tag if it exists
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ inputs.tag-name }}$"; then
+            echo "Deleting remote tag ${{ inputs.tag-name }}"
+            git push origin --delete "${{ inputs.tag-name }}"
+          fi
 
       - name: Create release
         id: create_release
@@ -70,22 +87,23 @@ jobs:
           name: ${{ inputs.release-name }}
           draft: false
           prerelease: ${{ inputs.is-prerelease }}
+          generate_release_notes: true
+          body: ${{ inputs.release-body }}
           files: |
             macos-builds/build/*.dmg
             macos-builds/ECUxPlot.dmg
             macos-builds/build/*.zip
-            ${{ inputs.is-nightly && 'linux-windows-builds/build/ECUxPlot-nightly.jar' || 'linux-windows-builds/build/ECUxPlot-*.jar' }}
+            ${{ inputs.is-latest && 'linux-windows-builds/build/ECUxPlot-latest.jar' || 'linux-windows-builds/build/ECUxPlot-*.jar' }}
             linux-windows-builds/build/*.tar.gz
             linux-windows-builds/build/*.exe
             linux-windows-builds/ECUxPlot-setup.exe
             linux-windows-builds/ECUxPlot.jar
             linux-windows-builds/mapdump.jar
-          body: ${{ inputs.release-body }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore backup tag if release failed
-        if: steps.create_release.outcome != 'success' && steps.backup_tag.outputs.tag_exists == 'true'
+        if: steps.create_release.outcome != 'success' && steps.backup_tag.outputs.local_tag_exists == 'true'
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"

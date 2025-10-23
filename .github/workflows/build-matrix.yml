@@ -8,13 +8,9 @@ on:
         type: boolean
         default: false
         description: 'Whether to use runtime caching'
-      asset-version:
-        required: false
-        type: string
-        default: 'nightly'
-        description: 'Asset version suffix (nightly for nightly builds, empty for releases)'
 
 jobs:
+
   build-macos:
     uses: ./.github/workflows/build-common.yml
     with:
@@ -25,7 +21,6 @@ jobs:
         build/*.dmg
         ECUxPlot.dmg
       use-cache: ${{ inputs.use-cache }}
-      asset-version: ${{ inputs.asset-version }}
     secrets: inherit
 
   build-linux-windows:
@@ -41,5 +36,4 @@ jobs:
         mapdump.jar
         ECUxPlot-setup.exe
       use-cache: ${{ inputs.use-cache }}
-      asset-version: ${{ inputs.asset-version }}
     secrets: inherit
