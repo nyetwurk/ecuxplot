@@ -43,15 +43,16 @@ jobs:
     with:
       tag-name: ${{ needs.get-tag.outputs.tag_name }}
       release-name: ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
-      is-prerelease: ${{ contains(needs.get-tag.outputs.tag_name, 'rc') || contains(needs.get-tag.outputs.tag_name, 'beta') || contains(needs.get-tag.outputs.tag_name, 'alpha') }}
+      is-prerelease: ${{ contains(needs.get-tag.outputs.tag_name, '-rc') || contains(needs.get-tag.outputs.tag_name, '-beta') || contains(needs.get-tag.outputs.tag_name, '-alpha') }}
       # This is a SUBSET of the actual release artifacts, for simplicity. DO NOT ADD ALL THE FILES.
       release-body: |
         ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
 
         **Downloads:**
+        - **Windows**: ECUxPlot-setup.exe
         - **macOS**: ECUxPlot.dmg
         - **Linux**: ECUxPlot-v*.tar.gz
-        - **Windows**: ECUxPlot.exe
+        - **Portable**: ECUxPlot-v*.jar, ECUxPlot.jar, mapdump.jar
 
         Built from tag: ${{ needs.get-tag.outputs.tag_name }}
     secrets: inherit

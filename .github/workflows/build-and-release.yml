@@ -48,9 +48,9 @@ jobs:
         Latest build from commit ${{ github.sha }}
 
         **Downloads:**
+        - **Windows**: ECUxPlot-nightly-setup.exe
         - **macOS**: ECUxPlot-nightly.dmg, ECUxPlot-nightly-MacOS.zip
         - **Linux**: ECUxPlot-nightly.tar.gz
-        - **Windows**: ECUxPlot-nightly-setup.exe
         - **Portable**: ECUxPlot-nightly.jar, ECUxPlot.jar, mapdump.jar
 
         Built on: ${{ github.run_number }}
