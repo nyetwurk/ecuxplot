@@ -1,18 +1,22 @@
 package org.nyet.ecuxplot;
 
-import java.util.Arrays;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.InputStream;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.opencsv.CSVReader;
+
+import org.nyet.logfile.Dataset.DatasetId;
 
 public class DataLogger {
 
@@ -30,6 +34,169 @@ public class DataLogger {
     // FIELD CATEGORIES - LOADED FROM YAML/XML (GLOBAL)
     // ============================================================================
     private static Map<String, String[]> fieldCategories = new HashMap<>();
+
+    // ============================================================================
+    // HEADER DATA CLASS
+    // ============================================================================
+
+    /**
+     * Encapsulates parsed header data (field names, units, and group/block detection arrays).
+     */
+    public static class HeaderData {
+	private static final Logger logger = LoggerFactory.getLogger(HeaderData.class);
+
+	public String[] id;    // Field names array - post Aliasing
+	public String[] u;     // Units array
+	public String[] id2;   // Original field names array, as read directly from the CSV, possibly modified by field transformations
+
+	public HeaderData(String[] id, String[] u, String[] id2) {
+	    this.id = id;
+	    this.u = u;
+	    this.id2 = id2;
+	}
+
+	public HeaderData(String[][] arrays) {
+	    this.id = arrays[0];
+	    this.u = arrays[1];
+	    this.id2 = arrays[2];
+	}
+
+	/**
+	 * Process and normalize units for this HeaderData.
+	 * Fills out any missing units to match the length of field names,
+	 * normalizes existing units, and guesses units from field names where missing.
+	 *
+	 * @return This HeaderData object for method chaining
+	 */
+	public HeaderData processUnits() {
+	    if (this.id == null) {
+		return this;
+	    }
+
+	    // Fill pad out any units missing to match length of field names
+	    if (this.u == null || this.u.length < this.id.length) {
+		this.u = java.util.Arrays.copyOf(this.u != null ? this.u : new String[0], this.id.length);
+	    }
+
+	    for (int i = 0; i < this.id.length; i++) {
+		// Convert to conventional units
+		this.u[i] = Units.normalize(this.u[i]);
+		if (this.id[i].length() > 0 && (this.u[i] == null || this.u[i].length() == 0)) {
+		    // Whatever is missing, try to guess from name
+		    this.u[i] = Units.find(this.id[i]);
+		    if (this.u[i] == null || this.u[i].length() == 0)
+			logger.warn("Can't find units for '{}'", this.id[i]);
+		}
+	    }
+	    return this;
+	}
+
+	/**
+	 * Parse units from field names using regex pattern.
+	 * Extracts units from field names in format "FieldName (unit)".
+	 * Modifies the field names to remove the unit part and populates the units array.
+	 *
+	 * @param verbose Verbose logging level
+	 * @return This HeaderData object for method chaining
+	 */
+	public HeaderData parseUnits(int verbose) {
+	    if (this.id == null) {
+		return this;
+	    }
+
+	    this.u = new String[this.id.length];
+	    for (int i = 0; i < this.id.length; i++) {
+		final java.util.regex.Pattern unitsRegEx =
+		    java.util.regex.Pattern.compile("([\\S\\s]+)\\(([\\S\\s].*)\\)");
+		final java.util.regex.Matcher matcher = unitsRegEx.matcher(this.id[i]);
+		if (matcher.find()) {
+		    // Trim needed: Regex groups contain untrimmed content from regex extraction
+		    // Example: "Time (sec)" -> id[i]="Time", u[i]="sec"
+		    this.id[i] = matcher.group(1).trim();
+		    this.u[i] = matcher.group(2).trim();
+		}
+	    }
+	    for (int i = 0; i < this.id.length; i++)
+		logger.trace("pu: '{}' [{}]", this.id[i], this.u[i]);
+	    return this;
+	}
+
+	/**
+	 * Process aliases for field names using the specified logger type.
+	 * Transforms field names according to alias mappings defined for the logger type.
+	 *
+	 * @param loggerType The logger type to use for alias lookup
+	 * @return This HeaderData object for method chaining
+	 */
+	public HeaderData processAliases(String loggerType) {
+	    if (this.id == null) {
+		return this;
+	    }
+
+	    logger.debug("processAliases called with loggerType='{}', will use aliases from which(loggerType)", loggerType);
+	    String[][] aliasesToUse = DataLogger.which(loggerType);
+	    logger.debug("which('{}') returned {} aliases", loggerType, aliasesToUse.length);
+
+	    for(int i = 0; i < this.id.length; i++) {
+		// logger.debug("{}: '{}'", i, this.id[i]);
+		for (final String [] s: aliasesToUse) {
+		    if (this.id[i] != null && this.id[i].matches(s[0])) {
+			// Only rename the first one
+			if (!org.apache.commons.lang3.ArrayUtils.contains(this.id, s[1])) {
+			    //logger.debug("{}: '{}'->'{}'", i, this.id[i], s[1]);
+			    this.id[i] = s[1];
+			}
+		    }
+		}
+		// Make sure all columns are unique
+		if (i > 0 && this.id[i].length() > 0) {
+		    String[] prev = java.util.Arrays.copyOfRange(this.id, 0, i);
+		    String renamed = this.id[i];
+		    boolean rename = false;
+		    for (int j = 2; org.apache.commons.lang3.ArrayUtils.contains(prev, renamed); j++)  {
+			renamed = this.id[i] + " " + Integer.toString(j);
+			// logger.debug("{}: renamed to '{}'", i, renamed);
+			rename = true;
+		    }
+		    if (rename) this.id[i] = renamed;
+		}
+		// logger.debug("{}: renamed to '{}'", i, this.id[i]);
+	    }
+	    return this;
+	}
+
+    }
+
+    // ============================================================================
+    // HEADER PROCESSING INTERFACE AND REGISTRY
+    // ============================================================================
+
+    /**
+     * Functional interface for logger-specific header processing.
+     * Implementations can register custom header processing logic for specific logger types.
+     */
+    @FunctionalInterface
+    public interface HeaderProcessor {
+	/**
+	 * Process headers for a specific logger type.
+	 *
+	 * @param h Header data containing id, u, and id2 arrays (will be modified)
+	 */
+	void processHeaders(HeaderData h);
+    }
+
+    // Registry for logger-specific header processors
+    private static Map<String, HeaderProcessor> headerProcessors = new HashMap<>();
+
+    // Static initialization block to register default header processors
+    static {
+	// Register VCDS header processor
+	registerHeaderProcessor("VCDS", DataLogger::processVCDSHeaders);
+
+	// Add other logger processors here as needed
+	// registerHeaderProcessor("JB4", DataLogger::processJB4Headers);
+	// registerHeaderProcessor("COBB_AP", DataLogger::processCobbAPHeaders);
+    }
 
     // Helper method to safely parse integer attributes from XML
     private static int parseXmlIntAttribute(Element element, String attributeName, int defaultValue) {
@@ -280,47 +447,346 @@ public class DataLogger {
 	    return this.detection.fieldSignatures;
 	}
 
-	public void processAliases(String[] h) {
-	    DataLogger.processAliases(h, this.type);
+	/**
+	 * Process headers using registered processor for this logger type.
+	 * If no processor is registered for the logger type, no processing is performed.
+	 *
+	 * @param h Header data containing id, u, and id2 arrays (will be modified)
+	 */
+	public void processLoggerHeaders(HeaderData h) {
+	    HeaderProcessor processor = headerProcessors.get(this.type);
+	    if (processor != null) {
+		logger.debug("Processing headers for logger type: {}", this.type);
+		processor.processHeaders(h);
+	    } else {
+		logger.debug("No header processor registered for logger type: {}", this.type);
+	    }
+	}
+
+
+	/**
+	 * Process skip lines and skip regex patterns.
+	 * Returns the matched line if skip_regex found a match, null otherwise.
+	 *
+	 * @param reader CSVReader to read lines from
+	 * @return String[] of the matched line, or null if no match found
+	 * @throws Exception if reading fails
+	 */
+	public String[] processSkipLines(CSVReader reader) throws Exception {
+	    int skipLines = this.getSkipLines();
+	    DataLogger.SkipRegex[] skipRegex = this.getSkipRegex();
+
+	    // Only skip if either skipLines or skipRegex are defined
+	    boolean do_skip = skipLines > 0 || skipRegex.length > 0;
+	    if (!do_skip) {
+		return null;
+	    }
+
+	    boolean found = false;
+	    int skipped = 0;
+	    String[] matchedLine = null; // Store the line that matched skip_regex
+
+	    while (!found && skipped < skipLines) {
+		String[] line = reader.readNext();
+		if (line == null) {
+		    logger.error("Reached end of file while skipping lines for {}", this.type);
+		    break;
+		}
+
+		// Skip empty lines - they don't count towards skip_lines
+		if (line.length == 0 || (line.length == 1 && (line[0] == null || line[0].trim().isEmpty()))) {
+		    logger.debug("{} {}: Skipped empty line", this.type, skipped);
+		    continue;
+		}
+
+		// Test line against regex patterns (if any)
+		if (skipRegex.length > 0) {
+		    for (DataLogger.SkipRegex skipRegexItem : skipRegex) {
+			boolean match = false;
+			if (skipRegexItem.column == -1) {
+			    // Check any column (loop through all fields)
+			    for (int i = 0; i < line.length; i++) {
+				String cellValue = line[i];
+				if (cellValue != null && cellValue.matches(skipRegexItem.regex)) {
+				    logger.debug("{}: Found skip_regex match '{}' in column {}: '{}'", this.type, skipRegexItem.regex, i, cellValue);
+				    match = true;
+				    break;
+				}
+			    }
+			} else if (line.length > skipRegexItem.column) {
+			    // Check specific column
+			    String cellValue = line[skipRegexItem.column];
+			    if (cellValue != null && cellValue.matches(skipRegexItem.regex)) {
+				logger.debug("{}: Found skip_regex match '{}' in column {}: '{}'", this.type, skipRegexItem.regex, skipRegexItem.column, cellValue);
+				match = true;
+			    }
+			}
+			if (match) {
+			    found = true;
+			    matchedLine = line; // Store the matched line
+			    break; // Found match, exit loop
+			}
+		    }
+		}
+
+		// Count this non-empty line
+		skipped++;
+		logger.debug("{} {}/{}: Skipped {}", this.type, skipped, skipLines, line);
+	    }
+
+	    return matchedLine;
+	}
+
+	/**
+	 * Parse header format and return the parsed header data.
+	 *
+	 * @param reader CSVReader to read header lines from
+	 * @param matchedLine Previously matched line from skip processing, or null
+	 * @return HeaderData containing id, u, and id2 arrays, or null if parsing fails
+	 * @throws Exception if reading fails
+	 */
+	public HeaderData parseHeaderFormat(CSVReader reader, String[] matchedLine) throws Exception {
+	    // Generic header format parsing (YAML feature)
+	    // Note that the default header format is "id" (single header line with field names), so there should always be at least one header token
+	    String[] formatTokens = this.getHeaderFormatTokens();
+	    logger.debug("Processing header format for {}: {}", this.type, formatTokens);
+
+	    String[][] headerLines = new String[formatTokens.length][];
+	    int lineNum = 0;
+
+	    // If we found a regex match, use that line as the first header line
+	    if (matchedLine != null) {
+		headerLines[0] = matchedLine;
+		lineNum = 1;
+		logger.debug("Using matched line as headerLines[0]: {} fields", matchedLine.length);
+	    }
+
+	    // Read remaining header lines
+	    while (lineNum < formatTokens.length && (headerLines[lineNum] = reader.readNext()) != null) {
+		logger.debug("Read headerLines {}/{}: {} fields", lineNum+1, formatTokens.length, headerLines[lineNum].length);
+		lineNum++;
+	    }
+
+	    if (lineNum < formatTokens.length) {
+		logger.error("Expected {} lines but only found {}", formatTokens.length, lineNum);
+		logger.error("Skipping tokens: {}", java.util.Arrays.toString(java.util.Arrays.copyOfRange(formatTokens, lineNum, formatTokens.length)));
+	    }
+
+	    // Parse the header format tokens
+	    String[] id = null, u = new String[0], id2 = null;
+
+	    // If lineNum < formatTokens.length, we will not be able to handle all the tokens
+	    for (int i = 0; i < lineNum; i++) {
+		switch (formatTokens[i]) {
+		    case "id":
+			id = copyAndTrim(headerLines[i]);
+			// Only populate id2 with original field names if no explicit id2 token exists
+			if (!this.hasToken("id2")) {
+			    id2 = copyAndTrim(headerLines[i]);
+			}
+			logger.debug("Using {} for id: {} fields", id, headerLines[i].length);
+			break;
+		    case "u":
+			// Check if this is a second 'u' token and if it contains non-numeric strings
+			if (u != null && !allFieldsAreNumeric(headerLines[i], true)) {
+			    // Second 'u' line contains non-numeric strings (real units), overwrite first 'u'
+			    u = copyAndTrim(headerLines[i]);
+			    logger.debug("Second 'u' line contains non-numeric strings, overwriting first 'u': {} fields", headerLines[i].length);
+			} else if (u == null) {
+			    // First 'u' token, always use it
+			    u = copyAndTrim(headerLines[i]);
+			    logger.debug("Using {} for units: {} fields", u, headerLines[i].length);
+			} else {
+			    // Second 'u' token but doesn't contain non-numeric strings, keep first 'u'
+			    logger.debug("Second 'u' line doesn't contain non-numeric strings, keeping first 'u'");
+			}
+			break;
+		    case "id2":
+			id2 = copyAndTrim(headerLines[i]);
+			logger.debug("Using {} for aliases: {} fields", id2, headerLines[i].length);
+			break;
+		    default:
+			logger.error("Unknown token '{}' at position {}", formatTokens[i], i);
+			break;
+		}
+	    }
+
+	    return new HeaderData(id, u, id2);
+	}
+
+	/**
+	 * Apply unit regex parsing if configured.
+	 * This extracts field names and units from combined field names using regex patterns.
+	 *
+	 * @param h Header data containing id, u, and id2 arrays (will be modified)
+	 */
+	public void applyUnitRegex(HeaderData h) {
+	    if (this.parser.unitRegex == null) {
+		return;
+	    }
+
+	    logger.debug("Applying unit_regex: '{}'", this.parser.unitRegex);
+	    java.util.regex.Pattern unitRegexPattern = java.util.regex.Pattern.compile(this.parser.unitRegex);
+
+	    String[] id = h.id;
+	    String[] u = h.u;
+	    String[] id2 = h.id2;
+
+	    // Initialize units array if not already done
+	    if (u == null || u.length == 0) {
+		u = new String[id.length];
+		h.u = u;
+	    }
+
+	    // Initialize id2 array to preserve original field names
+	    if (id2 == null) {
+		id2 = new String[id.length];
+		h.id2 = id2;
+	    }
+
+	    for (int i = 0; i < id.length; i++) {
+		if (id[i] != null) {
+		    java.util.regex.Matcher matcher = unitRegexPattern.matcher(id[i]);
+		    if (matcher.find()) {
+			// Group 1 -> field name, Group 2 -> unit, Group 3 -> ME7L variable
+			String originalField = id[i];
+			id[i] = matcher.group(1).trim();
+			u[i] = matcher.group(2).trim();
+			// Store ME7L variable in id2 if available
+			if (matcher.groupCount() >= 3 && matcher.group(3) != null) {
+			    id2[i] = matcher.group(3).trim();
+			}
+			logger.debug("Unit regex matched field {}: '{}' -> id='{}', unit='{}', id2='{}'", i, originalField, id[i], u[i], id2[i]);
+		    } else {
+			logger.debug("Unit regex did not match field {}: '{}'", i, id[i]);
+		    }
+		}
+	    }
+	}
+
+	/**
+	 * Apply general unit parsing for loggers that don't have their own unit processing.
+	 * Only applies if logger doesn't have header_format with units ("u" token).
+	 *
+	 * @param h Header data containing id, u, and id2 arrays (will be modified)
+	 * @param verbose Verbose logging level
+	 */
+	public void applyGeneralUnitParsing(HeaderData h, int verbose) {
+	    if (DataLogger.isUnknown(this.type)) {
+		return;
+	    }
+
+	    String[] loggerHeaderFormatTokens = this.getHeaderFormatTokens();
+	    // If no header_format or header_format doesn't include units ("u"), apply general unit parsing
+	    boolean hasUnitsToken = false;
+	    for (String token : loggerHeaderFormatTokens) {
+		if ("u".equals(token)) {
+		    hasUnitsToken = true;
+		    break;
+		}
+	    }
+	    if (loggerHeaderFormatTokens.length == 0 || !hasUnitsToken) {
+		h.parseUnits(verbose);
+	    }
+	}
+
+	/**
+	 * Process all header data using this logger configuration.
+	 * This is the main entry point for header processing.
+	 *
+	 * @param reader CSVReader to read header lines from
+	 * @param verbose Verbose logging level
+	 * @return Processed HeaderData object, or null if processing fails
+	 * @throws Exception if reading fails
+	 */
+	public HeaderData processHeaders(CSVReader reader, int verbose) throws Exception {
+	    // Process skip lines and regex patterns
+	    String[] matchedLine = this.processSkipLines(reader);
+
+	    // Parse header format
+	    HeaderData h = this.parseHeaderFormat(reader, matchedLine);
+	    if (h == null) {
+		logger.error("Failed to parse header format for {}", this.type);
+		return null;
+	    }
+
+	    this.processLoggerHeaders(h);
+	    this.applyUnitRegex(h);
+	    h.processAliases(this.type);
+	    this.applyGeneralUnitParsing(h, verbose);
+
+	    // Process and normalize units
+	    h.processUnits();
+
+	    // Apply field transformations for all logger types (prepend/append)
+	    // This must happen AFTER unit processing so units can be found for original field names
+	    this.applyFieldTransformations(h);
+
+	    // Log final results
+	    for (int i = 0; i < h.id.length; i++) {
+		if (h.id2 != null && i < h.id2.length) {
+		    logger.debug("Final field {}: '{}' (original: '{}') [{}]", i, h.id[i], h.id2[i], h.u[i]);
+		} else {
+		    logger.debug("Final field {}: '{}' [{}]", i, h.id[i], h.u[i]);
+		}
+	    }
+
+	    return h;
+	}
+
+	/**
+	 * Create DatasetId objects from processed header data.
+	 *
+	 * @param h Processed header data
+	 * @return Array of DatasetId objects
+	 */
+	public DatasetId[] createDatasetIds(HeaderData h) {
+	    DatasetId[] ids = new DatasetId[h.id.length];
+	    for (int i = 0; i < h.id.length; i++) {
+		ids[i] = new DatasetId(h.id[i]);
+		if (h.id2 != null && i < h.id2.length) ids[i].id2 = h.id2[i];
+		if (h.u != null && i < h.u.length) ids[i].unit = h.u[i];
+		ids[i].type = this.type;
+	    }
+	    return ids;
 	}
 
 	/**
 	 * Apply field transformations (prepend/append) to field names
-	 * @param id Array of field names to transform
-	 * @param id2 Array of original field names (id2) to use when field is empty
+	 * @param h HeaderData containing field names to transform
 	 */
-	public void applyFieldTransformations(String[] id, String[] id2) {
+	public void applyFieldTransformations(HeaderData h) {
 	    FieldTransformation transformation = this.parser.fieldTransformation;
 	    if (transformation == null) {
 		return;
 	    }
 
-	    for (int i = 0; i < id.length; i++) {
+	    for (int i = 0; i < h.id.length; i++) {
 		// Check if field should be excluded
-		if (isExcluded(id[i], transformation.excludeFields)) {
+		if (isExcluded(h.id[i], transformation.excludeFields)) {
 		    continue;
 		}
 
 		// Check if transformations should only apply to empty fields
-		boolean isEmpty = (id[i] == null || id[i].trim().isEmpty());
+		boolean isEmpty = (h.id[i] == null || h.id[i].trim().isEmpty());
 		if (transformation.ifEmpty && !isEmpty) {
 		    continue;
 		}
 
 		// For empty fields with ifEmpty=true, use original field name if available
-		String fieldToTransform = id[i];
-		if (transformation.ifEmpty && isEmpty && id2 != null && i < id2.length && id2[i] != null) {
-		    fieldToTransform = id2[i];
+		String fieldToTransform = h.id[i];
+		if (transformation.ifEmpty && isEmpty && h.id2 != null && i < h.id2.length && h.id2[i] != null) {
+		    fieldToTransform = h.id2[i];
 		}
 
 		// Apply prepend
 		if (transformation.prepend != null && !transformation.prepend.isEmpty()) {
-		    id[i] = transformation.prepend + fieldToTransform;
+		    h.id[i] = transformation.prepend + fieldToTransform;
 		}
 
 		// Apply append
 		if (transformation.append != null && !transformation.append.isEmpty()) {
-		    id[i] = fieldToTransform + transformation.append;
+		    h.id[i] = fieldToTransform + transformation.append;
 		}
 	    }
 	}
@@ -646,43 +1112,6 @@ public class DataLogger {
 	return new String[0][0];
     }
 
-    public static void processAliases(String[] h, String loggerType) {
-	logger.debug("processAliases called with loggerType='{}', will use aliases from which(loggerType)", loggerType);
-	String[][] aliasesToUse = which(loggerType);
-	logger.debug("which('{}') returned {} aliases", loggerType, aliasesToUse.length);
-	processAliases(h, aliasesToUse);
-    }
-
-    public static void processAliases(String[] h) {
-	processAliases(h, UNKNOWN);
-    }
-
-    public static void processAliases(String[] h, String[][] a) {
-	for(int i=0;i<h.length;i++) {
-	    // logger.debug("{}: '{}'", i, h[i]);
-	    for (final String [] s: a) {
-		if (h[i].matches(s[0])) {
-		    // Only rename the first one
-		    if (!ArrayUtils.contains(h, s[1])) {
-			//logger.debug("{}: '{}'->'{}'", i, h[i], s[1]);
-			h[i]=s[1];
-		    }
-		}
-	    }
-	    // Make sure all columns are unique
-	    if (i>0 && h[i].length() > 0) {
-		String[] prev = Arrays.copyOfRange(h, 0, i);
-		String renamed = h[i];
-		boolean rename = false;
-		for (int j = 2; ArrayUtils.contains(prev, renamed); j++)  {
-		    renamed = h[i] + " " + Integer.toString(j);
-		    // logger.debug("{}: renamed to '{}'", i, renamed);
-		    rename = true;
-		}
-		if (rename) h[i] = renamed;
-	    }
-	}
-    }
 
     // ============================================================================
     // PARSER CONFIGURATION GETTERS - ACTIVE FOR FUTURE PARSING PHASE
@@ -719,26 +1148,110 @@ public class DataLogger {
 	}
     }
 
-    public static String[] fields(FieldCategory category) {
-	return category.fields();
-    }
-
     // Concise wrapper methods for common field categories
     public static String[] pedal() {
-	return fields(FieldCategory.PEDAL);
+	return FieldCategory.PEDAL.fields();
     }
 
     public static String[] throttle() {
-	return fields(FieldCategory.THROTTLE);
+	return FieldCategory.THROTTLE.fields();
     }
 
     public static String[] gear() {
-	return fields(FieldCategory.GEAR);
+	return FieldCategory.GEAR.fields();
+    }
+
+    // ============================================================================
+    // LOGGER-SPECIFIC HEADER PROCESSING METHODS
+    // ============================================================================
+
+    /**
+     * Register a header processor for a specific logger type.
+     *
+     * @param logType The logger type (e.g., "VCDS", "JB4", etc.)
+     * @param processor The header processor implementation
+     */
+    public static void registerHeaderProcessor(String logType, HeaderProcessor processor) {
+	headerProcessors.put(logType, processor);
+	logger.debug("Registered header processor for logger type: {}", logType);
+    }
+
+    /**
+     * Process headers for VCDS logger type.
+     * VCDS uses header_format: "id2,id,u" which gives us:
+     * - id2 = Group line (for Group/Block detection)
+     * - id = Field names line (clean field names)
+     * - u = Units line (actual units)
+     *
+     * NOTE: VCDS files have varying header formats. Standard files (vcds-1.csv, vcds-german.csv)
+     * work correctly, but non-standard files like vcds-2.csv may have extra header lines
+     * that shift the units to the wrong position, making unit extraction unreliable.
+     */
+    public static void processVCDSHeaders(HeaderData h) {
+	String[] id = h.id;
+	String[] u = h.u;
+	String[] id2 = h.id2;
+
+	for (int i = 0; i < id.length; i++) {
+	    String g = (id2 != null && i < id2.length) ? id2[i] : null; // save off group for later, with bounds check
+	    if (id2 != null && i < id2.length) {
+		id2[i] = id[i]; // id2 gets copy of original field names, before aliases are applied
+	    }
+	    // VCDS TIME field detection - use field name as source of truth, fallback to units for empty fields
+	    if (u != null && i < u.length) {
+		// Use field name as the source of truth for TIME fields
+		if (id[i] != null && id[i].matches("^(TIME|Zeit|Time|STAMP|MARKE)$")) {
+		    id[i] = "TIME";  // Normalize to uppercase
+		    u[i] = "s";      // Set units to seconds
+		} else if ((id[i] == null || id[i].trim().isEmpty()) && u[i] != null && u[i].matches("^(STAMP|MARKE)$")) {
+		    // For empty field names, check if unit is STAMP or MARKE
+		    id[i] = "TIME";
+		    u[i] = "s";
+		}
+	    }
+	    // Group 24 blacklist logic (using id2 as Group line)
+	    if (g != null && g.matches("^Group 24.*") && id[i].equals("Accelerator position")) {
+		id[i] = "AcceleratorPedalPosition (G024)";
+	    }
+	    logger.debug("VCDS field {}: '{}' (unit: '{}')", i, id[i], u != null && i < u.length ? u[i] : "N/A");
+	}
     }
 
     // ============================================================================
     // UTILITY METHODS
     // ============================================================================
+
+
+    /**
+     * Copy and trim string array elements
+     */
+    private static String[] copyAndTrim(String[] input) {
+	if (input == null) return null;
+	String[] result = new String[input.length];
+	for (int i = 0; i < input.length; i++) {
+	    result[i] = (input[i] != null) ? input[i].trim() : null;
+	}
+	return result;
+    }
+
+    /**
+     * Check if all fields in the array are numeric
+     */
+    private static boolean allFieldsAreNumeric(String[] fields, boolean allowEmpty) {
+	if (fields == null) return true;
+	for (String field : fields) {
+	    if (field == null || field.trim().isEmpty()) {
+		if (!allowEmpty) return false;
+		continue;
+	    }
+	    try {
+		Double.parseDouble(field.trim());
+	    } catch (NumberFormatException e) {
+		return false;
+	    }
+	}
+	return true;
+    }
 
     public static boolean isUnknown(String type) {
 	return type == null || UNKNOWN.equals(type);

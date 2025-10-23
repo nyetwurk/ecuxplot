@@ -507,7 +507,9 @@ public class Dataset {
     public String getFileId() { return this.fileId; }
 
     public DatasetId [] getIds() { return this.ids; }
-    public void setIds(DatasetId [] ids) { this.ids=ids; }
+    public void setIds(org.nyet.ecuxplot.DataLogger.HeaderData h, org.nyet.ecuxplot.DataLogger.DataLoggerConfig config) {
+	this.ids = config.createDatasetIds(h);
+    }
 
     public ArrayList<String> getLastFilterReasons() { return this.lastFilterReasons; }
     public int length() { return this.rows; }

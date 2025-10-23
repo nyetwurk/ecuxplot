@@ -1,30 +1,27 @@
 package org.nyet.ecuxplot;
 
+import java.awt.Point;
+import java.awt.Desktop;
+import java.awt.desktop.*;
+import java.awt.event.ActionEvent;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.util.*;
 import java.util.prefs.Preferences;
 
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-
 import javax.swing.*;
-
-import java.awt.desktop.*;
-import java.awt.Desktop;
-import java.io.FileNotFoundException;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
-
 import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.RefineryUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
 
 import org.nyet.util.*;
 

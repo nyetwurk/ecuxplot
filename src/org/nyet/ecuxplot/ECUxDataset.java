@@ -6,9 +6,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import com.opencsv.CSVReader;
 import flanagan.interpolation.CubicSpline;
@@ -145,20 +142,6 @@ public class ECUxDataset extends Dataset {
 
 
 
-    /**
-     * Creates a copy of a String array and trims all non-null elements.
-     * @param source the source String array to copy and trim
-     * @return a new String array with trimmed elements
-     */
-    private String[] copyAndTrim(String[] source) {
-	String[] result = Arrays.copyOf(source, source.length);
-	for (int i = 0; i < result.length; i++) {
-	    if (result[i] != null) {
-		result[i] = result[i].trim();
-	    }
-	}
-	return result;
-    }
 
     public String getLogDetected() {
 	return this.log_detected;
@@ -171,15 +154,10 @@ public class ECUxDataset extends Dataset {
 	this.env = env;
 	this.filter = filter;
 
-	// Get pedal, throttle, and gear columns from DataLogger.pedal(), DataLogger.throttle(), and DataLogger.gear()
-	this.pedal = get(DataLogger.pedal());
-	if (this.pedal!=null && this.pedal.data.isZero()) this.pedal=null;
-
-	this.throttle = get(DataLogger.throttle());
-	if (this.throttle!=null && this.throttle.data.isZero()) this.throttle=null;
-
-	this.gear = get(DataLogger.gear());
-	if (this.gear!=null && this.gear.data.isZero()) this.gear=null;
+	// Get pedal, throttle, and gear columns using getOrNull helper
+	this.pedal = getOrNull(DataLogger.pedal());
+	this.throttle = getOrNull(DataLogger.throttle());
+	this.gear = getOrNull(DataLogger.gear());
 
 	// look for zeitronix boost for filtering
 	this.zboost = get("Zeitronix Boost");
@@ -230,27 +208,9 @@ public class ECUxDataset extends Dataset {
     }
 
 
-    private String [] ParseUnits(String [] id, int verbose) {
-	final String [] u = new String[id.length];
-	for(int i=0;i<id.length;i++) {
-	    final Pattern unitsRegEx =
-		Pattern.compile("([\\S\\s]+)\\(([\\S\\s].*)\\)");
-	    final Matcher matcher = unitsRegEx.matcher(id[i]);
-	    if(matcher.find()) {
-		// Trim needed: Regex groups contain untrimmed content from regex extraction
-		// Example: "Time (sec)" -> id[i]="Time", u[i]="sec"
-		id[i]=matcher.group(1).trim();
-		u[i]=matcher.group(2).trim();
-	    }
-	}
-	for(int i=0;i<id.length;i++)
-	    logger.trace("pu: '{}' [{}]", id[i], u[i]);
-	return u;
-    }
 
     @Override
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
-	String[] id = null, u = new String[0], id2 = null;
 	final String logType = this.log_detected;
 
 	logger.debug("ParseHeaders starting for {}, currently {} (verbose={})", logType, verbose);
@@ -265,250 +225,15 @@ public class ECUxDataset extends Dataset {
 	// Apply TIME scaling correction (ticks per second) from logger configuration
         this.time_ticks_per_sec = config.getTimeTicksPerSec();
 
-	// Apply skip_lines/skip_regex (skip_lines is max, skip_regex can exit early)
-	// NOTE: This code is messy due to a fundamental design conflict:
-	// - skip_regex needs to READ a line to test it against the pattern
-	// - But that line might BE a header line that header parsing expects to read
-	// - CSVReader has no "peek" or "reset" capability, so we can't unread
-	// - Solution: Store the matched line and use it as the first header line
-	int skipLines = config.getSkipLines();
-	DataLogger.SkipRegex[] skipRegex = config.getSkipRegex();
-
-	// Only skip if either skipLines or skipRegex are defined
-	boolean do_skip = skipLines > 0 || skipRegex.length > 0;
-
-	boolean found = false;
-	int skipped = 0;
-	String[] matchedLine = null; // Store the line that matched skip_regex
-	while (do_skip && !found && skipped < skipLines) {
-	    String[] line = reader.readNext();
-	    if (line == null) {
-		logger.error("Reached end of file while skipping lines for {}", logType);
-		break;
-	    }
-
-	    // Skip empty lines - they don't count towards skip_lines
-	    if (line.length == 0 || (line.length == 1 && (line[0] == null || line[0].trim().isEmpty()))) {
-		logger.debug("{} {}: Skipped empty line", logType, skipped);
-		continue;
-	    }
-
-	    // Test line against regex patterns (if any)
-	    if (skipRegex.length > 0) {
-		for (DataLogger.SkipRegex skipRegexItem : skipRegex) {
-		    boolean match = false;
-		    if (skipRegexItem.column == -1) {
-			// Check any column (loop through all fields)
-			for (int i = 0; i < line.length; i++) {
-			    String cellValue = line[i];
-			    if (cellValue != null && cellValue.matches(skipRegexItem.regex)) {
-				logger.debug("{}: Found skip_regex match '{}' in column {}: '{}'", logType, skipRegexItem.regex, i, cellValue);
-				match = true;
-				break;
-			    }
-			}
-		    } else if (line.length > skipRegexItem.column) {
-			// Check specific column
-			String cellValue = line[skipRegexItem.column];
-			if (cellValue != null && cellValue.matches(skipRegexItem.regex)) {
-			    logger.debug("{}: Found skip_regex match '{}' in column {}: '{}'", logType, skipRegexItem.regex, skipRegexItem.column, cellValue);
-			    match = true;
-			}
-		    }
-		    if (match) {
-			found = true;
-			matchedLine = line; // Store the matched line
-			break; // Found match, exit loop
-		    }
-		}
-	    }
-
-	    // Count this non-empty line
-	    skipped++;
-	    logger.debug("{} {}/{}: Skipped {}", logType, skipped, skipLines, line);
-	}
-
-	// Generic header format parsing (YAML feature)
-	// Note that the default header format is "id" (single header line with field names), so there should always be at leaset one header token
-	String[] formatTokens = config.getHeaderFormatTokens();
-	logger.debug("Processing header format for {}: {}", logType, formatTokens);
-
-	String[][] headerLines = new String[formatTokens.length][];
-	int lineNum = 0;
-
-	// If we found a regex match, use that line as the first header line
-	if (matchedLine != null) {
-	    headerLines[0] = matchedLine;
-	    lineNum = 1;
-	    logger.debug("Using matched line as headerLines[0]: {} fields", matchedLine.length);
-	}
-
-	// Read remaining header lines
-	while (lineNum < formatTokens.length && (headerLines[lineNum] = reader.readNext()) != null) {
-		logger.debug("Read headerLines {}/{}: {} fields", lineNum+1, formatTokens.length, headerLines[lineNum].length);
-		lineNum++;
-	}
-
-	if (lineNum < formatTokens.length) {
-		logger.error("Expected {} lines but only found {}", formatTokens.length, lineNum);
-		logger.error("Skipping tokens: {}", Arrays.toString(Arrays.copyOfRange(formatTokens, lineNum, formatTokens.length)));
-	}
-
-	// If lineNum < formatTokens.length, we will not be able to handle all the tokens
-	for (int i = 0; i < lineNum; i++) {
-	    switch (formatTokens[i]) {
-		case "id":
-		    id = copyAndTrim(headerLines[i]);
-		    // Only populate id2 with original field names if no explicit id2 token exists
-		    if (!config.hasToken("id2")) {
-			id2 = copyAndTrim(headerLines[i]);
-		    }
-		    logger.debug("Using {} for id: {} fields", id, headerLines[i].length);
-		    break;
-		case "u":
-		    // Check if this is a second 'u' token and if it contains non-numeric strings
-		    if (u != null && !allFieldsAreNumeric(headerLines[i], true)) {
-			// Second 'u' line contains non-numeric strings (real units), overwrite first 'u'
-			u = copyAndTrim(headerLines[i]);
-			logger.debug("Second 'u' line contains non-numeric strings, overwriting first 'u': {} fields", headerLines[i].length);
-		    } else if (u == null) {
-			// First 'u' token, always use it
-			u = copyAndTrim(headerLines[i]);
-			logger.debug("Using {} for units: {} fields", u, headerLines[i].length);
-		    } else {
-			// Second 'u' token but doesn't contain non-numeric strings, keep first 'u'
-			logger.debug("Second 'u' line doesn't contain non-numeric strings, keeping first 'u'");
-		    }
-		    break;
-		case "id2":
-		    id2 = copyAndTrim(headerLines[i]);
-		    logger.debug("Using {} for aliases: {} fields", id2, headerLines[i].length);
-		    break;
-		default:
-		    logger.error("Unknown token '{}' at position {}", formatTokens[i], i);
-		    break;
-	    }
-	}
-
-	// Logger-specific header processing
-	switch(logType) {
-	    case "VCDS": {
-		// VCDS uses header_format: "id2,id,u" which gives us:
-		// id2 = Group line (for Group/Block detection)
-		// id = Field names line (clean field names)
-		// u = Units line (actual units)
-		// NOTE: VCDS files have varying header formats. Standard files (vcds-1.csv, vcds-german.csv)
-		// work correctly, but non-standard files like vcds-2.csv may have extra header lines
-		// that shift the units to the wrong position, making unit extraction unreliable.
-
-		for (int i = 0; i < id.length; i++) {
-		    String g = (id2 != null && i < id2.length) ? id2[i] : null; // save off group for later, with bounds check
-		    if (id2 != null && i < id2.length) {
-			id2[i] = id[i]; // id2 gets copy of original field names, before aliases are applied
-		    }
-		    // VCDS TIME field detection - use field name as source of truth, fallback to units for empty fields
-		    if (u != null && i < u.length) {
-			// Use field name as the source of truth for TIME fields
-			if (id[i] != null && id[i].matches("^(TIME|Zeit|Time|STAMP|MARKE)$")) {
-			    id[i] = "TIME";  // Normalize to uppercase
-			    u[i] = "s";      // Set units to seconds
-			} else if ((id[i] == null || id[i].trim().isEmpty()) && u[i] != null && u[i].matches("^(STAMP|MARKE)$")) {
-			    // For empty field names, check if unit is STAMP or MARKE
-			    id[i] = "TIME";
-			    u[i] = "s";
-			}
-		    }
-		    // Group 24 blacklist logic (using id2 as Group line)
-		    if (g != null && g.matches("^Group 24.*") && id[i].equals("Accelerator position")) {
-			id[i] = "AcceleratorPedalPosition (G024)";
-		    }
-		    logger.debug("VCDS field {}: '{}' (unit: '{}')", i, id[i], u != null && i < u.length ? u[i] : "N/A");
-		}
-		break;
-	    }
-
-	}
-
-	// Apply unit_regex parsing if configured
-	if (config.parser.unitRegex != null) {
-	    logger.debug("Applying unit_regex: '{}'", config.parser.unitRegex);
-	    Pattern unitRegexPattern = Pattern.compile(config.parser.unitRegex);
-
-	    // Initialize units array if not already done
-	    if (u == null || u.length == 0) {
-		u = new String[id.length];
-	    }
-
-	    // Initialize id2 array to preserve original field names
-	    if (id2 == null) {
-		id2 = new String[id.length];
-	    }
-
-	    for (int i = 0; i < id.length; i++) {
-		if (id[i] != null) {
-		    Matcher matcher = unitRegexPattern.matcher(id[i]);
-		    if (matcher.find()) {
-			// Group 1 -> field name, Group 2 -> unit, Group 3 -> ME7L variable
-			String originalField = id[i];
-			id[i] = matcher.group(1).trim();
-			u[i] = matcher.group(2).trim();
-			// Store ME7L variable in id2 if available
-			if (matcher.groupCount() >= 3 && matcher.group(3) != null) {
-			    id2[i] = matcher.group(3).trim();
-			}
-			logger.debug("Unit regex matched field {}: '{}' -> id='{}', unit='{}', id2='{}'", i, originalField, id[i], u[i], id2[i]);
-		    } else {
-			logger.debug("Unit regex did not match field {}: '{}'", i, id[i]);
-		    }
-		}
-	    }
-	}
-
-	// Process aliases for all logger types
-	config.processAliases(id);
-
-	// Parse units for loggers that don't have their own unit processing
-	// Only apply general unit parsing if logger doesn't have header_format with units
-	if (!DataLogger.isUnknown(logType)) {
-	    String[] loggerHeaderFormatTokens = config.getHeaderFormatTokens();
-	    // If no header_format or header_format doesn't include units ("u"), apply general unit parsing
-	    boolean hasUnitsToken = false;
-	    for (String token : loggerHeaderFormatTokens) {
-		if ("u".equals(token)) {
-		    hasUnitsToken = true;
-		    break;
-		}
-	    }
-	    if (loggerHeaderFormatTokens.length == 0 || !hasUnitsToken) {
-		u = ParseUnits(id, verbose);
-	    }
-	}
-
-	// Process and normalize units
-	u = Units.processUnits(id, u);
-
-	// Apply field transformations for all logger types (prepend/append)
-	// This must happen AFTER unit processing so units can be found for original field names
-	config.applyFieldTransformations(id, id2);
-
-	// Log final results
-	for (int i = 0; i < id.length; i++) {
-	    if (id2 != null && i < id2.length) {
-		logger.debug("Final field {}: '{}' (original: '{}') [{}]", i, id[i], id2[i], u[i]);
-	    } else {
-		logger.debug("Final field {}: '{}' [{}]", i, id[i], u[i]);
-	    }
+	// Process all headers using the logger configuration
+	DataLogger.HeaderData h = config.processHeaders(reader, verbose);
+	if (h == null) {
+	    logger.error("Failed to process headers for {}", logType);
+	    return;
 	}
 
 	// Create DatasetId objects
-	DatasetId[] ids = new DatasetId[id.length];
-	for (int i = 0; i < id.length; i++) {
-	    ids[i] = new DatasetId(id[i]);
-	    if (id2 != null && i < id2.length) ids[i].id2 = id2[i];
-	    if (u != null && i < u.length) ids[i].unit = u[i];
-	    ids[i].type = this.log_detected;
-	}
-	this.setIds(ids);
+	this.setIds(h, config);
     }
 
     private DoubleArray drag (DoubleArray v) {
@@ -554,6 +279,16 @@ public class ECUxDataset extends Dataset {
 	} catch (final NullPointerException e) {
 	    return null;
 	}
+    }
+
+    /**
+     * Get a column by field names, returning null if not found or if data is all zeros.
+     * This is a convenience method for field categories that should be null when invalid.
+     */
+    private Column getOrNull(Comparable<?> [] id) {
+	Column col = get(id);
+	if (col != null && col.data.isZero()) col = null;
+	return col;
     }
 
     private Column _get(Comparable<?> id) {
