@@ -16,6 +16,41 @@ import org.jfree.data.xy.DefaultXYDataset;
 import org.nyet.logfile.Dataset;
 
 public class ECUxChartFactory {
+    /**
+     * Calculate appropriate axis range with padding, ensuring zero is included
+     * when dealing with negative values for better visual clarity.
+     * @param min the minimum data value
+     * @param max the maximum data value
+     * @param paddingPercent percentage of range to add as padding (default 5%)
+     * @return array with [minRange, maxRange]
+     */
+    private static double[] calculateAxisRange(double min, double max, double paddingPercent) {
+	if (min == max) {
+	    // Handle case where all values are the same
+	    double center = min;
+	    double padding = Math.abs(center) * 0.1; // 10% padding
+	    return new double[]{center - padding, center + padding};
+	}
+
+	double range = max - min;
+	double padding = range * paddingPercent;
+
+	// If all values are negative, ensure zero is included with padding
+	if (max <= 0) {
+	    double minRange = min - padding;
+	    double maxRange = padding; // Include zero with padding above
+	    return new double[]{minRange, maxRange};
+	}
+
+	// If all values are positive, use normal padding
+	if (min >= 0) {
+	    return new double[]{min - padding, max + padding};
+	}
+
+	// Mixed positive and negative values - use normal padding
+	return new double[]{min - padding, max + padding};
+    }
+
     private static void addAxis(XYPlot plot, String label, XYDataset dataset,
 	int series, boolean lines, boolean shapes) {
 	final NumberAxis axis = new NumberAxis(label);
@@ -77,6 +112,49 @@ public class ECUxChartFactory {
 	    renderer.setBaseLinesVisible(lines);
 	    renderer.setBaseShapesVisible(shapes);
 	}
+    }
+
+    /**
+     * Apply custom axis range calculation to ensure proper padding,
+     * especially for negative values where zero should be included.
+     * @param chart the chart to modify
+     * @param axisIndex the axis index to modify (0 or 1)
+     * @param dataset the dataset to analyze for range calculation
+     */
+    public static void applyCustomAxisRange(JFreeChart chart, int axisIndex, XYDataset dataset) {
+	final XYPlot plot = chart.getXYPlot();
+	final NumberAxis axis = (NumberAxis) plot.getRangeAxis(axisIndex);
+
+	if (dataset == null || dataset.getSeriesCount() == 0) {
+	    return;
+	}
+
+	// Find min and max values across all series
+	double minValue = Double.MAX_VALUE;
+	double maxValue = Double.MIN_VALUE;
+	boolean hasData = false;
+
+	for (int series = 0; series < dataset.getSeriesCount(); series++) {
+	    for (int item = 0; item < dataset.getItemCount(series); item++) {
+		double yValue = dataset.getYValue(series, item);
+		if (!Double.isNaN(yValue)) {
+		    minValue = Math.min(minValue, yValue);
+		    maxValue = Math.max(maxValue, yValue);
+		    hasData = true;
+		}
+	    }
+	}
+
+	if (!hasData) {
+	    return;
+	}
+
+	// Calculate custom range with padding
+	double[] range = calculateAxisRange(minValue, maxValue, 0.05); // 5% padding
+
+	// Set the axis range
+	axis.setRange(range[0], range[1]);
+	axis.setAutoRange(false); // Disable auto-range to use our custom range
     }
 
     // set all series of a given ykey different shades of a base paint

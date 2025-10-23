@@ -781,6 +781,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 		addDataset(axis, newdataset, ykey);
 	    }
 	    plot.setDataset(axis, newdataset);
+
+	    // Apply custom axis range calculation for better padding with negative values
+	    ECUxChartFactory.applyCustomAxisRange(this.chartPanel.getChart(), axis, newdataset);
 	}
 	updateXAxisLabel(plot);
 
@@ -813,6 +816,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	} else {
 	    ECUxChartFactory.removeDataset(pds, ykey);
 	}
+
+	// Apply custom axis range calculation after dataset changes
+	ECUxChartFactory.applyCustomAxisRange(this.chartPanel.getChart(), axis, pds);
     }
 
     private void addChartY(Comparable<?>[] ykey, int axis) {
