@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/nyetwurk/ecuxplot)
 
-**Downloads**: [Latest Release](https://github.com/nyetwurk/ecuxplot/releases/latest) | [Nightly Build](https://github.com/nyetwurk/ecuxplot/releases/tag/latest-nightly)
+**Downloads**: [Latest Release](https://github.com/nyetwurk/ecuxplot/releases/latest) | [Nightly Build](https://github.com/nyetwurk/ecuxplot/releases/tag/latest)
 
 > **Note**: This README describes features in the `master` branch, which may not be available in the latest release or nightly build.
 
