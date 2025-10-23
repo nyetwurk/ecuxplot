@@ -12,8 +12,8 @@ public class UnitConstants {
     // Speed conversions
     /** Conversion factor from kilometers per hour to miles per hour */
     public static final double KMH_PER_MPH = 1.609344;
-    /** Conversion factor from meters per second to miles per hour (derived from KMH_PER_MPH * 3.6) */
-    public static final double MPS_PER_MPH = KMH_PER_MPH * 3.6;
+    /** Conversion factor from miles per hour to meters per second */
+    public static final double MPS_PER_MPH = 1.0 / 2.23693629;
 
     // Pressure conversions
     /** Conversion factor from bar to pounds per square inch */
