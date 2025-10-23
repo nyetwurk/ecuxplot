@@ -53,6 +53,14 @@ public class UnitConstants {
     /** Standard gravity acceleration in m/s² */
     public static final double STANDARD_GRAVITY = 9.80665;
 
+    // Fluid properties
+    /** Standard air density at sea level in kg/m³ */
+    public static final double AIR_DENSITY_STANDARD = 1.293;
+
+    // Fuel flow conversions
+    /** Conversion factor from cc/min to grams/sec for fuel flow */
+    public static final double GPS_PER_CCMIN = 0.0114;
+
     // Private constructor to prevent instantiation
     private UnitConstants() {
         throw new UnsupportedOperationException("UnitConstants is a utility class and cannot be instantiated");

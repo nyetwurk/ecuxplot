@@ -512,9 +512,7 @@ public class ECUxDataset extends Dataset {
     }
 
     private DoubleArray drag (DoubleArray v) {
-	final double rho=1.293;	// kg/m^3 air, standard density
-
-	final DoubleArray windDrag = v.pow(3).mult(0.5 * rho * this.env.c.Cd() *
+	final DoubleArray windDrag = v.pow(3).mult(0.5 * UnitConstants.AIR_DENSITY_STANDARD * this.env.c.Cd() *
 	    this.env.c.FA());
 
 	final DoubleArray rollingDrag = v.mult(this.env.c.rolling_drag() *
@@ -612,8 +610,7 @@ public class ECUxDataset extends Dataset {
 	    final DoubleArray a = this.get("Sim MAF").data;
 	    c = new Column(id, "lb/min", a.div(7.55*this.env.f.turbos()));
 	} else if(id.equals("Sim Fuel Mass")) {	// based on te
-	    final double gps_per_ccmin = 0.0114; // (grams/sec) per (cc/min)
-	    final double gps = this.env.f.injector()*gps_per_ccmin;
+	    final double gps = this.env.f.injector()*UnitConstants.GPS_PER_CCMIN;
 	    final double cylinders = this.env.f.cylinders();
 	    final Column bank1 = this.get("EffInjectorDutyCycle");
 	    final Column bank2 = this.get("EffInjectorDutyCycleBank2");
