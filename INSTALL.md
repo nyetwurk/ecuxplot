@@ -4,7 +4,7 @@ This document explains how to install ECUxPlot on different platforms.
 
 ## Quick Start
 
-1. **Download**: Get the appropriate installer for your platform from the [releases page](https://github.com/your-repo/releases)
+1. **Download**: Get the appropriate installer for your platform from the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
 2. **Install**: Follow the platform-specific instructions below
 3. **Run**: Launch ECUxPlot and start analyzing your ECU data
 
