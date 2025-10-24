@@ -45,7 +45,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     FATSChartFrame fatsFrame;
     private ECUxChartPanel chartPanel;
     private DebugLogWindow debugLogWindow;
-    private FilterDebugPanel filterDebugPanel;
+    private FilterWindow filterWindow;
 
     // Menus
     private final JMenuBar menuBar;
@@ -55,7 +55,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     // Dialog boxes
     private JFileChooser fc;
-    private FilterEditor fe;
     private ConstantsEditor ce;
     private PIDEditor pe;
     private FuelingEditor fle;
@@ -593,9 +592,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             }
             rebuild();
         } else if(source.getText().equals("Configure filter...")) {
-            if(this.fe == null) this.fe =
-                new FilterEditor(this.prefs, this.filter);
-            this.fe.showDialog(this, "Filter");
+            if(this.filterWindow == null) this.filterWindow =
+                new FilterWindow(this.filter, this);
+            // Set all datasets for multi-file support
+            this.filterWindow.setFileDatasets(this.fileDatasets);
+            this.filterWindow.setVisible(true);
         } else if(source.getText().equals("Edit constants...")) {
             if(this.ce == null) this.ce =
                 new ConstantsEditor(this.prefs, this.env.c);
@@ -633,13 +634,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 this.debugLogWindow = new DebugLogWindow();
             }
             this.debugLogWindow.showWindow();
-        } else if(source.getText().equals("Show Filter Debug Panel...")) {
-            if(this.filterDebugPanel == null) {
-                this.filterDebugPanel = new FilterDebugPanel();
-            }
-            // Set all datasets for multi-file support
-            this.filterDebugPanel.setDatasets(this.fileDatasets);
-            this.filterDebugPanel.showWindow();
         } else {
             JOptionPane.showMessageDialog(this,
                 "unhandled getText=" + source.getText() +
@@ -763,8 +757,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
         WaitCursor.startWaitCursor(this);
 
-        for(final ECUxDataset data : this.fileDatasets.values())
+        for(final ECUxDataset data : this.fileDatasets.values()) {
             data.buildRanges();
+        }
 
         if(this.fatsFrame!=null)
             this.fatsFrame.setDatasets(this.fileDatasets);
@@ -936,8 +931,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.fatsFrame.dispose();
         if(this.debugLogWindow!=null)
             this.debugLogWindow.dispose();
-        if(this.filterDebugPanel!=null)
-            this.filterDebugPanel.dispose();
+        if(this.filterWindow!=null)
+            this.filterWindow.dispose();
         System.exit(0);
     }
 

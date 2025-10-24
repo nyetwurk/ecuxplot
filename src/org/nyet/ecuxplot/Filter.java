@@ -148,6 +148,21 @@ public class Filter {
     public void ZeitMAW(Integer val) {
         this.prefs.putInt("ZeitMAW", val);
     }
+
+    public void resetToDefaults() {
+        this.gear(defaultGear);
+        this.minRPM(defaultMinRPM);
+        this.maxRPM(defaultMaxRPM);
+        this.minRPMRange(defaultMinRPMRange);
+        this.monotonicRPMfuzz(defaultMonotonicRPMfuzz);
+        this.minPedal(defaultMinPedal);
+        this.minThrottle(defaultMinThrottle);
+        this.minAcceleration(defaultMinAcceleration);
+        this.accelMAW(defaultAccelMAW);
+        this.minPoints(defaultMinPoints);
+        this.HPTQMAW(defaultHPTQMAW);
+        this.ZeitMAW(defaultZeitMAW);
+    }
 }
 
 // vim: set sw=4 ts=8 expandtab:

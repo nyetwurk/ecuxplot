@@ -113,10 +113,6 @@ public final class OptionsMenu extends JMenu {
         jmi = new JMenuItem("Show Debug Logs...");
         jmi.addActionListener(plotFrame);
         this.add(jmi);
-
-        jmi = new JMenuItem("Show Filter Debug Panel...");
-        jmi.addActionListener(plotFrame);
-        this.add(jmi);
     }
 
     private void updatePresets() {
