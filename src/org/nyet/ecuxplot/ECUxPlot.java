@@ -1,7 +1,8 @@
 package org.nyet.ecuxplot;
 
-import java.awt.Point;
+import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.Point;
 import java.awt.desktop.*;
 import java.awt.event.ActionEvent;
 
