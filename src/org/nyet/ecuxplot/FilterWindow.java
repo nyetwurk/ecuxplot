@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
 
 import org.nyet.logfile.Dataset;
@@ -30,7 +31,7 @@ public class FilterWindow extends JFrame {
     private JButton okButton; // Store reference to OK button
 
     // Filter parameter fields
-    private JTextField gear;
+    private JSpinner gear;
     private JTextField minRPM;
     private JTextField maxRPM;
     private JTextField minRPMRange;
@@ -94,14 +95,14 @@ public class FilterWindow extends JFrame {
 
     private static final String [][] pairs = {
         {"Gear (-1 to ignore)", "gear"},
-        {"Minimum RPM", "minRPM"},
-        {"Maximum RPM", "maxRPM"},
+        {"Min RPM", "minRPM"},
+        {"Max RPM", "maxRPM"},
         {"Min RPM Range", "minRPMRange"},
         {"RPM Fuzz Tolerance", "monotonicRPMfuzz"},
-        {"Minimum Pedal (%)", "minPedal"},
-        {"Minimum Throttle (%)", "minThrottle"},
+        {"Min Pedal (%)", "minPedal"},
+        {"Min Throttle (%)", "minThrottle"},
         {"Min Acceleration (RPM/s)", "minAcceleration"},
-        {"Minimum Points", "minPoints"},
+        {"Min Points", "minPoints"},
         {"Acceleration Smoothing", "accelMAW"},
         {"HP/TQ Smoothing", "HPTQMAW"},
         {"Zeitronix Smoothing", "ZeitMAW"},
@@ -149,7 +150,9 @@ public class FilterWindow extends JFrame {
 
     private void initializeFilterFields() {
         // Create filter parameter fields
-        gear = new JTextField(10);
+        // Create gear spinner with "any" option (-1) and gears 1-8
+        SpinnerListModel gearModel = new SpinnerListModel(new String[]{"Any", "1", "2", "3", "4", "5", "6", "7", "8"});
+        gear = new JSpinner(gearModel);
         minRPM = new JTextField(10);
         maxRPM = new JTextField(10);
         minRPMRange = new JTextField(10);
@@ -172,7 +175,12 @@ public class FilterWindow extends JFrame {
             refreshData();
         };
 
-        gear.addActionListener(refreshListener);
+        ChangeListener spinnerListener = e -> {
+            processFilterChanges();
+            refreshData();
+        };
+
+        gear.addChangeListener(spinnerListener);
         minRPM.addActionListener(refreshListener);
         maxRPM.addActionListener(refreshListener);
         minRPMRange.addActionListener(refreshListener);
@@ -258,50 +266,60 @@ public class FilterWindow extends JFrame {
     private void setupLayout() {
         setLayout(new BorderLayout());
 
+        // Create main horizontal panel for filter and visualization
+        JPanel mainPanel = new JPanel(new BorderLayout());
+
         // Left panel: Filter Parameters
         JPanel filterPanel = createFilterEditorPanel();
-        add(filterPanel, BorderLayout.WEST);
+        mainPanel.add(filterPanel, BorderLayout.WEST);
 
         // Right panel: Data Visualization (full remaining width)
         JPanel visualizationPanel = createVisualizationPanel();
-        add(visualizationPanel, BorderLayout.CENTER);
+        mainPanel.add(visualizationPanel, BorderLayout.CENTER);
 
-        // Bottom panel: Action buttons
-        JPanel buttonPanel = createButtonPanel();
-        add(buttonPanel, BorderLayout.SOUTH);
+        // Add main panel to window (allows vertical growth)
+        add(mainPanel, BorderLayout.CENTER);
     }
 
     private JPanel createFilterEditorPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Create main form panel with vertical layout
-        JPanel formPanel = new JPanel();
-        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        // Create main form panel with GridBagLayout for better size control
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new java.awt.Insets(5, 0, 5, 0); // Top, left, bottom, right padding
 
         // Add filter parameter fields in separate panels
-        JTextField[] fields = {gear, minRPM, maxRPM, minRPMRange, monotonicRPMfuzz,
+        JTextField[] fields = {minRPM, maxRPM, minRPMRange, monotonicRPMfuzz,
                               minPedal, minThrottle, minAcceleration, accelMAW,
                               minPoints, HPTQMAW, ZeitMAW};
 
-        // Engine Parameters Panel
-        JPanel enginePanel = createParameterPanel("Engine Parameters",
+        // Engine Panel
+        JPanel enginePanel = createParameterPanel("Engine",
             new int[]{0, 1, 2, 3, 4}, fields);
-        formPanel.add(enginePanel);
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.weightx = 1.0; gbc.weighty = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTH;
+        formPanel.add(enginePanel, gbc);
 
-        // Throttle/Pedal Parameters Panel
-        JPanel throttlePanel = createParameterPanel("Throttle/Pedal Parameters",
+        // Throttle/Pedal Panel
+        JPanel throttlePanel = createParameterPanel("Throttle/Pedal",
             new int[]{5, 6}, fields);
-        formPanel.add(throttlePanel);
+        gbc.gridy = 1;
+        formPanel.add(throttlePanel, gbc);
 
-        // Acceleration Parameters Panel
-        JPanel accelPanel = createParameterPanel("Acceleration Parameters",
+        // Acceleration Panel
+        JPanel accelPanel = createParameterPanel("Acceleration",
             new int[]{7, 8}, fields);
-        formPanel.add(accelPanel);
+        gbc.gridy = 2;
+        formPanel.add(accelPanel, gbc);
 
-        // Data Quality Parameters Panel
-        JPanel qualityPanel = createParameterPanel("Data Quality Parameters",
+        // Data Quality Panel
+        JPanel qualityPanel = createParameterPanel("Data Quality",
             new int[]{9, 10, 11}, fields);
-        formPanel.add(qualityPanel);
+        gbc.gridy = 3;
+        formPanel.add(qualityPanel, gbc);
 
         // Add scroll pane to handle overflow
         JScrollPane scrollPane = new JScrollPane(formPanel);
@@ -309,12 +327,19 @@ public class FilterWindow extends JFrame {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBorder(null);
 
-        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(scrollPane, BorderLayout.NORTH);
+
+        // Add buttons at the bottom of the filter panel (two-row layout)
+        JPanel buttonPanel = createButtonPanel();
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
         return panel;
     }
 
     private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new java.awt.Insets(5, 0, 5, 5); // Top, left, bottom, right padding
 
         JButton applyButton = new JButton("Apply");
         this.okButton = new JButton("OK");
@@ -360,10 +385,25 @@ public class FilterWindow extends JFrame {
             dispose();
         });
 
-        buttonPanel.add(this.okButton);
-        buttonPanel.add(applyButton);
-        buttonPanel.add(restoreDefaultsButton);
-        buttonPanel.add(cancelButton);
+        // First row: Restore Defaults button (spans two columns)
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        buttonPanel.add(restoreDefaultsButton, gbc);
+
+        // Second row: OK, Apply, Cancel buttons (left to right)
+        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 1;
+        gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        buttonPanel.add(this.okButton, gbc);
+
+        gbc.gridx = 1; gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        buttonPanel.add(applyButton, gbc);
+
+        gbc.gridx = 2; gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        buttonPanel.add(cancelButton, gbc);
 
         // Set OK button as default (most common action)
         this.getRootPane().setDefaultButton(this.okButton);
@@ -373,36 +413,62 @@ public class FilterWindow extends JFrame {
 
     private JPanel createParameterPanel(String title, int[] fieldIndices, JTextField[] fields) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(title));
+        // Create bold title border
+        javax.swing.border.TitledBorder titledBorder = BorderFactory.createTitledBorder(null, title,
+            javax.swing.border.TitledBorder.LEFT, javax.swing.border.TitledBorder.TOP);
+        titledBorder.setTitleFont(titledBorder.getTitleFont().deriveFont(Font.BOLD));
+        panel.setBorder(titledBorder);
 
         JPanel formPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.EAST; // Right-align labels
-        gbc.insets = new Insets(0, 1, 0, 1);
+        gbc.insets = new Insets(2, 4, 2, 4);
 
         for (int i = 0; i < fieldIndices.length; i++) {
             int fieldIndex = fieldIndices[i];
 
             gbc.gridx = 0; gbc.gridy = i;
-            gbc.weightx = 0.0; // Don't expand labels
-            gbc.fill = GridBagConstraints.NONE;
+            gbc.weightx = 1.0; // Allow labels column to expand
+            gbc.fill = GridBagConstraints.NONE; // Don't fill horizontally
+            gbc.anchor = GridBagConstraints.EAST; // Right-align labels
             JLabel label = new JLabel(pairs[fieldIndex][0] + ":");
             formPanel.add(label, gbc);
 
             gbc.gridx = 1; gbc.gridy = i;
-            gbc.weightx = 0.0; // Don't expand fields
+            gbc.weightx = 0.0; // Don't expand fields column
             gbc.fill = GridBagConstraints.NONE;
-            fields[fieldIndex].setColumns(3);
-            formPanel.add(fields[fieldIndex], gbc);
+            gbc.anchor = GridBagConstraints.WEST; // Left-align fields
+
+            // Handle gear field specially (it's a JSpinner, not JTextField)
+            // Widths tuned to windows rendering
+            if (fieldIndex == 0) { // gear is at index 0 in pairs array
+                gear.setPreferredSize(new Dimension(45, gear.getPreferredSize().height));
+                formPanel.add(gear, gbc);
+            } else {
+                fields[fieldIndex - 1].setColumns(5); // Adjust index since gear is not in fields array
+                formPanel.add(fields[fieldIndex - 1], gbc);
+            }
         }
 
         panel.add(formPanel, BorderLayout.CENTER);
+
+        // Set maximum width to 600px for better Windows display
+        panel.setMaximumSize(new Dimension(600, panel.getPreferredSize().height));
+
         return panel;
     }
 
     private JPanel createVisualizationPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Data Visualization"));
+        // Create bold title border
+        javax.swing.border.TitledBorder titledBorder = BorderFactory.createTitledBorder(null, "Data Visualization",
+            javax.swing.border.TitledBorder.LEFT, javax.swing.border.TitledBorder.TOP);
+        titledBorder.setTitleFont(titledBorder.getTitleFont().deriveFont(Font.BOLD));
+        panel.setBorder(titledBorder);
+
+        // Add padding to match filter panel
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(5, 0, 5, 0), // Top, left, bottom, right padding
+            titledBorder));
 
         // Control panel at top
         JPanel controlPanel = new JPanel(new BorderLayout());
@@ -458,9 +524,20 @@ public class FilterWindow extends JFrame {
         }
     }
 
+    private void setFilterValueFromSpinner(JSpinner spinner, java.util.function.IntConsumer setter) {
+        String selectedValue = spinner.getValue().toString();
+        int value;
+        if ("Any".equals(selectedValue)) {
+            value = -1;
+        } else {
+            value = Integer.parseInt(selectedValue);
+        }
+        setter.accept(value);
+    }
+
     private void processPairs(Filter filter, String[][] pairs, Class<?> clazz) {
         if (clazz == Integer.class) {
-            setFilterValueFromTextField(gear, filter::gear);
+            setFilterValueFromSpinner(gear, filter::gear);
             setFilterValueFromTextField(minRPM, filter::minRPM);
             setFilterValueFromTextField(maxRPM, filter::maxRPM);
             setFilterValueFromTextField(minRPMRange, filter::minRPMRange);
@@ -480,7 +557,13 @@ public class FilterWindow extends JFrame {
     }
 
     private void updateDialog(Filter filter, String[][] pairs) {
-        gear.setText(String.valueOf(filter.gear()));
+        // Set gear spinner value
+        int gearValue = filter.gear();
+        if (gearValue == -1) {
+            gear.setValue("Any");
+        } else {
+            gear.setValue(String.valueOf(gearValue));
+        }
         minRPM.setText(String.valueOf(filter.minRPM()));
         maxRPM.setText(String.valueOf(filter.maxRPM()));
         minRPMRange.setText(String.valueOf(filter.minRPMRange()));
@@ -903,7 +986,7 @@ public class FilterWindow extends JFrame {
     private java.awt.Dimension windowSize() {
         return new java.awt.Dimension(
             ECUxPlot.getPreferences().getInt("FilterWindowWidth", 1000),
-            ECUxPlot.getPreferences().getInt("FilterWindowHeight", 500));
+            ECUxPlot.getPreferences().getInt("FilterWindowHeight", 550));
     }
 
     private void putWindowSize() {
