@@ -57,7 +57,12 @@ public class MessageDialog {
                     break;
             }
         } else {
-            JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
+            // Use custom dialog for error messages, JOptionPane for others
+            if (messageType == JOptionPane.ERROR_MESSAGE) {
+                CustomExceptionDialog.showDialog(parentComponent, title, message.toString());
+            } else {
+                JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
+            }
         }
     }
 
