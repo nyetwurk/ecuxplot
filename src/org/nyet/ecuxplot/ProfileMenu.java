@@ -142,7 +142,10 @@ public final class ProfileMenu extends JMenu {
                     ECUxPlot.getPreferences();
                     Preferences.importPreferences(new FileInputStream(p));
                 }
-                if(pm.plotFrame!=null) pm.plotFrame.rebuild();
+                if(pm.plotFrame!=null) {
+                    pm.plotFrame.rebuild();
+                    pm.plotFrame.updateFATSVisibility();
+                }
                 // Update FATS window after profile load
                 if(pm.plotFrame.fatsFrame != null) {
                     pm.plotFrame.fatsFrame.updateRpmPerMphFromConstants();
