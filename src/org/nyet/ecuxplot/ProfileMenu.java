@@ -148,7 +148,7 @@ public final class ProfileMenu extends JMenu {
                 }
                 // Update FATS window after profile load
                 if(pm.plotFrame.fatsFrame != null) {
-                    pm.plotFrame.fatsFrame.updateRpmPerMphFromConstants();
+                    pm.plotFrame.fatsFrame.updateRpmFieldsFromConstants();
                 }
             } catch (final Exception e) {
                 JOptionPane.showMessageDialog(pm.plotFrame, e.toString());

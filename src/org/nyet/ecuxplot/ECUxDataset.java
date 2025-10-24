@@ -901,7 +901,63 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
-     * Calculate FATS (Fast Acceleration Time System) for a specific run using RPM values
+     * Calculate FATS (For the Advancement of the S4) for a specific run
+     *
+     * This is the unified method that handles all speed units (RPM, MPH, KPH).
+     * It converts speed values to RPM if needed, then performs the FATS calculation.
+     *
+     * @param run The run number (0-based index into the ranges array)
+     * @param speedStart The starting speed value (in RPM, MPH, or KPH)
+     * @param speedEnd The ending speed value (in RPM, MPH, or KPH)
+     * @param speedUnit The unit of the speed values (RPM, MPH, or KPH)
+     * @return The elapsed time in seconds between the specified speed points
+     * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
+     */
+    public double calcFATS(int run, double speedStart, double speedEnd, FATS.SpeedUnit speedUnit) throws Exception {
+        final ArrayList<Dataset.Range> ranges = this.getRanges();
+        if(run<0 || run>=ranges.size())
+            throw new Exception("FATS run " + run + " not found (available: 0-" + (ranges.size()-1) + ")");
+
+        if(this.splines[run]==null)
+            throw new Exception("FATS run " + run + " interpolation failed - check filter settings");
+
+        final Dataset.Range r=ranges.get(run);
+        logger.trace("FATS {} calculation: run={}, range={}-{}", speedUnit.getDisplayName(), run, r.start, r.end);
+
+        int rpmStart, rpmEnd;
+        switch (speedUnit) {
+            case RPM:
+                // Direct RPM values
+                rpmStart = (int) Math.round(speedStart);
+                rpmEnd = (int) Math.round(speedEnd);
+                logger.trace("FATS RPM calculation: {} RPM -> {} RPM", rpmStart, rpmEnd);
+                break;
+            case MPH:
+                // Convert MPH to RPM
+                double rpmPerMph = this.env.c.rpm_per_mph();
+                rpmStart = (int) Math.round(speedStart * rpmPerMph);
+                rpmEnd = (int) Math.round(speedEnd * rpmPerMph);
+                logger.trace("FATS MPH->RPM conversion: {} mph -> {} RPM, {} mph -> {} RPM",
+                    speedStart, rpmStart, speedEnd, rpmEnd);
+                break;
+            case KPH:
+                // Convert KPH to RPM
+                double rpmPerKph = this.env.c.rpm_per_kph();
+                rpmStart = (int) Math.round(speedStart * rpmPerKph);
+                rpmEnd = (int) Math.round(speedEnd * rpmPerKph);
+                logger.trace("FATS KPH->RPM conversion: {} kph -> {} RPM, {} kph -> {} RPM",
+                    speedStart, rpmStart, speedEnd, rpmEnd);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported speed unit: " + speedUnit);
+        }
+
+        // Use RPM calculation
+        return calcFATSRPM(run, rpmStart, rpmEnd);
+    }
+
+    /**
+     * Calculate FATS (For the Advancement of the S4) for a specific run using RPM values
      *
      * @param run The run number (0-based index into the ranges array)
      * @param RPMStart The starting RPM value for the calculation
@@ -910,23 +966,21 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
-        return calcFATSRPM(run, RPMStart, RPMEnd);
+        return calcFATS(run, (double)RPMStart, (double)RPMEnd, FATS.SpeedUnit.RPM);
     }
 
     /**
-     * Calculate FATS (Fast Acceleration Time System) for a specific run using speed values
-     *
-     * This method converts the provided speed values to RPM using the rpm_per_mph constant,
-     * then performs the FATS calculation using RPM-based interpolation for consistency.
+     * Calculate FATS (For the Advancement of the S4) for a specific run using speed values
      *
      * @param run The run number (0-based index into the ranges array)
-     * @param speedStart The starting speed value (in MPH)
-     * @param speedEnd The ending speed value (in MPH)
+     * @param speedStart The starting speed value (in MPH or KPH)
+     * @param speedEnd The ending speed value (in MPH or KPH)
+     * @param speedUnit The unit of the speed values (MPH or KPH)
      * @return The elapsed time in seconds between the specified speed points
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
-    public double calcFATSBySpeed(int run, double speedStart, double speedEnd) throws Exception {
-        return calcFATSMPH(run, speedStart, speedEnd);
+    public double calcFATSBySpeed(int run, double speedStart, double speedEnd, FATS.SpeedUnit speedUnit) throws Exception {
+        return calcFATS(run, speedStart, speedEnd, speedUnit);
     }
 
     /**
@@ -963,41 +1017,6 @@ public class ECUxDataset extends Dataset {
         return et;
     }
 
-    /**
-     * Internal MPH-based FATS calculation method
-     *
-     * This method converts MPH values to RPM using the rpm_per_mph constant,
-     * then delegates to the RPM calculation method for consistency.
-     *
-     * @param run The run number (0-based index into the ranges array)
-     * @param speedStart The starting speed value (in MPH)
-     * @param speedEnd The ending speed value (in MPH)
-     * @return The elapsed time in seconds between the specified speed points
-     * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
-     */
-    private double calcFATSMPH(int run, double speedStart, double speedEnd) throws Exception {
-        final ArrayList<Dataset.Range> ranges = this.getRanges();
-        if(run<0 || run>=ranges.size())
-            throw new Exception("FATS run " + run + " not found (available: 0-" + (ranges.size()-1) + ")");
-
-        if(this.splines[run]==null)
-            throw new Exception("FATS run " + run + " interpolation failed - check filter settings");
-
-        final Dataset.Range r=ranges.get(run);
-        logger.trace("FATS MPH calculation: run={}, range={}-{}", run, r.start, r.end);
-
-        double rpmPerMph = this.env.c.rpm_per_mph();
-
-        // Convert MPH to RPM then use RPM calculation
-        int rpmStart = (int) Math.round(speedStart * rpmPerMph);
-        int rpmEnd = (int) Math.round(speedEnd * rpmPerMph);
-
-        logger.trace("FATS MPH->RPM conversion: {} mph -> {} RPM, {} mph -> {} RPM",
-            speedStart, rpmStart, speedEnd, rpmEnd);
-
-        // Use RPM calculation
-        return calcFATSRPM(run, rpmStart, rpmEnd);
-    }
 
     public double[] calcFATS(int RPMStart, int RPMEnd) {
         final ArrayList<Dataset.Range> ranges = this.getRanges();

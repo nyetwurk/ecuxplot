@@ -30,19 +30,19 @@ public class FATSDataset extends DefaultCategoryDataset {
      * Update internal RPM values from FATS configuration
      *
      * This method ensures that this.start and this.end always contain RPM values,
-     * regardless of whether FATS is configured in RPM or MPH mode. In MPH mode,
-     * the configured MPH values are converted to RPM using the rpm_per_mph constant.
+     * regardless of whether FATS is configured in RPM, MPH, or KPH mode. In MPH/KPH mode,
+     * the configured speed values are converted to RPM using the appropriate conversion constant.
      */
     private void updateFromFATS() {
-        if (this.fats.useMph()) {
-            // Always convert MPH to RPM for calculation, regardless of VehicleSpeed data availability
-            if (!this.fileDatasets.isEmpty()) {
-                ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
-                double rpmPerMph = firstDataset.getEnv().c.rpm_per_mph();
-                this.start = this.fats.mphToRpm(this.fats.startMph(), rpmPerMph);
-                this.end = this.fats.mphToRpm(this.fats.endMph(), rpmPerMph);
-            }
+        FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
+
+        if (handler.requiresRpmConversionFields() && !this.fileDatasets.isEmpty()) {
+            ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
+            double rpmPerSpeed = handler.getRpmConversionFactor(firstDataset.getEnv().c);
+            this.start = handler.speedToRpm(handler.getStartValue(this.fats), rpmPerSpeed);
+            this.end = handler.speedToRpm(handler.getEndValue(this.fats), rpmPerSpeed);
         } else {
+            // RPM mode: use direct values
             this.start = this.fats.start();
             this.end = this.fats.end();
         }
@@ -107,22 +107,27 @@ public class FATSDataset extends DefaultCategoryDataset {
         String filename = Files.stem(data.getFileId());
         String runNumber = "run " + (series + 1);
 
-        // Always show RPM range with MPH conversion in parentheses
-        double startMph, endMph;
-        if (this.fats.useMph()) {
-            // MPH mode: use the configured MPH values
-            startMph = this.fats.startMph();
-            endMph = this.fats.endMph();
+        // Always show RPM range with speed conversion in parentheses
+        FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
+        double startSpeed, endSpeed;
+        String speedUnit;
+
+        if (handler.requiresRpmConversionFields()) {
+            // Speed mode: use the configured speed values
+            startSpeed = handler.getStartValue(this.fats);
+            endSpeed = handler.getEndValue(this.fats);
+            speedUnit = handler.getAbbreviation();
         } else {
             // RPM mode: convert RPM to MPH using rpm_per_mph constant
             ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
             double rpmPerMph = firstDataset.getEnv().c.rpm_per_mph();
-            startMph = rpmStart / rpmPerMph;
-            endMph = rpmEnd / rpmPerMph;
+            startSpeed = rpmStart / rpmPerMph;
+            endSpeed = rpmEnd / rpmPerMph;
+            speedUnit = "mph";
         }
 
-        String message = String.format("FATS: %s %s, %d (%.0fmph) - %d (%.0fmph) = %.1f seconds",
-            filename, runNumber, rpmStart, startMph, rpmEnd, endMph, value);
+        String message = String.format("FATS: %s %s, %d (%.0f%s) - %d (%.0f%s) = %.1f seconds",
+            filename, runNumber, rpmStart, startSpeed, speedUnit, rpmEnd, endSpeed, speedUnit, value);
         logger.info(message);
     }
 
@@ -152,9 +157,11 @@ public class FATSDataset extends DefaultCategoryDataset {
 
         try {
             double value;
-            if (this.fats.useMph()) {
+            FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
+
+            if (handler.requiresRpmConversionFields()) {
                 // Use speed-based calculation (will fall back to RPM if no VehicleSpeed)
-                value = data.calcFATSBySpeed(series, this.fats.startMph(), this.fats.endMph());
+                value = data.calcFATSBySpeed(series, handler.getStartValue(this.fats), handler.getEndValue(this.fats), this.fats.speedUnit());
             } else {
                 // Use RPM-based calculation
                 value = data.calcFATS(series, this.start, this.end);
@@ -172,28 +179,28 @@ public class FATSDataset extends DefaultCategoryDataset {
     // helpers
 
     public void setStart(int start) {
-        if (this.fats.useMph()) {
-            // Convert RPM to MPH and save to FATS preferences
-            if (!this.fileDatasets.isEmpty()) {
-                ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
-                double rpmPerMph = firstDataset.getEnv().c.rpm_per_mph();
-                this.fats.startMph(this.fats.rpmToMph(start, rpmPerMph));
-            }
+        FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
+
+        if (handler.requiresRpmConversionFields() && !this.fileDatasets.isEmpty()) {
+            ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
+            double rpmPerSpeed = handler.getRpmConversionFactor(firstDataset.getEnv().c);
+            handler.setStartValue(this.fats, handler.rpmToSpeed(start, rpmPerSpeed));
         } else {
+            // RPM mode: set direct value
             this.fats.start(start);
         }
         updateFromFATS();
         rebuild();
     }
     public void setEnd(int end) {
-        if (this.fats.useMph()) {
-            // Convert RPM to MPH and save to FATS preferences
-            if (!this.fileDatasets.isEmpty()) {
-                ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
-                double rpmPerMph = firstDataset.getEnv().c.rpm_per_mph();
-                this.fats.endMph(this.fats.rpmToMph(end, rpmPerMph));
-            }
+        FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
+
+        if (handler.requiresRpmConversionFields() && !this.fileDatasets.isEmpty()) {
+            ECUxDataset firstDataset = this.fileDatasets.values().iterator().next();
+            double rpmPerSpeed = handler.getRpmConversionFactor(firstDataset.getEnv().c);
+            handler.setEndValue(this.fats, handler.rpmToSpeed(end, rpmPerSpeed));
         } else {
+            // RPM mode: set direct value
             this.fats.end(end);
         }
         updateFromFATS();
@@ -208,13 +215,17 @@ public class FATSDataset extends DefaultCategoryDataset {
     }
 
     public String getTitle() {
-        if (this.fats.useMph()) {
-            if (hasVehicleSpeedData()) {
-                return String.format("%d-%d MPH (VehicleSpeed)", Math.round(this.fats.startMph()), Math.round(this.fats.endMph()));
-            } else {
-                return String.format("%d-%d MPH (Calculated)", Math.round(this.fats.startMph()), Math.round(this.fats.endMph()));
-            }
+        FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
+
+        if (handler.requiresRpmConversionFields()) {
+            // Speed mode: show speed values
+            String suffix = hasVehicleSpeedData() ? "(VehicleSpeed)" : "(Calculated)";
+            return String.format("%d-%d %s %s",
+                Math.round(handler.getStartValue(this.fats)),
+                Math.round(handler.getEndValue(this.fats)),
+                handler.getDisplayName(), suffix);
         } else {
+            // RPM mode: show RPM values
             return this.start + "-" + this.end + " RPM";
         }
     }

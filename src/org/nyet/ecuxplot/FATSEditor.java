@@ -18,26 +18,36 @@ public class FATSEditor extends PreferencesEditor {
     public JTextField start;
     public JTextField end;
     public JTextField rpmPerMph;
-    public JCheckBox useMph;
+    public JLabel rpmPerMphLabel;
+    public JComboBox<String> speedUnitCombo;
     public JLabel startLabel;
     public JLabel endLabel;
-    public JLabel rpmPerMphLabel;
 
     @Override
     protected void Process(ActionEvent event) {
-        if (this.useMph.isSelected()) {
-            this.s.startMph(Double.valueOf(this.start.getText()));
-            this.s.endMph(Double.valueOf(this.end.getText()));
-        } else {
-            this.s.start(Integer.valueOf(this.start.getText()));
-            this.s.end(Integer.valueOf(this.end.getText()));
-        }
-        this.s.useMph(this.useMph.isSelected());
+        FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
+        this.s.speedUnit(speedUnit);
+
+        // Use the handler to eliminate switch statement
+        FATS.SpeedUnitHandler handler = speedUnit.getHandler();
+        handler.setStartValue(this.s, Double.valueOf(this.start.getText()));
+        handler.setEndValue(this.s, Double.valueOf(this.end.getText()));
 
         // Handle rpm_per_mph separately
         this.c.rpm_per_mph(Double.valueOf(this.rpmPerMph.getText()));
 
         super.Process(event);
+    }
+
+    private FATS.SpeedUnit getSelectedSpeedUnit() {
+        String selectedUnit = (String) this.speedUnitCombo.getSelectedItem();
+        if ("MPH".equals(selectedUnit)) {
+            return FATS.SpeedUnit.MPH;
+        } else if ("KPH".equals(selectedUnit)) {
+            return FATS.SpeedUnit.KPH;
+        } else {
+            return FATS.SpeedUnit.RPM;
+        }
     }
 
     private static String [][] pairs = {
@@ -54,54 +64,70 @@ public class FATSEditor extends PreferencesEditor {
         // Create a custom clean layout
         JPanel customPanel = new JPanel(new BorderLayout());
 
-        // Create the range input panel with clean layout
-        JPanel rangePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // Create speed unit selection panel
+        JPanel speedUnitPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        speedUnitPanel.add(new JLabel("Speed Unit: "));
 
-        // Add start field
-        this.start = new JTextField("" + this.s.start(), 3);
-        rangePanel.add(this.start);
+        this.speedUnitCombo = new JComboBox<>(new String[]{"RPM", "MPH", "KPH"});
 
-        // Add "to" label
-        rangePanel.add(new JLabel(" to "));
-
-        // Add end field
-        this.end = new JTextField("" + this.s.end(), 3);
-        rangePanel.add(this.end);
-
-        // Add unit label (will be updated dynamically)
-        this.startLabel = new JLabel("RPM");
-        rangePanel.add(this.startLabel);
-
-        // Add MPH checkbox
-        this.useMph = new JCheckBox("Use MPH instead of RPM");
-        this.useMph.setSelected(this.s.useMph());
-        this.useMph.addActionListener(new ActionListener() {
+        // Add action listener to combo box
+        this.speedUnitCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateLabels();
                 updateValues();
-                updateRpmPerMphVisibility();
+                updateRpmFieldsVisibility();
             }
         });
 
-        // Create top panel with checkboxes
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(this.useMph);
+        // Create main panel with horizontal layout to use full width
+        JPanel mainPanel = new JPanel(new BorderLayout());
 
-        // Create bottom panel with range and rpm_per_mph
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bottomPanel.add(new JLabel("Range: "));
-        bottomPanel.add(rangePanel);
+        // Create range group with border
+        JPanel rangeGroup = new JPanel();
+        rangeGroup.setLayout(new BoxLayout(rangeGroup, BoxLayout.X_AXIS));
+        rangeGroup.setBorder(BorderFactory.createTitledBorder("Range"));
+
+        // Add start field
+        this.start = new JTextField("" + this.s.start(), 6);
+        rangeGroup.add(this.start);
+
+        // Add "to" label
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        rangeGroup.add(new JLabel(" to "));
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+
+        // Add end field
+        this.end = new JTextField("" + this.s.end(), 6);
+        rangeGroup.add(this.end);
+
+        // Add unit label (will be updated dynamically)
+        this.startLabel = new JLabel("RPM");
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        rangeGroup.add(this.startLabel);
+
+        // Add speed unit dropdown
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        rangeGroup.add(this.speedUnitCombo);
+
+        // Add glue to push everything to the left
+        rangeGroup.add(Box.createHorizontalGlue());
+
+        // Create conversion group with border
+        JPanel conversionGroup = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 2)); // Reduced vertical spacing
+        conversionGroup.setBorder(BorderFactory.createTitledBorder("Conversion"));
 
         // Add rpm_per_mph field
+        this.rpmPerMphLabel = new JLabel("RPM per MPH:");
         this.rpmPerMph = new JTextField("" + this.c.rpm_per_mph(), 4);
-        this.rpmPerMphLabel = new JLabel("RPM/MPH:");
-        bottomPanel.add(Box.createHorizontalStrut(20));
-        bottomPanel.add(this.rpmPerMphLabel);
-        bottomPanel.add(this.rpmPerMph);
+        conversionGroup.add(this.rpmPerMphLabel);
+        conversionGroup.add(this.rpmPerMph);
 
-        // Add panels to custom layout
-        customPanel.add(topPanel, BorderLayout.NORTH);
-        customPanel.add(bottomPanel, BorderLayout.CENTER);
+        // Add groups to main panel - range takes center, conversion takes east
+        mainPanel.add(rangeGroup, BorderLayout.CENTER);
+        mainPanel.add(conversionGroup, BorderLayout.EAST);
+
+        // Add main panel to custom layout
+        customPanel.add(mainPanel, BorderLayout.CENTER);
 
         // Replace the center content with our custom panel
         this.remove(this.getPrefsPanel());
@@ -109,41 +135,63 @@ public class FATSEditor extends PreferencesEditor {
 
         // Initialize labels and visibility
         updateLabels();
-        updateRpmPerMphVisibility();
+        updateRpmFieldsVisibility();
     }
 
     @Override
     public void updateDialog() {
-        this.useMph.setSelected(this.s.useMph());
+        FATS.SpeedUnit speedUnit = this.s.speedUnit();
+        switch (speedUnit) {
+            case RPM:
+                this.speedUnitCombo.setSelectedItem("RPM");
+                break;
+            case MPH:
+                this.speedUnitCombo.setSelectedItem("MPH");
+                break;
+            case KPH:
+                this.speedUnitCombo.setSelectedItem("KPH");
+                break;
+        }
+
         this.rpmPerMph.setText("" + this.c.rpm_per_mph());
+
         updateLabels();
         updateValues();
-        updateRpmPerMphVisibility();
+        updateRpmFieldsVisibility();
     }
 
     private void updateLabels() {
-        if (this.useMph.isSelected()) {
-            this.startLabel.setText("MPH");
-        } else {
-            this.startLabel.setText("RPM");
-        }
+        // Hide unit label in all modes since radio buttons indicate the units
+        this.startLabel.setVisible(false);
     }
 
     private void updateValues() {
-        if (this.useMph.isSelected()) {
-            this.start.setText("" + this.s.startMph());
-            this.end.setText("" + this.s.endMph());
-        } else {
-            this.start.setText("" + this.s.start());
-            this.end.setText("" + this.s.end());
+        FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
+
+        // Use the handler to eliminate switch statement
+        FATS.SpeedUnitHandler handler = speedUnit.getHandler();
+        double startValue = handler.getStartValue(this.s);
+        double endValue = handler.getEndValue(this.s);
+
+        // Round values for MPH and KPH to whole numbers
+        if (speedUnit != FATS.SpeedUnit.RPM) {
+            startValue = Math.round(startValue);
+            endValue = Math.round(endValue);
         }
+
+        this.start.setText("" + (int)startValue);
+        this.end.setText("" + (int)endValue);
     }
 
-    private void updateRpmPerMphVisibility() {
-        // Show rpm_per_mph field and label when NOT using MPH mode
-        boolean showRpmPerMph = !this.useMph.isSelected();
-        this.rpmPerMphLabel.setVisible(showRpmPerMph);
-        this.rpmPerMph.setVisible(showRpmPerMph);
+    private void updateRpmFieldsVisibility() {
+        FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
+
+        // Use the handler to determine if RPM conversion fields should be shown
+        FATS.SpeedUnitHandler handler = speedUnit.getHandler();
+        boolean showRpmFields = handler.requiresRpmConversionFields();
+
+        this.rpmPerMphLabel.setVisible(showRpmFields);
+        this.rpmPerMph.setVisible(showRpmFields);
     }
 }
 
