@@ -42,7 +42,7 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 - Check minimum acceleration threshold (default: 100 RPM/s)
 - Ensure you're logging gear and accelerator pedal position
 - Check that your run starts low enough and has sufficient RPM range
-- Use **"Options → Show Debug Logs"** to see detailed filter analysis
+- Use **"Options → Show Events"** to see detailed filter analysis
 - If problems persist, post your log file for assistance
 
 ### Performance Calculations
@@ -76,7 +76,7 @@ ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log fi
 - Check that acceleration threshold is met (default: 100 RPM/s)
 - Ensure RPM range covers the configured FATS range
 - Verify `rpm_per_mph` constant is correct for your vehicle
-- Use **"Options → Show Debug Logs"** to see detailed FATS calculation logs
+- Use **"Options → Show Events"** to see detailed FATS calculation events
 - Check that filter is enabled and finding valid ranges
 
 **Problem**: FATS results seem inconsistent between runs!
@@ -151,14 +151,14 @@ Access via "Options → Show Filter Debug Panel" to:
 - **Multi-file Support**: Switch between multiple loaded datasets
 - **Clipboard Export**: Copy selected data for external analysis
 
-#### Debug Log Window
+#### Event Window
 
-Access via "Options → Show Debug Logs" to:
+Access via "Options → Show Events" to:
 
-- **Live Logging**: Real-time display of application logs
-- **Level Filtering**: Filter by log level (TRACE, DEBUG, INFO, WARN, ERROR)
-- **Search Function**: Find specific log entries
-- **Export Capability**: Save logs to file for analysis
+- **Live Events**: Real-time display of application events
+- **Level Filtering**: Filter by event level (TRACE, DEBUG, INFO, WARN, ERROR)
+- **Search Function**: Find specific event entries
+- **Export Capability**: Save events to file for analysis
 - **Auto-scroll**: Automatically follow new log entries
 
 ## Getting Help

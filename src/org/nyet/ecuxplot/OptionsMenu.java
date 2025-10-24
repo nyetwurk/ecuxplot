@@ -110,7 +110,7 @@ public final class OptionsMenu extends JMenu {
 
         this.add(new JSeparator());
 
-        jmi = new JMenuItem("Show Debug Logs...");
+        jmi = new JMenuItem("Show Events...");
         jmi.addActionListener(plotFrame);
         this.add(jmi);
     }
