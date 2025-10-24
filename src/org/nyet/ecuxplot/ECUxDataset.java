@@ -874,6 +874,13 @@ public class ECUxDataset extends Dataset {
     @Override
     public void buildRanges() {
         super.buildRanges();
+
+        if (!isFilterEnabled()) {
+            logger.warn("Spline creation disabled: filter is not enabled");
+            this.splines = new CubicSpline[0];
+            return;
+        }
+
         final ArrayList<Dataset.Range> ranges = this.getRanges();
         this.splines = new CubicSpline[ranges.size()];
         for(int i=0;i<ranges.size();i++) {
@@ -914,6 +921,11 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     public double calcFATS(int run, double speedStart, double speedEnd, FATS.SpeedUnit speedUnit) throws Exception {
+        if (!isFilterEnabled()) {
+            logger.warn("FATS calculation disabled: filter is not enabled");
+            throw new Exception("FATS calculation requires filter to be enabled");
+        }
+
         final ArrayList<Dataset.Range> ranges = this.getRanges();
         if(run<0 || run>=ranges.size())
             throw new Exception("FATS run " + run + " not found (available: 0-" + (ranges.size()-1) + ")");
@@ -966,6 +978,10 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
+        if (!isFilterEnabled()) {
+            logger.warn("FATS calculation disabled: filter is not enabled");
+            throw new Exception("FATS calculation requires filter to be enabled");
+        }
         return calcFATS(run, (double)RPMStart, (double)RPMEnd, FATS.SpeedUnit.RPM);
     }
 
@@ -980,6 +996,10 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     public double calcFATSBySpeed(int run, double speedStart, double speedEnd, FATS.SpeedUnit speedUnit) throws Exception {
+        if (!isFilterEnabled()) {
+            logger.warn("FATS calculation disabled: filter is not enabled");
+            throw new Exception("FATS calculation requires filter to be enabled");
+        }
         return calcFATS(run, speedStart, speedEnd, speedUnit);
     }
 
@@ -996,6 +1016,11 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     private double calcFATSRPM(int run, int RPMStart, int RPMEnd) throws Exception {
+        if (!isFilterEnabled()) {
+            logger.warn("FATS calculation disabled: filter is not enabled");
+            throw new Exception("FATS calculation requires filter to be enabled");
+        }
+
         final ArrayList<Dataset.Range> ranges = this.getRanges();
         if(run<0 || run>=ranges.size())
             throw new Exception("FATS run " + run + " not found (available: 0-" + (ranges.size()-1) + ")");
@@ -1032,6 +1057,14 @@ public class ECUxDataset extends Dataset {
 
     public Filter getFilter() { return this.filter; }
     //public void setFilter(Filter f) { this.filter=f; }
+
+    /**
+     * Check if the filter is enabled, safely handling null filter
+     * @return true if filter exists and is enabled, false otherwise
+     */
+    private boolean isFilterEnabled() {
+        return this.filter != null && this.filter.enabled();
+    }
     public Env getEnv() { return this.env; }
     //public void setEnv(Env e) { this.env=e; }
     @Override

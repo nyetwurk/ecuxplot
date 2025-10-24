@@ -148,13 +148,6 @@ public class FATSDataset extends DefaultCategoryDataset {
      * @param series The run number (0-based)
      */
     public void setValue(ECUxDataset data, int series) {
-        // Don't calculate FATS when filter is disabled - FATS depends on filtered data
-        if (!data.getFilter().enabled()) {
-            logger.info("FATS calculation skipped for {} run {}: filter disabled", Files.stem(data.getFileId()), series);
-            removeValue(data, series);
-            return;
-        }
-
         try {
             double value;
             FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
