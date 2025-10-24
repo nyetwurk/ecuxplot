@@ -44,7 +44,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     FATSChartFrame fatsFrame;
     private ECUxChartPanel chartPanel;
-    private DebugLogWindow debugLogWindow;
+    private EventWindow eventWindow;
     private FilterWindow filterWindow;
 
     // Menus
@@ -78,6 +78,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     public ECUxPlot(final String title, ArrayList<ECUxPlot> plotlist) { this(title, new Options(), plotlist, false); }
     public ECUxPlot(final String title, final Options o, ArrayList<ECUxPlot> plotlist, boolean exitOnClose) {
         super(title);
+
+        // Initialize event window BEFORE any logging to capture events from app start
+        this.eventWindow = new EventWindow();
+
         logger.info("Initializing ECUxPlot: {}", title);
         this.options=o;
         ToolTipManager.sharedInstance().setInitialDelay(0);
@@ -640,11 +644,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             }
             rebuild();
             updateFATSVisibility();
-        } else if(source.getText().equals("Show Debug Logs...")) {
-            if(this.debugLogWindow == null) {
-                this.debugLogWindow = new DebugLogWindow();
+        } else if(source.getText().equals("Show Events...")) {
+            if(this.eventWindow == null) {
+                this.eventWindow = new EventWindow();
             }
-            this.debugLogWindow.showWindow();
+            this.eventWindow.showWindow();
         } else {
             JOptionPane.showMessageDialog(this,
                 "unhandled getText=" + source.getText() +
@@ -961,8 +965,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
         if(this.fatsFrame!=null)
             this.fatsFrame.dispose();
-        if(this.debugLogWindow!=null)
-            this.debugLogWindow.dispose();
+        if(this.eventWindow!=null)
+            this.eventWindow.dispose();
         if(this.filterWindow!=null)
             this.filterWindow.dispose();
         System.exit(0);
