@@ -77,3 +77,5 @@ public class WindowUtilities {
                         Color.white));
   }
 }
+
+// vim: set sw=4 ts=8 expandtab:

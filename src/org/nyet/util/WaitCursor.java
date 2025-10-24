@@ -39,3 +39,5 @@ public class WaitCursor implements Cursors {
     stopWaitCursor(root);
   }
 }
+
+// vim: set sw=4 ts=8 expandtab:

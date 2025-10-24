@@ -28,238 +28,240 @@ public final class OptionsMenu extends JMenu {
     private JCheckBox filterCheckBox;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
-	super(id);
-	this.plotFrame=plotFrame;
-	JMenuItem jmi;
-	JCheckBox jcb;
+        super(id);
+        this.plotFrame=plotFrame;
+        JMenuItem jmi;
+        JCheckBox jcb;
 
-	// Presets
-	this.loadPresetsMenu = new JMenu("Load Preset...");
-	this.savePresetsMenu = new JMenu("Save Preset...");
-	jmi = new JMenuItem("Load All Presets");
-	jmi.addActionListener(new LoadAllPresetsAction());
-	this.add(jmi);
+        // Presets
+        this.loadPresetsMenu = new JMenu("Load Preset...");
+        this.savePresetsMenu = new JMenu("Save Preset...");
+        jmi = new JMenuItem("Load All Presets");
+        jmi.addActionListener(new LoadAllPresetsAction());
+        this.add(jmi);
 
-	this.deletePresetsMenu = new JMenu("Delete Preset...");
+        this.deletePresetsMenu = new JMenu("Delete Preset...");
 
-	updatePresets();
+        updatePresets();
 
-	this.add(this.loadPresetsMenu);
-	this.add(jmi);
-	this.add(this.savePresetsMenu);
-	this.add(this.deletePresetsMenu);
+        this.add(this.loadPresetsMenu);
+        this.add(jmi);
+        this.add(this.savePresetsMenu);
+        this.add(this.deletePresetsMenu);
 
-	this.add(new JSeparator());
+        this.add(new JSeparator());
 
-	// Prefs
-	final Preferences prefs = ECUxPlot.getPreferences();
-	jcb = new JCheckBox("Use alternate column names",
-		prefs.getBoolean("altnames", false));
-	jcb.addActionListener(plotFrame);
-	this.add(jcb);
-	jcb = new JCheckBox("Scatter plot",
-		ECUxPlot.scatter(prefs));
-	jcb.addActionListener(plotFrame);
-	this.add(jcb);
+        // Prefs
+        final Preferences prefs = ECUxPlot.getPreferences();
+        jcb = new JCheckBox("Use alternate column names",
+                prefs.getBoolean("altnames", false));
+        jcb.addActionListener(plotFrame);
+        this.add(jcb);
+        jcb = new JCheckBox("Scatter plot",
+                ECUxPlot.scatter(prefs));
+        jcb.addActionListener(plotFrame);
+        this.add(jcb);
 
-	// Store reference to scatter checkbox for dynamic updates
-	this.scatterCheckBox = jcb;
+        // Store reference to scatter checkbox for dynamic updates
+        this.scatterCheckBox = jcb;
 
-	this.add(new JSeparator());
-	jcb = new JCheckBox("Filter data", Filter.enabled(prefs));
-	jcb.addActionListener(plotFrame);
-	this.add(jcb);
+        this.add(new JSeparator());
+        jcb = new JCheckBox("Filter data", Filter.enabled(prefs));
+        jcb.addActionListener(plotFrame);
+        this.add(jcb);
 
-	// Store reference to filter checkbox for dynamic updates
-	this.filterCheckBox = jcb;
-	jcb = new JCheckBox("Show all ranges", Filter.showAllRanges(prefs));
-	jcb.addActionListener(plotFrame);
-	this.add(jcb);
-	jmi = new JMenuItem("Next range...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
-	jmi = new JMenuItem("Previous range...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
-	this.add(new JSeparator());
+        // Store reference to filter checkbox for dynamic updates
+        this.filterCheckBox = jcb;
+        jcb = new JCheckBox("Show all ranges", Filter.showAllRanges(prefs));
+        jcb.addActionListener(plotFrame);
+        this.add(jcb);
+        jmi = new JMenuItem("Next range...");
+        jmi.addActionListener(plotFrame);
+        this.add(jmi);
+        jmi = new JMenuItem("Previous range...");
+        jmi.addActionListener(plotFrame);
+        this.add(jmi);
+        this.add(new JSeparator());
 
-	jcb = new JCheckBox("Apply SAE", SAE.enabled(prefs));
-	jcb.addActionListener(plotFrame);
-	this.add(jcb);
+        jcb = new JCheckBox("Apply SAE", SAE.enabled(prefs));
+        jcb.addActionListener(plotFrame);
+        this.add(jcb);
 
-	jcb = new JCheckBox("Show FATS window...", prefs.getBoolean("showfats", false));
-	jcb.addActionListener(plotFrame);
-	this.add(jcb);
+        jcb = new JCheckBox("Show FATS window...", prefs.getBoolean("showfats", false));
+        jcb.addActionListener(plotFrame);
+        this.add(jcb);
 
-	// Store reference to FATS checkbox for dynamic updates
-	this.fatsCheckBox = jcb;
+        // Store reference to FATS checkbox for dynamic updates
+        this.fatsCheckBox = jcb;
 
-	this.add(new JSeparator());
+        this.add(new JSeparator());
 
-	jmi = new JMenuItem("Configure filter...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
+        jmi = new JMenuItem("Configure filter...");
+        jmi.addActionListener(plotFrame);
+        this.add(jmi);
 
-	jmi = new JMenuItem("Edit SAE constants...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
+        jmi = new JMenuItem("Edit SAE constants...");
+        jmi.addActionListener(plotFrame);
+        this.add(jmi);
 
-	jmi = new JMenuItem("Edit PID...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
+        jmi = new JMenuItem("Edit PID...");
+        jmi.addActionListener(plotFrame);
+        this.add(jmi);
 
-	this.add(new JSeparator());
+        this.add(new JSeparator());
 
-	jmi = new JMenuItem("Show Debug Logs...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
+        jmi = new JMenuItem("Show Debug Logs...");
+        jmi.addActionListener(plotFrame);
+        this.add(jmi);
 
-	jmi = new JMenuItem("Show Filter Debug Panel...");
-	jmi.addActionListener(plotFrame);
-	this.add(jmi);
+        jmi = new JMenuItem("Show Filter Debug Panel...");
+        jmi.addActionListener(plotFrame);
+        this.add(jmi);
     }
 
     private void updatePresets() {
-	this.loadPresetsMenu.removeAll();
-	this.savePresetsMenu.removeAll();
-	this.deletePresetsMenu.removeAll();
+        this.loadPresetsMenu.removeAll();
+        this.savePresetsMenu.removeAll();
+        this.deletePresetsMenu.removeAll();
 
-	final LoadPresetAction lpa = new LoadPresetAction();
-	final SavePresetAction spa = new SavePresetAction();
-	final DeletePresetAction dpa = new DeletePresetAction();
-	JMenuItem jmi;
-	Boolean undoPresent = false;
-	Boolean addSeparator = false;
+        final LoadPresetAction lpa = new LoadPresetAction();
+        final SavePresetAction spa = new SavePresetAction();
+        final DeletePresetAction dpa = new DeletePresetAction();
+        JMenuItem jmi;
+        Boolean undoPresent = false;
+        Boolean addSeparator = false;
 
-	for(final String s : ECUxPreset.getPresets()) {
-	    if(!s.equals("Undo")) {
-		jmi = new JMenuItem(s);
-		jmi.addActionListener(lpa);
-		this.loadPresetsMenu.add(jmi);
+        for(final String s : ECUxPreset.getPresets()) {
+            if(!s.equals("Undo")) {
+                jmi = new JMenuItem(s);
+                jmi.addActionListener(lpa);
+                this.loadPresetsMenu.add(jmi);
 
-		jmi = new JMenuItem(s);
-		this.savePresetsMenu.add(jmi);
-		jmi.addActionListener(spa);
+                jmi = new JMenuItem(s);
+                this.savePresetsMenu.add(jmi);
+                jmi.addActionListener(spa);
 
-		jmi = new JMenuItem(s);
-		this.deletePresetsMenu.add(jmi);
-		jmi.addActionListener(dpa);
-	    } else {
-		undoPresent = true;
-	    }
-	    addSeparator = true;
-	}
+                jmi = new JMenuItem(s);
+                this.deletePresetsMenu.add(jmi);
+                jmi.addActionListener(dpa);
+            } else {
+                undoPresent = true;
+            }
+            addSeparator = true;
+        }
 
-	if (undoPresent) {
-	    if(addSeparator)
-		this.loadPresetsMenu.add(new JSeparator());
+        if (undoPresent) {
+            if(addSeparator)
+                this.loadPresetsMenu.add(new JSeparator());
 
-	    jmi = new JMenuItem("Undo");
-	    jmi.addActionListener(lpa);
-	    this.loadPresetsMenu.add(jmi);
-	}
-	if(addSeparator)
-	    this.savePresetsMenu.add(new JSeparator());
+            jmi = new JMenuItem("Undo");
+            jmi.addActionListener(lpa);
+            this.loadPresetsMenu.add(jmi);
+        }
+        if(addSeparator)
+            this.savePresetsMenu.add(new JSeparator());
 
-	jmi = new JMenuItem("New Preset...");
-	jmi.addActionListener(spa);
-	this.savePresetsMenu.add(jmi);
+        jmi = new JMenuItem("New Preset...");
+        jmi.addActionListener(spa);
+        this.savePresetsMenu.add(jmi);
 
-	this.savePresetsMenu.add(new JSeparator());
-	jmi = new JMenuItem("Restore Defaults");
-	jmi.addActionListener(spa);
-	this.savePresetsMenu.add(jmi);
+        this.savePresetsMenu.add(new JSeparator());
+        jmi = new JMenuItem("Restore Defaults");
+        jmi.addActionListener(spa);
+        this.savePresetsMenu.add(jmi);
     }
 
     private class LoadPresetAction implements ActionListener {
-	@Override
-	public void actionPerformed(ActionEvent event) {
-	    final String s = event.getActionCommand();
-	    if(!s.equals("Undo")) {
-		/* save last setup */
-		OptionsMenu.this.plotFrame.saveUndoPreset();
-		/* maybe undo didn't exist. rebuild load menu just in case */
-		updatePresets();
-	    }
-	    OptionsMenu.this.plotFrame.loadPreset(s);
-	}
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            final String s = event.getActionCommand();
+            if(!s.equals("Undo")) {
+                /* save last setup */
+                OptionsMenu.this.plotFrame.saveUndoPreset();
+                /* maybe undo didn't exist. rebuild load menu just in case */
+                updatePresets();
+            }
+            OptionsMenu.this.plotFrame.loadPreset(s);
+        }
     }
 
     private class LoadAllPresetsAction implements ActionListener {
-	@Override
-	public void actionPerformed(ActionEvent event) {
-	    final ArrayList<String> list = new
-		ArrayList<String>(Arrays.asList(ECUxPreset.getPresets()));
-	    list.remove("Undo");
-	    OptionsMenu.this.plotFrame.loadPresets(list);
-	}
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            final ArrayList<String> list = new
+                ArrayList<String>(Arrays.asList(ECUxPreset.getPresets()));
+            list.remove("Undo");
+            OptionsMenu.this.plotFrame.loadPresets(list);
+        }
     }
 
     private class SavePresetAction implements ActionListener {
-	private final List<String> blacklist = Arrays.asList(
-	    "Undo",
-	    "New Preset...",
-	    "Restore Defaults",
-	    ""
-	);
+        private final List<String> blacklist = Arrays.asList(
+            "Undo",
+            "New Preset...",
+            "Restore Defaults",
+            ""
+        );
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-	    String s = event.getActionCommand();
-	    if(s.equals("Restore Defaults")) {
-		ECUxPreset.createDefaultECUxPresets();
-	    } else {
-		if(s.equals("New Preset...")) {
-		    s = ECUxPlot.showInputDialog("Enter preset name");
-		    if (s==null) return;
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            String s = event.getActionCommand();
+            if(s.equals("Restore Defaults")) {
+                ECUxPreset.createDefaultECUxPresets();
+            } else {
+                if(s.equals("New Preset...")) {
+                    s = ECUxPlot.showInputDialog("Enter preset name");
+                    if (s==null) return;
 
-		    if (this.blacklist.contains(s)) {
-			JOptionPane.showMessageDialog(null, "Illegal name");
-			return;
-		    }
+                    if (this.blacklist.contains(s)) {
+                        JOptionPane.showMessageDialog(null, "Illegal name");
+                        return;
+                    }
 
-		    for(final String k : ECUxPreset.getPresets()) {
-			if (s.equals(k)) {
-			    JOptionPane.showMessageDialog(null, "Name in use");
-			    return;
-			}
-		    }
-		}
-		OptionsMenu.this.plotFrame.savePreset(s);
-	    }
-	    updatePresets();
-	}
+                    for(final String k : ECUxPreset.getPresets()) {
+                        if (s.equals(k)) {
+                            JOptionPane.showMessageDialog(null, "Name in use");
+                            return;
+                        }
+                    }
+                }
+                OptionsMenu.this.plotFrame.savePreset(s);
+            }
+            updatePresets();
+        }
     }
 
     private class DeletePresetAction implements ActionListener {
-	@Override
-	public void actionPerformed(ActionEvent event) {
-	    final String s = event.getActionCommand();
-	    try {
-		ECUxPreset.getPreferencesStatic().node(s).removeNode();
-		updatePresets();
-	    } catch (final Exception e) {}
-	}
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            final String s = event.getActionCommand();
+            try {
+                ECUxPreset.getPreferencesStatic().node(s).removeNode();
+                updatePresets();
+            } catch (final Exception e) {}
+        }
     }
 
     public void updateFATSCheckbox() {
-	if (this.fatsCheckBox != null) {
-	    final Preferences prefs = ECUxPlot.getPreferences();
-	    this.fatsCheckBox.setSelected(prefs.getBoolean("showfats", false));
-	}
+        if (this.fatsCheckBox != null) {
+            final Preferences prefs = ECUxPlot.getPreferences();
+            this.fatsCheckBox.setSelected(prefs.getBoolean("showfats", false));
+        }
     }
 
     public void updateScatterCheckbox() {
-	if (this.scatterCheckBox != null) {
-	    final Preferences prefs = ECUxPlot.getPreferences();
-	    this.scatterCheckBox.setSelected(ECUxPlot.scatter(prefs));
-	}
+        if (this.scatterCheckBox != null) {
+            final Preferences prefs = ECUxPlot.getPreferences();
+            this.scatterCheckBox.setSelected(ECUxPlot.scatter(prefs));
+        }
     }
 
     public void updateFilterCheckbox() {
-	if (this.filterCheckBox != null) {
-	    final Preferences prefs = ECUxPlot.getPreferences();
-	    this.filterCheckBox.setSelected(Filter.enabled(prefs));
-	}
+        if (this.filterCheckBox != null) {
+            final Preferences prefs = ECUxPlot.getPreferences();
+            this.filterCheckBox.setSelected(Filter.enabled(prefs));
+        }
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

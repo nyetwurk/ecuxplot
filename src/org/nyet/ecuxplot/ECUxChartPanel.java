@@ -16,36 +16,38 @@ public class ECUxChartPanel extends ChartPanel {
     private static final long serialVersionUID = 1L;
 
     public ECUxChartPanel(JFreeChart chart) {
-	super(chart);
-	setMouseWheelEnabled(true);
-	setMouseZoomable(true);
+        super(chart);
+        setMouseWheelEnabled(true);
+        setMouseZoomable(true);
     }
 
     public void doSaveAs(String fname) throws IOException {
-	final JFileChooser fileChooser = new JFileChooser();
-	fileChooser.setSelectedFile(new File(fname + ".png"));
-	final ExtensionFileFilter filter = new ExtensionFileFilter(
-	       localizationResources.getString("PNG_Image_Files"), ".png");
-	fileChooser.addChoosableFileFilter(filter);
+        final JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setSelectedFile(new File(fname + ".png"));
+        final ExtensionFileFilter filter = new ExtensionFileFilter(
+               localizationResources.getString("PNG_Image_Files"), ".png");
+        fileChooser.addChoosableFileFilter(filter);
 
-	final int option = fileChooser.showSaveDialog(this);
-	if (option == JFileChooser.APPROVE_OPTION) {
-	   String filename = fileChooser.getSelectedFile().getPath();
-	   if (isEnforceFileExtensions()) {
-	       if (!filename.endsWith(".png")) {
-		   filename = filename + ".png";
-	       }
-	   }
-	   saveChartAsPNG(new File(filename));
-	}
+        final int option = fileChooser.showSaveDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION) {
+           String filename = fileChooser.getSelectedFile().getPath();
+           if (isEnforceFileExtensions()) {
+               if (!filename.endsWith(".png")) {
+                   filename = filename + ".png";
+               }
+           }
+           saveChartAsPNG(new File(filename));
+        }
     }
 
     public void saveChartAsPNG(File f) throws IOException {
-	   ChartUtilities.saveChartAsPNG(f, this.getChart(), this.getWidth(),
-		   this.getHeight());
+           ChartUtilities.saveChartAsPNG(f, this.getChart(), this.getWidth(),
+                   this.getHeight());
     }
 
     public void saveChartAsPNG(String filename) throws IOException {
-	   this.saveChartAsPNG(new File(filename));
+           this.saveChartAsPNG(new File(filename));
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

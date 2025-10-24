@@ -66,3 +66,5 @@ public class UnitConstants {
         throw new UnsupportedOperationException("UnitConstants is a utility class and cannot be instantiated");
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

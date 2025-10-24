@@ -18,7 +18,7 @@ public class MessageDialog {
      * @param nogui true to suppress GUI dialogs
      */
     public static void setNoGui(boolean nogui) {
-	MessageDialog.nogui = nogui;
+        MessageDialog.nogui = nogui;
     }
 
     /**
@@ -27,11 +27,11 @@ public class MessageDialog {
      * @param message the message to display
      */
     public static void showMessageDialog(Component parentComponent, Object message) {
-	if (nogui) {
-	    logger.info("Message: {}", message);
-	} else {
-	    JOptionPane.showMessageDialog(parentComponent, message);
-	}
+        if (nogui) {
+            logger.info("Message: {}", message);
+        } else {
+            JOptionPane.showMessageDialog(parentComponent, message);
+        }
     }
 
     /**
@@ -42,23 +42,23 @@ public class MessageDialog {
      * @param messageType the type of message (JOptionPane.INFORMATION_MESSAGE, etc.)
      */
     public static void showMessageDialog(Component parentComponent, Object message,
-	                               String title, int messageType) {
-	if (nogui) {
-	    String level = getLogLevel(messageType);
-	    switch (level) {
-	        case "ERROR":
-	            logger.error("{}: {}", title, message);
-	            break;
-	        case "WARN":
-	            logger.warn("{}: {}", title, message);
-	            break;
-	        default:
-	            logger.info("{}: {}", title, message);
-	            break;
-	    }
-	} else {
-	    JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
-	}
+                                       String title, int messageType) {
+        if (nogui) {
+            String level = getLogLevel(messageType);
+            switch (level) {
+                case "ERROR":
+                    logger.error("{}: {}", title, message);
+                    break;
+                case "WARN":
+                    logger.warn("{}: {}", title, message);
+                    break;
+                default:
+                    logger.info("{}: {}", title, message);
+                    break;
+            }
+        } else {
+            JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
+        }
     }
 
     /**
@@ -71,14 +71,14 @@ public class MessageDialog {
      * @return the user's choice, or YES_OPTION if --no-gui is enabled
      */
     public static int showConfirmDialog(Component parentComponent, Object message,
-	                              String title, int optionType, int messageType) {
-	if (nogui) {
-	    logger.info("Confirm dialog (assuming YES): {} - {}", title, message);
-	    return JOptionPane.YES_OPTION;
-	} else {
-	    return JOptionPane.showConfirmDialog(parentComponent, message, title,
-	                                       optionType, messageType);
-	}
+                                      String title, int optionType, int messageType) {
+        if (nogui) {
+            logger.info("Confirm dialog (assuming YES): {} - {}", title, message);
+            return JOptionPane.YES_OPTION;
+        } else {
+            return JOptionPane.showConfirmDialog(parentComponent, message, title,
+                                               optionType, messageType);
+        }
     }
 
     /**
@@ -87,12 +87,12 @@ public class MessageDialog {
      * @return the user's input, or null if --no-gui is enabled
      */
     public static String showInputDialog(Object message) {
-	if (nogui) {
-	    logger.info("Input dialog (no input): {}", message);
-	    return null;
-	} else {
-	    return JOptionPane.showInputDialog(message);
-	}
+        if (nogui) {
+            logger.info("Input dialog (no input): {}", message);
+            return null;
+        } else {
+            return JOptionPane.showInputDialog(message);
+        }
     }
 
     /**
@@ -103,13 +103,13 @@ public class MessageDialog {
      * @return the user's input, or initialSelectionValue if --no-gui is enabled
      */
     public static String showInputDialog(Component parentComponent, Object message,
-	                               Object initialSelectionValue) {
-	if (nogui) {
-	    logger.info("Input dialog (using initial value): {} - {}", message, initialSelectionValue);
-	    return initialSelectionValue != null ? initialSelectionValue.toString() : null;
-	} else {
-	    return JOptionPane.showInputDialog(parentComponent, message, initialSelectionValue);
-	}
+                                       Object initialSelectionValue) {
+        if (nogui) {
+            logger.info("Input dialog (using initial value): {} - {}", message, initialSelectionValue);
+            return initialSelectionValue != null ? initialSelectionValue.toString() : null;
+        } else {
+            return JOptionPane.showInputDialog(parentComponent, message, initialSelectionValue);
+        }
     }
 
     /**
@@ -118,17 +118,19 @@ public class MessageDialog {
      * @return the corresponding log level
      */
     private static String getLogLevel(int messageType) {
-	switch (messageType) {
-	    case JOptionPane.ERROR_MESSAGE:
-	        return "ERROR";
-	    case JOptionPane.WARNING_MESSAGE:
-	        return "WARN";
-	    case JOptionPane.QUESTION_MESSAGE:
-	        return "INFO";
-	    case JOptionPane.INFORMATION_MESSAGE:
-	    case JOptionPane.PLAIN_MESSAGE:
-	    default:
-	        return "INFO";
-	}
+        switch (messageType) {
+            case JOptionPane.ERROR_MESSAGE:
+                return "ERROR";
+            case JOptionPane.WARNING_MESSAGE:
+                return "WARN";
+            case JOptionPane.QUESTION_MESSAGE:
+                return "INFO";
+            case JOptionPane.INFORMATION_MESSAGE:
+            case JOptionPane.PLAIN_MESSAGE:
+            default:
+                return "INFO";
+        }
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

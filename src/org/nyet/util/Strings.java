@@ -5,24 +5,24 @@ import java.util.ArrayList;
 
 public class Strings {
     public static String join(String sep, Collection<?> c) {
-	return join(sep, c.toArray(), c.size());
+        return join(sep, c.toArray(), c.size());
     }
 
     public static String join(String sep, ArrayList<Object> a) {
-	return join(sep, a.toArray(), a.size());
+        return join(sep, a.toArray(), a.size());
     }
 
     public static String join(String sep, Object [] a) {
-	return join(sep, a, a.length);
+        return join(sep, a, a.length);
     }
 
     public static String join(String sep, Object [] a, int count) {
-	String out = "";
-	for (int i=0; i<count; i++) {
-	    if(a[i].toString().length()>0)
-		out += ((out.length()==0)?"":sep) + a[i].toString();
-	}
-	return out;
+        String out = "";
+        for (int i=0; i<count; i++) {
+            if(a[i].toString().length()>0)
+                out += ((out.length()==0)?"":sep) + a[i].toString();
+        }
+        return out;
     }
 
     /**
@@ -30,10 +30,12 @@ public class Strings {
      * @param array the String array to trim (modified in-place)
      */
     public static void trimArray(String[] array) {
-	for (int i = 0; i < array.length; i++) {
-	    if (array[i] != null) {
-		array[i] = array[i].trim();
-	    }
-	}
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] != null) {
+                array[i] = array[i].trim();
+            }
+        }
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

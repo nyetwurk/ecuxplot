@@ -25,93 +25,93 @@ public class ECUxChartFactory {
      * @return array with [minRange, maxRange]
      */
     private static double[] calculateAxisRange(double min, double max, double paddingPercent) {
-	if (min == max) {
-	    // Handle case where all values are the same
-	    double center = min;
-	    double padding = Math.abs(center) * 0.1; // 10% padding
-	    return new double[]{center - padding, center + padding};
-	}
+        if (min == max) {
+            // Handle case where all values are the same
+            double center = min;
+            double padding = Math.abs(center) * 0.1; // 10% padding
+            return new double[]{center - padding, center + padding};
+        }
 
-	double range = max - min;
-	double padding = range * paddingPercent;
+        double range = max - min;
+        double padding = range * paddingPercent;
 
-	// If all values are negative, ensure zero is included with padding
-	if (max <= 0) {
-	    double minRange = min - padding;
-	    double maxRange = padding; // Include zero with padding above
-	    return new double[]{minRange, maxRange};
-	}
+        // If all values are negative, ensure zero is included with padding
+        if (max <= 0) {
+            double minRange = min - padding;
+            double maxRange = padding; // Include zero with padding above
+            return new double[]{minRange, maxRange};
+        }
 
-	// If all values are positive, use normal padding
-	if (min >= 0) {
-	    return new double[]{min - padding, max + padding};
-	}
+        // If all values are positive, use normal padding
+        if (min >= 0) {
+            return new double[]{min - padding, max + padding};
+        }
 
-	// Mixed positive and negative values - use normal padding
-	return new double[]{min - padding, max + padding};
+        // Mixed positive and negative values - use normal padding
+        return new double[]{min - padding, max + padding};
     }
 
     private static void addAxis(XYPlot plot, String label, XYDataset dataset,
-	int series, boolean lines, boolean shapes) {
-	final NumberAxis axis = new NumberAxis(label);
-	axis.setAutoRangeIncludesZero(false);
-	plot.setRangeAxis(1, axis);
-	plot.setDataset(1, dataset);
-	plot.mapDatasetToRangeAxis(1, 1);
-	plot.setRenderer(1, new XYLineAndShapeRenderer(lines, shapes));
+        int series, boolean lines, boolean shapes) {
+        final NumberAxis axis = new NumberAxis(label);
+        axis.setAutoRangeIncludesZero(false);
+        plot.setRangeAxis(1, axis);
+        plot.setDataset(1, dataset);
+        plot.mapDatasetToRangeAxis(1, 1);
+        plot.setRenderer(1, new XYLineAndShapeRenderer(lines, shapes));
     }
 
     private static JFreeChart create2AxisXYLineChart () {
-	final JFreeChart chart = ChartFactory.createXYLineChart(
-	    "", "", "",
-	    new DefaultXYDataset(), PlotOrientation.VERTICAL,
-	    true, true, false);
+        final JFreeChart chart = ChartFactory.createXYLineChart(
+            "", "", "",
+            new DefaultXYDataset(), PlotOrientation.VERTICAL,
+            true, true, false);
 
-	final XYPlot plot = chart.getXYPlot();
-	addAxis(plot, "", new DefaultXYDataset(), 1, true, false);
+        final XYPlot plot = chart.getXYPlot();
+        addAxis(plot, "", new DefaultXYDataset(), 1, true, false);
 
-	return chart;
+        return chart;
     }
 
     private static JFreeChart create2AxisScatterPlot () {
-	final JFreeChart chart = ChartFactory.createScatterPlot(
-	    "", "", "",
-	    new DefaultXYDataset(), PlotOrientation.VERTICAL,
-	    true, true, false);
+        final JFreeChart chart = ChartFactory.createScatterPlot(
+            "", "", "",
+            new DefaultXYDataset(), PlotOrientation.VERTICAL,
+            true, true, false);
 
-	final XYPlot plot = chart.getXYPlot();
-	addAxis(plot, "", new DefaultXYDataset(), 1, false, true);
+        final XYPlot plot = chart.getXYPlot();
+        addAxis(plot, "", new DefaultXYDataset(), 1, false, true);
 
-	return chart;
+        return chart;
     }
 
     public static JFreeChart create2AxisChart (boolean scatter) {
-	JFreeChart chart;
-	if(scatter) {
-	    chart = ECUxChartFactory.create2AxisScatterPlot();
-	} else {
-	    chart = ECUxChartFactory.create2AxisXYLineChart();
-	}
+        JFreeChart chart;
+        if(scatter) {
+            chart = ECUxChartFactory.create2AxisScatterPlot();
+        } else {
+            chart = ECUxChartFactory.create2AxisXYLineChart();
+        }
 
-	final XYPlot plot = chart.getXYPlot();
-	((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
-	plot.getRangeAxis(1).setLabelFont(
-		plot.getRangeAxis(0).getLabelFont());
+        final XYPlot plot = chart.getXYPlot();
+        ((NumberAxis) plot.getRangeAxis(0)).setAutoRangeIncludesZero(false);
+        plot.getRangeAxis(1).setLabelFont(
+                plot.getRangeAxis(0).getLabelFont());
 
-	return chart;
+        return chart;
     }
 
     public static void setChartStyle(JFreeChart chart, boolean lines,
-	boolean shapes) {
+        boolean shapes) {
 
-	final XYPlot plot = chart.getXYPlot();
-	for(int i=0; i<plot.getDatasetCount(); i++) {
-	    final XYLineAndShapeRenderer renderer =
-		(XYLineAndShapeRenderer)plot.getRenderer(i);
+        final XYPlot plot = chart.getXYPlot();
+        for(int i=0; i<plot.getDatasetCount(); i++) {
+            final XYLineAndShapeRenderer renderer =
+                (XYLineAndShapeRenderer)plot.getRenderer(i);
 
-	    renderer.setBaseLinesVisible(lines);
-	    renderer.setBaseShapesVisible(shapes);
-	}
+            renderer.setBaseLinesVisible(lines);
+            renderer.setBaseShapesVisible(shapes);
+        }
     }
 
     /**
@@ -122,203 +122,205 @@ public class ECUxChartFactory {
      * @param dataset the dataset to analyze for range calculation
      */
     public static void applyCustomAxisRange(JFreeChart chart, int axisIndex, XYDataset dataset) {
-	final XYPlot plot = chart.getXYPlot();
-	final NumberAxis axis = (NumberAxis) plot.getRangeAxis(axisIndex);
+        final XYPlot plot = chart.getXYPlot();
+        final NumberAxis axis = (NumberAxis) plot.getRangeAxis(axisIndex);
 
-	if (dataset == null || dataset.getSeriesCount() == 0) {
-	    return;
-	}
+        if (dataset == null || dataset.getSeriesCount() == 0) {
+            return;
+        }
 
-	// Find min and max values across all series
-	double minValue = Double.MAX_VALUE;
-	double maxValue = Double.MIN_VALUE;
-	boolean hasData = false;
+        // Find min and max values across all series
+        double minValue = Double.MAX_VALUE;
+        double maxValue = Double.MIN_VALUE;
+        boolean hasData = false;
 
-	for (int series = 0; series < dataset.getSeriesCount(); series++) {
-	    for (int item = 0; item < dataset.getItemCount(series); item++) {
-		double yValue = dataset.getYValue(series, item);
-		if (!Double.isNaN(yValue)) {
-		    minValue = Math.min(minValue, yValue);
-		    maxValue = Math.max(maxValue, yValue);
-		    hasData = true;
-		}
-	    }
-	}
+        for (int series = 0; series < dataset.getSeriesCount(); series++) {
+            for (int item = 0; item < dataset.getItemCount(series); item++) {
+                double yValue = dataset.getYValue(series, item);
+                if (!Double.isNaN(yValue)) {
+                    minValue = Math.min(minValue, yValue);
+                    maxValue = Math.max(maxValue, yValue);
+                    hasData = true;
+                }
+            }
+        }
 
-	if (!hasData) {
-	    return;
-	}
+        if (!hasData) {
+            return;
+        }
 
-	// Calculate custom range with padding
-	double[] range = calculateAxisRange(minValue, maxValue, 0.05); // 5% padding
+        // Calculate custom range with padding
+        double[] range = calculateAxisRange(minValue, maxValue, 0.05); // 5% padding
 
-	// Set the axis range
-	axis.setRange(range[0], range[1]);
-	axis.setAutoRange(false); // Disable auto-range to use our custom range
+        // Set the axis range
+        axis.setRange(range[0], range[1]);
+        axis.setAutoRange(false); // Disable auto-range to use our custom range
     }
 
     // set all series of a given ykey different shades of a base paint
     public static void setAxisPaint(JFreeChart chart, int axis,
-	DefaultXYDataset d, Dataset.Key ykey, Integer[] series) {
+        DefaultXYDataset d, Dataset.Key ykey, Integer[] series) {
 
-	final XYPlot plot = chart.getXYPlot();
-	final XYItemRenderer renderer = plot.getRenderer(axis);
+        final XYPlot plot = chart.getXYPlot();
+        final XYItemRenderer renderer = plot.getRenderer(axis);
 
         final Color colors[][] = {
             {
-	    new Color(0xff, 0x00, 0x00),
-	    new Color(0x00, 0x16, 0xff),
-	    new Color(0x00, 0xe0, 0xff),
-	    new Color(0xff, 0xc8, 0x00)
-	    },
+            new Color(0xff, 0x00, 0x00),
+            new Color(0x00, 0x16, 0xff),
+            new Color(0x00, 0xe0, 0xff),
+            new Color(0xff, 0xc8, 0x00)
+            },
             {
-	    new Color(0xb9, 0x00, 0xff),
-	    new Color(0x00, 0xff, 0x48),
-	    new Color(0xb2, 0xff, 0x00),
-	    new Color(0xff, 0x70, 0x00)
-	    }
+            new Color(0xb9, 0x00, 0xff),
+            new Color(0x00, 0xff, 0x48),
+            new Color(0xb2, 0xff, 0x00),
+            new Color(0xff, 0x70, 0x00)
+            }
         };
 
-	axis = axis%colors.length;
+        axis = axis%colors.length;
 
-	// find index of ykey in the ykeys list to get a unique base color
-	final String[] list = getDatasetYkeys(d);
+        // find index of ykey in the ykeys list to get a unique base color
+        final String[] list = getDatasetYkeys(d);
         int yki;
-	for (yki=0;yki<list.length;yki++)
-	    if (list[yki].equals(ykey.getString())) break;
+        for (yki=0;yki<list.length;yki++)
+            if (list[yki].equals(ykey.getString())) break;
 
-	final Color color=colors[axis][yki%(colors[axis].length)];
+        final Color color=colors[axis][yki%(colors[axis].length)];
 
-	// make a variety of dark/light colors based on yki
-	int i;
-	Color c;
-	for(i=series.length/2, c=color; i>=0; i--, c=c.darker())
-	    renderer.setSeriesPaint(series[i], c);
+        // make a variety of dark/light colors based on yki
+        int i;
+        Color c;
+        for(i=series.length/2, c=color; i>=0; i--, c=c.darker())
+            renderer.setSeriesPaint(series[i], c);
 
-	for(i=(series.length/2+1), c=color; i<series.length; i++, c=c.brighter())
-	    renderer.setSeriesPaint(series[i], c);
+        for(i=(series.length/2+1), c=color; i<series.length; i++, c=c.brighter())
+            renderer.setSeriesPaint(series[i], c);
     }
 
     // set all series for a given filename to the same stroke
     public static void setAxisStroke(JFreeChart chart, int axis,
-	DefaultXYDataset d, Dataset.Key ykey, Integer[] series, int index) {
-	final XYPlot plot = chart.getXYPlot();
-	final XYItemRenderer renderer = plot.getRenderer(axis);
+        DefaultXYDataset d, Dataset.Key ykey, Integer[] series, int index) {
+        final XYPlot plot = chart.getXYPlot();
+        final XYItemRenderer renderer = plot.getRenderer(axis);
 
         final java.awt.Stroke strokes[] = {
-	    new java.awt.BasicStroke(1.0f),
-	    new java.awt.BasicStroke(
-		1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
-		1.0f, new float[] {3.0f, 3.0f}, 0.0f
-	    ),
-	    new java.awt.BasicStroke(
-		1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
-		1.0f, new float[] {6.0f, 6.0f}, 0.0f
-	    ),
-	    new java.awt.BasicStroke(
-		1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
-		1.0f, new float[] {6.0f, 3.0f, 1.0f, 3.0f}, 0.0f
-	    )
+            new java.awt.BasicStroke(1.0f),
+            new java.awt.BasicStroke(
+                1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
+                1.0f, new float[] {3.0f, 3.0f}, 0.0f
+            ),
+            new java.awt.BasicStroke(
+                1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
+                1.0f, new float[] {6.0f, 6.0f}, 0.0f
+            ),
+            new java.awt.BasicStroke(
+                1.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND,
+                1.0f, new float[] {6.0f, 3.0f, 1.0f, 3.0f}, 0.0f
+            )
         };
 
-	for (final Integer serie : series)
-	    renderer.setSeriesStroke(serie, strokes[index%strokes.length]);
+        for (final Integer serie : series)
+            renderer.setSeriesStroke(serie, strokes[index%strokes.length]);
     }
 
     public static Integer[] addDataset(DefaultXYDataset d, ECUxDataset data,
-		    Comparable<?> xkey, Dataset.Key ykey, Filter filter) {
-	final ArrayList<Integer> ret = new ArrayList<Integer>();
-	final ArrayList<Dataset.Range> ranges = data.getRanges();
-	// add empty data in case we turn off filter, or we get some error
-	final double[][] empty = {{},{}};
-	if(ranges.size()==0) {
-	    filter.setCurrentRange(0);
-	    final Dataset.Key key = data.new Key(ykey, data);
-	    key.hideRange();
-	    d.addSeries(key, empty);
-	    ret.add(d.indexOf(key));
-	    return ret.toArray(new Integer[0]);
-	}
+                    Comparable<?> xkey, Dataset.Key ykey, Filter filter) {
+        final ArrayList<Integer> ret = new ArrayList<Integer>();
+        final ArrayList<Dataset.Range> ranges = data.getRanges();
+        // add empty data in case we turn off filter, or we get some error
+        final double[][] empty = {{},{}};
+        if(ranges.size()==0) {
+            filter.setCurrentRange(0);
+            final Dataset.Key key = data.new Key(ykey, data);
+            key.hideRange();
+            d.addSeries(key, empty);
+            ret.add(d.indexOf(key));
+            return ret.toArray(new Integer[0]);
+        }
 
-	if(filter.getCurrentRange() >= ranges.size()) {
-	    filter.setCurrentRange(data.getRanges().size() - 1);
-	}
-	final boolean showAllRanges = filter.showAllRanges();
-	for(int	i = (showAllRanges ? 0 : filter.getCurrentRange());
-	        i < (showAllRanges ? ranges.size() : filter.getCurrentRange() + 1);
-	        i++) {
-	    final Dataset.Key key = data.new Key(ykey, i, data);
-	    if(ranges.size()==1) key.hideRange();
-	    else key.showRange();
+        if(filter.getCurrentRange() >= ranges.size()) {
+            filter.setCurrentRange(data.getRanges().size() - 1);
+        }
+        final boolean showAllRanges = filter.showAllRanges();
+        for(int i = (showAllRanges ? 0 : filter.getCurrentRange());
+                i < (showAllRanges ? ranges.size() : filter.getCurrentRange() + 1);
+                i++) {
+            final Dataset.Key key = data.new Key(ykey, i, data);
+            if(ranges.size()==1) key.hideRange();
+            else key.showRange();
 
-	    final Dataset.Range r=ranges.get(i);
-	    try {
-		final double [][] s = new double [][]{
-		    data.getData(xkey, r),
-		    data.getData(ykey, r)};
-		d.addSeries(key, s);
-		ret.add(d.indexOf(key));
-	    } catch (final Exception e){
-		d.addSeries(key, empty);
-		ret.add(d.indexOf(key));
-	    }
-	}
-	return ret.toArray(new Integer[0]);
+            final Dataset.Range r=ranges.get(i);
+            try {
+                final double [][] s = new double [][]{
+                    data.getData(xkey, r),
+                    data.getData(ykey, r)};
+                d.addSeries(key, s);
+                ret.add(d.indexOf(key));
+            } catch (final Exception e){
+                d.addSeries(key, empty);
+                ret.add(d.indexOf(key));
+            }
+        }
+        return ret.toArray(new Integer[0]);
     }
 
     // remove ALL series from the dataset
     public static void removeDataset(DefaultXYDataset d) {
-	while(d.getSeriesCount()>0) {
-	    d.removeSeries(d.getSeriesKey(0));
-	}
+        while(d.getSeriesCount()>0) {
+            d.removeSeries(d.getSeriesKey(0));
+        }
     }
 
     // remove ALL series that match the data column tag
     public static void removeDataset(DefaultXYDataset d, Comparable<?> ykey) {
-	if(ykey instanceof Dataset.Key) {
-	    // pull out ONLY the data column tag, and ykey is now a String.
-	    ykey = ((Dataset.Key)ykey).getString();
-	}
-	// ykey is now a string, so we have to walk series ourselves
-	// and call "equals" for String, which only compares the data tag
-	for(int i=0;i<d.getSeriesCount();i++) {
-	    // When we delete things, the next key falls into our
-	    // position, so stay there and clean.
-	    while(i<d.getSeriesCount() && d.getSeriesKey(i).equals(ykey)) {
-		d.removeSeries(d.getSeriesKey(i));
-	    }
-	}
+        if(ykey instanceof Dataset.Key) {
+            // pull out ONLY the data column tag, and ykey is now a String.
+            ykey = ((Dataset.Key)ykey).getString();
+        }
+        // ykey is now a string, so we have to walk series ourselves
+        // and call "equals" for String, which only compares the data tag
+        for(int i=0;i<d.getSeriesCount();i++) {
+            // When we delete things, the next key falls into our
+            // position, so stay there and clean.
+            while(i<d.getSeriesCount() && d.getSeriesKey(i).equals(ykey)) {
+                d.removeSeries(d.getSeriesKey(i));
+            }
+        }
     }
 
     public static String [] getDatasetYkeys(DefaultXYDataset d) {
-	final ArrayList<String> ret = new ArrayList<String>();
-	for(int i=0;i<d.getSeriesCount();i++) {
-	    final Comparable<?> key = d.getSeriesKey(i);
-	    String s;
-	    if(key instanceof Dataset.Key)
-		s=((Dataset.Key)key).getString();
-	    else
-		s=key.toString();
+        final ArrayList<String> ret = new ArrayList<String>();
+        for(int i=0;i<d.getSeriesCount();i++) {
+            final Comparable<?> key = d.getSeriesKey(i);
+            String s;
+            if(key instanceof Dataset.Key)
+                s=((Dataset.Key)key).getString();
+            else
+                s=key.toString();
 
-	    if (!ret.contains(s)) ret.add(s);
-	}
-	return ret.toArray(new String[0]);
+            if (!ret.contains(s)) ret.add(s);
+        }
+        return ret.toArray(new String[0]);
     }
 
     public static JFreeChart createFATSChart (FATSDataset dataset) {
-	JFreeChart chart = ChartFactory.createBarChart3D (
-	    dataset.getTitle(), "", "",
-	    dataset,
-	    PlotOrientation.VERTICAL,
-	    true, true, false);
+        JFreeChart chart = ChartFactory.createBarChart3D (
+            dataset.getTitle(), "", "",
+            dataset,
+            PlotOrientation.VERTICAL,
+            true, true, false);
 
-	// Configure the CategoryAxis to show more of the labels
-	CategoryPlot plot = chart.getCategoryPlot();
-	CategoryAxis domainAxis = plot.getDomainAxis();
+        // Configure the CategoryAxis to show more of the labels
+        CategoryPlot plot = chart.getCategoryPlot();
+        CategoryAxis domainAxis = plot.getDomainAxis();
 
-	// Allow labels to take up more space (default is usually 0.8)
-	domainAxis.setMaximumCategoryLabelWidthRatio(1.2f);
+        // Allow labels to take up more space (default is usually 0.8)
+        domainAxis.setMaximumCategoryLabelWidthRatio(1.2f);
 
-	return chart;
+        return chart;
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

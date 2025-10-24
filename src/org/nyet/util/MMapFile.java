@@ -13,26 +13,28 @@ public class MMapFile {
     private MappedByteBuffer buf;
 
     public MMapFile(String fname, ByteOrder order) throws Exception {
-	final File file = new File(fname);
-	if(!file.exists()) throw new Exception(fname + ": no such file");
+        final File file = new File(fname);
+        if(!file.exists()) throw new Exception(fname + ": no such file");
 
-	final FileInputStream fi = new FileInputStream(fname);
-	try {
-	    this.buf=fi.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
-	    if(this.buf == null) {
-		if (fi!=null) fi.close();
-		throw new Exception("constructor failed");
-	    }
+        final FileInputStream fi = new FileInputStream(fname);
+        try {
+            this.buf=fi.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+            if(this.buf == null) {
+                if (fi!=null) fi.close();
+                throw new Exception("constructor failed");
+            }
 
-	    this.buf.order(order);
-	    this.length = file.length();
-	    this.mTime = file.lastModified();
-	} finally {
-	    if (fi!=null) fi.close();
-	}
+            this.buf.order(order);
+            this.length = file.length();
+            this.mTime = file.lastModified();
+        } finally {
+            if (fi!=null) fi.close();
+        }
     }
 
     public ByteBuffer getByteBuffer() throws Exception {
-	return this.buf;
+        return this.buf;
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

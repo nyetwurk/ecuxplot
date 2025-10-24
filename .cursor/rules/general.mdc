@@ -44,49 +44,9 @@ The `-v` option will set the logging level to DEBUG. More verbose logging can be
 
 ### Code Formatting
 
-**CRITICAL**: This codebase uses mixed tab/space indentation with specific settings:
+**COMPLETED**: Migration to conventional Java indentation completed as part of [Issue #60](https://github.com/nyetwurk/ecuxplot/issues/60)
 
-- **shiftwidth=4**: Indentation moves by 4 spaces when using `>>` or `<<`
-- **tabstops=8**: Tab characters display as 8 spaces wide
-- **noexpand**: Keep actual tab characters, don't expand to spaces
-
-#### Indentation Pattern
-
-The indentation uses a mix of spaces and tabs:
-
-- **Level 1**: 4 spaces `[....]`
-- **Level 2**: 1 tab `[ tab ]` (displays as 8 spaces)
-- **Level 3**: 1 tab + 4 spaces `[ tab ][....]` (displays as 12 spaces)
-- **Level 4**: 2 tabs `[ tab ][ tab ]` (displays as 16 spaces)
-- **Level 5**: 2 tabs + 4 spaces `[ tab ][ tab ][....]` (displays as 20 spaces)
-
-#### Example Indentation Pattern
-
-```java
-if (condition) {           // Level 1: 4 spaces
-    if (nested) {          // Level 2: 1 tab
-        doSomething();     // Level 3: 1 tab + 4 spaces
-    }
-}
-```
-
-#### Fixing Formatting
-
-- **Match existing indentation pattern** - don't change the mix of tabs and spaces
-- **Preserve existing tab-based indentation** in all edits
-- **When making edits, match the existing indentation pattern exactly**
-- **Don't convert spaces to tabs or vice versa** - maintain the existing pattern
-- **If you see a sequence of 8 spaces, replace it with a tab**
-
-#### Why This Matters
-
-- Mixed tabs/spaces cause inconsistent indentation if changed
-- Editors with `shiftwidth=4; tabstops=8; noexpand` will display correctly
-- Historical codebase requirement that must be maintained
-- The pattern allows for fine-grained indentation control
-
-#### Future Migration
-
-**Note**: There is an open issue to migrate away from mixed tab/space indentation to pure spaces: [Issue #60](https://github.com/nyetwurk/ecuxplot/issues/60)
-
-Until this migration is complete, maintain the existing indentation pattern to avoid breaking IDE compatibility and linter configurations.
+- All Java files now use pure space indentation (4 spaces per level)
+- Vi modelines (`// vim: set sw=4 ts=8 expandtab:`) added to all Java files
+- Follows standard Java coding conventions
+- Build and tests validated after migration

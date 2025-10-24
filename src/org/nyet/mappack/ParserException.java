@@ -10,25 +10,27 @@ public class ParserException extends Exception {
     public ByteBuffer b;
     public Object o;
     public ParserException(ByteBuffer b, Throwable cause, Object o) {
-	super(cause);
-	this.b=b;
-	this.o=o;
+        super(cause);
+        this.b=b;
+        this.o=o;
     }
     public ParserException(ByteBuffer b, String msg, Object o) {
-	super(new Throwable(msg));
-	this.b=b;
-	this.o=o;
+        super(new Throwable(msg));
+        this.b=b;
+        this.o=o;
     }
     public ParserException(ByteBuffer b, String msg, Throwable cause, Object o) {
-	super(msg, cause);
-	this.b=b;
-	this.o=o;
+        super(msg, cause);
+        this.b=b;
+        this.o=o;
     }
 
     @Override
     public String getMessage()
     {
-	return String.format("%s: obj=%s @ 0x%x(%d):\n  %s", super.getMessage(),
-	    this.o.toString(), this.b.position(), this.b.position(), HexValue.dumpHex(this.b, 16));
+        return String.format("%s: obj=%s @ 0x%x(%d):\n  %s", super.getMessage(),
+            this.o.toString(), this.b.position(), this.b.position(), HexValue.dumpHex(this.b, 16));
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

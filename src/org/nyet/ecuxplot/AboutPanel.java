@@ -16,32 +16,34 @@ public class AboutPanel extends JPanel implements ActionListener {
     private static final long serialVersionUID = 1L;
 
     public AboutPanel() {
-	this.setLayout(new BorderLayout());
-	final String v = new org.nyet.util.Version().toString();
-	this.add(new JLabel(v), BorderLayout.EAST);
+        this.setLayout(new BorderLayout());
+        final String v = new org.nyet.util.Version().toString();
+        this.add(new JLabel(v), BorderLayout.EAST);
 
-	final JButton icon = new JButton(new ImageIcon(getClass().getResource(
-	    "icons/ECUxPlot2-64.png")));
-	icon.setBorderPainted(false);
-	icon.setContentAreaFilled(false);
-	icon.setDefaultCapable(false);
-	this.add(icon, BorderLayout.CENTER);
+        final JButton icon = new JButton(new ImageIcon(getClass().getResource(
+            "icons/ECUxPlot2-64.png")));
+        icon.setBorderPainted(false);
+        icon.setContentAreaFilled(false);
+        icon.setDefaultCapable(false);
+        this.add(icon, BorderLayout.CENTER);
 
-	final String html =
-	"<a href=\"http://nyet.org/cars/ECUxPlot\">ECUxPlot home page</a>";
-	final JButton url = new JButton("<html>" + html + "</html>");
-	url.setActionCommand("Homepage");
-	url.setBorderPainted(false);
-	url.setContentAreaFilled(false);
-	url.addActionListener(this);
-	this.add(url, BorderLayout.SOUTH);
+        final String html =
+        "<a href=\"http://nyet.org/cars/ECUxPlot\">ECUxPlot home page</a>";
+        final JButton url = new JButton("<html>" + html + "</html>");
+        url.setActionCommand("Homepage");
+        url.setBorderPainted(false);
+        url.setContentAreaFilled(false);
+        url.addActionListener(this);
+        this.add(url, BorderLayout.SOUTH);
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
-	if("Homepage".equals(event.getActionCommand())) {
-	    final String url = "http://nyet.org/cars/ECUxPlot";
-	    org.nyet.util.BrowserLaunch.openURL(url);
-	}
+        if("Homepage".equals(event.getActionCommand())) {
+            final String url = "http://nyet.org/cars/ECUxPlot";
+            org.nyet.util.BrowserLaunch.openURL(url);
+        }
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

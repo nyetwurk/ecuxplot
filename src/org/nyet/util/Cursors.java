@@ -7,3 +7,5 @@ public interface Cursors {
   Cursor DEFAULT_CURSOR =
     Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 }
+
+// vim: set sw=4 ts=8 expandtab:

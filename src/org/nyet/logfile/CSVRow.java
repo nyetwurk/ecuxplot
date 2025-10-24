@@ -10,31 +10,33 @@ public class CSVRow extends ArrayList<String> {
 
     @Override
     public String toString() {
-	return "\"" + org.nyet.util.Strings.join("\",\"", this) + "\"";
+        return "\"" + org.nyet.util.Strings.join("\",\"", this) + "\"";
     }
 
     public CSVRow() { super(); }
     public CSVRow(Object[] data) {
-	for (final Object element : data) {
-	    add(element.toString());
-	}
+        for (final Object element : data) {
+            add(element.toString());
+        }
     }
 
     @Override
     public boolean add(String s) {
-	if (s.length()==0) s="-";
-	return super.add(s);
+        if (s.length()==0) s="-";
+        return super.add(s);
     }
 
     public boolean add(Comparable<?> o) {
-	return add(o.toString());
+        return add(o.toString());
     }
 
     public boolean add(double f) {
-	return add(String.valueOf(f));
+        return add(String.valueOf(f));
     }
 
     public boolean add(int i) {
-	return add(String.valueOf(i));
+        return add(String.valueOf(i));
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

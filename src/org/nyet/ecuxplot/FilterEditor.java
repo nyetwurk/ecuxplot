@@ -28,42 +28,44 @@ public class FilterEditor extends PreferencesEditor {
 
     @Override
     protected void Process(ActionEvent event) {
-	processPairs(this.filter, pairs, Integer.class);
+        processPairs(this.filter, pairs, Integer.class);
 
-	// Enable the filter when settings are applied
-	this.filter.enabled(true);
+        // Enable the filter when settings are applied
+        this.filter.enabled(true);
 
-	super.Process(event);
+        super.Process(event);
 
-	// Update the filter checkbox in the options menu after applying filter settings
-	if (this.eplot != null && this.eplot.optionsMenu != null) {
-	    this.eplot.optionsMenu.updateFilterCheckbox();
-	}
+        // Update the filter checkbox in the options menu after applying filter settings
+        if (this.eplot != null && this.eplot.optionsMenu != null) {
+            this.eplot.optionsMenu.updateFilterCheckbox();
+        }
     }
 
     private static final String [][] pairs = {
-	{"Gear (-1 to ignore)", "gear"},
-	{"Minimum RPM", "minRPM"},
-	{"Maximum RPM", "maxRPM"},
-	{"Minimum RPM range of run", "minRPMRange"},
-	{"RPM fuzz tolerance", "monotonicRPMfuzz"},
-	{"Minimum Pedal", "minPedal"},
-	{"Minimum Throttle", "minThrottle"},
-	{"Minimum Acceleration (RPM/s)", "minAcceleration"},
-	{"Acceleration Smoothing", "accelMAW"},
-	{"Minimum Points", "minPoints"},
-	{"HP/TQ smoothing", "HPTQMAW"},
-	{"Zeitronix smoothing", "ZeitMAW"},
+        {"Gear (-1 to ignore)", "gear"},
+        {"Minimum RPM", "minRPM"},
+        {"Maximum RPM", "maxRPM"},
+        {"Minimum RPM range of run", "minRPMRange"},
+        {"RPM fuzz tolerance", "monotonicRPMfuzz"},
+        {"Minimum Pedal", "minPedal"},
+        {"Minimum Throttle", "minThrottle"},
+        {"Minimum Acceleration (RPM/s)", "minAcceleration"},
+        {"Acceleration Smoothing", "accelMAW"},
+        {"Minimum Points", "minPoints"},
+        {"HP/TQ smoothing", "HPTQMAW"},
+        {"Zeitronix smoothing", "ZeitMAW"},
     };
 
     public FilterEditor (Preferences prefs, Filter filter) {
-	super(prefs.node(Filter.PREFS_TAG), pairs);
-	this.filter = filter;
+        super(prefs.node(Filter.PREFS_TAG), pairs);
+        this.filter = filter;
     }
 
     @Override
     public void updateDialog()
     {
-	updateDialog(this.filter, pairs);
+        updateDialog(this.filter, pairs);
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

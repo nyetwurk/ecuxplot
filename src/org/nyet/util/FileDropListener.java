@@ -119,7 +119,7 @@ public class FileDropListener implements DropTargetListener {
 
         dropTargetEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
         @SuppressWarnings("unchecked")
-	final
+        final
         List<File> list = (List<File>) droppedItem.getTransferData(flavor);
         dropTargetEvent.dropComplete(true);
 
@@ -127,8 +127,8 @@ public class FileDropListener implements DropTargetListener {
             // System.out.println("File Dragged: " + list.get(0));
             this.fileDropHost.loadFile(new File(list.get(0).toString()));
         } else {
-	    this.fileDropHost.loadFiles(list);
-	}
+            this.fileDropHost.loadFiles(list);
+        }
 
     }
 
@@ -138,11 +138,11 @@ public class FileDropListener implements DropTargetListener {
         dropTargetEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 
         final BufferedReader read = new BufferedReader(flavor.getReaderForText(tr));
-	String fileName = java.net.URLDecoder.decode(read.readLine(), "UTF-8");
-	// Remove 'file://' from start of URL (if there)
-	if (fileName.startsWith("file://")) {
-	    fileName = fileName.substring(7);
-	}
+        String fileName = java.net.URLDecoder.decode(read.readLine(), "UTF-8");
+        // Remove 'file://' from start of URL (if there)
+        if (fileName.startsWith("file://")) {
+            fileName = fileName.substring(7);
+        }
         read.close();
 
         dropTargetEvent.dropComplete(true);
@@ -157,11 +157,13 @@ public class FileDropListener implements DropTargetListener {
 
 
 public DropTarget getDropTarget() {
-	return this.dropTarget;
+        return this.dropTarget;
 }
 
 
 public void setDropTarget(DropTarget dropTarget) {
-	this.dropTarget = dropTarget;
+        this.dropTarget = dropTarget;
 }
 }
+
+// vim: set sw=4 ts=8 expandtab:

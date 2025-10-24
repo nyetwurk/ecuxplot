@@ -223,3 +223,5 @@ public class SpringUtilities {
         pCons.setConstraint(SpringLayout.EAST, x);
     }
 }
+
+// vim: set sw=4 ts=8 expandtab:

@@ -4,7 +4,7 @@ import java.util.prefs.Preferences;
 
 public class PID {
     public double time_constant = 1;
-    public double P_deadband = 300;	// in mBar
+    public double P_deadband = 300;     // in mBar
     public double I_limit = 77;
 
     public double P = 15;
@@ -13,3 +13,5 @@ public class PID {
 
     public PID(Preferences prefs) {}
 }
+
+// vim: set sw=4 ts=8 expandtab:

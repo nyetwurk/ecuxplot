@@ -94,10 +94,12 @@ public class Locate {
   public static File getDataDirectory(String app) {
     String dir = System.getProperty("user.home");
     if(System.getProperty("os.name").startsWith("Windows")) {
-	dir += File.separator + "Application Data";
+        dir += File.separator + "Application Data";
     } else {
-	app = "." + app;
+        app = "." + app;
     }
     return new File(dir, app);
   }
 }
+
+// vim: set sw=4 ts=8 expandtab:

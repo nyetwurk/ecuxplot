@@ -6,3 +6,5 @@ public interface FileDropHost {
     public void loadFiles(List<File> fileList);
 }
 
+
+// vim: set sw=4 ts=8 expandtab:
