@@ -8,6 +8,9 @@ public class WaitCursor implements Cursors {
     new MouseAdapter() {};
 
   public static void startWaitCursor(RootPaneContainer root) {
+    // NOTE: WaitCursor may not be visible when cursor is over dropdown menus,
+    // popup components, or other layered components that interfere with glass pane.
+    // Move cursor to main window content area to see the spinner clearly.
     root.getGlassPane().setCursor(WAIT_CURSOR);
     root.getGlassPane().addMouseListener(mouseAdapter);
     root.getGlassPane().setVisible(true);

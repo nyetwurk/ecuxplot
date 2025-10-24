@@ -1,6 +1,5 @@
 package org.nyet.ecuxplot;
 
-import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Point;
 import java.awt.desktop.*;
@@ -373,6 +372,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.fatsFrame.setVisible(b);
     }
 
+    /**
+     * Update FATS window visibility without affecting main window visibility
+     */
+    public void updateFATSVisibility() {
+        if(this.fatsFrame==null) return;
+        if(this.showFATS() && !this.fatsFrame.isShowing()) {
+            this.fatsFrame.setVisible(true);
+        }
+    }
+
     // nuke datasets
     private void nuke() {
         this.fileDatasets = new TreeMap<String, ECUxDataset>();
@@ -630,6 +639,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 this.fatsFrame.setVisible(s);
             }
             rebuild();
+            updateFATSVisibility();
         } else if(source.getText().equals("Show Debug Logs...")) {
             if(this.debugLogWindow == null) {
                 this.debugLogWindow = new DebugLogWindow();
@@ -754,34 +764,55 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     public void rebuild() {
+        rebuild(null);
+    }
+
+    public void rebuild(Runnable callback) {
         if(this.chartPanel==null) return;
 
         WaitCursor.startWaitCursor(this);
 
-        for(final ECUxDataset data : this.fileDatasets.values()) {
-            data.buildRanges();
-        }
-
-        if(this.fatsFrame!=null)
-            this.fatsFrame.setDatasets(this.fileDatasets);
-
-        final XYPlot plot = this.chartPanel.getChart().getXYPlot();
-        for(int axis=0;axis<plot.getDatasetCount();axis++) {
-            final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
-            final DefaultXYDataset newdataset = new DefaultXYDataset();
-            for(int series=0;series<pds.getSeriesCount();series++) {
-                final Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
-                addDataset(axis, newdataset, ykey);
+        // Move heavy work to background thread to keep UI responsive
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                for(final ECUxDataset data : fileDatasets.values()) {
+                    data.buildRanges();
+                }
+                return null;
             }
-            plot.setDataset(axis, newdataset);
 
-            // Apply custom axis range calculation for better padding with negative values
-            ECUxChartFactory.applyCustomAxisRange(this.chartPanel.getChart(), axis, newdataset);
-        }
-        updateXAxisLabel(plot);
+            @Override
+            protected void done() {
+                try {
+                    if(fatsFrame!=null)
+                        fatsFrame.setDatasets(fileDatasets);
 
-        WaitCursor.stopWaitCursor(this);
-        this.setMyVisible(true);
+                    final XYPlot plot = chartPanel.getChart().getXYPlot();
+                    for(int axis=0;axis<plot.getDatasetCount();axis++) {
+                        final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
+                        final DefaultXYDataset newdataset = new DefaultXYDataset();
+                        for(int series=0;series<pds.getSeriesCount();series++) {
+                            final Dataset.Key ykey = (Dataset.Key)pds.getSeriesKey(series);
+                            addDataset(axis, newdataset, ykey);
+                        }
+                        plot.setDataset(axis, newdataset);
+
+                        // Apply custom axis range calculation for better padding with negative values
+                        ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
+                    }
+                    updateXAxisLabel(plot);
+
+                } finally {
+                    WaitCursor.stopWaitCursor(ECUxPlot.this);
+                    // Execute callback after rebuild is complete
+                    if (callback != null) {
+                        callback.run();
+                    }
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void removeAllY() { this.removeAllY(0); this.removeAllY(1); }

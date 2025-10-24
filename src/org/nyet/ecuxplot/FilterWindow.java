@@ -12,6 +12,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import org.nyet.logfile.Dataset;
+import org.nyet.util.WaitCursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,7 @@ public class FilterWindow extends JFrame {
     // Filter editing components (from FilterEditor)
     private final Filter filter;
     private ECUxPlot eplot;
+    private JButton okButton; // Store reference to OK button
 
     // Filter parameter fields
     private JTextField gear;
@@ -105,10 +107,20 @@ public class FilterWindow extends JFrame {
         {"Zeitronix Smoothing", "ZeitMAW"},
     };
 
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible && okButton != null) {
+            // Re-set default button when window becomes visible
+            // This handles the case where window was disposed and reopened
+            this.getRootPane().setDefaultButton(okButton);
+        }
+    }
+
     public FilterWindow(Filter filter, ECUxPlot eplot) {
         super("Filter Window");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(900, 600);
+        setSize(this.windowSize());
         setLocationRelativeTo(null);
 
         this.filter = filter;
@@ -117,6 +129,14 @@ public class FilterWindow extends JFrame {
         initializeComponents();
         setupLayout();
         updateDialog();
+
+        // Add window listener to save size when window is closed
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                putWindowSize();
+            }
+        });
     }
 
     private void initializeComponents() {
@@ -253,7 +273,6 @@ public class FilterWindow extends JFrame {
 
     private JPanel createFilterEditorPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Filter Parameters"));
 
         // Create main form panel with vertical layout
         JPanel formPanel = new JPanel();
@@ -298,31 +317,29 @@ public class FilterWindow extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         JButton applyButton = new JButton("Apply");
+        this.okButton = new JButton("OK");
         JButton restoreDefaultsButton = new JButton("Restore Defaults");
         JButton cancelButton = new JButton("Cancel");
 
         applyButton.addActionListener(e -> {
+            try {
+                // Apply filter changes (WaitCursor will be handled by rebuild())
+                applyFilterChanges();
+            } catch (Exception ex) {
+                logger.error("Exception in Apply button: ", ex);
+            }
+        });
+
+        this.okButton.addActionListener(e -> {
             // Keep window on top during the entire process
             this.setAlwaysOnTop(true);
 
             try {
-                // Actually read the values from the text fields and apply them
-                processFilterChanges();
-
-                // Rebuild the main plot FIRST, then refresh the FilterWindow table
-                if (this.eplot != null) {
-                    this.eplot.rebuild();
-
-                    // Restore normal window behavior after rebuild
-                    this.setAlwaysOnTop(false);
-                    this.toFront();
-                    this.requestFocus();
-                }
-
-                // Refresh the FilterWindow table AFTER the main plot rebuild
-                refreshData();
+                // Apply filter changes (WaitCursor will be handled by rebuild())
+                applyFilterChanges();
+                dispose(); // Close window after applying
             } catch (Exception ex) {
-                logger.error("Exception in Apply button: ", ex);
+                logger.error("Exception in OK button: ", ex);
             }
         });
 
@@ -330,27 +347,12 @@ public class FilterWindow extends JFrame {
             // Keep window on top during the entire process
             this.setAlwaysOnTop(true);
 
-            // Reset filter to default values using Filter class method
-            this.filter.resetToDefaults();
-
-            // Update the dialog to show default values
-            updateDialog();
-
-            // Process the filter changes (same as Apply button)
-            processFilterChanges();
-
-            // Rebuild the main plot FIRST, then refresh the FilterWindow table
-            if (this.eplot != null) {
-                this.eplot.rebuild();
-
-                // Restore normal window behavior after rebuild
-                this.setAlwaysOnTop(false);
-                this.toFront();
-                this.requestFocus();
+            try {
+                // Restore defaults and apply changes - rebuild() will handle WaitCursor on main window
+                restoreDefaultsAndApply();
+            } catch (Exception ex) {
+                logger.error("Exception in Restore Defaults button: ", ex);
             }
-
-            // Refresh the FilterWindow table AFTER the main plot rebuild
-            refreshData();
         });
 
         cancelButton.addActionListener(e -> {
@@ -358,9 +360,13 @@ public class FilterWindow extends JFrame {
             dispose();
         });
 
+        buttonPanel.add(this.okButton);
         buttonPanel.add(applyButton);
         buttonPanel.add(restoreDefaultsButton);
         buttonPanel.add(cancelButton);
+
+        // Set OK button as default (most common action)
+        this.getRootPane().setDefaultButton(this.okButton);
 
         return buttonPanel;
     }
@@ -805,6 +811,104 @@ public class FilterWindow extends JFrame {
 
             return c;
         }
+    }
+
+    /**
+     * Helper method to restore normal window behavior
+     */
+    private void restoreWindowBehavior() {
+        this.setAlwaysOnTop(false);
+        this.toFront();
+        this.requestFocus();
+    }
+
+    /**
+     * Helper method to execute rebuild with proper synchronization
+     *
+     * NOTE: This method implements a separate WaitCursor mechanism for FilterWindow
+     * because the main ECUxPlot.rebuild() method only shows WaitCursor on the main window.
+     * FilterWindow operations need their own spinner to provide visual feedback to the user
+     * that the operation is in progress, especially since the FilterWindow may be the active
+     * window and the main window spinner may not be visible.
+     *
+     * FIXME: This could be generalized by modifying ECUxPlot.rebuild() to accept a list
+     * of windows to show WaitCursor on, eliminating the need for separate WaitCursor
+     * management in child windows. The signature could be:
+     * rebuild(Runnable callback, JFrame... additionalWindows)
+     */
+    private void executeRebuildWithCallback(Runnable callback) throws Exception {
+        WaitCursor.startWaitCursor(this);
+        try {
+            if (this.eplot != null) {
+                this.eplot.rebuild(() -> {
+                    // This callback runs after rebuild completes
+                    if (callback != null) {
+                        callback.run();
+                    }
+                    WaitCursor.stopWaitCursor(FilterWindow.this);
+                });
+            } else {
+                if (callback != null) {
+                    callback.run();
+                }
+                WaitCursor.stopWaitCursor(this);
+            }
+        } catch (Exception e) {
+            WaitCursor.stopWaitCursor(this);
+            throw e;
+        }
+    }
+
+    /**
+     * Apply filter changes and rebuild the plot
+     * @throws Exception if any error occurs during the process
+     */
+    private void applyFilterChanges() throws Exception {
+        // Actually read the values from the text fields and apply them
+        processFilterChanges();
+
+        // Keep window on top during the entire process
+        this.setAlwaysOnTop(true);
+
+        try {
+            executeRebuildWithCallback(() -> {
+                // Refresh the FilterWindow table AFTER rebuild completes
+                refreshData();
+            });
+        } finally {
+            restoreWindowBehavior();
+        }
+    }
+
+    /**
+     * Restore defaults and apply changes
+     * @throws Exception if any error occurs during the process
+     */
+    private void restoreDefaultsAndApply() throws Exception {
+        // Reset filter to default values using Filter class method
+        this.filter.resetToDefaults();
+
+        // Update the dialog to show default values
+        updateDialog();
+
+        // Process the filter changes (same as Apply button)
+        processFilterChanges();
+
+        executeRebuildWithCallback(() -> {
+            // Refresh the FilterWindow table AFTER the main plot rebuild
+            refreshData();
+        });
+    }
+
+    private java.awt.Dimension windowSize() {
+        return new java.awt.Dimension(
+            ECUxPlot.getPreferences().getInt("FilterWindowWidth", 1000),
+            ECUxPlot.getPreferences().getInt("FilterWindowHeight", 500));
+    }
+
+    private void putWindowSize() {
+        ECUxPlot.getPreferences().putInt("FilterWindowWidth", this.getWidth());
+        ECUxPlot.getPreferences().putInt("FilterWindowHeight", this.getHeight());
     }
 }
 
