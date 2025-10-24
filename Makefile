@@ -90,9 +90,18 @@ clean: binclean
 	rm -f $(VERSION_JAVA)
 
 # Rule to generate version.mk when needed
-build/version.mk: scripts/get-version.py
+# Use git describe to detect actual git state changes
+build/version.mk: Makefile scripts/get-version.py build/git-state.stamp
+	@echo "$? changed. Need to create a new $@..."
 	@mkdir -p build
-	python3 scripts/get-version.py "$(JAVAC)" > $@
+	@python3 scripts/get-version.py "$(JAVAC)" > $@
+
+# Stamp file that tracks git state changes
+build/git-state.stamp: scripts/get-version.py FORCE
+	@mkdir -p build
+	@git describe --tags --abbrev=4 --dirty --always > $@.tmp
+	@cmp -s $@.tmp $@ || mv $@.tmp $@
+	@rm -f $@.tmp
 
 # hack to pass version to java app
 .PHONY: FORCE
