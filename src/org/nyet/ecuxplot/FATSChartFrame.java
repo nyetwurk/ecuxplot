@@ -72,11 +72,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         chartPanel.setRangeZoomable(false);
         chartPanel.setMouseZoomable(false);
 
-        // Disable the popup menu (context menu) to prevent zoom options
-        chartPanel.setPopupMenu(null);
-
         panel.add(chartPanel, BorderLayout.CENTER);
-
 
         final JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
