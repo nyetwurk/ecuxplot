@@ -31,6 +31,14 @@ public class Constants {
     public void rpm_per_mph(Double val) {
         this.prefs.putDouble("rpm_per_mph", val);
     }
+
+    /**
+     * Get RPM per KPH conversion factor
+     * This is calculated from rpm_per_mph using the standard conversion factor
+     */
+    public double rpm_per_kph() {
+        return rpm_per_mph() / UnitConstants.KMH_PER_MPH;
+    }
     public double Cd() {
         return this.prefs.getDouble("Cd", defaultCd);
     }

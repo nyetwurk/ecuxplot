@@ -613,7 +613,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             boolean changesMade = this.ce.showDialog(this, "Constants");
             // Update FATS window if constants were changed
             if (changesMade && this.fatsFrame != null) {
-                this.fatsFrame.updateRpmPerMphFromConstants();
+                this.fatsFrame.updateRpmFieldsFromConstants();
             }
         } else if(source.getText().equals("Edit fueling...")) {
             if(this.fle == null) this.fle =

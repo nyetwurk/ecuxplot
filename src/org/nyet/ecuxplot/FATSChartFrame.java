@@ -25,12 +25,13 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     private final JTextField start;
     private final JTextField end;
     private final FATS fats;
-    private JCheckBox useMphCheckbox;
+    private JComboBox<String> speedUnitCombo;
     private JLabel startLabel;
     private JLabel endLabel;
     private JTextField rpmPerMphField;
     private JLabel rpmPerMphLabel;
     private JLabel unitLabel;
+    private JPanel conversionGroup;
 
     public static FATSChartFrame createFATSChartFrame(
             TreeMap<String, ECUxDataset> fileDatasets, ECUxPlot plotFrame) {
@@ -77,68 +78,88 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
         controlPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        // Create input panel
-        final JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.LINE_AXIS));
+        // Create main input panel with horizontal layout to use full width
+        JPanel mainInputPanel = new JPanel(new BorderLayout());
 
-        // Initialize labels and text fields based on current FATS mode
-        this.startLabel = new JLabel("Start");
-        this.endLabel = new JLabel("End");
-        if (this.fats.useMph()) {
-            this.start=new JTextField(""+this.fats.startMph(), 3);
-            this.end=new JTextField(""+this.fats.endMph(), 3);
-        } else {
-            this.start=new JTextField(""+this.fats.start(), 3);
-            this.end=new JTextField(""+this.fats.end(), 3);
-        }
+        this.speedUnitCombo = new JComboBox<>(new String[]{"RPM", "MPH", "KPH"});
 
-        inputPanel.add(this.startLabel);
-        inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
-        inputPanel.add(this.start);
-        inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
-        inputPanel.add(new JLabel(" to "));
-        inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
-        inputPanel.add(this.end);
-        inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
-
-        // Add unit label (will be updated dynamically)
-        this.unitLabel = new JLabel();
-        updateUnitLabel(this.unitLabel);
-        inputPanel.add(this.unitLabel);
-
-        // Add rpm_per_mph field (always create, show/hide as needed)
-        inputPanel.add(Box.createRigidArea(new Dimension(10,0)));
-        this.rpmPerMphLabel = new JLabel("RPM/MPH:");
-        this.rpmPerMphField = new JTextField(""+this.plotFrame.env.c.rpm_per_mph(), 4);
-        inputPanel.add(this.rpmPerMphLabel);
-        inputPanel.add(Box.createRigidArea(new Dimension(5,0)));
-        inputPanel.add(this.rpmPerMphField);
-
-        controlPanel.add(inputPanel);
-
-        // Add buttons panel
-        final JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
-
-        // Add MPH checkbox
-        this.useMphCheckbox = new JCheckBox("Use MPH");
-        this.useMphCheckbox.setSelected(this.fats.useMph());
-        this.useMphCheckbox.addActionListener(new ActionListener() {
+        // Add action listener to combo box
+        this.speedUnitCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Toggle MPH mode
-                FATSChartFrame.this.fats.useMph(useMphCheckbox.isSelected());
+                FATSChartFrame.this.fats.speedUnit(getSelectedSpeedUnit());
                 updateLabelsAndValues(FATSChartFrame.this.startLabel, FATSChartFrame.this.endLabel, FATSChartFrame.this.start, FATSChartFrame.this.end);
-                updateRpmPerMphVisibility();
-                // Update unit label
+                updateRpmFieldsVisibility();
                 updateUnitLabel(FATSChartFrame.this.unitLabel);
-                // Refresh the FATS dataset to show updated results
                 FATSChartFrame.this.dataset.refreshFromFATS();
                 FATSChartFrame.this.getChartPanel().getChart().setTitle(FATSChartFrame.this.dataset.getTitle());
             }
         });
-        buttonPanel.add(this.useMphCheckbox);
 
-        buttonPanel.add(Box.createRigidArea(new Dimension(10,0)));
+        // Create range group with border
+        JPanel rangeGroup = new JPanel();
+        rangeGroup.setLayout(new BoxLayout(rangeGroup, BoxLayout.X_AXIS));
+        rangeGroup.setBorder(BorderFactory.createTitledBorder("Range"));
+
+        // Initialize labels and text fields based on current FATS mode
+        this.startLabel = new JLabel("Start");
+        this.endLabel = new JLabel("End");
+        switch (this.fats.speedUnit()) {
+            case MPH:
+                this.start=new JTextField(""+Math.round(this.fats.startMph()), 6);
+                this.end=new JTextField(""+Math.round(this.fats.endMph()), 6);
+                break;
+            case KPH:
+                this.start=new JTextField(""+Math.round(this.fats.startKph()), 6);
+                this.end=new JTextField(""+Math.round(this.fats.endKph()), 6);
+                break;
+            case RPM:
+            default:
+                this.start=new JTextField(""+this.fats.start(), 6);
+                this.end=new JTextField(""+this.fats.end(), 6);
+                break;
+        }
+
+        rangeGroup.add(this.startLabel);
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        rangeGroup.add(this.start);
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        rangeGroup.add(new JLabel(" to "));
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        rangeGroup.add(this.end);
+
+        // Add unit label (will be updated dynamically) - only for speed modes
+        this.unitLabel = new JLabel();
+        updateUnitLabel(this.unitLabel);
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        rangeGroup.add(this.unitLabel);
+
+        // Add speed unit dropdown
+        rangeGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        rangeGroup.add(this.speedUnitCombo);
+
+        // Add glue to push everything to the left
+        rangeGroup.add(Box.createHorizontalGlue());
+
+        // Create conversion group with border
+        this.conversionGroup = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 2)); // Reduced vertical spacing
+        this.conversionGroup.setBorder(BorderFactory.createTitledBorder("Conversion"));
+
+        // Add rpm conversion fields
+        this.rpmPerMphLabel = new JLabel("RPM per MPH:");
+        this.rpmPerMphField = new JTextField(""+this.plotFrame.env.c.rpm_per_mph(), 4);
+        this.conversionGroup.add(this.rpmPerMphLabel);
+        this.conversionGroup.add(Box.createRigidArea(new Dimension(5,0)));
+        this.conversionGroup.add(this.rpmPerMphField);
+
+        // Add groups to main panel - range takes center, conversion takes east
+        mainInputPanel.add(rangeGroup, BorderLayout.CENTER);
+        mainInputPanel.add(this.conversionGroup, BorderLayout.EAST);
+
+        controlPanel.add(mainInputPanel);
+
+        // Add buttons panel
+        final JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
 
         final JButton apply = new JButton("Apply");
         apply.addActionListener(this);
@@ -158,8 +179,35 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         this.setPreferredSize(this.windowSize());
         restoreLocation();
 
-        // Set initial visibility of rpm_per_mph field
-        updateRpmPerMphVisibility();
+        // Set initial combo box selection and visibility
+        updateComboBoxSelection();
+        updateRpmFieldsVisibility();
+    }
+
+    private FATS.SpeedUnit getSelectedSpeedUnit() {
+        String selectedUnit = (String) this.speedUnitCombo.getSelectedItem();
+        if ("MPH".equals(selectedUnit)) {
+            return FATS.SpeedUnit.MPH;
+        } else if ("KPH".equals(selectedUnit)) {
+            return FATS.SpeedUnit.KPH;
+        } else {
+            return FATS.SpeedUnit.RPM;
+        }
+    }
+
+    private void updateComboBoxSelection() {
+        FATS.SpeedUnit speedUnit = this.fats.speedUnit();
+        switch (speedUnit) {
+            case RPM:
+                this.speedUnitCombo.setSelectedItem("RPM");
+                break;
+            case MPH:
+                this.speedUnitCombo.setSelectedItem("MPH");
+                break;
+            case KPH:
+                this.speedUnitCombo.setSelectedItem("KPH");
+                break;
+        }
     }
 
     private void restoreLocation() {
@@ -194,12 +242,20 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     public void refreshFromFATS() {
         this.dataset.refreshFromFATS();
         // Update text fields to show current values
-        if (this.fats.useMph()) {
-            this.start.setText("" + this.fats.startMph());
-            this.end.setText("" + this.fats.endMph());
-        } else {
-            this.start.setText("" + this.fats.start());
-            this.end.setText("" + this.fats.end());
+        switch (this.fats.speedUnit()) {
+            case MPH:
+                this.start.setText("" + Math.round(this.fats.startMph()));
+                this.end.setText("" + Math.round(this.fats.endMph()));
+                break;
+            case KPH:
+                this.start.setText("" + Math.round(this.fats.startKph()));
+                this.end.setText("" + Math.round(this.fats.endKph()));
+                break;
+            case RPM:
+            default:
+                this.start.setText("" + this.fats.start());
+                this.end.setText("" + this.fats.end());
+                break;
         }
         this.getChartPanel().getChart().setTitle(this.dataset.getTitle());
     }
@@ -207,29 +263,42 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent event) {
         if(event.getActionCommand().equals("Apply")) {
-            if (this.fats.useMph()) {
-                this.fats.startMph(Double.valueOf(this.start.getText()));
-                this.fats.endMph(Double.valueOf(this.end.getText()));
-            } else {
-                this.fats.start(Integer.valueOf(this.start.getText()));
-                this.fats.end(Integer.valueOf(this.end.getText()));
+            FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
+            this.fats.speedUnit(speedUnit);
+
+            switch (speedUnit) {
+                case MPH:
+                    this.fats.startMph(Double.valueOf(this.start.getText()));
+                    this.fats.endMph(Double.valueOf(this.end.getText()));
+                    break;
+                case KPH:
+                    this.fats.startKph(Double.valueOf(this.start.getText()));
+                    this.fats.endKph(Double.valueOf(this.end.getText()));
+                    break;
+                case RPM:
+                default:
+                    this.fats.start(Integer.valueOf(this.start.getText()));
+                    this.fats.end(Integer.valueOf(this.end.getText()));
+                    break;
             }
-            // Update rpm_per_mph if field is visible (regardless of mode)
+
+            // Update rpm conversion fields if visible
             if (this.rpmPerMphField != null && this.rpmPerMphField.isVisible()) {
                 this.plotFrame.env.c.rpm_per_mph(Double.valueOf(this.rpmPerMphField.getText()));
             }
+
             this.dataset.refreshFromFATS();
         } else if(event.getActionCommand().equals("Defaults")) {
-            this.fats.useMph(false);
+            this.fats.speedUnit(FATS.SpeedUnit.RPM);
             this.fats.start(4200);
             this.fats.end(6500);
             this.dataset.refreshFromFATS();
             // Update text fields to show defaults
             this.start.setText("4200");
             this.end.setText("6500");
-            // Update checkbox to reflect defaults
-            this.useMphCheckbox.setSelected(false);
-            updateRpmPerMphVisibility();
+            // Update radio buttons to reflect defaults
+            updateComboBoxSelection();
+            updateRpmFieldsVisibility();
         }
         this.getChartPanel().getChart().setTitle(this.dataset.getTitle());
     }
@@ -237,39 +306,46 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     private void updateLabelsAndValues(JLabel startLabel, JLabel endLabel, JTextField start, JTextField end) {
         // Labels are now static "Start" and "End" - no need to change them
         // Values are updated based on current mode
-        if (this.fats.useMph()) {
-            start.setText("" + this.fats.startMph());
-            end.setText("" + this.fats.endMph());
-        } else {
-            start.setText("" + this.fats.start());
-            end.setText("" + this.fats.end());
+        FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
+        switch (speedUnit) {
+            case MPH:
+                start.setText("" + Math.round(this.fats.startMph()));
+                end.setText("" + Math.round(this.fats.endMph()));
+                break;
+            case KPH:
+                start.setText("" + Math.round(this.fats.startKph()));
+                end.setText("" + Math.round(this.fats.endKph()));
+                break;
+            case RPM:
+            default:
+                start.setText("" + this.fats.start());
+                end.setText("" + this.fats.end());
+                break;
         }
     }
 
     private void updateUnitLabel(JLabel unitLabel) {
-        if (this.fats.useMph()) {
-            unitLabel.setText("MPH");
-        } else {
-            unitLabel.setText("RPM");
-        }
+        // Hide unit label in all modes since radio buttons indicate the units
+        unitLabel.setVisible(false);
     }
 
-    private void updateRpmPerMphVisibility() {
-        if (this.rpmPerMphField != null && this.rpmPerMphLabel != null) {
-            // Show rpm_per_mph field when using MPH mode
-            boolean shouldShow = this.fats.useMph();
-            this.rpmPerMphField.setVisible(shouldShow);
-            this.rpmPerMphLabel.setVisible(shouldShow);
-            if (shouldShow) {
-                this.rpmPerMphField.setText("" + this.plotFrame.env.c.rpm_per_mph());
-            }
+    private void updateRpmFieldsVisibility() {
+        FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
+        // Show rpm conversion fields when not using RPM mode
+        boolean showRpmFields = speedUnit != FATS.SpeedUnit.RPM;
+        this.rpmPerMphLabel.setVisible(showRpmFields);
+        this.rpmPerMphField.setVisible(showRpmFields);
+        this.conversionGroup.setVisible(showRpmFields);
+
+        if (showRpmFields) {
+            this.rpmPerMphField.setText("" + this.plotFrame.env.c.rpm_per_mph());
         }
     }
 
     /**
-     * Update the rpm_per_mph field from the Constants when it changes
+     * Update the rpm conversion fields from the Constants when they change
      */
-    public void updateRpmPerMphFromConstants() {
+    public void updateRpmFieldsFromConstants() {
         if (this.rpmPerMphField != null) {
             this.rpmPerMphField.setText("" + this.plotFrame.env.c.rpm_per_mph());
         }
@@ -277,7 +353,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 
     private java.awt.Dimension windowSize() {
         return new java.awt.Dimension(
-            ECUxPlot.getPreferences().getInt("FATSWindowWidth", 300),
+            ECUxPlot.getPreferences().getInt("FATSWindowWidth", 600),
             ECUxPlot.getPreferences().getInt("FATSWindowHeight", 400));
     }
 
