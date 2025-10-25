@@ -15,7 +15,7 @@ public final class OptionsMenu extends JMenu {
     private JCheckBox showAllRangesCheckBox;
     private JMenuItem nextRangeItem;
     private JMenuItem previousRangeItem;
-    private JCheckBox showFATSCheckBox;
+    private JMenuItem showFATSItem;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
         super(id);
@@ -42,11 +42,14 @@ public final class OptionsMenu extends JMenu {
         jcb.addActionListener(plotFrame);
         this.add(jcb);
 
-        // Most commonly used tool
-        jcb = new JCheckBox("Show FATS Window", ECUxPlot.getPreferences().getBoolean("showfats", false));
-        jcb.addActionListener(plotFrame);
-        this.add(jcb);
-        this.showFATSCheckBox = jcb;
+        this.add(new JSeparator());
+
+        // Analysis tools
+        item = new JMenuItem("Show FATS Window");
+        item.setToolTipText("Requires filter to be enabled");
+        item.addActionListener(plotFrame);
+        this.add(item);
+        this.showFATSItem = item;
 
         this.add(new JSeparator());
 
@@ -56,16 +59,19 @@ public final class OptionsMenu extends JMenu {
         this.add(item);
 
         jcb = new JCheckBox("Show all ranges", Filter.showAllRanges(ECUxPlot.getPreferences()));
+        jcb.setToolTipText("Requires filter to be enabled and multiple ranges to exist");
         jcb.addActionListener(plotFrame);
         this.add(jcb);
         this.showAllRangesCheckBox = jcb;
 
         item = new JMenuItem("Next Range");
+        item.setToolTipText("Requires filter to be enabled and multiple ranges to exist");
         item.addActionListener(plotFrame);
         this.add(item);
         this.nextRangeItem = item;
 
         item = new JMenuItem("Previous Range");
+        item.setToolTipText("Requires filter to be enabled and multiple ranges to exist");
         item.addActionListener(plotFrame);
         this.add(item);
         this.previousRangeItem = item;
@@ -83,6 +89,7 @@ public final class OptionsMenu extends JMenu {
 
         // Update initial state
         updateRangeNavigationState();
+        updateFATSAvailability();
     }
 
     public void updateRangeNavigationState() {
@@ -101,10 +108,11 @@ public final class OptionsMenu extends JMenu {
         }
     }
 
-    public void updateShowFATSCheckbox() {
-        if (this.showFATSCheckBox != null) {
+    public void updateFATSAvailability() {
+        if (this.showFATSItem != null) {
             final Preferences prefs = ECUxPlot.getPreferences();
-            this.showFATSCheckBox.setSelected(prefs.getBoolean("showfats", false));
+            boolean filterEnabled = Filter.enabled(prefs);
+            this.showFATSItem.setEnabled(filterEnabled);
         }
     }
 

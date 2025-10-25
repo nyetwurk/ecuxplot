@@ -4,11 +4,9 @@ import java.awt.Desktop;
 import java.awt.Point;
 import java.awt.desktop.*;
 import java.awt.event.ActionEvent;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -19,12 +17,10 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.nyet.util.*;
-
 import org.nyet.logfile.Dataset;
 import org.nyet.logfile.Dataset.DatasetId;
 
@@ -133,10 +129,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         return ECUxPlot.scatter(this.prefs);
     }
 
-    private boolean showFATS() {
-      return this.prefs.getBoolean("showfats", false);
-    }
-
     private Comparable<?> xkey() {
         // Use a hardcoded default instead of creating ECUxPreset to avoid infinite recursion
         final String defaultXkey = "RPM";
@@ -232,29 +224,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             }
         }
 
-        /* we can't do this on construct, because fatsFrame does its own
-           restoreLocation() based on our location, and if we do it during
-           our constructor, our location is 0,0
-         */
-        if(this.fatsFrame==null) {
-            this.fatsFrame =
-                FATSChartFrame.createFATSChartFrame(this.fileDatasets, this);
-            this.fatsFrame.pack();
-
-            final java.net.URL imageURL =
-                getClass().getResource("icons/ECUxPlot2-64.png");
-
-            this.fatsFrame.setIconImage(new
-                    javax.swing.ImageIcon(imageURL).getImage());
-        } else {
-            this.fatsFrame.setDatasets(this.fileDatasets);
-        }
-
         // grab title from prefs, or just use what current title is
         this.chartTitle(this.prefs.get("title", this.chartTitle()));
 
         // Update range controls availability after files are loaded
         updateRangeControlsAvailability();
+        // Update FATS availability after files are loaded
+        if (this.optionsMenu != null) {
+            this.optionsMenu.updateFATSAvailability();
+        }
     }
 
     public void loadFiles(ArrayList<String> files) {
@@ -379,21 +357,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     public void setMyVisible(boolean b) {
         super.setVisible(b);
-        if(this.fatsFrame==null) return;
         // Don't hide FATS window when filter is disabled - let user adjust settings
         // if(!this.filter.enabled()) b=false;
-        if(b!=this.fatsFrame.isShowing() && this.showFATS())
-            this.fatsFrame.setVisible(b);
     }
 
     /**
-     * Update FATS window visibility without affecting main window visibility
+     * Update FATS window visibility - no longer needed since we create on-demand
      */
     public void updateFATSVisibility() {
-        if(this.fatsFrame==null) return;
-        if(this.showFATS() && !this.fatsFrame.isShowing()) {
-            this.fatsFrame.setVisible(true);
-        }
+        // No-op: FATS windows are now created on-demand
     }
 
     // nuke datasets
@@ -406,7 +378,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.chartPanel.removeAll();
             this.chartPanel=null;
         }
-        if(this.fatsFrame!=null)
+        if(this.fatsFrame != null)
             this.fatsFrame.clearDataset();
     }
 
@@ -515,12 +487,12 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                         e.printStackTrace();
                     }
 
-                    if((p.fatsFrame != null) && p.fatsFrame.isShowing()) {
+                    if((this.fatsFrame != null) && this.fatsFrame.isShowing()) {
                         fname = stem + "-FATS.png";
                         for(int i=1; seen.contains(fname); i++)
                             fname = stem + "-FATS_" + i + ".png";
                         try {
-                            p.fatsFrame.saveChartAsPNG(fname);
+                            this.fatsFrame.saveChartAsPNG(fname);
                             seen.add(fname);
                         } catch (final Exception e) {
                             JOptionPane.showMessageDialog(this, e);
@@ -606,6 +578,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             rebuild();
             if (this.optionsMenu != null) {
                 this.optionsMenu.updateShowAllRangesCheckbox();
+                this.optionsMenu.updateFATSAvailability();
                 updateRangeControlsAvailability();
             }
         } else if(source.getText().equals("Show all ranges")) {
@@ -632,7 +605,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             if(this.ce == null) this.ce =
                 new ConstantsEditor(this.prefs, this.env.c);
             boolean changesMade = this.ce.showDialog(this, "Constants");
-            // Update FATS window if constants were changed
+            // Update FATS window if constants were changed and window is open
             if (changesMade && this.fatsFrame != null) {
                 this.fatsFrame.updateRpmFieldsFromConstants();
             }
@@ -654,13 +627,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             JOptionPane.showMessageDialog(this, new AboutPanel(),
                     "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
         } else if(source.getText().equals("Show FATS Window")) {
-            final boolean s = source.isSelected();
-            this.prefs.putBoolean("showfats", s);
-            if(!s && this.fatsFrame.isShowing()) {
-                this.fatsFrame.setVisible(s);
+            FATSChartFrame fatsFrame = FATSChartFrame.createFATSChartFrame(this.fileDatasets, this);
+            fatsFrame.pack();
+
+            // Set window icon
+            final java.net.URL imageURL =
+                getClass().getResource("icons/ECUxPlot2-64.png");
+            if (imageURL != null) {
+                fatsFrame.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
             }
-            rebuild();
-            updateFATSVisibility();
+
+            fatsFrame.setVisible(true);
+            this.fatsFrame = fatsFrame; // Track current FATS window
         } else if(source.getText().equals("Show Events Window")) {
             if(this.eventWindow == null) {
                 this.eventWindow = new EventWindow();
@@ -763,7 +741,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     private void updateRangeControlsAvailability() {
-        if (this.toolsMenu != null) {
+        if (this.optionsMenu != null) {
             // Check if filtering is enabled
             boolean filterEnabled = Filter.enabled(this.prefs);
 
@@ -782,7 +760,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             // Range controls are only useful when filter is enabled AND at least one file has multiple ranges
             boolean hasMultipleRanges = !allFilesHaveSingleRange;
 
-            this.toolsMenu.updateRangeControlsAvailability(filterEnabled, hasMultipleRanges);
+            this.optionsMenu.updateRangeControlsAvailability(filterEnabled, hasMultipleRanges);
         }
     }
 
@@ -836,7 +814,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             @Override
             protected void done() {
                 try {
-                    if(fatsFrame!=null)
+                    if(fatsFrame != null)
                         fatsFrame.setDatasets(fileDatasets);
 
                     final XYPlot plot = chartPanel.getChart().getXYPlot();
@@ -972,7 +950,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.yAxis[1].setOnlySelected(p.ykeys(1));
 
         // update scatter checkbox to reflect the preset's scatter setting
-        // Scatter checkbox is now in ToolsMenu, no need to update separately
+        // Scatter checkbox is now in OptionsMenu, no need to update separately
     }
 
     @Override

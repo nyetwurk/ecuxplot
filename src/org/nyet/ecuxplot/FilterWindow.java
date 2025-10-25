@@ -510,7 +510,7 @@ public class FilterWindow extends JFrame {
         // Enable the filter when settings are applied
         this.filter.enabled(true);
 
-        // Filter checkbox is now in ToolsMenu, no need to update separately
+        // Filter checkbox is now in OptionsMenu, no need to update separately
     }
 
     private void setFilterValueFromTextField(JTextField textField, java.util.function.IntConsumer setter) {
