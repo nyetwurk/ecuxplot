@@ -154,6 +154,13 @@ public class ECUxDataset extends Dataset {
         this.env = env;
         this.filter = filter;
 
+        // Debug logging to understand filter state
+        if (filter == null) {
+            logger.debug("ECUxDataset constructor: filter is null");
+        } else {
+            logger.debug("ECUxDataset constructor: filter is not null, enabled={}", filter.enabled());
+        }
+
         // Get pedal, throttle, and gear columns using getOrNull helper
         this.pedal = getOrNull(DataLogger.pedal());
         this.throttle = getOrNull(DataLogger.throttle());
@@ -194,6 +201,8 @@ public class ECUxDataset extends Dataset {
 
         // get RPM AFTER getting TIME, so we have an accurate samples per sec
         this.rpm = get("RPM");
+        // Note: buildRanges() is called by parent constructor, but we need to call it again
+        // after filter is assigned to ensure proper spline creation
         buildRanges(); // regenerate ranges, splines
     }
 
@@ -875,14 +884,27 @@ public class ECUxDataset extends Dataset {
     public void buildRanges() {
         super.buildRanges();
 
-        if (!isFilterEnabled()) {
-            logger.warn("Spline creation disabled: filter is not enabled");
+        // Handle filter null case (timing issue during construction)
+        if (this.filter == null) {
+            logger.trace("Spline creation disabled: filter is null (called from parent constructor before filter assignment)");
+            this.splines = new CubicSpline[0];
+            return;
+        }
+
+        // Handle filter disabled case (user has explicitly disabled the filter)
+        if (!this.filter.enabled()) {
+            logger.debug("Spline creation disabled: filter is explicitly disabled by user");
             this.splines = new CubicSpline[0];
             return;
         }
 
         final ArrayList<Dataset.Range> ranges = this.getRanges();
         this.splines = new CubicSpline[ranges.size()];
+        if (ranges.size() > 0) {
+            logger.debug("Creating {} splines for {} ranges (filter enabled)", ranges.size(), ranges.size());
+        } else {
+            logger.trace("No valid ranges found for spline creation (filter enabled but no data passes filter criteria)");
+        }
         for(int i=0;i<ranges.size();i++) {
             this.splines[i] = null;
             final Dataset.Range r=ranges.get(i);
@@ -921,8 +943,13 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     public double calcFATS(int run, double speedStart, double speedEnd, FATS.SpeedUnit speedUnit) throws Exception {
-        if (!isFilterEnabled()) {
-            logger.warn("FATS calculation disabled: filter is not enabled");
+        if (this.filter == null) {
+            logger.warn("FATS calculation disabled: filter is null");
+            throw new Exception("FATS calculation requires filter to be initialized");
+        }
+
+        if (!this.filter.enabled()) {
+            logger.warn("FATS calculation disabled: filter is explicitly disabled by user");
             throw new Exception("FATS calculation requires filter to be enabled");
         }
 
@@ -978,8 +1005,13 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     public double calcFATS(int run, int RPMStart, int RPMEnd) throws Exception {
-        if (!isFilterEnabled()) {
-            logger.warn("FATS calculation disabled: filter is not enabled");
+        if (this.filter == null) {
+            logger.warn("FATS calculation disabled: filter is null");
+            throw new Exception("FATS calculation requires filter to be initialized");
+        }
+
+        if (!this.filter.enabled()) {
+            logger.warn("FATS calculation disabled: filter is explicitly disabled by user");
             throw new Exception("FATS calculation requires filter to be enabled");
         }
         return calcFATS(run, (double)RPMStart, (double)RPMEnd, FATS.SpeedUnit.RPM);
@@ -996,8 +1028,13 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     public double calcFATSBySpeed(int run, double speedStart, double speedEnd, FATS.SpeedUnit speedUnit) throws Exception {
-        if (!isFilterEnabled()) {
-            logger.warn("FATS calculation disabled: filter is not enabled");
+        if (this.filter == null) {
+            logger.warn("FATS calculation disabled: filter is null");
+            throw new Exception("FATS calculation requires filter to be initialized");
+        }
+
+        if (!this.filter.enabled()) {
+            logger.warn("FATS calculation disabled: filter is explicitly disabled by user");
             throw new Exception("FATS calculation requires filter to be enabled");
         }
         return calcFATS(run, speedStart, speedEnd, speedUnit);
@@ -1016,8 +1053,13 @@ public class ECUxDataset extends Dataset {
      * @throws Exception If the run is invalid, interpolation failed, or calculation error occurs
      */
     private double calcFATSRPM(int run, int RPMStart, int RPMEnd) throws Exception {
-        if (!isFilterEnabled()) {
-            logger.warn("FATS calculation disabled: filter is not enabled");
+        if (this.filter == null) {
+            logger.warn("FATS calculation disabled: filter is null");
+            throw new Exception("FATS calculation requires filter to be initialized");
+        }
+
+        if (!this.filter.enabled()) {
+            logger.warn("FATS calculation disabled: filter is explicitly disabled by user");
             throw new Exception("FATS calculation requires filter to be enabled");
         }
 
@@ -1057,14 +1099,6 @@ public class ECUxDataset extends Dataset {
 
     public Filter getFilter() { return this.filter; }
     //public void setFilter(Filter f) { this.filter=f; }
-
-    /**
-     * Check if the filter is enabled, safely handling null filter
-     * @return true if filter exists and is enabled, false otherwise
-     */
-    private boolean isFilterEnabled() {
-        return this.filter != null && this.filter.enabled();
-    }
     public Env getEnv() { return this.env; }
     //public void setEnv(Env e) { this.env=e; }
     @Override
