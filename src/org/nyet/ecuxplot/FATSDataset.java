@@ -164,7 +164,7 @@ public class FATSDataset extends DefaultCategoryDataset {
             // Log successful FATS calculation with concise summary
             logFATSSummary(data, series, value, this.start, this.end);
         } catch (final Exception e) {
-            logger.warn("FATS calculation failed for {} run {}: {}", Files.stem(data.getFileId()), series, e.getMessage());
+            logger.debug("FATS calculation failed for {} run {}: {}", Files.stem(data.getFileId()), series, e.getMessage());
             removeValue(data, series);
         }
     }
