@@ -121,6 +121,9 @@ public class FilterWindow extends JFrame {
     public FilterWindow(Filter filter, ECUxPlot eplot) {
         super("Filter Window");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        // Set minimum size first to ensure loaded preferences are enforced
+        setMinimumSize(new Dimension(800, 600));
         setSize(this.windowSize());
         setLocationRelativeTo(null);
 
@@ -135,6 +138,11 @@ public class FilterWindow extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
+                putWindowSize();
+            }
+
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
                 putWindowSize();
             }
         });
@@ -243,7 +251,12 @@ public class FilterWindow extends JFrame {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value != null) {
                     String filename = value.toString();
-                    if (filename.length() > 30) {
+                    // More flexible filename truncation - show more characters for longer filenames
+                    if (filename.length() > 50) {
+                        // For very long filenames, show more context
+                        setText(filename.substring(0, 25) + "..." + filename.substring(filename.length() - 20));
+                    } else if (filename.length() > 30) {
+                        // For medium length filenames, use original logic
                         setText(filename.substring(0, 15) + "..." + filename.substring(filename.length() - 12));
                     } else {
                         setText(filename);
@@ -253,6 +266,7 @@ public class FilterWindow extends JFrame {
                 return this;
             }
         });
+        fileSelector.setPreferredSize(new Dimension(200, fileSelector.getPreferredSize().height));
         showOnlyValidDataCheckBox = new JCheckBox("Show Only Valid Data", true);
         fileLabel = new JLabel("File:");
 
@@ -284,11 +298,12 @@ public class FilterWindow extends JFrame {
     private JPanel createFilterEditorPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Create main form panel with GridBagLayout for better size control
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new java.awt.Insets(5, 0, 5, 0); // Top, left, bottom, right padding
+        // Add padding to match visualization panel
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0)); // Top, left, bottom, right padding
 
+        // Create main form panel with BoxLayout for vertical stacking
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         // Add filter parameter fields in separate panels
         JTextField[] fields = {minRPM, maxRPM, minRPMRange, monotonicRPMfuzz,
                               minPedal, minThrottle, minAcceleration, accelMAW,
@@ -297,29 +312,22 @@ public class FilterWindow extends JFrame {
         // Engine Panel
         JPanel enginePanel = createParameterPanel("Engine",
             new int[]{0, 1, 2, 3, 4}, fields);
-        gbc.gridx = 0; gbc.gridy = 0;
-        gbc.weightx = 1.0; gbc.weighty = 0.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTH;
-        formPanel.add(enginePanel, gbc);
+        formPanel.add(enginePanel);
 
         // Throttle/Pedal Panel
         JPanel throttlePanel = createParameterPanel("Throttle/Pedal",
             new int[]{5, 6}, fields);
-        gbc.gridy = 1;
-        formPanel.add(throttlePanel, gbc);
+        formPanel.add(throttlePanel);
 
         // Acceleration Panel
         JPanel accelPanel = createParameterPanel("Acceleration",
             new int[]{7, 8}, fields);
-        gbc.gridy = 2;
-        formPanel.add(accelPanel, gbc);
+        formPanel.add(accelPanel);
 
         // Data Quality Panel
         JPanel qualityPanel = createParameterPanel("Data Quality",
             new int[]{9, 10, 11}, fields);
-        gbc.gridy = 3;
-        formPanel.add(qualityPanel, gbc);
+        formPanel.add(qualityPanel);
 
         // Add scroll pane to handle overflow
         JScrollPane scrollPane = new JScrollPane(formPanel);
@@ -451,9 +459,6 @@ public class FilterWindow extends JFrame {
 
         panel.add(formPanel, BorderLayout.CENTER);
 
-        // Set maximum width to 600px for better Windows display
-        panel.setMaximumSize(new Dimension(600, panel.getPreferredSize().height));
-
         return panel;
     }
 
@@ -467,7 +472,7 @@ public class FilterWindow extends JFrame {
 
         // Add padding to match filter panel
         panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(5, 0, 5, 0), // Top, left, bottom, right padding
+            BorderFactory.createEmptyBorder(5, 0, 5, 5), // Top, left, bottom, right padding
             titledBorder));
 
         // Control panel at top
@@ -685,8 +690,11 @@ public class FilterWindow extends JFrame {
                 tableModel.addRow(rowData);
             }
 
-            statusLabel.setText(String.format("Showing %d of %d rows (%d valid)",
-                rowsToShow.size(), totalRows, validCount));
+            if (showOnlyValid) {
+                statusLabel.setText(String.format("Showing %d/%d rows", validCount, totalRows));
+            } else {
+                statusLabel.setText(String.format("Showing %d/%d rows", rowsToShow.size(), totalRows));
+            }
 
         } catch (Exception e) {
             statusLabel.setText("Error loading data: " + e.getMessage());
@@ -981,14 +989,25 @@ public class FilterWindow extends JFrame {
     }
 
     private java.awt.Dimension windowSize() {
-        return new java.awt.Dimension(
-            ECUxPlot.getPreferences().getInt("FilterWindowWidth", 1000),
-            ECUxPlot.getPreferences().getInt("FilterWindowHeight", 550));
+        int width = ECUxPlot.getPreferences().getInt("FilterWindowWidth", 1000);
+        int height = ECUxPlot.getPreferences().getInt("FilterWindowHeight", 600);
+        return new java.awt.Dimension(width, height);
     }
 
     private void putWindowSize() {
-        ECUxPlot.getPreferences().putInt("FilterWindowWidth", this.getWidth());
-        ECUxPlot.getPreferences().putInt("FilterWindowHeight", this.getHeight());
+        int originalWidth = this.getWidth();
+        int originalHeight = this.getHeight();
+
+        // Validate window size before saving to prevent unreasonable sizes
+        int width = Math.max(originalWidth, 800);  // Minimum width
+        int height = Math.max(originalHeight, 600); // Minimum height
+
+        // Also set reasonable maximums to prevent extremely large windows
+        width = Math.min(width, 2000);
+        height = Math.min(height, 1500);
+
+        ECUxPlot.getPreferences().putInt("FilterWindowWidth", width);
+        ECUxPlot.getPreferences().putInt("FilterWindowHeight", height);
     }
 }
 
