@@ -41,6 +41,57 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v6
 
+      - name: Parse changelog for release notes
+        id: parse_changelog
+        run: |
+          # Extract changelog content for the current version
+          # Look for the version section that matches the tag name
+          TAG_NAME="${{ inputs.tag-name }}"
+
+          # Remove 'v' prefix if present for version matching
+          VERSION=${TAG_NAME#v}
+
+          # For 'latest' tag, always use Unreleased section
+          if [ "$TAG_NAME" = "latest" ]; then
+            echo "Using Unreleased section for 'latest' tag"
+            if grep -q "## \[Unreleased\]" CHANGELOG.md; then
+              # Extract from [Unreleased] to the next version header (## [version])
+              awk "/## \[Unreleased\]/,/^## \[[0-9]/ { if (!/^## \[Unreleased\]/ && !/^## \[[0-9]/) print }" CHANGELOG.md > /tmp/changelog_section.txt
+            else
+              echo "No Unreleased section found in changelog"
+              echo "changelog_content=" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          # Extract changelog content between version headers
+          elif grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            # Extract content from this version to the next version or end of file
+            # Use sed to extract between version headers, excluding the headers themselves
+            sed -n "/## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | sed '1d;$d' > /tmp/changelog_section.txt
+          elif grep -q "## \[Unreleased\]" CHANGELOG.md; then
+            # If no specific version found, use Unreleased section
+            awk "/## \[Unreleased\]/,/^## \[[0-9]/ { if (!/^## \[Unreleased\]/ && !/^## \[[0-9]/) print }" CHANGELOG.md > /tmp/changelog_section.txt
+          else
+            echo "No changelog section found for version $VERSION or Unreleased"
+            echo "changelog_content=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Clean up the content and convert to GitHub release notes format
+          if [ -s /tmp/changelog_section.txt ]; then
+            # Remove empty lines at start/end and convert markdown to GitHub format
+            sed '/^$/d' /tmp/changelog_section.txt | sed 's/^### /#### /g' | sed 's/^- /- /g' > /tmp/changelog_clean.txt
+
+            # Read the content without escaping newlines - GitHub handles them properly
+            CHANGELOG_CONTENT=$(cat /tmp/changelog_clean.txt)
+            echo "changelog_content<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGELOG_CONTENT" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "Changelog content extracted for version $VERSION"
+          else
+            echo "changelog_content=" >> $GITHUB_OUTPUT
+            echo "No changelog content found"
+          fi
+
       - name: Backup and delete existing tag
         id: backup_tag
         run: |
@@ -88,7 +139,12 @@ jobs:
           draft: false
           prerelease: ${{ inputs.is-prerelease }}
           generate_release_notes: true
-          body: ${{ inputs.release-body }}
+          body: |
+            ${{ inputs.release-body }}
+
+            ## Changelog
+
+            ${{ steps.parse_changelog.outputs.changelog_content }}
           files: |
             macos-builds/build/*.dmg
             macos-builds/ECUxPlot.dmg
