@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
-## [Unreleased]
+## [1.1.2] - 2025-10-25
 
 ### Added
 
@@ -14,6 +14,8 @@
 
 - Consolidated all filter, analysis tools, and preferences into single Options menu
 - Removed redundant View menu and moved Event Viewer to File menu
+- Custom axis range now only applies when beneficial (negative values) to avoid unnecessary overrides
+- Simplified axis range logic with better recursion prevention
 
 ### Fixed
 
@@ -21,6 +23,9 @@
 - FATS window availability correctly tied to filter state
 - Menu item naming conventions standardized throughout application
 - Improved logical grouping of related functions
+- Fixed custom axis range calculation for negative values to include proper padding above zero
+- Resolved infinite recursion issue in axis range application
+- Improved axis scaling consistency for datasets with negative or zero values
 
 ## [1.1.1] - 2025-10-24
 
