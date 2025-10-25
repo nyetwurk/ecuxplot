@@ -388,7 +388,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         // Uncheck "Show FATS window..." in Options menu when window is closed
         this.plotFrame.prefs.putBoolean("showfats", false);
         // Update the menu checkbox to reflect the change
-        this.plotFrame.optionsMenu.updateFATSCheckbox();
+        // FATS checkbox is now in ToolsMenu, no need to update separately
         super.dispose();
     }
 

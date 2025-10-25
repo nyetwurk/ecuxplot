@@ -32,6 +32,16 @@ public final class ProfileMenu extends JMenu {
         this.plotFrame=plotFrame;
         JMenuItem jmi;
 
+        // Load profile first - start here
+        this.loadProfilesMenu = new JMenu("Load Profile");
+        this.saveProfilesMenu = new JMenu("Save Profile");
+        this.deleteProfilesMenu = new JMenu("Delete Profile");
+        updateProfiles();
+        this.add(this.loadProfilesMenu);
+
+        this.add(new JSeparator());
+
+        // Then edit the profile's configuration
         jmi = new JMenuItem("Edit constants...");
         jmi.addActionListener(plotFrame);
         this.add(jmi);
@@ -42,11 +52,7 @@ public final class ProfileMenu extends JMenu {
 
         this.add(new JSeparator());
 
-        this.loadProfilesMenu = new JMenu("Load Profile...");
-        this.saveProfilesMenu = new JMenu("Save Profile...");
-        this.deleteProfilesMenu = new JMenu("Delete Profile...");
-        updateProfiles();
-        this.add(this.loadProfilesMenu);
+        // Then save or delete the profile
         this.add(this.saveProfilesMenu);
         this.add(this.deleteProfilesMenu);
     }
