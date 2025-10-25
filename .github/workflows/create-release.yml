@@ -41,6 +41,43 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v6
 
+      - name: Parse changelog for release notes
+        id: parse_changelog
+        run: |
+          # Extract changelog content for the current version
+          # Look for the version section that matches the tag name
+          TAG_NAME="${{ inputs.tag-name }}"
+
+          # Remove 'v' prefix if present for version matching
+          VERSION=${TAG_NAME#v}
+
+          # Extract changelog content between version headers
+          if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            # Extract content from this version to the next version or end of file
+            awk "/## \[$VERSION\]/,/^## \[/ { if (!/^## \[$VERSION\]/ && !/^## \[/) print }" CHANGELOG.md > /tmp/changelog_section.txt
+          elif grep -q "## \[Unreleased\]" CHANGELOG.md; then
+            # If no specific version found, use Unreleased section
+            awk "/## \[Unreleased\]/,/^## \[/ { if (!/^## \[Unreleased\]/ && !/^## \[/) print }" CHANGELOG.md > /tmp/changelog_section.txt
+          else
+            echo "No changelog section found for version $VERSION or Unreleased"
+            echo "changelog_content=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Clean up the content and convert to GitHub release notes format
+          if [ -s /tmp/changelog_section.txt ]; then
+            # Remove empty lines at start/end and convert markdown to GitHub format
+            sed '/^$/d' /tmp/changelog_section.txt | sed 's/^### /#### /g' | sed 's/^- /- /g' > /tmp/changelog_clean.txt
+
+            # Read the content and escape for GitHub output
+            CHANGELOG_CONTENT=$(cat /tmp/changelog_clean.txt | sed ':a;N;$!ba;s/\n/\\n/g')
+            echo "changelog_content=$CHANGELOG_CONTENT" >> $GITHUB_OUTPUT
+            echo "Changelog content extracted for version $VERSION"
+          else
+            echo "changelog_content=" >> $GITHUB_OUTPUT
+            echo "No changelog content found"
+          fi
+
       - name: Backup and delete existing tag
         id: backup_tag
         run: |
@@ -88,7 +125,12 @@ jobs:
           draft: false
           prerelease: ${{ inputs.is-prerelease }}
           generate_release_notes: true
-          body: ${{ inputs.release-body }}
+          body: |
+            ${{ inputs.release-body }}
+
+            ## Changelog
+
+            ${{ steps.parse_changelog.outputs.changelog_content }}
           files: |
             macos-builds/build/*.dmg
             macos-builds/ECUxPlot.dmg
