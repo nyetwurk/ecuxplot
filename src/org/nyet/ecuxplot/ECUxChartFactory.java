@@ -16,7 +16,6 @@ import org.jfree.data.xy.DefaultXYDataset;
 import org.nyet.logfile.Dataset;
 
 public class ECUxChartFactory {
-    private static boolean applyingCustomAxisRange = false;
     /**
      * Calculate appropriate axis range with padding, ensuring zero is included
      * when dealing with negative values for better visual clarity.
@@ -123,59 +122,49 @@ public class ECUxChartFactory {
      * @param dataset the dataset to analyze for range calculation
      */
     public static void applyCustomAxisRange(JFreeChart chart, int axisIndex, XYDataset dataset) {
-        // Prevent recursive calls
-        if (applyingCustomAxisRange) {
+        final XYPlot plot = chart.getXYPlot();
+        final NumberAxis axis = (NumberAxis) plot.getRangeAxis(axisIndex);
+
+        if (dataset == null || dataset.getSeriesCount() == 0) {
             return;
         }
 
-        applyingCustomAxisRange = true;
+        // Find min and max values across all series
+        double minValue = Double.MAX_VALUE;
+        double maxValue = Double.MIN_VALUE;
+        boolean hasData = false;
 
-        try {
-            final XYPlot plot = chart.getXYPlot();
-            final NumberAxis axis = (NumberAxis) plot.getRangeAxis(axisIndex);
-
-            if (dataset == null || dataset.getSeriesCount() == 0) {
-                return;
-            }
-
-            // Find min and max values across all series
-            double minValue = Double.MAX_VALUE;
-            double maxValue = Double.MIN_VALUE;
-            boolean hasData = false;
-
-            for (int series = 0; series < dataset.getSeriesCount(); series++) {
-                for (int item = 0; item < dataset.getItemCount(series); item++) {
-                    double yValue = dataset.getYValue(series, item);
-                    if (!Double.isNaN(yValue)) {
-                        minValue = Math.min(minValue, yValue);
-                        maxValue = Math.max(maxValue, yValue);
-                        hasData = true;
-                    }
+        for (int series = 0; series < dataset.getSeriesCount(); series++) {
+            for (int item = 0; item < dataset.getItemCount(series); item++) {
+                double yValue = dataset.getYValue(series, item);
+                if (!Double.isNaN(yValue)) {
+                    minValue = Math.min(minValue, yValue);
+                    maxValue = Math.max(maxValue, yValue);
+                    hasData = true;
                 }
             }
-
-            if (!hasData) {
-                return;
-            }
-
-            // Check for invalid range (essentially zero range)
-            if (Math.abs(maxValue - minValue) < 1e-10) {
-                return;
-            }
-
-
-            // Calculate custom range with padding
-            double[] range = calculateAxisRange(minValue, maxValue, 0.05); // 5% padding
-
-
-            // Set the axis range
-            axis.setRange(range[0], range[1]);
-
-            axis.setAutoRange(false); // Disable auto-range to use our custom range
-
-        } finally {
-            applyingCustomAxisRange = false;
         }
+
+        if (!hasData) {
+            return;
+        }
+
+        // Check for invalid range (essentially zero range)
+        if (Math.abs(maxValue - minValue) < 1e-10) {
+            return;
+        }
+
+        // Calculate custom range with padding
+        double[] range = calculateAxisRange(minValue, maxValue, 0.05); // 5% padding
+
+        // Set the axis range
+        axis.setRange(range[0], range[1]);
+
+        // Only disable auto-range if it's currently enabled to avoid triggering events
+        if (axis.isAutoRange()) {
+            axis.setAutoRange(false);
+        }
+
     }
 
     // set all series of a given ykey different shades of a base paint
