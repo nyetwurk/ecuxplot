@@ -15,6 +15,7 @@ public final class OptionsMenu extends JMenu {
     private JCheckBox showAllRangesCheckBox;
     private JMenuItem nextRangeItem;
     private JMenuItem previousRangeItem;
+    private JCheckBox showFATSCheckBox;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
         super(id);
@@ -45,6 +46,7 @@ public final class OptionsMenu extends JMenu {
         jcb = new JCheckBox("Show FATS Window", ECUxPlot.getPreferences().getBoolean("showfats", false));
         jcb.addActionListener(plotFrame);
         this.add(jcb);
+        this.showFATSCheckBox = jcb;
 
         this.add(new JSeparator());
 
@@ -96,6 +98,30 @@ public final class OptionsMenu extends JMenu {
             final Preferences prefs = ECUxPlot.getPreferences();
             this.showAllRangesCheckBox.setSelected(Filter.showAllRanges(prefs));
             updateRangeNavigationState();
+        }
+    }
+
+    public void updateShowFATSCheckbox() {
+        if (this.showFATSCheckBox != null) {
+            final Preferences prefs = ECUxPlot.getPreferences();
+            this.showFATSCheckBox.setSelected(prefs.getBoolean("showfats", false));
+        }
+    }
+
+    public void updateRangeControlsAvailability(boolean filterEnabled, boolean hasMultipleRanges) {
+        if (this.showAllRangesCheckBox != null && this.nextRangeItem != null && this.previousRangeItem != null) {
+            // Range controls are only useful when filter is enabled AND there are multiple ranges
+            boolean rangeControlsUseful = filterEnabled && hasMultipleRanges;
+
+            // Disable range controls if filter is off or only one range exists
+            this.showAllRangesCheckBox.setEnabled(rangeControlsUseful);
+            this.nextRangeItem.setEnabled(rangeControlsUseful);
+            this.previousRangeItem.setEnabled(rangeControlsUseful);
+
+            // If range controls are not useful, force "Show all ranges" to be selected
+            if (!rangeControlsUseful) {
+                this.showAllRangesCheckBox.setSelected(true);
+            }
         }
     }
 }

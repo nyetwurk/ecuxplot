@@ -252,6 +252,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
         // grab title from prefs, or just use what current title is
         this.chartTitle(this.prefs.get("title", this.chartTitle()));
+
+        // Update range controls availability after files are loaded
+        updateRangeControlsAvailability();
     }
 
     public void loadFiles(ArrayList<String> files) {
@@ -603,6 +606,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             rebuild();
             if (this.optionsMenu != null) {
                 this.optionsMenu.updateShowAllRangesCheckbox();
+                updateRangeControlsAvailability();
             }
         } else if(source.getText().equals("Show all ranges")) {
             this.filter.showAllRanges(source.isSelected());
@@ -758,6 +762,30 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         plot.getDomainAxis().setLabel(label);
     }
 
+    private void updateRangeControlsAvailability() {
+        if (this.toolsMenu != null) {
+            // Check if filtering is enabled
+            boolean filterEnabled = Filter.enabled(this.prefs);
+
+            // Check if every file has only 1 range
+            boolean allFilesHaveSingleRange = true;
+            for (final Map.Entry<String, ECUxDataset> entry : this.fileDatasets.entrySet()) {
+                ECUxDataset dataset = entry.getValue();
+                int datasetRanges = dataset.getRanges().size();
+
+                // If any file has more than 1 range, then not all files have single range
+                if (datasetRanges > 1) {
+                    allFilesHaveSingleRange = false;
+                }
+            }
+
+            // Range controls are only useful when filter is enabled AND at least one file has multiple ranges
+            boolean hasMultipleRanges = !allFilesHaveSingleRange;
+
+            this.toolsMenu.updateRangeControlsAvailability(filterEnabled, hasMultipleRanges);
+        }
+    }
+
     private void addDataset(int axis, DefaultXYDataset d,
             Dataset.Key ykey) {
         // ugh. need an index for axis stroke, so we cant just do a get.
@@ -832,6 +860,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     if (callback != null) {
                         callback.run();
                     }
+                    // Update range controls availability after rebuild is complete
+                    updateRangeControlsAvailability();
                 }
             }
         };
