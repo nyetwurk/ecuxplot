@@ -52,6 +52,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private AxisMenu xAxis;
     private AxisMenu yAxis[] = new AxisMenu[2];
     OptionsMenu optionsMenu;
+    AxisPresetsMenu axisPresetsMenu;
 
     // Dialog boxes
     private JFileChooser fc;
@@ -108,9 +109,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.optionsMenu = new OptionsMenu("Options", this);
         this.menuBar.add(this.optionsMenu);
 
-        this.menuBar.add(Box.createHorizontalGlue());
         final HelpMenu helpMenu = new HelpMenu("Help", this);
         this.menuBar.add(helpMenu);
+
+        // Add separator between standard menus and axis menus
+        this.menuBar.add(Box.createHorizontalGlue());
+
+        // Axis-related menus grouped together
+        this.axisPresetsMenu = new AxisPresetsMenu("Axis Presets", this);
+        this.menuBar.add(this.axisPresetsMenu);
 
         setJMenuBar(this.menuBar);
 
@@ -204,15 +211,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         if(this.yAxis[1]!=null) this.menuBar.remove(this.yAxis[1]);
 
         this.xAxis = new AxisMenu("X Axis", ids, this, true, this.xkey());
-        this.menuBar.add(this.xAxis, 3);
+        this.menuBar.add(this.xAxis);
 
         this.yAxis[0] = new AxisMenu("Y Axis", ids, this, false,
             this.ykeys(0));
-        this.menuBar.add(this.yAxis[0], 4);
+        this.menuBar.add(this.yAxis[0]);
 
         this.yAxis[1] = new AxisMenu("Y Axis2", ids, this, false,
             this.ykeys(1));
-        this.menuBar.add(this.yAxis[1], 5);
+        this.menuBar.add(this.yAxis[1]);
 
         // hide/unhide filenames in the legend
         final XYPlot plot = this.chartPanel.getChart().getXYPlot();
@@ -451,7 +458,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     @Override
     public void actionPerformed(ActionEvent event) {
         final AbstractButton source = (AbstractButton) (event.getSource());
-        if(source.getText().equals("Quit")) {
+        if(source.getText().equals("Exit")) {
             exitApp();
         } else if(source.getText().equals("Export Chart")) {
             if(this.chartPanel == null) {
@@ -547,7 +554,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("New Chart")) {
             this.newChart();
         } else if(source.getText().equals("Open File") ||
-                  source.getText().equals("Add File") ) {
+                  source.getText().equals("Open Additional File") ) {
             if(this.fc==null) {
                 // current working dir
                 // String dir  = System.getProperty("user.dir"));
@@ -591,21 +598,27 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             if(this.chartPanel != null)
                 ECUxChartFactory.setChartStyle(this.chartPanel.getChart(),
                     !s, s);
-        } else if(source.getText().equals("Filter data")) {
+        } else if(source.getText().equals("Enable filter")) {
             this.filter.enabled(source.isSelected());
             rebuild();
+            if (this.optionsMenu != null) {
+                this.optionsMenu.updateShowAllRangesCheckbox();
+            }
         } else if(source.getText().equals("Show all ranges")) {
             this.filter.showAllRanges(source.isSelected());
             rebuild();
-        } else if(source.getText().equals("Next range...")) {
+            if (this.optionsMenu != null) {
+                this.optionsMenu.updateShowAllRangesCheckbox();
+            }
+        } else if(source.getText().equals("Next Range")) {
             this.filter.setCurrentRange(this.filter.getCurrentRange() + 1);
             rebuild();
-        } else if(source.getText().equals("Previous range...")) {
+        } else if(source.getText().equals("Previous Range")) {
             if(this.filter.getCurrentRange() > 0) {
                 this.filter.setCurrentRange(this.filter.getCurrentRange() - 1);
             }
             rebuild();
-        } else if(source.getText().equals("Configure filter...")) {
+        } else if(source.getText().equals("Configure Filter...")) {
             if(this.filterWindow == null) this.filterWindow =
                 new FilterWindow(this.filter, this);
             // Set all datasets for multi-file support
@@ -636,7 +649,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("About...")) {
             JOptionPane.showMessageDialog(this, new AboutPanel(),
                     "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
-        } else if(source.getText().equals("Show FATS window...")) {
+        } else if(source.getText().equals("Show FATS Window")) {
             final boolean s = source.isSelected();
             this.prefs.putBoolean("showfats", s);
             if(!s && this.fatsFrame.isShowing()) {
@@ -644,11 +657,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             }
             rebuild();
             updateFATSVisibility();
-        } else if(source.getText().equals("Show Events...")) {
+        } else if(source.getText().equals("Show Events Window")) {
             if(this.eventWindow == null) {
                 this.eventWindow = new EventWindow();
             }
             this.eventWindow.showWindow();
+        } else if(source.getText().equals("Show Filter Window")) {
+            if(this.filterWindow == null) this.filterWindow =
+                new FilterWindow(this.filter, this);
+            // Set all datasets for multi-file support
+            this.filterWindow.setFileDatasets(this.fileDatasets);
+            this.filterWindow.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this,
                 "unhandled getText=" + source.getText() +
@@ -923,7 +942,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.yAxis[1].setOnlySelected(p.ykeys(1));
 
         // update scatter checkbox to reflect the preset's scatter setting
-        this.optionsMenu.updateScatterCheckbox();
+        // Scatter checkbox is now in ToolsMenu, no need to update separately
     }
 
     @Override

@@ -23,11 +23,15 @@ public final class FileMenu extends JMenu {
         item.addActionListener(listener);
         this.add(item);
 
-        item = new JMenuItem("Add File");
+        item = new JMenuItem("Open Additional File");
         item.setAccelerator(KeyStroke.getKeyStroke(
             KeyEvent.VK_A, ActionEvent.CTRL_MASK));
         item.addActionListener(listener);
         this.add(item);
+
+        // Add Recent Files submenu
+        JMenu recentFilesMenu = new JMenu("Recent Files");
+        this.add(recentFilesMenu);
 
         this.add(new JSeparator());
 
@@ -65,7 +69,13 @@ public final class FileMenu extends JMenu {
 
         this.add(new JSeparator());
 
-        item = new JMenuItem("Quit");
+        item = new JMenuItem("Show Events Window");
+        item.addActionListener(listener);
+        this.add(item);
+
+        this.add(new JSeparator());
+
+        item = new JMenuItem("Exit");
         item.setAccelerator(KeyStroke.getKeyStroke(
             KeyEvent.VK_F4, ActionEvent.ALT_MASK));
         item.addActionListener(listener);
