@@ -33,7 +33,7 @@ public final class OptionsMenu extends JMenu {
         jcb.addActionListener(plotFrame);
         this.add(jcb);
 
-        jcb = new JCheckBox("Use alternate column names",
+        jcb = new JCheckBox("Alt column names",
                 prefs.getBoolean("altnames", false));
         jcb.addActionListener(plotFrame);
         this.add(jcb);
@@ -42,15 +42,15 @@ public final class OptionsMenu extends JMenu {
         jcb.addActionListener(plotFrame);
         this.add(jcb);
 
-        jcb = new JCheckBox("Show axis menus in menu bar",
-                prefs.getBoolean("showaxismenus", false));
+        jcb = new JCheckBox("Hide axis menus",
+                prefs.getBoolean("hideaxismenus", false));
         jcb.addActionListener(plotFrame);
         this.add(jcb);
 
         this.add(new JSeparator());
 
         // Analysis tools
-        item = new JMenuItem("Show FATS Window");
+        item = new JMenuItem("Show FATS");
         item.setToolTipText("Requires filter to be enabled");
         item.addActionListener(plotFrame);
         this.add(item);
@@ -59,7 +59,7 @@ public final class OptionsMenu extends JMenu {
         this.add(new JSeparator());
 
         // Filter tools
-        item = new JMenuItem("Configure Filter...");
+        item = new JMenuItem("Filter...");
         item.addActionListener(plotFrame);
         this.add(item);
 
@@ -84,7 +84,7 @@ public final class OptionsMenu extends JMenu {
         this.add(new JSeparator());
 
         // Editors
-        item = new JMenuItem("Edit SAE constants...");
+        item = new JMenuItem("SAE constants...");
         item.addActionListener(plotFrame);
         this.add(item);
 

@@ -23,7 +23,7 @@ public final class FileMenu extends JMenu {
         item.addActionListener(listener);
         this.add(item);
 
-        item = new JMenuItem("Open Additional File");
+        item = new JMenuItem("Add File");
         item.setAccelerator(KeyStroke.getKeyStroke(
             KeyEvent.VK_A, ActionEvent.CTRL_MASK));
         item.addActionListener(listener);
@@ -69,7 +69,7 @@ public final class FileMenu extends JMenu {
 
         this.add(new JSeparator());
 
-        item = new JMenuItem("Show Events Window");
+        item = new JMenuItem("Events");
         item.addActionListener(listener);
         this.add(item);
 
