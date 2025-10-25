@@ -42,11 +42,11 @@ public final class ProfileMenu extends JMenu {
         this.add(new JSeparator());
 
         // Then edit the profile's configuration
-        jmi = new JMenuItem("Edit constants...");
+        jmi = new JMenuItem("Constants...");
         jmi.addActionListener(plotFrame);
         this.add(jmi);
 
-        jmi = new JMenuItem("Edit fueling...");
+        jmi = new JMenuItem("Fueling...");
         jmi.addActionListener(plotFrame);
         this.add(jmi);
 

@@ -106,7 +106,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.optionsMenu = new OptionsMenu("Options", this);
         this.menuBar.add(this.optionsMenu);
 
-        // Axis presets menu before Help
+        // Axis presets menu before axis menus
         this.axisPresetsMenu = new AxisPresetsMenu("Axis Presets", this);
         this.menuBar.add(this.axisPresetsMenu);
 
@@ -533,7 +533,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("New Chart")) {
             this.newChart();
         } else if(source.getText().equals("Open File") ||
-                  source.getText().equals("Open Additional File") ) {
+                  source.getText().equals("Add File") ) {
             if(this.fc==null) {
                 // current working dir
                 // String dir  = System.getProperty("user.dir"));
@@ -565,7 +565,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 this.prefs.put("chooserDir",
                     this.fc.getCurrentDirectory().toString());
             }
-        } else if(source.getText().equals("Use alternate column names")) {
+        } else if(source.getText().equals("Alt column names")) {
             final boolean s = source.isSelected();
             this.prefs.putBoolean("altnames", s);
             // rebuild title and labels
@@ -599,13 +599,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 this.filter.setCurrentRange(this.filter.getCurrentRange() - 1);
             }
             rebuild();
-        } else if(source.getText().equals("Configure Filter...")) {
+        } else if(source.getText().equals("Filter...")) {
             if(this.filterWindow == null) this.filterWindow =
                 new FilterWindow(this.filter, this);
             // Set all datasets for multi-file support
             this.filterWindow.setFileDatasets(this.fileDatasets);
             this.filterWindow.setVisible(true);
-        } else if(source.getText().equals("Edit constants...")) {
+        } else if(source.getText().equals("Constants...")) {
             if(this.ce == null) this.ce =
                 new ConstantsEditor(this.prefs, this.env.c);
             boolean changesMade = this.ce.showDialog(this, "Constants");
@@ -613,7 +613,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             if (changesMade && this.fatsFrame != null) {
                 this.fatsFrame.updateRpmFieldsFromConstants();
             }
-        } else if(source.getText().equals("Edit fueling...")) {
+        } else if(source.getText().equals("Fueling...")) {
             if(this.fle == null) this.fle =
                 new FuelingEditor(this.prefs, this.env.f);
             this.fle.showDialog(this, "Fueling");
@@ -624,18 +624,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.env.sae.enabled(source.isSelected());
             rebuild();
             updatePlotTitleAndYAxisLabels();
-        } else if(source.getText().equals("Show axis menus in menu bar")) {
+        } else if(source.getText().equals("Hide axis menus")) {
             // UX Enhancement: Allow users to choose between new axis click functionality
             // and traditional menu bar dropdowns for axis configuration
-            this.prefs.putBoolean("showaxismenus", source.isSelected());
+            this.prefs.putBoolean("hideaxismenus", source.isSelected());
             updateAxisMenuVisibility();
-        } else if(source.getText().equals("Edit SAE constants...")) {
+        } else if(source.getText().equals("SAE constants...")) {
             if(this.sae == null) this.sae = new SAEEditor(this.prefs, this.env.sae);
             this.sae.showDialog(this, "SAE");
         } else if(source.getText().equals("About...")) {
             JOptionPane.showMessageDialog(this, new AboutPanel(),
                     "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
-        } else if(source.getText().equals("Show FATS Window")) {
+        } else if(source.getText().equals("Show FATS")) {
             FATSChartFrame fatsFrame = FATSChartFrame.createFATSChartFrame(this.fileDatasets, this);
             fatsFrame.pack();
 
@@ -648,7 +648,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
             fatsFrame.setVisible(true);
             this.fatsFrame = fatsFrame; // Track current FATS window
-        } else if(source.getText().equals("Show Events Window")) {
+        } else if(source.getText().equals("Events")) {
             if(this.eventWindow == null) {
                 this.eventWindow = new EventWindow();
             }
@@ -734,22 +734,28 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     /**
      * Update axis menu visibility based on user preference.
-     * If "Show axis menus in menu bar" is enabled, adds axis menus to menu bar.
-     * If disabled, removes them from menu bar (but keeps them for popup functionality).
+     * If "Hide axis menus" is enabled, removes axis menus from menu bar.
+     * If disabled, adds them to menu bar (but keeps them for popup functionality).
      */
     private void updateAxisMenuVisibility() {
-        boolean showInMenuBar = this.prefs.getBoolean("showaxismenus", false);
+        boolean hideAxisMenus = this.prefs.getBoolean("hideaxismenus", false);
+        boolean showInMenuBar = !hideAxisMenus; // Invert the logic
 
         if (showInMenuBar) {
-            // Add axis menus to the left side of menu bar (after Options, before Axis Presets)
+            // Add axis menus to the left side of menu bar (after Axis Presets)
             if (this.xAxis != null && !this.menuBarContains(this.xAxis)) {
-                this.menuBar.add(this.xAxis, 3); // Insert at position 3 (after Options)
+                this.menuBar.add(this.xAxis, 4); // Insert at position 4 (after Axis Presets)
             }
             if (this.yAxis[0] != null && !this.menuBarContains(this.yAxis[0])) {
-                this.menuBar.add(this.yAxis[0], 4); // Insert at position 4
+                this.menuBar.add(this.yAxis[0], 5); // Insert at position 5
             }
             if (this.yAxis[1] != null && !this.menuBarContains(this.yAxis[1])) {
-                this.menuBar.add(this.yAxis[1], 5); // Insert at position 5
+                this.menuBar.add(this.yAxis[1], 6); // Insert at position 6
+            }
+            // Move Axis Presets to position 3 (after Options, before axis menus)
+            if (this.axisPresetsMenu != null && !this.menuBarContains(this.axisPresetsMenu)) {
+                this.menuBar.remove(this.axisPresetsMenu);
+                this.menuBar.add(this.axisPresetsMenu, 3);
             }
         } else {
             // Remove axis menus from menu bar if present
@@ -761,6 +767,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             }
             if (this.yAxis[1] != null) {
                 this.menuBar.remove(this.yAxis[1]);
+            }
+            // Move Axis Presets back to position 3 (after Options)
+            if (this.axisPresetsMenu != null && !this.menuBarContains(this.axisPresetsMenu)) {
+                this.menuBar.remove(this.axisPresetsMenu);
+                this.menuBar.add(this.axisPresetsMenu, 3);
             }
         }
 
