@@ -179,8 +179,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     private void fileDatasetsChanged() {
-        // set title
-        this.setTitle("ECUxPlot " + Strings.join(", ", this.fileDatasets.keySet()));
+        // set title with elided filenames to prevent extremely long title bars
+        String title = buildElidedTitle();
+        this.setTitle(title);
 
         // xaxis label depends on units found in files
         updateXAxisLabel();
@@ -687,6 +688,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         return Strings.join(",", units);
     }
 
+    /**
+     * Build window title with elided filenames if too long
+     * Limits individual filename display to prevent extremely long titles
+     */
+    private String buildElidedTitle() {
+        final int MAX_FILENAME_LENGTH = 40;
+        List<String> elidedFilenames = new ArrayList<>();
+
+        for (String filename : this.fileDatasets.keySet()) {
+            elidedFilenames.add(Strings.elide(filename, MAX_FILENAME_LENGTH));
+        }
+
+        return "ECUxPlot " + Strings.join(", ", elidedFilenames);
+    }
+
     private void chartTitle(String title) {
         this.chartPanel.getChart().setTitle(title);
     }
@@ -867,6 +883,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         /* set the stroke for those series */
         ECUxChartFactory.setAxisStroke(this.chartPanel.getChart(), axis,
             d, ykey, series, stroke);
+
+        // Apply elided legend labels after paint/stroke settings
+        ECUxChartFactory.applyElidedLegendLabels(this.chartPanel.getChart());
     }
 
     public void rebuild() {

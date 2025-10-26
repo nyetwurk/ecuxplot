@@ -227,6 +227,30 @@ public class Dataset {
         public Integer getRange() { return this.range; }
         public void setRange(int r) { this.range=r; }
 
+        /**
+         * Get display label with elided filename for legend display.
+         * Elides only the filename portion (before the colon) while preserving
+         * the variable name and range number for readability.
+         * @param maxLength Maximum length for the filename portion (15 chars recommended)
+         * @return Elided version of the label suitable for display
+         */
+        public String getDisplayLabel(int maxLength) {
+            String ret = this.useId2()?this.id_cache.id2:this.s;
+
+            // Elide filename if present
+            if(!this.flags.get(0)) {
+                String filename = org.nyet.util.Files.filenameStem(this.fn);
+                String elidedFilename = org.nyet.util.Strings.elide(filename, maxLength);
+                ret = elidedFilename + ":" + ret;
+            }
+
+            // Add range number if present
+            if(!this.flags.get(1))
+                ret += " " + (this.range+1);
+
+            return ret;
+        }
+
         @Override
         public int compareTo(Object o) {
             if(o instanceof Key) {

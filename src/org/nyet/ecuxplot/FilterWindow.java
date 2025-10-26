@@ -14,6 +14,7 @@ import javax.swing.table.*;
 
 import org.nyet.logfile.Dataset;
 import org.nyet.util.WaitCursor;
+import org.nyet.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -245,28 +246,24 @@ public class FilterWindow extends JFrame {
         showRPMDataCheckBox = new JCheckBox("Show RPM Detail", false);
         maxRowsSpinner = new JSpinner(new SpinnerNumberModel(500, 10, 1000, 10));
         fileSelector = new JComboBox<String>();
+        // Use custom renderer to elide long filenames to control dropdown width
         fileSelector.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value != null) {
                     String filename = value.toString();
-                    // More flexible filename truncation - show more characters for longer filenames
-                    if (filename.length() > 50) {
-                        // For very long filenames, show more context
-                        setText(filename.substring(0, 25) + "..." + filename.substring(filename.length() - 20));
-                    } else if (filename.length() > 30) {
-                        // For medium length filenames, use original logic
-                        setText(filename.substring(0, 15) + "..." + filename.substring(filename.length() - 12));
-                    } else {
-                        setText(filename);
-                    }
+                    // Elide long filenames to prevent combo box from being too wide
+                    // Use a reasonable max length based on what's visible
+                    int maxLength = 60;
+                    String displayText = Strings.elide(filename, maxLength);
+                    setText(displayText);
+                    // Always show full filename in tooltip
                     setToolTipText(filename);
                 }
                 return this;
             }
         });
-        fileSelector.setPreferredSize(new Dimension(200, fileSelector.getPreferredSize().height));
         showOnlyValidDataCheckBox = new JCheckBox("Show Only Valid Data", true);
         fileLabel = new JLabel("File:");
 
@@ -478,11 +475,16 @@ public class FilterWindow extends JFrame {
         // Control panel at top
         JPanel controlPanel = new JPanel(new BorderLayout());
 
-        // Top row with main controls
-        JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topRow.add(fileLabel);
-        topRow.add(fileSelector);
-        topRow.add(statusLabel);
+        // Top row with main controls - use BorderLayout for better control
+        JPanel topRow = new JPanel(new BorderLayout());
+
+        // Left side: file label and selector
+        JPanel filePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        filePanel.add(fileLabel);
+        filePanel.add(fileSelector);
+
+        topRow.add(filePanel, BorderLayout.WEST);
+        topRow.add(statusLabel, BorderLayout.EAST);
 
         // Bottom row with checkboxes and spinner
         JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));

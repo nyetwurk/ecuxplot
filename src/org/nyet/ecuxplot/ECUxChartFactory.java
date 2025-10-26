@@ -1,10 +1,13 @@
 package org.nyet.ecuxplot;
 
 import java.awt.Color;
+import java.awt.Paint;
+import java.awt.Stroke;
 import java.util.ArrayList;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.axis.CategoryAxis;
@@ -14,6 +17,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.nyet.logfile.Dataset;
+import org.nyet.util.Strings;
 
 public class ECUxChartFactory {
     /**
@@ -330,6 +334,95 @@ public class ECUxChartFactory {
         domainAxis.setMaximumCategoryLabelWidthRatio(1.2f);
 
         return chart;
+    }
+
+    /**
+     * Custom XYLineAndShapeRenderer that elides legend labels for display.
+     * Elides only the filename portion while preserving variable name and range.
+     * This allows long filenames to be displayed compactly in the legend without
+     * affecting the underlying series keys used for indexing and lookup.
+     */
+    private static class ElidedLegendRenderer extends XYLineAndShapeRenderer {
+        private static final int MAX_LEGEND_LABEL_LENGTH = 15;
+
+        @Override
+        public LegendItem getLegendItem(int datasetIndex, int series) {
+            LegendItem original = super.getLegendItem(datasetIndex, series);
+            if (original != null) {
+                String elidedLabel = elideLegendLabel(original.getLabel());
+                if (!elidedLabel.equals(original.getLabel())) {
+                    LegendItem item = new LegendItem(elidedLabel);
+                    item.setDescription(original.getDescription());
+                    item.setToolTipText(original.getToolTipText());
+                    item.setURLText(original.getURLText());
+                    item.setShape(original.getShape());
+                    item.setFillPaint(original.getFillPaint());
+                    item.setOutlineStroke(original.getOutlineStroke());
+                    item.setOutlinePaint(original.getOutlinePaint());
+                    item.setLine(original.getLine());
+                    item.setLinePaint(original.getLinePaint());
+                    item.setLineStroke(original.getLineStroke());
+                    item.setSeriesKey(original.getSeriesKey());
+                    item.setSeriesIndex(original.getSeriesIndex());
+                    item.setDataset(original.getDataset());
+                    item.setDatasetIndex(original.getDatasetIndex());
+                    return item;
+                }
+            }
+            return original;
+        }
+
+        private String elideLegendLabel(String label) {
+            // Check if this is a Dataset.Key label (format: "filename:varname rangeNum")
+            int colonIndex = label.indexOf(':');
+            if (colonIndex > 0 && colonIndex < label.length() - 1) {
+                String filename = label.substring(0, colonIndex);
+                String rest = label.substring(colonIndex);
+                // Use smart elision to preserve both version prefix and timestamp suffix
+                String elidedFilename = Strings.elide(filename, MAX_LEGEND_LABEL_LENGTH);
+                return elidedFilename + rest;
+            }
+            // Not a Dataset.Key format, use smart elision
+            return Strings.elide(label, MAX_LEGEND_LABEL_LENGTH);
+        }
+    }
+
+    /**
+     * Apply elided legend labels to a chart.
+     * Call this AFTER setAxisPaint and setAxisStroke to preserve customizations.
+     * @param chart the JFreeChart to apply elided legend labels to
+     */
+    public static void applyElidedLegendLabels(JFreeChart chart) {
+        XYPlot plot = chart.getXYPlot();
+
+        // Wrap each axis renderer with elided legend functionality
+        for (int i = 0; i < plot.getDatasetCount(); i++) {
+            XYItemRenderer existing = plot.getRenderer(i);
+            if (!(existing instanceof ElidedLegendRenderer)) {
+                ElidedLegendRenderer elided = new ElidedLegendRenderer();
+
+                // Copy all settings from existing renderer
+                if (existing instanceof XYLineAndShapeRenderer) {
+                    XYLineAndShapeRenderer lr = (XYLineAndShapeRenderer) existing;
+                    elided.setBaseLinesVisible(lr.getBaseLinesVisible());
+                    elided.setBaseShapesVisible(lr.getBaseShapesVisible());
+                }
+
+                // Copy paint and stroke for all series
+                for (int series = 0; series < 100; series++) {
+                    Paint paint = existing.getSeriesPaint(series);
+                    if (paint != null) {
+                        elided.setSeriesPaint(series, paint);
+                    }
+                    Stroke stroke = existing.getSeriesStroke(series);
+                    if (stroke != null) {
+                        elided.setSeriesStroke(series, stroke);
+                    }
+                }
+
+                plot.setRenderer(i, elided);
+            }
+        }
     }
 }
 
