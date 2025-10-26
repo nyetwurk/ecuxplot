@@ -964,6 +964,12 @@ public class FilterWindow extends JFrame {
             executeRebuildWithCallback(() -> {
                 // Refresh the FilterWindow table AFTER rebuild completes
                 refreshData();
+                // Rebuild FATS since filter changed
+                if (this.eplot != null) {
+                    this.eplot.rebuildFATS();
+                    // Refresh Range Selector if open (ranges may have changed)
+                    this.eplot.refreshRangeSelector();
+                }
             });
         } finally {
             restoreWindowBehavior();
@@ -987,6 +993,12 @@ public class FilterWindow extends JFrame {
         executeRebuildWithCallback(() -> {
             // Refresh the FilterWindow table AFTER the main plot rebuild
             refreshData();
+            // Rebuild FATS since filter changed
+            if (this.eplot != null) {
+                this.eplot.rebuildFATS();
+                // Refresh Range Selector if open (ranges may have changed)
+                this.eplot.refreshRangeSelector();
+            }
         });
     }
 

@@ -44,6 +44,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private ECUxChartPanel chartPanel;
     private EventWindow eventWindow;
     private FilterWindow filterWindow;
+    private RangeSelectorWindow rangeSelectorWindow;
 
     // Menus
     private final JMenuBar menuBar;
@@ -187,6 +188,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         // xaxis label depends on units found in files
         updateXAxisLabel();
 
+        // Initialize filter with "show all" for each file if no selections exist yet
+        if (!this.filter.hasAnyRangeSelections()) {
+            for (Map.Entry<String, ECUxDataset> entry : this.fileDatasets.entrySet()) {
+                String filename = entry.getValue().getFileId();
+                List<Dataset.Range> ranges = entry.getValue().getRanges();
+                Set<Integer> allRanges = new HashSet<>();
+                for (int i = 0; i < ranges.size(); i++) {
+                    allRanges.add(i);
+                }
+                this.filter.setSelectedRanges(filename, allRanges);
+            }
+        }
+
         // Add all the data we just finished loading fom the files
         addChartYFromPrefs();
 
@@ -238,8 +252,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         // grab title from prefs, or just use what current title is
         this.chartTitle(this.prefs.get("title", this.chartTitle()));
 
-        // Update range controls availability after files are loaded
-        updateRangeControlsAvailability();
         // Update FATS availability after files are loaded
         if (this.optionsMenu != null) {
             this.optionsMenu.updateFATSAvailability();
@@ -247,6 +259,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
         // Update axis menu visibility based on user preference
         updateAxisMenuVisibility();
+
+        // Rebuild to calculate ranges and FATS data
+        rebuild();
     }
 
     public void loadFiles(ArrayList<String> files) {
@@ -593,35 +608,36 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("Enable filter")) {
             this.filter.enabled(source.isSelected());
             rebuild();
-            // FATS needs to be recalculated when filter is enabled
+            // FATS needs to be recalculated when filter is enabled (not when disabled)
             if (source.isSelected()) {
                 rebuildFATS();
             }
             if (this.optionsMenu != null) {
-                this.optionsMenu.updateShowAllRangesCheckbox();
                 this.optionsMenu.updateFATSAvailability();
-                updateRangeControlsAvailability();
             }
-        } else if(source.getText().equals("Show all ranges")) {
-            this.filter.showAllRanges(source.isSelected());
-            rebuild();
-            if (this.optionsMenu != null) {
-                this.optionsMenu.updateShowAllRangesCheckbox();
-            }
-        } else if(source.getText().equals("Next Range")) {
-            this.filter.setCurrentRange(this.filter.getCurrentRange() + 1);
-            rebuild();
-        } else if(source.getText().equals("Previous Range")) {
-            if(this.filter.getCurrentRange() > 0) {
-                this.filter.setCurrentRange(this.filter.getCurrentRange() - 1);
-            }
-            rebuild();
         } else if(source.getText().equals("Filter...")) {
+            // Old range selectors removed - now using Range Selector for per-file range selection
             if(this.filterWindow == null) this.filterWindow =
                 new FilterWindow(this.filter, this);
             // Set all datasets for multi-file support
             this.filterWindow.setFileDatasets(this.fileDatasets);
             this.filterWindow.setVisible(true);
+        } else if(source.getText().equals("Ranges...")) {
+            // Ensure FATS dataset is created if files are loaded
+            if(this.fatsDataset == null && !this.fileDatasets.isEmpty()) {
+                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats);
+            }
+
+            if(this.rangeSelectorWindow == null) this.rangeSelectorWindow =
+                new RangeSelectorWindow(this.filter, this);
+
+            // Set FATS dataset BEFORE file datasets to ensure it's available for award calculation
+            if(this.fatsDataset != null) {
+                this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
+            }
+            // Set all datasets for multi-file support (this triggers updateList which needs FATS dataset)
+            this.rangeSelectorWindow.setFileDatasets(this.fileDatasets);
+            this.rangeSelectorWindow.setVisible(true);
         } else if(source.getText().equals("Constants...")) {
             if(this.ce == null) this.ce =
                 new ConstantsEditor(this.prefs, this.env.c);
@@ -845,30 +861,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         plot.getDomainAxis().setLabel(label);
     }
 
-    private void updateRangeControlsAvailability() {
-        if (this.optionsMenu != null) {
-            // Check if filtering is enabled
-            boolean filterEnabled = Filter.enabled(this.prefs);
-
-            // Check if every file has only 1 range
-            boolean allFilesHaveSingleRange = true;
-            for (final Map.Entry<String, ECUxDataset> entry : this.fileDatasets.entrySet()) {
-                ECUxDataset dataset = entry.getValue();
-                int datasetRanges = dataset.getRanges().size();
-
-                // If any file has more than 1 range, then not all files have single range
-                if (datasetRanges > 1) {
-                    allFilesHaveSingleRange = false;
-                }
-            }
-
-            // Range controls are only useful when filter is enabled AND at least one file has multiple ranges
-            boolean hasMultipleRanges = !allFilesHaveSingleRange;
-
-            this.optionsMenu.updateRangeControlsAvailability(filterEnabled, hasMultipleRanges);
-        }
-    }
-
     private void addDataset(int axis, DefaultXYDataset d,
             Dataset.Key ykey) {
         // ugh. need an index for axis stroke, so we cant just do a get.
@@ -889,15 +881,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             ECUxChartFactory.addDataset(d, data, this.xkey(), ykey, this.filter);
 
         /* set the color for those series */
-        ECUxChartFactory.setAxisPaint(this.chartPanel.getChart(), axis,
-            d, ykey, series);
+        if (series.length > 0) {
+            ECUxChartFactory.setAxisPaint(this.chartPanel.getChart(), axis,
+                d, ykey, series);
 
-        /* set the stroke for those series */
-        ECUxChartFactory.setAxisStroke(this.chartPanel.getChart(), axis,
-            d, ykey, series, stroke);
+            /* set the stroke for those series */
+            ECUxChartFactory.setAxisStroke(this.chartPanel.getChart(), axis,
+                d, ykey, series, stroke);
 
-        // Apply elided legend labels after paint/stroke settings
-        ECUxChartFactory.applyElidedLegendLabels(this.chartPanel.getChart());
+            // Apply elided legend labels after paint/stroke settings
+            ECUxChartFactory.applyElidedLegendLabels(this.chartPanel.getChart());
+        }
     }
 
     public void rebuild() {
@@ -922,23 +916,47 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             @Override
             protected void done() {
                 try {
-                    if(fatsFrame != null)
-                        fatsFrame.setDatasets(fileDatasets);
+                    // Create FATSDataset if it doesn't exist
+                    // Don't rebuild automatically - only rebuild when filter or FATS settings change
+                    if (ECUxPlot.this.fatsDataset == null && !ECUxPlot.this.fileDatasets.isEmpty()) {
+                        ECUxPlot.this.fatsDataset = new FATSDataset(ECUxPlot.this.fileDatasets, ECUxPlot.this.fats);
 
-                    final XYPlot plot = chartPanel.getChart().getXYPlot();
-                    for(int axis=0;axis<plot.getDatasetCount();axis++) {
-                        final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
-                        final DefaultXYDataset newdataset = new DefaultXYDataset();
-                        for(int series=0;series<pds.getSeriesCount();series++) {
-                            final Object seriesKey = pds.getSeriesKey(series);
-                            // ODDITY: Type safety check needed because placeholder data uses String keys
-                            // while real data uses Dataset.Key objects. This prevents ClassCastException.
-                            if(seriesKey instanceof Dataset.Key) {
-                                final Dataset.Key ykey = (Dataset.Key)seriesKey;
-                                addDataset(axis, newdataset, ykey);
-                            }
-                            // Skip placeholder series (String keys like "Empty")
+                        // Update Range Selector window if it's open
+                        if(ECUxPlot.this.rangeSelectorWindow != null) {
+                            ECUxPlot.this.rangeSelectorWindow.setFATSDataset(ECUxPlot.this.fatsDataset);
                         }
+                    }
+
+                    // FATS window will automatically show updated data since it uses the same FATSDataset instance
+
+                    final XYPlot plot = ECUxPlot.this.chartPanel.getChart().getXYPlot();
+
+                    // Rebuild each axis by re-adding all Y-keys from preferences
+                    // This ensures removed series are added back when their ranges are selected
+                    for(int axis=0;axis<plot.getDatasetCount();axis++) {
+                        final DefaultXYDataset newdataset = new DefaultXYDataset();
+
+                        // Get all Y-keys configured for this axis
+                        final Comparable<?>[] ykeys = ECUxPlot.this.ykeys(axis);
+
+                        // Re-add each Y-key with current file data
+                        for (final Comparable<?> ykeyName : ykeys) {
+                            final String yvar = ykeyName.toString();
+
+                            // Add data for each loaded file
+                            for (final Map.Entry<String, ECUxDataset> entry : ECUxPlot.this.fileDatasets.entrySet()) {
+                                final String filename = entry.getKey();
+                                final ECUxDataset data = entry.getValue();
+
+                                // Create base key for this Y-variable
+                                final Dataset.Key baseKey = data.new Key(yvar, data);
+                                final Comparable<?> xkey = "RPM";
+
+                                // addDataset will read the filter and add only selected ranges
+                                ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey, ECUxPlot.this.filter, filename);
+                            }
+                        }
+
                         plot.setDataset(axis, newdataset);
 
                         // Apply custom axis range calculation for better padding with negative values
@@ -952,8 +970,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     if (callback != null) {
                         callback.run();
                     }
-                    // Update range controls availability after rebuild is complete
-                    updateRangeControlsAvailability();
                 }
             }
         };
@@ -1175,7 +1191,30 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.eventWindow.dispose();
         if(this.filterWindow!=null)
             this.filterWindow.dispose();
+        if(this.rangeSelectorWindow!=null)
+            this.rangeSelectorWindow.dispose();
         System.exit(0);
+    }
+
+    /**
+     * Notify the Range Selector window to update when FATS data changes
+     */
+    public void updateRangeSelectorFATS() {
+        if(this.rangeSelectorWindow != null && this.fatsDataset != null) {
+            this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
+        }
+    }
+
+    /**
+     * Refresh the Range Selector window to reflect current datasets
+     */
+    public void refreshRangeSelector() {
+        if(this.rangeSelectorWindow != null) {
+            this.rangeSelectorWindow.setFileDatasets(this.fileDatasets);
+            if(this.fatsDataset != null) {
+                this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
+            }
+        }
     }
 
     /**
@@ -1188,6 +1227,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             // Update windows that display FATS data
             if (this.fatsFrame != null) {
                 this.fatsFrame.refreshFromFATS();
+            }
+            if (this.rangeSelectorWindow != null) {
+                this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
             }
         }
     }
