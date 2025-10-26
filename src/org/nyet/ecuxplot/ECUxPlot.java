@@ -40,6 +40,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private ArrayList<String> files = new ArrayList<String>();
 
     FATSChartFrame fatsFrame;
+    FATSDataset fatsDataset;
     private ECUxChartPanel chartPanel;
     private EventWindow eventWindow;
     private FilterWindow filterWindow;
@@ -592,6 +593,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("Enable filter")) {
             this.filter.enabled(source.isSelected());
             rebuild();
+            // FATS needs to be recalculated when filter is enabled
+            if (source.isSelected()) {
+                rebuildFATS();
+            }
             if (this.optionsMenu != null) {
                 this.optionsMenu.updateShowAllRangesCheckbox();
                 this.optionsMenu.updateFATSAvailability();
@@ -648,18 +653,25 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             JOptionPane.showMessageDialog(this, new AboutPanel(),
                     "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
         } else if(source.getText().equals("Show FATS")) {
-            FATSChartFrame fatsFrame = FATSChartFrame.createFATSChartFrame(this.fileDatasets, this);
-            fatsFrame.pack();
-
-            // Set window icon
-            final java.net.URL imageURL =
-                getClass().getResource("icons/ECUxPlot2-64.png");
-            if (imageURL != null) {
-                fatsFrame.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
+            // Create FATS dataset if it doesn't exist yet
+            if (this.fatsDataset == null && !this.fileDatasets.isEmpty()) {
+                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats);
             }
 
-            fatsFrame.setVisible(true);
-            this.fatsFrame = fatsFrame; // Track current FATS window
+            // Create window if it doesn't exist
+            if (this.fatsFrame == null) {
+                this.fatsFrame = FATSChartFrame.createFATSChartFrame(this.fatsDataset, this);
+                this.fatsFrame.pack();
+
+                // Set window icon
+                final java.net.URL imageURL =
+                    getClass().getResource("icons/ECUxPlot2-64.png");
+                if (imageURL != null) {
+                    this.fatsFrame.setIconImage(new javax.swing.ImageIcon(imageURL).getImage());
+                }
+            }
+
+            this.fatsFrame.setVisible(true);
         } else if(source.getText().equals("Events")) {
             if(this.eventWindow == null) {
                 this.eventWindow = new EventWindow();
@@ -1164,6 +1176,20 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         if(this.filterWindow!=null)
             this.filterWindow.dispose();
         System.exit(0);
+    }
+
+    /**
+     * Rebuild FATS data when filter or FATS settings change
+     */
+    public void rebuildFATS() {
+        if (this.fatsDataset != null && !this.fileDatasets.isEmpty()) {
+            this.fatsDataset.rebuild();
+
+            // Update windows that display FATS data
+            if (this.fatsFrame != null) {
+                this.fatsFrame.refreshFromFATS();
+            }
+        }
     }
 
     public static final Preferences getPreferences() {

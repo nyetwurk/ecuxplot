@@ -33,12 +33,9 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     private JLabel unitLabel;
     private JPanel conversionGroup;
 
-    public static FATSChartFrame createFATSChartFrame(
-            TreeMap<String, ECUxDataset> fileDatasets, ECUxPlot plotFrame) {
+    public static FATSChartFrame createFATSChartFrame(FATSDataset dataset, ECUxPlot plotFrame) {
         final FATS fats = plotFrame.fats; // Use the FATS instance from ECUxPlot
-        final FATSDataset dataset = new FATSDataset(fileDatasets, fats);
-        final JFreeChart chart =
-            ECUxChartFactory.createFATSChart(dataset);
+        final JFreeChart chart = ECUxChartFactory.createFATSChart(dataset);
         return new FATSChartFrame(chart, dataset, plotFrame, fats);
     }
 
@@ -92,6 +89,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
                 updateUnitLabel(FATSChartFrame.this.unitLabel);
                 FATSChartFrame.this.dataset.refreshFromFATS();
                 FATSChartFrame.this.getChartPanel().getChart().setTitle(FATSChartFrame.this.dataset.getTitle());
+                notifyRangeSelector();
             }
         });
 
@@ -182,6 +180,10 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         // Set initial combo box selection and visibility
         updateComboBoxSelection();
         updateRpmFieldsVisibility();
+    }
+
+    public FATSDataset getDataset() {
+        return this.dataset;
     }
 
     private FATS.SpeedUnit getSelectedSpeedUnit() {
@@ -288,6 +290,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
             }
 
             this.dataset.refreshFromFATS();
+            notifyRangeSelector();
         } else if(event.getActionCommand().equals("Defaults")) {
             this.fats.speedUnit(FATS.SpeedUnit.RPM);
             this.fats.start(4200);
@@ -299,6 +302,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
             // Update radio buttons to reflect defaults
             updateComboBoxSelection();
             updateRpmFieldsVisibility();
+            notifyRangeSelector();
         }
         this.getChartPanel().getChart().setTitle(this.dataset.getTitle());
     }
@@ -348,6 +352,16 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     public void updateRpmFieldsFromConstants() {
         if (this.rpmPerMphField != null) {
             this.rpmPerMphField.setText("" + this.plotFrame.env.c.rpm_per_mph());
+        }
+    }
+
+    /**
+     * Notify the Range Selector window to update when FATS data changes
+     * Also triggers FATS recalculation
+     */
+    private void notifyRangeSelector() {
+        if (this.plotFrame != null && this.dataset != null) {
+            this.plotFrame.rebuildFATS();
         }
     }
 

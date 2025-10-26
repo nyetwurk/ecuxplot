@@ -1,6 +1,10 @@
 package org.nyet.ecuxplot;
 
 import java.util.prefs.Preferences;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 public class Filter {
     public static final String PREFS_TAG = "filter";
@@ -46,6 +50,46 @@ public class Filter {
 
     public void setCurrentRange(int currentRange) {
         this.currentRange = currentRange;
+    }
+
+    // Per-file range selection support
+    private Map<String, Set<Integer>> selectedRanges = new HashMap<>();
+
+    /**
+     * Get the selected ranges for a specific file
+     * @param filename The filename to get ranges for
+     * @return Set of selected range indices, or empty set if none selected
+     */
+    public Set<Integer> getSelectedRanges(String filename) {
+        return selectedRanges.getOrDefault(filename, new HashSet<>());
+    }
+
+    /**
+     * Set the selected ranges for a specific file
+     * @param filename The filename to set ranges for
+     * @param ranges Set of selected range indices
+     */
+    public void setSelectedRanges(String filename, Set<Integer> ranges) {
+        if (ranges == null || ranges.isEmpty()) {
+            selectedRanges.remove(filename);
+        } else {
+            selectedRanges.put(filename, new HashSet<>(ranges));
+        }
+    }
+
+    /**
+     * Clear all range selections
+     */
+    public void clearAllRangeSelections() {
+        selectedRanges.clear();
+    }
+
+    /**
+     * Check if any file has range selections
+     * @return true if any file has selected ranges
+     */
+    public boolean hasAnyRangeSelections() {
+        return !selectedRanges.isEmpty();
     }
 
     public static boolean showAllRanges(Preferences prefs) {

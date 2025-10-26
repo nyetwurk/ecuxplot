@@ -1,5 +1,7 @@
 package org.nyet.ecuxplot;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -18,6 +20,9 @@ public class FATSDataset extends DefaultCategoryDataset {
     private int end = 6500;
     private final TreeMap<String, ECUxDataset> fileDatasets;
     private final FATS fats;
+
+    // Store FATS data keyed by (filename, rangeIndex) for reliable lookup
+    private final Map<String, Map<Integer, Double>> fatsDataMap = new HashMap<>();
 
     public FATSDataset(TreeMap<String, ECUxDataset> fileDatasets, FATS fats) {
         this.fileDatasets=fileDatasets;
@@ -68,8 +73,9 @@ public class FATSDataset extends DefaultCategoryDataset {
         return false;
     }
 
-    private void rebuild() {
+    public void rebuild() {
         clear();
+        fatsDataMap.clear();
         for(final ECUxDataset data : this.fileDatasets.values()) {
             setValue(data);
         }
@@ -79,9 +85,30 @@ public class FATSDataset extends DefaultCategoryDataset {
     public void setValue(ECUxDataset data, int series, double value) {
         final String xkey = "Run " + (series+1);
         final String ykey = Files.stem(data.getFileId());
-        // System.out.println("adding " + xkey + "," + ykey + "=" + value);p
+        // System.out.println("adding " + xkey + "," + ykey + "=" + value);
 
         super.setValue(value, xkey, ykey);
+
+        // Also store in the map for reliable lookup
+        String filename = data.getFileId();
+        fatsDataMap.computeIfAbsent(filename, k -> new HashMap<>()).put(series, value);
+    }
+
+    /**
+     * Get FATS data for a specific file and range
+     * @param filename The full filename (before stemming)
+     * @param rangeIndex The range index (0-based)
+     * @return The FATS time in seconds, or -1 if not available
+     */
+    public double getFATSValue(String filename, int rangeIndex) {
+        Map<Integer, Double> fileData = fatsDataMap.get(filename);
+        if (fileData != null) {
+            Double value = fileData.get(rangeIndex);
+            if (value != null) {
+                return value;
+            }
+        }
+        return -1;
     }
     /**
      * Remove FATS data for a specific run in a dataset
