@@ -22,37 +22,26 @@ import org.nyet.util.Strings;
 
 public class ECUxChartFactory {
     /**
-     * Calculate appropriate axis range with padding, ensuring zero is included
-     * when dealing with negative values for better visual clarity.
+     * Calculate appropriate axis range with padding.
+     * Simple symmetric padding on both sides - let data speak for itself.
      * @param min the minimum data value
      * @param max the maximum data value
      * @param paddingPercent percentage of range to add as padding (default 5%)
      * @return array with [minRange, maxRange]
      */
     private static double[] calculateAxisRange(double min, double max, double paddingPercent) {
-        if (min == max) {
-            // Handle case where all values are the same
+        double range = max - min;
+
+        // If all values are the same, add padding around the center
+        if (range < 1e-10) {
             double center = min;
-            double padding = Math.abs(center) * 0.1; // 10% padding
+            // Use 10% of the absolute value as padding, or at least 1.0 for zero
+            double padding = Math.max(Math.abs(center) * 0.1, 1.0);
             return new double[]{center - padding, center + padding};
         }
 
-        double range = max - min;
+        // Add symmetric padding on both sides
         double padding = range * paddingPercent;
-
-        // If all values are negative, ensure zero is included with padding
-        if (max <= 0) {
-            double minRange = min - padding;
-            double maxRange = padding; // Include zero with padding above
-            return new double[]{minRange, maxRange};
-        }
-
-        // If all values are positive, use normal padding
-        if (min >= 0) {
-            return new double[]{min - padding, max + padding};
-        }
-
-        // Mixed positive and negative values - use normal padding
         return new double[]{min - padding, max + padding};
     }
 
@@ -120,8 +109,8 @@ public class ECUxChartFactory {
     }
 
     /**
-     * Apply custom axis range calculation to ensure proper padding,
-     * especially for negative values where zero should be included.
+     * Apply custom axis range calculation to ensure proper padding.
+     * Only called when we want to override JFreeChart's default auto-ranging behavior.
      * @param chart the chart to modify
      * @param axisIndex the axis index to modify (0 or 1)
      * @param dataset the dataset to analyze for range calculation
@@ -154,22 +143,12 @@ public class ECUxChartFactory {
             return;
         }
 
-        // Check for invalid range (essentially zero range)
-        if (Math.abs(maxValue - minValue) < 1e-10) {
-            return;
-        }
-
         // Calculate custom range with padding
         double[] range = calculateAxisRange(minValue, maxValue, 0.05); // 5% padding
 
-        // Set the axis range
+        // Apply the calculated range and disable auto-range
         axis.setRange(range[0], range[1]);
-
-        // Only disable auto-range if it's currently enabled to avoid triggering events
-        if (axis.isAutoRange()) {
-            axis.setAutoRange(false);
-        }
-
+        axis.setAutoRange(false);
     }
 
     // set all series of a given ykey different shades of a base paint
