@@ -48,10 +48,10 @@ jobs:
         ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
 
         **Downloads:**
-        - **Windows**: ECUxPlot-setup.exe
-        - **macOS**: ECUxPlot.dmg
+        - **Windows**: [ECUxPlot-setup.exe](ECUxPlot-setup.exe)
+        - **macOS**: [ECUxPlot.dmg](ECUxPlot.dmg)
         - **Linux**: ECUxPlot-v*.tar.gz
-        - **Portable**: ECUxPlot-v*.jar, ECUxPlot.jar, mapdump.jar
+        - **Portable**: ECUxPlot-v*.jar, [ECUxPlot.jar](ECUxPlot.jar), [mapdump.jar](mapdump.jar)
 
         Built from tag: ${{ needs.get-tag.outputs.tag_name }}
     secrets: inherit

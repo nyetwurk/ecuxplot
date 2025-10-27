@@ -1,6 +1,29 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Range Selector window for file and range selection ([Issue #85](https://github.com/nyetwurk/ecuxplot/issues/85))
+- Per-file range selection with checkboxes and tree browser
+- Award icons for best FATS/power in file, group, and overall
+- Smart elision for long file names in FilterWindow and main app
+- "Ranges..." menu item in Options menu
+
+### Changed
+
+- FATS dataset now uses per-file range selection support
+- Simplified axis range calculation for negative values with symmetric padding
+- Removed zero-forcing logic that artificially expanded ranges
+
+### Fixed
+
+- FilterWindow sizing issue ([Issue #87](https://github.com/nyetwurk/ecuxplot/issues/87))
+- Preferences save bug
+- Range controls availability logic when all files have only 1 range
+- Axis range application avoiding recursion with proper prevention
+
 ## [1.1.2] - 2025-10-25
 
 ### Added
