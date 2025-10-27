@@ -19,6 +19,7 @@
 
 ### Fixed
 
+- URI parsing error under cygwin ([Issue #84](https://github.com/nyetwurk/ecuxplot/issues/84))
 - FilterWindow sizing issue ([Issue #87](https://github.com/nyetwurk/ecuxplot/issues/87))
 - Preferences save bug
 - Range controls availability logic when all files have only 1 range

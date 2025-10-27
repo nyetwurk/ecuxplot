@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 
 /**@author McDowell*/
 public class Locate {
@@ -64,7 +65,7 @@ public class Locate {
       try {
         szUrl = szUrl.substring("jar:".length(), szUrl.lastIndexOf("!"));
         final URI uri = new URI(szUrl);
-        return new File(uri);
+        return Paths.get(uri).toFile();
       } catch(final URISyntaxException e) {
         throw new IOException(e.toString());
       }
@@ -72,7 +73,7 @@ public class Locate {
       try {
         szUrl = szUrl.substring(0, szUrl.length() - resourceName.length());
         final URI uri = new URI(szUrl);
-        return new File(uri);
+        return Paths.get(uri).toFile();
       } catch(final URISyntaxException e) {
         throw new IOException(e.toString());
       }
