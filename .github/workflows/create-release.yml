@@ -1,10 +1,6 @@
 ---
 name: Create Release
 
-concurrency:
-  group: release-${{ inputs.tag-name }}
-  cancel-in-progress: false
-
 on:
   workflow_call:
     inputs:
@@ -39,6 +35,9 @@ permissions:
 jobs:
   create-release:
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-${{ inputs.tag-name }}
+      cancel-in-progress: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
