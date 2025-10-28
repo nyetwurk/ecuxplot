@@ -10,7 +10,6 @@ import javax.swing.tree.*;
 import javax.swing.ToolTipManager;
 
 import org.nyet.logfile.Dataset;
-import org.nyet.util.WaitCursor;
 import org.nyet.util.FileDropListener;
 import org.nyet.util.FileDropHost;
 
@@ -617,7 +616,8 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
 
     public RangeSelectorWindow(Filter filter, ECUxPlot eplot) {
         super("Range Selector");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // Hide window instead of dispose to preserve tree state (selections, expanded nodes, scroll position)
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
         this.filter = filter;
         this.eplot = eplot;
@@ -703,11 +703,11 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         okButton = new JButton("OK");
         okButton.addActionListener(e -> {
             applySelection();
-            dispose();
+            setVisible(false);
         });
 
         cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(e -> dispose());
+        cancelButton.addActionListener(e -> setVisible(false));
 
         // Create status labels
         statusLabel = new JLabel("No files loaded");
@@ -1055,7 +1055,19 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         }
     }
 
+    /**
+     * Update file datasets - only rebuilds tree if files have actually changed
+     * This preserves tree state (selections, expanded nodes) when window is shown/hidden
+     */
     void setFileDatasets(TreeMap<String, ECUxDataset> fileDatasets) {
+        // Only rebuild if files have actually changed
+        if (this.fileDatasets == fileDatasets || (fileDatasets != null && this.fileDatasets != null &&
+            this.fileDatasets.keySet().equals(fileDatasets.keySet()))) {
+            // Files haven't changed, just update reference to preserve tree state
+            this.fileDatasets = fileDatasets;
+            return;
+        }
+
         this.fileDatasets = fileDatasets;
         updateList();
         updateButtonStates();
@@ -1223,8 +1235,21 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         // Automatically expand all nodes
         expandAllNodes();
 
-        // Select all nodes by default
-        selectAll();
+        // Select all by default if this is the first time the tree is built
+        // If window was just hidden, tree state is already preserved
+        DefaultMutableTreeNode checkRoot = (DefaultMutableTreeNode) treeModel.getRoot();
+        Enumeration<?> nodes = checkRoot.depthFirstEnumeration();
+        boolean hasSelection = false;
+        while (nodes.hasMoreElements()) {
+            Object node = nodes.nextElement();
+            if (node instanceof TreeNode && ((TreeNode) node).isSelected()) {
+                hasSelection = true;
+                break;
+            }
+        }
+        if (!hasSelection) {
+            selectAll();
+        }
 
         updateStatus();
     }
@@ -1720,44 +1745,19 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
             filter.setSelectedRanges(entry.getKey(), entry.getValue());
         }
 
-        // Trigger chart rebuild
+        // Update chart visibility and FATS window
         if (eplot != null) {
-            try {
-                executeRebuildWithCallback(() -> {
-                    // Refresh the Range Selector after rebuild completes
-                    updateStatus();
-                });
-            } catch (Exception ex) {
-                System.err.println("RangeSelector: Error during rebuild: " + ex.getMessage());
-                ex.printStackTrace();
-            }
-        }
-    }
+            eplot.updateChartVisibility();
 
-    /**
-     * Helper method to execute rebuild with proper synchronization
-     * Similar to FilterWindow's executeRebuildWithCallback method
-     */
-    private void executeRebuildWithCallback(Runnable callback) throws Exception {
-        WaitCursor.startWaitCursor(this);
-        try {
-            if (this.eplot != null) {
-                this.eplot.rebuild(() -> {
-                    // This callback runs after rebuild completes
-                    if (callback != null) {
-                        callback.run();
-                    }
-                    WaitCursor.stopWaitCursor(RangeSelectorWindow.this);
-                });
-            } else {
-                if (callback != null) {
-                    callback.run();
+            // Rebuild FATS to show only selected ranges
+            if (eplot.fatsDataset != null) {
+                eplot.fatsDataset.rebuild();
+                if (eplot.fatsFrame != null) {
+                    eplot.fatsFrame.refreshFromFATS();
                 }
-                WaitCursor.stopWaitCursor(this);
             }
-        } catch (Exception e) {
-            WaitCursor.stopWaitCursor(this);
-            throw e;
+
+            updateStatus();
         }
     }
 

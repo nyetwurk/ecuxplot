@@ -6,6 +6,11 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 
+/**
+ * Filter class manages two concerns:
+ * 1. Range detection parameters (RPM thresholds, pedal, throttle, etc.) - used by FilterWindow
+ * 2. Per-file range selection (selected ranges from Range Selector) - used by RangeSelectorWindow
+ */
 public class Filter {
     public static final String PREFS_TAG = "filter";
 

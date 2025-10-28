@@ -2,6 +2,7 @@ package org.nyet.ecuxplot;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -24,9 +25,19 @@ public class FATSDataset extends DefaultCategoryDataset {
     // Store FATS data keyed by (filename, rangeIndex) for reliable lookup
     private final Map<String, Map<Integer, Double>> fatsDataMap = new HashMap<>();
 
-    public FATSDataset(TreeMap<String, ECUxDataset> fileDatasets, FATS fats) {
+    // Filter to query which ranges are selected - only show FATS for visible ranges
+    private Filter filter;
+
+    /**
+     * Create FATS dataset with filter support for range selection
+     * @param fileDatasets The loaded file datasets
+     * @param fats FATS configuration settings
+     * @param filter Filter containing selected ranges for per-file visibility
+     */
+    public FATSDataset(TreeMap<String, ECUxDataset> fileDatasets, FATS fats, Filter filter) {
         this.fileDatasets=fileDatasets;
         this.fats = fats;
+        this.filter = filter;
         updateFromFATS();
         rebuild();
     }
@@ -161,13 +172,28 @@ public class FATSDataset extends DefaultCategoryDataset {
     // helpers
     /**
      * Set FATS data for all runs in a dataset
+     * Only adds ranges that are selected in the filter
      * @param data The dataset containing FATS runs
      */
     public void setValue(ECUxDataset data) {
         try { removeColumn(Files.stem(data.getFileId()));
         } catch (final Exception e) {}
-        for(int i=0;i<data.getRanges().size();i++)
-            setValue(data, i);
+
+        // Only add FATS data for selected ranges
+        if (filter != null) {
+            String filename = data.getFileId();
+            Set<Integer> selectedRanges = filter.getSelectedRanges(filename);
+
+            for(Integer i : selectedRanges) {
+                if (i >= 0 && i < data.getRanges().size()) {
+                    setValue(data, i);
+                }
+            }
+        } else {
+            // No filter - add all ranges (backward compatibility)
+            for(int i=0;i<data.getRanges().size();i++)
+                setValue(data, i);
+        }
     }
     /**
      * Set FATS data for a specific run in a dataset

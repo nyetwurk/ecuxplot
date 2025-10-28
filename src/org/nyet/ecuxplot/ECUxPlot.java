@@ -15,11 +15,13 @@ import javax.swing.*;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.HashMap;
 
 import org.nyet.util.*;
 import org.nyet.logfile.Dataset;
@@ -34,6 +36,28 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
      *
      */
     private TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
+
+    // Track series metadata for fast visibility updates
+    // Map: (axis, seriesIndex) -> (filename, rangeIndex)
+    private Map<String, SeriesInfo> seriesInfoMap = new HashMap<>();
+
+    private static class SeriesInfo {
+        final String filename;
+        final Integer range;
+        final int axis;
+        final int seriesIndex;
+
+        SeriesInfo(String filename, Integer range, int axis, int seriesIndex) {
+            this.filename = filename;
+            this.range = range;
+            this.axis = axis;
+            this.seriesIndex = seriesIndex;
+        }
+
+        String getKey() {
+            return axis + ":" + seriesIndex;
+        }
+    }
 
     private static final long serialVersionUID = 1L;
     // each file loaded has an associated dataset
@@ -287,12 +311,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         if(this.chartPanel==null) return;
 
         logger.debug("updateChartForNewFiles: Updating chart with {} files", fileDatasets.size());
+
+        // Clear series tracking when updating chart
+        seriesInfoMap.clear();
+
         WaitCursor.startWaitCursor(this);
         try {
             // Create FATSDataset if it doesn't exist
             if (this.fatsDataset == null && !this.fileDatasets.isEmpty()) {
                 logger.debug("Creating new FATSDataset");
-                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats);
+                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats, this.filter);
 
                 // Update Range Selector window if it's open
                 if(this.rangeSelectorWindow != null) {
@@ -334,6 +362,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                 plot.setDataset(axis, newdataset);
                 logger.debug("  Axis {}: {} series added", axis, newdataset.getSeriesCount());
+
+                // Track series metadata for this dataset
+                for(int series=0; series<newdataset.getSeriesCount(); series++) {
+                    final Object seriesKey = newdataset.getSeriesKey(series);
+                    if(seriesKey instanceof Dataset.Key) {
+                        final Dataset.Key key = (Dataset.Key)seriesKey;
+                        final SeriesInfo info = new SeriesInfo(key.getFilename(), key.getRange(), axis, series);
+                        seriesInfoMap.put(info.getKey(), info);
+                    }
+                }
 
                 // Apply custom axis range calculation for better padding with negative values
                 ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
@@ -724,7 +762,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("Ranges...")) {
             // Ensure FATS dataset is created if files are loaded
             if(this.fatsDataset == null && !this.fileDatasets.isEmpty()) {
-                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats);
+                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats, this.filter);
             }
 
             if(this.rangeSelectorWindow == null) this.rangeSelectorWindow =
@@ -770,7 +808,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("Show FATS")) {
             // Create FATS dataset if it doesn't exist yet
             if (this.fatsDataset == null && !this.fileDatasets.isEmpty()) {
-                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats);
+                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats, this.filter);
             }
 
             // Create window if it doesn't exist
@@ -997,10 +1035,58 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         rebuild(null);
     }
 
+    /**
+     * Update chart visibility based on current filter selections
+     * Does NOT rebuild ranges or FATS - only toggles visibility of existing series
+     */
+    public void updateChartVisibility() {
+        if(this.chartPanel==null || seriesInfoMap.isEmpty()) return;
+
+        final XYPlot plot = this.chartPanel.getChart().getXYPlot();
+
+        // Use pre-computed series info for fast updates
+        for(SeriesInfo info : seriesInfoMap.values()) {
+            // Check if this range should be visible
+            Set<Integer> selectedRanges = this.filter.getSelectedRanges(info.filename);
+            boolean shouldBeVisible;
+
+            if(info.range != null && info.range >= 0) {
+                // Multiple range file - check if specific range is selected
+                shouldBeVisible = selectedRanges.contains(info.range);
+            } else {
+                // Single range file - visible if any range for this file is selected
+                shouldBeVisible = !selectedRanges.isEmpty();
+            }
+
+            // Toggle visibility
+            final XYItemRenderer renderer = plot.getRenderer(info.axis);
+            renderer.setSeriesVisible(info.seriesIndex, shouldBeVisible);
+        }
+
+        // Update axis ranges after visibility changes
+        for(int axis=0; axis<plot.getDatasetCount(); axis++) {
+            final DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
+            if(dataset != null) {
+                ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, dataset);
+            }
+        }
+
+        updateXAxisLabel(plot);
+
+        // Notify FATS window if open (it may need to refresh if it shows per-range data)
+        if(this.fatsFrame != null) {
+            // FATS chart shows aggregate data, but refresh it to ensure consistency
+            this.fatsFrame.refreshFromFATS();
+        }
+    }
+
     public void rebuild(Runnable callback) {
         if(this.chartPanel==null) return;
 
         WaitCursor.startWaitCursor(this);
+
+        // Clear series tracking when rebuilding
+        seriesInfoMap.clear();
 
         // Move heavy work to background thread to keep UI responsive
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
@@ -1017,7 +1103,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 try {
                     // Create FATSDataset if it doesn't exist
                     if (ECUxPlot.this.fatsDataset == null && !ECUxPlot.this.fileDatasets.isEmpty()) {
-                        ECUxPlot.this.fatsDataset = new FATSDataset(ECUxPlot.this.fileDatasets, ECUxPlot.this.fats);
+                        ECUxPlot.this.fatsDataset = new FATSDataset(ECUxPlot.this.fileDatasets, ECUxPlot.this.fats, ECUxPlot.this.filter);
 
                         // Update Range Selector window if it's open
                         if(ECUxPlot.this.rangeSelectorWindow != null) {
@@ -1059,6 +1145,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                         }
 
                         plot.setDataset(axis, newdataset);
+
+                        // Track series metadata for this dataset
+                        for(int series=0; series<newdataset.getSeriesCount(); series++) {
+                            final Object seriesKey = newdataset.getSeriesKey(series);
+                            if(seriesKey instanceof Dataset.Key) {
+                                final Dataset.Key key = (Dataset.Key)seriesKey;
+                                final SeriesInfo info = new SeriesInfo(key.getFilename(), key.getRange(), axis, series);
+                                seriesInfoMap.put(info.getKey(), info);
+                            }
+                        }
 
                         // Apply custom axis range calculation for better padding with negative values
                         ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
