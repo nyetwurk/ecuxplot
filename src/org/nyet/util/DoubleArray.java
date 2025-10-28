@@ -290,6 +290,11 @@ public class DoubleArray
     }
 
     public DoubleArray movingAverage(int window) {
+        // Safety check: window must be smaller than dataset size
+        if (window <= 0 || window >= this.sp) {
+            // Window too large or invalid - return unsmoothed data
+            return new DoubleArray(this.toArray());
+        }
         final MovingAverageSmoothing s = new MovingAverageSmoothing(window);
         return new DoubleArray(s.smoothAll(this.toArray()));
     }
