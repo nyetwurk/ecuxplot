@@ -19,14 +19,23 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag_name: ${{ steps.get_tag.outputs.tag_name }}
+      is_prerelease: ${{ steps.get_tag.outputs.is_prerelease }}
     steps:
       - name: Get tag name
         id: get_tag
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
           else
-            echo "tag_name=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+            TAG_NAME="${{ github.event.inputs.tag }}"
+          fi
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+
+          # Check if this is a prerelease
+          if [[ "$TAG_NAME" == *"-rc"* ]] || [[ "$TAG_NAME" == *"-beta"* ]] || [[ "$TAG_NAME" == *"-alpha"* ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
 
   build-for-release:
@@ -42,16 +51,22 @@ jobs:
     with:
       tag-name: ${{ needs.get-tag.outputs.tag_name }}
       release-name: ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
-      is-prerelease: ${{ contains(needs.get-tag.outputs.tag_name, '-rc') || contains(needs.get-tag.outputs.tag_name, '-beta') || contains(needs.get-tag.outputs.tag_name, '-alpha') }}
+      is-prerelease: ${{ fromJSON(needs.get-tag.outputs.is_prerelease) }} # convert string from bash output to boolean
       # This is a SUBSET of the actual release artifacts, for simplicity. DO NOT ADD ALL THE FILES.
       release-body: |
         ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
 
         **Downloads:**
-        - **Windows**: [ECUxPlot-setup.exe](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-setup.exe)
-        - **macOS**: [ECUxPlot.dmg](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot.dmg)
-        - **Linux**: [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.tar.gz](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.tar.gz)
-        - **Portable**: [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.jar](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.jar), [mapdump.jar](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/mapdump.jar)
+        - **Windows**:
+          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-setup.exe](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-setup.exe)
+        - **macOS**:
+          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.dmg](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.dmg),
+          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-MacOS.zip](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-MacOS.zip)
+        - **Linux**:
+          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.tar.gz](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.tar.gz)
+        - **Portable**:
+          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.jar](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.jar),
+          [mapdump.jar](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/mapdump.jar)
 
         Built from tag: ${{ needs.get-tag.outputs.tag_name }}
     secrets: inherit
