@@ -1,123 +1,185 @@
 # ECUxPlot Installation Guide
 
-This document explains how to install ECUxPlot on different platforms.
+Welcome! This guide will help you install ECUxPlot on your computer. Choose your platform below and follow the step-by-step instructions.
 
 ## Quick Start
 
-1. **Download**: Get the appropriate installer for your platform from the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
-2. **Install**: Follow the platform-specific instructions below
-3. **Run**: Launch ECUxPlot and start analyzing your ECU data
+**New to ECUxPlot?** Here's the fastest way to get started:
+
+1. **Download**: Go to the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
+2. **Pick your platform**: See the sections below for your operating system
+3. **Install**: Follow the simple steps for your platform
+4. **Run**: Launch ECUxPlot and load your first log file!
+
+**Platform Not Sure?**
+
+- **macOS** (Apple computers): See "macOS Installation" below
+- **Windows** (PC): See "Windows Installation" below
+- **Linux**: See "Linux Installation" below
 
 ## Platform-Specific Installation
 
 ### macOS Installation
 
-#### DMG Installer (Recommended)
+> **⚠️ Important for macOS Users**: ECUxPlot is currently unsigned due to code signing costs, as it is an open-source/freeware project. This is expected. See the "macOS Security Steps" section below for instructions.
 
-1. Download the `.dmg` file from the releases page
-2. **Important**: Clear quarantine flags immediately after download:
+#### Option 1: DMG Installer (Recommended - includes Java runtime)
 
-   ```bash
-   xattr -c ECUxPlot-*.dmg
-   ```
+1. **Download** the `.dmg` file from the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
+2. **Clear quarantine** (required step):
+   - Open **Terminal** (press Cmd+Space, type "Terminal", press Enter)
+   - Type: `cd ~/Downloads` (or wherever you saved the file)
+   - Type: `xattr -c ECUxPlot-*.dmg`
+   - Press Enter
+3. **Double-click** the `.dmg` file to open it
+4. **Drag** ECUxPlot.app to the Applications folder shortcut
+5. **Eject** the DMG from your desktop
 
-3. Open the DMG file
-4. Drag ECUxPlot.app to the Applications folder
-5. Eject the DMG
+#### Option 2: ZIP Archive (lighter - requires Java installed separately)
 
-#### ZIP Archive
+1. **Download** the `.zip` file from the releases page
+2. **Extract** the ZIP file (double-click it)
+3. **Drag** ECUxPlot.app to Applications folder
 
-1. Download the `.zip` file from the releases page
-2. Extract the ZIP file
-3. Drag ECUxPlot.app to Applications folder
+#### macOS Security Steps (Required First Time)
 
-#### macOS Security Issues
+**When you first try to run ECUxPlot**, macOS will say it's "damaged". This is normal! Follow these steps:
 
-**Problem**: "Application is damaged" error when trying to install or run ECUxPlot
+1. **macOS will show**: *"'ECUxPlot' is damaged and can't be opened"*
+2. **Click "Cancel"** (NOT "Move to Trash"!)
+3. Open **System Settings** → **Privacy & Security**
+   - Older macOS: **System Preferences** → **Security & Privacy**
+4. Scroll to the bottom of the page
+5. Look for a message about ECUxPlot being blocked
+6. Click **"Allow Anyway"** or **"Open Anyway"**
+7. Try running ECUxPlot again - it should work now!
 
-**Solution**: This is a macOS security feature that blocks unsigned applications.
+**If you don't see the "Allow Anyway" button**, you may need to clear attributes first:
 
-##### During installation
+```bash
+sudo xattr -rc /Applications/ECUxPlot.app
+```
 
-You **must** do this immediately after you download the `.dmg`:
-
-- Open Terminal and run: `xattr -c ECUxPlot-*.dmg` (or wherever you downloaded the dmg to)
-- Now open the `dmg` as usual, and drag the ECUxPlot icon to Applications
-
-##### Running after installation
-
-- Open Terminal and run: `sudo xattr -rc /Applications/ECUxPlot.app`
-- When you first try to run ECUxPlot, macOS will show a dialog saying: **"'ECUxPlot' is damaged and can't be opened. You should move it to the Trash."**
-- **Important**: Click **"Cancel"** - do NOT click "Move to Trash"
-- Go to **System Settings** → **Privacy & Security** (Note: On macOS Monterey and earlier, this is **System Preferences** → **Security & Privacy**)
-- Scroll down to the bottom of the page
-- Look for a message about ECUxPlot being blocked
-- Click **"Allow Anyway"** or **"Open Anyway"**
-- If you don't see the message, run `xattr -c /Applications/ECUxPlot.app` then try running the application again and then check Privacy & Security settings
-
-**Note**: After clicking **"Cancel"**, macOS will show a message telling you that running the app was refused. You can then go to Privacy & Security settings to override this restriction.
+Then try running the app again and return to Privacy & Security settings.
 
 ### Windows Installation
 
-#### NSIS Installer (Recommended)
+> ✅ **Easy install**: Windows installation includes Java, so you're all set!
 
-1. Download the `ECUxPlot-*-setup.exe` file from the releases page
-2. Run the installer executable
-3. Follow the installation wizard
+#### Recommended: `setup.exe` Installer
+
+1. **Download** the `ECUxPlot-*-setup.exe` file from the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
+2. **Double-click** the installer to run it
+3. **Click "Next"** through the installation wizard
 4. ECUxPlot will be installed to `C:\Program Files\ECUxPlot`
 
-#### Manual Installation
+**That's it!** Launch ECUxPlot from the Start menu or desktop shortcut.
 
-1. Download the JAR files and scripts
-2. Extract to a directory of your choice
-3. Run `ECUxPlot.exe` from the installation directory
+#### Alternative: ZIP Archive
+
+If you prefer a portable version:
+
+1. Download the `.zip` file from the releases page
+2. Extract it to a folder of your choice
+3. Run `ECUxPlot.exe` from that folder
 
 ### Linux Installation
 
-#### Archive Package
+> 📝 **Note**: Linux users need Java 18+ installed first.
 
-1. Download the `.tar.gz` file from the releases page
-2. Extract the archive:
+**Installing Java:**
+
+- **Debian/Ubuntu**: `sudo apt-get update && sudo apt-get install openjdk-21-jdk`
+- **Other distros**: Download from [Adoptium](https://adoptium.net/)
+
+#### Install from Archive
+
+1. **Download** the `.tar.gz` file from the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
+2. **Extract** the archive:
 
    ```bash
    tar -xzf ECUxPlot-*.tar.gz
    ```
 
-3. Run the application:
+3. **Run** the application:
 
    ```bash
    ./ECUxPlot.sh
    ```
 
-## Runtime Requirements
+**First time running?** You may need to make the script executable:
 
-### Java Requirements
+```bash
+chmod +x ECUxPlot.sh
+```
 
-- **Windows**: JRE is automatically bundled with the installer
-- **macOS/Linux**: Requires Java 18+ installed on your system
+## System Requirements
 
-### System Requirements
+**All Platforms:**
 
-- **Minimum RAM**: 2GB
-- **Disk Space**: 500MB for installation
-- **Operating System**: Windows 10+, macOS 10.15+, or Linux with modern kernel
+- **Memory**: 2GB RAM minimum
+- **Storage**: 500MB for installation
 
-## Building from Source
+**Java Requirements:**
 
-For developers who want to build ECUxPlot from source code, see [BUILD.md](BUILD.md) for detailed build instructions.
+- **Windows**: ✅ Java included (no installation needed)
+- **macOS**: Requires Java 18+ ([Download Java](https://adoptium.net/))
+- **Linux**: Requires Java 18+
+  - Debian/Ubuntu: `sudo apt-get install openjdk-21-jdk`
+  - Other distros: [Download Java](https://adoptium.net/)
+
+**Operating System:**
+
+- Windows 10 or newer
+- macOS 10.15 (Catalina) or newer
+- Linux with modern kernel (Ubuntu 20.04+, Fedora 34+, etc.)
 
 ## Troubleshooting Installation
 
-### Common Issues
+### Common Installation Issues
 
-- **Java not found**: Install Java 18+ from [Adoptium](https://adoptium.net/) or your system package manager
-- **Permission denied**: On Unix systems, ensure the scripts have execute permissions: `chmod +x *.sh`
-- **Antivirus blocking**: Some antivirus software may flag the application; add it to your exceptions list
+#### "Java not found" error on macOS/Linux
 
-### Getting Help
+**macOS:**
 
-If you encounter installation issues not covered here, please:
+- Download and install Java 18+ from [Adoptium](https://adoptium.net/)
+- Verify installation by running `java -version` in Terminal
+- Make sure you downloaded the correct version for your system (Intel/Apple Silicon)
 
-1. Check the [troubleshooting section in README.md](README.md#troubleshooting)
-2. Post your issue on the project's issue tracker
-3. Include your operating system version and any error messages
+**Linux (Debian/Ubuntu):**
+
+- Install via package manager: `sudo apt-get install openjdk-21-jdk`
+- Verify installation: `java -version`
+
+**Linux (other distros):**
+
+- Download and install Java 18+ from [Adoptium](https://adoptium.net/)
+- Verify installation: `java -version`
+
+#### "Permission denied" on Linux/macOS
+
+- Make scripts executable: `chmod +x ECUxPlot.sh`
+- Or run with: `bash ECUxPlot.sh`
+
+#### Antivirus software is blocking ECUxPlot
+
+- Add ECUxPlot to your antivirus exceptions/exclusions list
+- This is a false positive - ECUxPlot is open source, if in doubt, build yourself!
+
+#### App won't launch (Windows)
+
+- Try running the installer as Administrator
+- Check that Java is properly installed
+- Review any error messages for clues
+
+#### Still having problems?
+
+- Check the [README troubleshooting section](README.md#troubleshooting)
+- Post your issue on [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues)
+- Include your operating system version and any error messages
+
+---
+
+## For Developers
+
+Want to build ECUxPlot from source or contribute? See [BUILD.md](BUILD.md) for detailed build instructions.
