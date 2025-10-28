@@ -55,10 +55,17 @@ jobs:
         Latest build from commit ${{ github.sha }}
 
         **Downloads:**
-        - **Windows**: [ECUxPlot-latest-setup.exe](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest-setup.exe)
-        - **macOS**: [ECUxPlot-latest.dmg](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.dmg), [ECUxPlot-latest-MacOS.zip](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest-MacOS.zip)
-        - **Linux**: [ECUxPlot-latest.tar.gz](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.tar.gz)
-        - **Portable**: [ECUxPlot-latest.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.jar), [ECUxPlot.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot.jar), [mapdump.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/mapdump.jar)
+        - **Windows**:
+          [ECUxPlot-latest-setup.exe](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest-setup.exe)
+        - **macOS**:
+          [ECUxPlot-latest.dmg](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.dmg),
+          [ECUxPlot-latest-MacOS.zip](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest-MacOS.zip)
+        - **Linux**:
+          [ECUxPlot-latest.tar.gz](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.tar.gz)
+        - **Portable**:
+          [ECUxPlot-latest.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.jar),
+          [ECUxPlot.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot.jar),
+          [mapdump.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/mapdump.jar)
 
         Built on: ${{ github.run_number }}
     secrets: inherit
