@@ -13,7 +13,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
 
 import org.nyet.logfile.Dataset;
-import org.nyet.util.WaitCursor;
 import org.nyet.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -912,42 +911,6 @@ public class FilterWindow extends JFrame {
         this.requestFocus();
     }
 
-    /**
-     * Helper method to execute rebuild with proper synchronization
-     *
-     * NOTE: This method implements a separate WaitCursor mechanism for FilterWindow
-     * because the main ECUxPlot.rebuild() method only shows WaitCursor on the main window.
-     * FilterWindow operations need their own spinner to provide visual feedback to the user
-     * that the operation is in progress, especially since the FilterWindow may be the active
-     * window and the main window spinner may not be visible.
-     *
-     * FIXME: This could be generalized by modifying ECUxPlot.rebuild() to accept a list
-     * of windows to show WaitCursor on, eliminating the need for separate WaitCursor
-     * management in child windows. The signature could be:
-     * rebuild(Runnable callback, JFrame... additionalWindows)
-     */
-    private void executeRebuildWithCallback(Runnable callback) throws Exception {
-        WaitCursor.startWaitCursor(this);
-        try {
-            if (this.eplot != null) {
-                this.eplot.rebuild(() -> {
-                    // This callback runs after rebuild completes
-                    if (callback != null) {
-                        callback.run();
-                    }
-                    WaitCursor.stopWaitCursor(FilterWindow.this);
-                });
-            } else {
-                if (callback != null) {
-                    callback.run();
-                }
-                WaitCursor.stopWaitCursor(this);
-            }
-        } catch (Exception e) {
-            WaitCursor.stopWaitCursor(this);
-            throw e;
-        }
-    }
 
     /**
      * Apply filter changes and rebuild the plot
@@ -961,16 +924,18 @@ public class FilterWindow extends JFrame {
         this.setAlwaysOnTop(true);
 
         try {
-            executeRebuildWithCallback(() -> {
-                // Refresh the FilterWindow table AFTER rebuild completes
-                refreshData();
-                // Rebuild FATS since filter changed
-                if (this.eplot != null) {
-                    this.eplot.rebuildFATS();
-                    // Refresh Range Selector if open (ranges may have changed)
-                    this.eplot.refreshRangeSelector();
-                }
-            });
+            if (this.eplot != null) {
+                this.eplot.rebuild(() -> {
+                    // Refresh the FilterWindow table AFTER rebuild completes
+                    refreshData();
+                    // Rebuild FATS since filter changed
+                    if (this.eplot != null) {
+                        this.eplot.rebuildFATS();
+                        // Refresh Range Selector if open (ranges may have changed)
+                        this.eplot.refreshRangeSelector();
+                    }
+                }, this);
+            }
         } finally {
             restoreWindowBehavior();
         }
@@ -990,16 +955,18 @@ public class FilterWindow extends JFrame {
         // Process the filter changes (same as Apply button)
         processFilterChanges();
 
-        executeRebuildWithCallback(() -> {
-            // Refresh the FilterWindow table AFTER the main plot rebuild
-            refreshData();
-            // Rebuild FATS since filter changed
-            if (this.eplot != null) {
-                this.eplot.rebuildFATS();
-                // Refresh Range Selector if open (ranges may have changed)
-                this.eplot.refreshRangeSelector();
-            }
-        });
+        if (this.eplot != null) {
+            this.eplot.rebuild(() -> {
+                // Refresh the FilterWindow table AFTER the main plot rebuild
+                refreshData();
+                // Rebuild FATS since filter changed
+                if (this.eplot != null) {
+                    this.eplot.rebuildFATS();
+                    // Refresh Range Selector if open (ranges may have changed)
+                    this.eplot.refreshRangeSelector();
+                }
+            }, this);
+        }
     }
 
     private java.awt.Dimension windowSize() {
