@@ -24,8 +24,8 @@ public class FATS {
 
     public enum SpeedUnit {
         RPM("RPM"),
-        MPH("MPH"),
-        KPH("KPH");
+        mph("mph"),
+        kmh("km/h");
 
         private final String displayName;
 
@@ -68,7 +68,7 @@ public class FATS {
         public int speedToRpm(double speed, double rpmPerSpeed) { return (int) Math.round(speed * rpmPerSpeed); }
         public double rpmToSpeed(int rpm, double rpmPerSpeed) { return rpm / rpmPerSpeed; }
         public double getRpmConversionFactor(Constants constants) { return constants.rpm_per_mph(); }
-        public String getDisplayName() { return "MPH"; }
+        public String getDisplayName() { return "mph"; }
         public String getAbbreviation() { return "mph"; }
         public boolean requiresRpmConversionFields() { return true; }
     };
@@ -81,8 +81,8 @@ public class FATS {
         public int speedToRpm(double speed, double rpmPerSpeed) { return (int) Math.round(speed * rpmPerSpeed); }
         public double rpmToSpeed(int rpm, double rpmPerSpeed) { return rpm / rpmPerSpeed; }
         public double getRpmConversionFactor(Constants constants) { return constants.rpm_per_kph(); }
-        public String getDisplayName() { return "KPH"; }
-        public String getAbbreviation() { return "kph"; }
+        public String getDisplayName() { return "km/h"; }
+        public String getAbbreviation() { return "km/h"; }
         public boolean requiresRpmConversionFields() { return true; }
     };
 
@@ -94,8 +94,8 @@ public class FATS {
     public static SpeedUnitHandler getSpeedUnitHandler(SpeedUnit speedUnit) {
         switch (speedUnit) {
             case RPM: return RPM_HANDLER;
-            case MPH: return MPH_HANDLER;
-            case KPH: return KPH_HANDLER;
+            case mph: return MPH_HANDLER;
+            case kmh: return KPH_HANDLER;
             default: throw new IllegalArgumentException("Unsupported speed unit: " + speedUnit);
         }
     }

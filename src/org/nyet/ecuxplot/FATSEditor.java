@@ -41,10 +41,10 @@ public class FATSEditor extends PreferencesEditor {
 
     private FATS.SpeedUnit getSelectedSpeedUnit() {
         String selectedUnit = (String) this.speedUnitCombo.getSelectedItem();
-        if ("MPH".equals(selectedUnit)) {
-            return FATS.SpeedUnit.MPH;
-        } else if ("KPH".equals(selectedUnit)) {
-            return FATS.SpeedUnit.KPH;
+        if ("mph".equals(selectedUnit)) {
+            return FATS.SpeedUnit.mph;
+        } else if ("km/h".equals(selectedUnit)) {
+            return FATS.SpeedUnit.kmh;
         } else {
             return FATS.SpeedUnit.RPM;
         }
@@ -68,7 +68,7 @@ public class FATSEditor extends PreferencesEditor {
         JPanel speedUnitPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         speedUnitPanel.add(new JLabel("Speed Unit: "));
 
-        this.speedUnitCombo = new JComboBox<>(new String[]{"RPM", "MPH", "KPH"});
+        this.speedUnitCombo = new JComboBox<>(new String[]{"RPM", "mph", "km/h"});
 
         // Add action listener to combo box
         this.speedUnitCombo.addActionListener(new ActionListener() {
@@ -145,11 +145,11 @@ public class FATSEditor extends PreferencesEditor {
             case RPM:
                 this.speedUnitCombo.setSelectedItem("RPM");
                 break;
-            case MPH:
-                this.speedUnitCombo.setSelectedItem("MPH");
+            case mph:
+                this.speedUnitCombo.setSelectedItem("mph");
                 break;
-            case KPH:
-                this.speedUnitCombo.setSelectedItem("KPH");
+            case kmh:
+                this.speedUnitCombo.setSelectedItem("km/h");
                 break;
         }
 
