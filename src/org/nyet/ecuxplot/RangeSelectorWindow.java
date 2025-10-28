@@ -1,6 +1,7 @@
 package org.nyet.ecuxplot;
 
 import java.awt.*;
+import java.io.File;
 import java.util.*;
 import java.util.List;
 
@@ -10,6 +11,8 @@ import javax.swing.ToolTipManager;
 
 import org.nyet.logfile.Dataset;
 import org.nyet.util.WaitCursor;
+import org.nyet.util.FileDropListener;
+import org.nyet.util.FileDropHost;
 
 /**
  * Range Selector Window - Provides a browser-like interface for selecting
@@ -18,7 +21,7 @@ import org.nyet.util.WaitCursor;
  * Replaces the previous "Next Range", "Previous Range", and "Show all ranges" controls
  * with a comprehensive file and range selection system.
  */
-public class RangeSelectorWindow extends JFrame {
+public class RangeSelectorWindow extends JFrame implements FileDropHost {
     private static final long serialVersionUID = 1L;
 
     // Core components
@@ -640,6 +643,9 @@ public class RangeSelectorWindow extends JFrame {
 
         // Request focus on OK button to make it visually clear it's the default
         okButton.requestFocusInWindow();
+
+        // Add file drop support
+        new FileDropListener(this, this);
     }
 
     private void initializeComponents() {
@@ -1055,6 +1061,21 @@ public class RangeSelectorWindow extends JFrame {
         updateButtonStates();
     }
 
+    // FileDropHost implementation - delegate to parent ECUxPlot
+    @Override
+    public void loadFile(File file) {
+        if (this.eplot != null) {
+            this.eplot.loadFile(file);
+        }
+    }
+
+    @Override
+    public void loadFiles(List<File> fileList) {
+        if (this.eplot != null) {
+            this.eplot.loadFiles(fileList);
+        }
+    }
+
     void setFATSDataset(FATSDataset fatsDataset) {
         this.fatsDataset = fatsDataset;
         // Refresh all nodes to show FATS data
@@ -1065,7 +1086,7 @@ public class RangeSelectorWindow extends JFrame {
     /**
      * Refresh all tree nodes to trigger repaint without losing selection
      */
-    private void refreshTreeNodes() {
+    void refreshTreeNodes() {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
         Enumeration<?> enumeration = root.depthFirstEnumeration();
         while (enumeration.hasMoreElements()) {

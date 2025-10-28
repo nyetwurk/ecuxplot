@@ -188,19 +188,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         // xaxis label depends on units found in files
         updateXAxisLabel();
 
-        // Initialize filter with "show all" for each file if no selections exist yet
-        if (!this.filter.hasAnyRangeSelections()) {
-            for (Map.Entry<String, ECUxDataset> entry : this.fileDatasets.entrySet()) {
-                String filename = entry.getValue().getFileId();
-                List<Dataset.Range> ranges = entry.getValue().getRanges();
-                Set<Integer> allRanges = new HashSet<>();
-                for (int i = 0; i < ranges.size(); i++) {
-                    allRanges.add(i);
-                }
-                this.filter.setSelectedRanges(filename, allRanges);
-            }
-        }
-
         // Add all the data we just finished loading fom the files
         addChartYFromPrefs();
 
@@ -232,7 +219,48 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.yAxis[0] = new AxisMenu("Y Axis", ids, this, false, this.ykeys(0));
         this.yAxis[1] = new AxisMenu("Y Axis2", ids, this, false, this.ykeys(1));
 
-        // hide/unhide filenames in the legend
+        // grab title from prefs, or just use what current title is
+        this.chartTitle(this.prefs.get("title", this.chartTitle()));
+
+        // Update FATS availability after files are loaded
+        if (this.optionsMenu != null) {
+            this.optionsMenu.updateFATSAvailability();
+        }
+
+        // Update axis menu visibility based on user preference
+        updateAxisMenuVisibility();
+
+        // Initialize filter with "show all" for each file that doesn't have selections yet
+        // DO THIS FIRST so the chart update has correct filter selections
+        logger.debug("Initializing filter selections for {} files", fileDatasets.size());
+        for (Map.Entry<String, ECUxDataset> entry : this.fileDatasets.entrySet()) {
+            String filename = entry.getValue().getFileId();
+
+            // Check if this file already has selections
+            Set<Integer> existingSelections = this.filter.getSelectedRanges(filename);
+            if (existingSelections == null || existingSelections.isEmpty()) {
+                // File doesn't have selections yet, initialize it
+                List<Dataset.Range> ranges = entry.getValue().getRanges();
+                if (ranges != null && !ranges.isEmpty()) {
+                    Set<Integer> allRanges = new HashSet<>();
+                    for (int i = 0; i < ranges.size(); i++) {
+                        allRanges.add(i);
+                    }
+                    logger.debug("  Setting 'show all' for {}: {} ranges", filename, ranges.size());
+                    this.filter.setSelectedRanges(filename, allRanges);
+                } else {
+                    logger.warn("  No ranges found for {}, ranges={}", filename, ranges);
+                }
+            } else {
+                logger.debug("  {} already has {} selections, skipping", filename, existingSelections.size());
+            }
+        }
+
+        // For initial file load, do synchronous update to avoid callback complexity
+        // Ranges are already built during dataset construction, so we can proceed directly
+        updateChartForNewFiles();
+
+        // Hide/unhide filenames in the legend
         final XYPlot plot = this.chartPanel.getChart().getXYPlot();
         for(int axis=0;axis<plot.getDatasetCount();axis++) {
             final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
@@ -248,20 +276,77 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 // Skip placeholder series (String keys like "Empty")
             }
         }
+    }
 
-        // grab title from prefs, or just use what current title is
-        this.chartTitle(this.prefs.get("title", this.chartTitle()));
+    /**
+     * Synchronous chart update for initial file loads.
+     * Creates FATS dataset and updates chart with data from loaded files.
+     * Used for initial file loading to avoid async complexity.
+     */
+    private void updateChartForNewFiles() {
+        if(this.chartPanel==null) return;
 
-        // Update FATS availability after files are loaded
-        if (this.optionsMenu != null) {
-            this.optionsMenu.updateFATSAvailability();
+        logger.debug("updateChartForNewFiles: Updating chart with {} files", fileDatasets.size());
+        WaitCursor.startWaitCursor(this);
+        try {
+            // Create FATSDataset if it doesn't exist
+            if (this.fatsDataset == null && !this.fileDatasets.isEmpty()) {
+                logger.debug("Creating new FATSDataset");
+                this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats);
+
+                // Update Range Selector window if it's open
+                if(this.rangeSelectorWindow != null) {
+                    this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
+                }
+            } else if (this.fatsDataset != null && !this.fileDatasets.isEmpty()) {
+                // Rebuild existing FATS dataset when new files are loaded
+                logger.debug("Rebuilding existing FATSDataset");
+                this.fatsDataset.rebuild();
+            }
+
+            final XYPlot plot = this.chartPanel.getChart().getXYPlot();
+            logger.debug("Updating {} axes with current data", plot.getDatasetCount());
+
+            // Rebuild each axis by re-adding all Y-keys from preferences
+            for(int axis=0;axis<plot.getDatasetCount();axis++) {
+                final DefaultXYDataset newdataset = new DefaultXYDataset();
+
+                // Get all Y-keys configured for this axis
+                final Comparable<?>[] ykeys = this.ykeys(axis);
+
+                // Re-add each Y-key with current file data
+                for (final Comparable<?> ykeyName : ykeys) {
+                    final String yvar = ykeyName.toString();
+
+                    // Add data for each loaded file
+                    for (final Map.Entry<String, ECUxDataset> entry : this.fileDatasets.entrySet()) {
+                        final String filename = entry.getKey();
+                        final ECUxDataset data = entry.getValue();
+
+                        // Create base key for this Y-variable
+                        final Dataset.Key baseKey = data.new Key(yvar, data);
+                        final Comparable<?> xkey = "RPM";
+
+                        // addDataset will read the filter and add only selected ranges
+                        ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey, this.filter, filename);
+                    }
+                }
+
+                plot.setDataset(axis, newdataset);
+                logger.debug("  Axis {}: {} series added", axis, newdataset.getSeriesCount());
+
+                // Apply custom axis range calculation for better padding with negative values
+                ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
+            }
+            updateXAxisLabel(plot);
+
+            logger.debug("Chart update complete, updating windows");
+            // Update windows for file loading - rebuild tree when new files are loaded
+            updateOpenWindows();
+
+        } finally {
+            WaitCursor.stopWaitCursor(this);
         }
-
-        // Update axis menu visibility based on user preference
-        updateAxisMenuVisibility();
-
-        // Rebuild to calculate ranges and FATS data
-        rebuild();
     }
 
     public void loadFiles(ArrayList<String> files) {
@@ -275,12 +360,26 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     @Override
     public void loadFiles(List<File> files) {
-        WaitCursor.startWaitCursor(this);
-        for(final File f : files) {
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+
+        // Track starting dataset count
+        int startingCount = this.fileDatasets.size();
+
+        for (final File f : files) {
+            if (f == null) continue;
             _loadFile(f, false);
         }
-        fileDatasetsChanged();
-        WaitCursor.stopWaitCursor(this);
+
+        // Check if any files were actually loaded
+        int filesAdded = this.fileDatasets.size() - startingCount;
+
+        // Only update the UI if at least one file was loaded successfully
+        // Note: fileDatasetsChanged() will start the wait cursor and rebuild() handles stopping it
+        if (filesAdded > 0) {
+            fileDatasetsChanged();
+        }
     }
 
     @Override
@@ -917,7 +1016,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             protected void done() {
                 try {
                     // Create FATSDataset if it doesn't exist
-                    // Don't rebuild automatically - only rebuild when filter or FATS settings change
                     if (ECUxPlot.this.fatsDataset == null && !ECUxPlot.this.fileDatasets.isEmpty()) {
                         ECUxPlot.this.fatsDataset = new FATSDataset(ECUxPlot.this.fileDatasets, ECUxPlot.this.fats);
 
@@ -925,6 +1023,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                         if(ECUxPlot.this.rangeSelectorWindow != null) {
                             ECUxPlot.this.rangeSelectorWindow.setFATSDataset(ECUxPlot.this.fatsDataset);
                         }
+                    } else if (ECUxPlot.this.fatsDataset != null && !ECUxPlot.this.fileDatasets.isEmpty()) {
+                        // Rebuild existing FATS dataset when new files are loaded
+                        ECUxPlot.this.fatsDataset.rebuild();
                     }
 
                     // FATS window will automatically show updated data since it uses the same FATSDataset instance
@@ -963,6 +1064,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                         ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
                     }
                     updateXAxisLabel(plot);
+
+                    // Don't call updateOpenWindows() here - window updates are handled by callbacks
+                    // This prevents Range Selector tree from being rebuilt when user changes selections
 
                 } finally {
                     WaitCursor.stopWaitCursor(ECUxPlot.this);
@@ -1214,6 +1318,31 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             if(this.fatsDataset != null) {
                 this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
             }
+        }
+    }
+
+    /**
+     * Update all open windows to reflect current file datasets
+     * Called after files are loaded to ensure windows show new data
+     */
+    private void updateOpenWindows() {
+        // Update FilterWindow if open
+        if(this.filterWindow != null) {
+            this.filterWindow.setFileDatasets(this.fileDatasets);
+        }
+
+        // Update RangeSelectorWindow if open - rebuild tree since files were loaded
+        if(this.rangeSelectorWindow != null) {
+            this.rangeSelectorWindow.setFileDatasets(this.fileDatasets);
+            if(this.fatsDataset != null) {
+                this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
+            }
+        }
+
+        // Update FATSChartFrame if open
+        // FATS data will be rebuilt by rebuild(), so we just need to refresh the display
+        if(this.fatsFrame != null && this.fatsDataset != null) {
+            this.fatsFrame.refreshFromFATS();
         }
     }
 

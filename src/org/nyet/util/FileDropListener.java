@@ -13,6 +13,8 @@ import java.awt.dnd.DropTargetListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class FileDropListener implements DropTargetListener {
@@ -138,17 +140,43 @@ public class FileDropListener implements DropTargetListener {
         dropTargetEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 
         final BufferedReader read = new BufferedReader(flavor.getReaderForText(tr));
-        String fileName = java.net.URLDecoder.decode(read.readLine(), "UTF-8");
-        // Remove 'file://' from start of URL (if there)
-        if (fileName.startsWith("file://")) {
-            fileName = fileName.substring(7);
+        java.util.List<File> fileList = new java.util.ArrayList<File>();
+        String line;
+        while ((line = read.readLine()) != null) {
+            if (line.trim().isEmpty()) {
+                continue;  // Skip empty lines
+            }
+
+            String fileName = java.net.URLDecoder.decode(line, "UTF-8");
+            File file = null;
+
+            try {
+                // First try to create a URI - the string might already be a URI
+                final URI uri = new URI(fileName);
+                file = Paths.get(uri).toFile();
+            } catch (final java.net.URISyntaxException | IllegalArgumentException e) {
+                // If URI parsing failed, try treating it as a file path
+                // Remove 'file://' prefix if present
+                String path = fileName;
+                if (fileName.startsWith("file://")) {
+                    path = fileName.substring(7);
+                }
+                file = new File(path);
+            }
+
+            // Always add the file, even if it might not exist yet
+            // The load methods will handle validation
+            fileList.add(file);
         }
         read.close();
 
         dropTargetEvent.dropComplete(true);
-        // System.out.println("File Dragged:" + fileName);
 
-        this.fileDropHost.loadFile(new File(fileName));
+        if (fileList.size() == 1) {
+            this.fileDropHost.loadFile(fileList.get(0));
+        } else {
+            this.fileDropHost.loadFiles(fileList);
+        }
     }
 
     @Override

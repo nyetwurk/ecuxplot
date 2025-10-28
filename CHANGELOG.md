@@ -19,6 +19,11 @@
 
 ### Fixed
 
+- Adding files (including via drag and drop) now updates FATS, Ranges and Filters windows ([Issue #88](https://github.com/nyetwurk/ecuxplot/issues/88))
+- Multiple file drag-and-drop on macOS now loads all files instead of just the first
+- File drop support added to Range Selector window
+- Filter initialization when adding files to existing datasets
+- URI parsing for file drag-and-drop using proper Paths.get() handling
 - URI parsing error under cygwin ([Issue #84](https://github.com/nyetwurk/ecuxplot/issues/84))
 - FilterWindow sizing issue ([Issue #87](https://github.com/nyetwurk/ecuxplot/issues/87))
 - Preferences save bug
