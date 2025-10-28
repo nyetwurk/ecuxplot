@@ -21,26 +21,26 @@ public final class AxisPresetsMenu extends JMenu {
     private final JMenu loadPresetsMenu;
     private final JMenu savePresetsMenu;
     private final JMenu deletePresetsMenu;
+    private final JMenuItem loadAllPresetsItem;
 
     public AxisPresetsMenu(String id, ECUxPlot plotFrame) {
         super(id);
         this.plotFrame=plotFrame;
-        JMenuItem jmi;
 
         // Presets
         this.loadPresetsMenu = new JMenu("Load Preset");
         this.savePresetsMenu = new JMenu("Save Preset");
-        jmi = new JMenuItem("Load All Presets");
-        jmi.addActionListener(new LoadAllPresetsAction());
-        this.add(jmi);
-
         this.deletePresetsMenu = new JMenu("Delete Preset");
+        this.loadAllPresetsItem = new JMenuItem("Load All Presets");
+        this.loadAllPresetsItem.addActionListener(new LoadAllPresetsAction());
 
         updatePresets();
 
         this.add(this.loadPresetsMenu);
         this.add(this.savePresetsMenu);
         this.add(this.deletePresetsMenu);
+        this.add(new JSeparator());
+        this.add(this.loadAllPresetsItem);
     }
 
     private void updatePresets() {
