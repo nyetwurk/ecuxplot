@@ -1497,6 +1497,40 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         }
     }
 
+    /**
+     * Open or show the Filter window
+     */
+    public void openFilterWindow() {
+        if(this.filterWindow == null) {
+            this.filterWindow = new FilterWindow(this.filter, this);
+        }
+        // Set all datasets for multi-file support
+        this.filterWindow.setFileDatasets(this.fileDatasets);
+        this.filterWindow.setVisible(true);
+    }
+
+    /**
+     * Open or show the Range Selector window
+     */
+    public void openRangeSelectorWindow() {
+        // Ensure FATS dataset is created if files are loaded
+        if(this.fatsDataset == null && !this.fileDatasets.isEmpty()) {
+            this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats, this.filter);
+        }
+
+        if(this.rangeSelectorWindow == null) {
+            this.rangeSelectorWindow = new RangeSelectorWindow(this.filter, this);
+        }
+
+        // Set FATS dataset BEFORE file datasets to ensure it's available for award calculation
+        if(this.fatsDataset != null) {
+            this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
+        }
+        // Set all datasets for multi-file support (this triggers updateList which needs FATS dataset)
+        this.rangeSelectorWindow.setFileDatasets(this.fileDatasets);
+        this.rangeSelectorWindow.setVisible(true);
+    }
+
     public static final Preferences getPreferences() {
         return Preferences.userNodeForPackage(ECUxPlot.class);
     }

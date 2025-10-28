@@ -164,6 +164,7 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
     private JButton applyButton;
     private JButton selectAllButton;
     private JButton selectNoneButton;
+    private JButton filterButton;
     private JButton okButton;
     private JButton cancelButton;
 
@@ -699,6 +700,13 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         selectNoneButton = new JButton("Select None");
         selectNoneButton.addActionListener(e -> selectNone());
 
+        filterButton = new JButton("Filter...");
+        filterButton.addActionListener(e -> {
+            // Open Filter Window
+            if(this.eplot != null) {
+                this.eplot.openFilterWindow();
+            }
+        });
 
         okButton = new JButton("OK");
         okButton.addActionListener(e -> {
@@ -786,33 +794,26 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
     }
 
     private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new java.awt.Insets(5, 0, 5, 5); // Top, left, bottom, right padding
+        JPanel mainPanel = new JPanel(new java.awt.BorderLayout());
 
-        // First row: Select All, then Select None
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 1;
-        gbc.weightx = 0.0; gbc.weighty = 0.0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        buttonPanel.add(selectAllButton, gbc);
+        // First row: Select All, Select None, Filter (pack West)
+        JPanel firstRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        firstRow.add(selectAllButton);
+        firstRow.add(selectNoneButton);
+        firstRow.add(filterButton);
 
-        gbc.gridx = 1;
-        buttonPanel.add(selectNoneButton, gbc);
+        // Second row: OK, Apply, Cancel (pack West)
+        JPanel secondRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        secondRow.add(okButton);
+        secondRow.add(applyButton);
+        secondRow.add(cancelButton);
 
-        // Second row: OK, Apply, Cancel
-        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 1;
-        buttonPanel.add(okButton, gbc);
-
-        gbc.gridx = 1;
-        buttonPanel.add(applyButton, gbc);
-
-        gbc.gridx = 2;
-        buttonPanel.add(cancelButton, gbc);
+        mainPanel.add(firstRow, java.awt.BorderLayout.NORTH);
+        mainPanel.add(secondRow, java.awt.BorderLayout.SOUTH);
 
         // Add a panel wrapper to match FilterWindow styling
         JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.add(buttonPanel, BorderLayout.WEST); // Left-align the button panel
+        wrapper.add(mainPanel, BorderLayout.WEST); // Left-align the button panel
         return wrapper;
     }
 
@@ -1767,6 +1768,7 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         applyButton.setEnabled(hasData);
         selectAllButton.setEnabled(hasData);
         selectNoneButton.setEnabled(hasData);
+        filterButton.setEnabled(true); // Always enabled
         okButton.setEnabled(hasData);
         cancelButton.setEnabled(true); // Always enabled
     }

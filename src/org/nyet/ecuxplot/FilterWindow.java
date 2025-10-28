@@ -342,13 +342,12 @@ public class FilterWindow extends JFrame {
     }
 
     private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new java.awt.Insets(5, 0, 5, 5); // Top, left, bottom, right padding
+        JPanel mainPanel = new JPanel(new java.awt.BorderLayout());
 
         JButton applyButton = new JButton("Apply");
         this.okButton = new JButton("OK");
         JButton restoreDefaultsButton = new JButton("Restore Defaults");
+        JButton rangesButton = new JButton("Ranges...");
         JButton cancelButton = new JButton("Cancel");
 
         applyButton.addActionListener(e -> {
@@ -385,35 +384,36 @@ public class FilterWindow extends JFrame {
             }
         });
 
+        rangesButton.addActionListener(e -> {
+            // Open Range Selector window
+            if(this.eplot != null) {
+                this.eplot.openRangeSelectorWindow();
+            }
+        });
+
         cancelButton.addActionListener(e -> {
             // Cancel closes the window without applying changes
             dispose();
         });
 
-        // First row: Restore Defaults button (spans two columns)
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
-        gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        buttonPanel.add(restoreDefaultsButton, gbc);
+        // First row: Restore Defaults and Ranges buttons (pack West)
+        JPanel firstRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        firstRow.add(restoreDefaultsButton);
+        firstRow.add(rangesButton);
 
-        // Second row: OK, Apply, Cancel buttons (left to right)
-        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 1;
-        gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        buttonPanel.add(this.okButton, gbc);
+        // Second row: OK, Apply, Cancel buttons (pack West)
+        JPanel secondRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        secondRow.add(this.okButton);
+        secondRow.add(applyButton);
+        secondRow.add(cancelButton);
 
-        gbc.gridx = 1; gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        buttonPanel.add(applyButton, gbc);
-
-        gbc.gridx = 2; gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        buttonPanel.add(cancelButton, gbc);
+        mainPanel.add(firstRow, java.awt.BorderLayout.NORTH);
+        mainPanel.add(secondRow, java.awt.BorderLayout.SOUTH);
 
         // Set OK button as default (most common action)
         this.getRootPane().setDefaultButton(this.okButton);
 
-        return buttonPanel;
+        return mainPanel;
     }
 
     private JPanel createParameterPanel(String title, int[] fieldIndices, JTextField[] fields) {
