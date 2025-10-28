@@ -890,6 +890,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 for(int series=0; series<dataset.getSeriesCount(); series++) {
                     final Comparable<?> key = dataset.getSeriesKey(series);
                     if(key==null) continue;
+
+                    // Skip placeholder "Empty" series - they should not appear in chart titles
+                    if("Empty".equals(key)) continue;
+
                     String s;
 
                     if(key instanceof Dataset.Key) {
