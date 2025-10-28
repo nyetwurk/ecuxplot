@@ -5,6 +5,10 @@
 
 ### Fixed
 
+- Fix file loading and drag-and-drop for multiple files into Filter, Range, and FATS windows correctly ([Issue #88](https://github.com/nyetwurk/ecuxplot/issues/88))
+- Fix macOS multiple file drag-and-drop: Read all files from URI list instead of just the first one
+- Fix filter initialization: Initialize filter selections per-file when adding files to existing datasets instead of all-or-nothing
+- Fix window updates: Ensure open windows (Filter, Range, FATS) are updated when files are added
 - Bug which made the X-Axis RPM only
 
 ## [1.1.3] - 2025-10-28

@@ -379,7 +379,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             updateXAxisLabel(plot);
 
             logger.debug("Chart update complete, updating windows");
-            // Update windows for file loading - rebuild tree when new files are loaded
+            // Update all open windows to show new file data
             updateOpenWindows();
 
         } finally {
@@ -1161,9 +1161,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     }
                     updateXAxisLabel(plot);
 
-                    // Don't call updateOpenWindows() here - window updates are handled by callbacks
-                    // This prevents Range Selector tree from being rebuilt when user changes selections
-
+                    // Update all open windows to show new file data after rebuild completes
+                    updateOpenWindows();
                 } finally {
                     WaitCursor.stopWaitCursor(ECUxPlot.this);
                     // Execute callback after rebuild is complete
