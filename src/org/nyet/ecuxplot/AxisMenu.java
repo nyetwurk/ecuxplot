@@ -102,8 +102,7 @@ public class AxisMenu extends JMenu {
 
     /* dsid */
     private JMenuItem add(DatasetId dsid) {
-        /* FIXME: return something useful? */
-        /* This can return a JMenuItem or a JRadioButtonMenuItem */
+        /* Return null if item already exists (duplicate) */
         if (this.members.containsKey(dsid.id)) return null;
 
         final String id = dsid.id;
@@ -290,8 +289,11 @@ public class AxisMenu extends JMenu {
 
         this.members.put(id, item);
 
-        /* FIXME: return something useful? */
-        /* This can return a JMenuItem or a JRadioButtonMenuItem */
+        /* Return the item if it's a JMenuItem (e.g., JRadioButtonMenuItem),
+         * otherwise return null (e.g., for JCheckBox) */
+        if (item instanceof JMenuItem) {
+            return (JMenuItem) item;
+        }
         return null;
     }
 
