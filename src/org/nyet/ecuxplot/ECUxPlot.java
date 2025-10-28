@@ -1106,10 +1106,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         }
     }
 
-    public void rebuild(Runnable callback) {
+    public void rebuild(Runnable callback, JFrame... additionalWindows) {
         if(this.chartPanel==null) return;
 
+        // Start wait cursor on main window and any additional windows
         WaitCursor.startWaitCursor(this);
+        for (JFrame window : additionalWindows) {
+            if (window != null) {
+                WaitCursor.startWaitCursor(window);
+            }
+        }
 
         // Clear series tracking when rebuilding
         seriesInfoMap.clear();
@@ -1126,6 +1132,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
             @Override
             protected void done() {
+                try {
+                    // Check for exceptions during background work
+                    get(); // This will throw any exception that occurred in doInBackground()
+                } catch (final Exception e) {
+                    logger.error("Error building ranges: {}", e.getMessage(), e);
+                    // Continue - partial data is better than nothing
+                }
+
                 try {
                     // Create FATSDataset if it doesn't exist
                     if (ECUxPlot.this.fatsDataset == null && !ECUxPlot.this.fileDatasets.isEmpty()) {
@@ -1199,8 +1213,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     // Don't call updateOpenWindows() here - window updates are handled by callbacks
                     // This prevents Range Selector tree from being rebuilt when user changes selections
                     //updateOpenWindows();
+                } catch (final Exception e) {
+                    logger.error("Error updating chart: {}", e.getMessage(), e);
+                    // Continue - WaitCursor will be stopped in finally block
                 } finally {
+                    // Stop wait cursor on all windows
                     WaitCursor.stopWaitCursor(ECUxPlot.this);
+                    for (JFrame window : additionalWindows) {
+                        if (window != null) {
+                            WaitCursor.stopWaitCursor(window);
+                        }
+                    }
                     // Execute callback after rebuild is complete
                     if (callback != null) {
                         callback.run();
