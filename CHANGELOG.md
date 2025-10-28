@@ -1,6 +1,27 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [In Progress]
+
+### Added
+
+- Unit conversion system for axis menu based on actual units rather than column names ([Issue #57](https://github.com/nyetwurk/ecuxplot/issues/57))
+- Automatic generation of unit conversion menu items (e.g., mph/km/h for speed, °F/°C for temperature)
+
+### Changed
+
+- Standardized unit conventions throughout codebase (mph/km/h, °F/°C)
+- Simplified field category system from arrays to single values
+- Renamed field categories to field preferences
+- Aligned field names with canonical aliases from `me7_alias.map`
+
+### Fixed
+
+- Vehicle speed and temperature field conversion menu items now appear correctly
+- Lambda control fields correctly identified as unitless
+- EGT sensor fields now properly detect temperature units
+- VCDS vehicle speed alias mapping
+
 ## [Unreleased]
 
 ### Fixed
