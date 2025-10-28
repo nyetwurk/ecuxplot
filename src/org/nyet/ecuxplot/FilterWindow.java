@@ -62,10 +62,10 @@ public class FilterWindow extends JFrame {
         TIME(0, 80, false),
         RPM(1, 60, false),
         DELTA_RPM(2, 70, false),
-        RAW_MPH(3, 80, true),
-        CALC_MPH(4, 80, true),
-        MPH_DIFF_PERCENT(5, 70, true),
-        DELTA_MPH(6, 70, true),
+        RAW_MPH(3, 80, true, true), // Requires both RPM data AND native velocity
+        CALC_MPH(4, 80, true, false), // Only requires RPM data
+        MPH_DIFF_PERCENT(5, 70, true, true), // Requires both RPM data AND native velocity
+        DELTA_MPH(6, 70, true, false), // Only requires RPM data
         ACCELERATION(7, 100, false),
         PEDAL(8, 60, false),
         THROTTLE(9, 70, false),
@@ -77,16 +77,26 @@ public class FilterWindow extends JFrame {
         private final int index;
         private final int width;
         private final boolean requiresRPMData;
+        private final boolean requiresNativeVelocity;
 
         Column(int index, int width, boolean requiresRPMData) {
             this.index = index;
             this.width = width;
             this.requiresRPMData = requiresRPMData;
+            this.requiresNativeVelocity = false;
+        }
+
+        Column(int index, int width, boolean requiresRPMData, boolean requiresNativeVelocity) {
+            this.index = index;
+            this.width = width;
+            this.requiresRPMData = requiresRPMData;
+            this.requiresNativeVelocity = requiresNativeVelocity;
         }
 
         public int getIndex() { return index; }
         public int getWidth() { return width; }
         public boolean requiresRPMData() { return requiresRPMData; }
+        public boolean requiresNativeVelocity() { return requiresNativeVelocity; }
         public static int getColumnCount() { return values().length; }
 
         public static int idx(Column col) { return col.getIndex(); }
@@ -205,7 +215,7 @@ public class FilterWindow extends JFrame {
     private void initializeVisualizationComponents() {
         // Create table model with columns
         String[] columnNames = {
-            "Time", "RPM", "Δ RPM", "Raw MPH", "Calc MPH", "Diff %", "Δ MPH", "Accel (RPM/s)", "Pedal", "Throttle", "Gear",
+            "Time", "RPM", "Δ RPM", "Native MPH", "Calc MPH", "Diff %", "Δ MPH", "Accel (RPM/s)", "Pedal", "Throttle", "Gear",
             "Filter Status", "Range", "Filter Reasons"
         };
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -645,14 +655,13 @@ public class FilterWindow extends JFrame {
             // Get data columns
             Dataset.Column timeCol = dataset.get("TIME");
             Dataset.Column rpmCol = dataset.get("RPM");
-            Dataset.Column mphCol = dataset.get("VehicleSpeed (mph)");
-            if (mphCol == null) {
-                mphCol = dataset.get("VehicleSpeed");
-            }
+            // Get both native velocity (if available) and calculated velocity
+            // Native velocity may not be available in all logs
+            Dataset.Column nativeMphCol = dataset.get("VehicleSpeed (mph)");
+            Dataset.Column calcMphCol = dataset.get("Calc Velocity");
             Dataset.Column pedalCol = dataset.get(DataLogger.pedalField());
             Dataset.Column throttleCol = dataset.get(DataLogger.throttleField());
             Dataset.Column gearCol = dataset.get(DataLogger.gearField());
-
 
             if (timeCol == null || timeCol.data.size() == 0) {
                 return;
@@ -681,13 +690,15 @@ public class FilterWindow extends JFrame {
                 }
             }
 
-            // Update column visibility based on RPM data setting
-            updateColumnVisibility(showRPMData, pedalCol, throttleCol, gearCol);
+            // Update column visibility based on RPM data setting and data availability
+            boolean hasVelocityData = (nativeMphCol != null || calcMphCol != null) && showRPMData;
+            boolean hasNativeVelocity = nativeMphCol != null;
+            updateColumnVisibility(hasVelocityData, hasNativeVelocity, pedalCol, throttleCol, gearCol);
 
             // Populate table
             for (int rowIndex : rowsToShow) {
                 rowIndexMapping.add(rowIndex);
-                Object[] rowData = createRowData(rowIndex, timeCol, rpmCol, mphCol, pedalCol, throttleCol, gearCol, ranges, showRPMData);
+                Object[] rowData = createRowData(rowIndex, timeCol, rpmCol, nativeMphCol, calcMphCol, pedalCol, throttleCol, gearCol, ranges, hasVelocityData, hasNativeVelocity);
                 tableModel.addRow(rowData);
             }
 
@@ -710,11 +721,16 @@ public class FilterWindow extends JFrame {
         dataTable.getColumnModel().getColumn(columnIndex).setPreferredWidth(visible ? column.getWidth() : 0);
     }
 
-    private void updateColumnVisibility(boolean showRPMData, Dataset.Column pedalCol, Dataset.Column throttleCol, Dataset.Column gearCol) {
-        // Hide/show columns based on RPM data setting
+    private void updateColumnVisibility(boolean showRPMData, boolean hasNativeVelocity, Dataset.Column pedalCol, Dataset.Column throttleCol, Dataset.Column gearCol) {
+        // Hide/show columns based on RPM data setting and native velocity availability
         for (Column col : Column.values()) {
             if (col.requiresRPMData()) {
-                setColumnVisibility(col, showRPMData);
+                // Check if this column also requires native velocity
+                boolean shouldShow = showRPMData;
+                if (col.requiresNativeVelocity()) {
+                    shouldShow = showRPMData && hasNativeVelocity;
+                }
+                setColumnVisibility(col, shouldShow);
             }
         }
 
@@ -729,9 +745,9 @@ public class FilterWindow extends JFrame {
     }
 
     private Object[] createRowData(int rowIndex, Dataset.Column timeCol, Dataset.Column rpmCol,
-                                 Dataset.Column mphCol, Dataset.Column pedalCol,
+                                 Dataset.Column nativeMphCol, Dataset.Column calcMphCol, Dataset.Column pedalCol,
                                  Dataset.Column throttleCol, Dataset.Column gearCol,
-                                 ArrayList<Dataset.Range> ranges, boolean showRPMData) {
+                                 ArrayList<Dataset.Range> ranges, boolean showRPMData, boolean hasNativeVelocity) {
         Object[] row = new Object[Column.getColumnCount()];
 
         try {
@@ -763,23 +779,45 @@ public class FilterWindow extends JFrame {
 
             // MPH-related columns (only populate if showRPMData is true)
             if (showRPMData) {
-            // Raw MPH
-            row[Column.idx(Column.RAW_MPH)] = mphCol != null && rowIndex < mphCol.data.size() ?
-                String.format("%.1f", mphCol.data.get(rowIndex)) : "N/A";
+                // Raw MPH - show native velocity if available
+                if (hasNativeVelocity && nativeMphCol != null && rowIndex < nativeMphCol.data.size()) {
+                    row[Column.idx(Column.RAW_MPH)] = String.format("%.1f", nativeMphCol.data.get(rowIndex));
+                } else {
+                    row[Column.idx(Column.RAW_MPH)] = "N/A";
+                }
 
-            // Calc MPH (same as raw for now)
-            row[Column.idx(Column.CALC_MPH)] = mphCol != null && rowIndex < mphCol.data.size() ?
-                String.format("%.1f", mphCol.data.get(rowIndex)) : "N/A";
+                // Calc MPH - show calculated velocity (convert from m/s to MPH)
+                if (calcMphCol != null && rowIndex < calcMphCol.data.size()) {
+                    // Calc Velocity is in m/s, convert to MPH for display
+                    double velocityMph = calcMphCol.data.get(rowIndex) / UnitConstants.MPS_PER_MPH;
+                    row[Column.idx(Column.CALC_MPH)] = String.format("%.1f", velocityMph);
+                } else {
+                    row[Column.idx(Column.CALC_MPH)] = "N/A";
+                }
 
-            // MPH Diff Percent
-            row[Column.idx(Column.MPH_DIFF_PERCENT)] = "0.0%";
+                // MPH Diff Percent - compare native vs calculated
+                if (hasNativeVelocity && nativeMphCol != null && calcMphCol != null &&
+                    rowIndex < nativeMphCol.data.size() && rowIndex < calcMphCol.data.size()) {
+                    double nativeSpeed = nativeMphCol.data.get(rowIndex);
+                    // Calc Velocity is in m/s, convert to MPH
+                    double calcSpeed = calcMphCol.data.get(rowIndex) / UnitConstants.MPS_PER_MPH;
+                    double diff = 0;
+                    if (nativeSpeed != 0) {
+                        diff = ((calcSpeed - nativeSpeed) / nativeSpeed) * 100;
+                    }
+                    row[Column.idx(Column.MPH_DIFF_PERCENT)] = String.format("%.1f%%", diff);
+                } else {
+                    row[Column.idx(Column.MPH_DIFF_PERCENT)] = "N/A";
+                }
 
-            // Delta MPH
-            double deltaMPH = 0;
-            if (mphCol != null && rowIndex > 0 && rowIndex < mphCol.data.size()) {
-                deltaMPH = mphCol.data.get(rowIndex) - mphCol.data.get(rowIndex - 1);
-            }
-            row[Column.idx(Column.DELTA_MPH)] = String.format("%.1f", deltaMPH);
+                // Delta MPH - use calculated velocity (convert from m/s to MPH)
+                double deltaMPH = 0;
+                if (calcMphCol != null && rowIndex > 0 && rowIndex < calcMphCol.data.size()) {
+                    double currentVel = calcMphCol.data.get(rowIndex) / UnitConstants.MPS_PER_MPH; // Convert m/s to MPH
+                    double prevVel = calcMphCol.data.get(rowIndex - 1) / UnitConstants.MPS_PER_MPH;
+                    deltaMPH = currentVel - prevVel;
+                }
+                row[Column.idx(Column.DELTA_MPH)] = String.format("%.1f", deltaMPH);
             } else {
                 // Clear MPH-related columns when not showing RPM data
                 row[Column.idx(Column.RAW_MPH)] = "";
