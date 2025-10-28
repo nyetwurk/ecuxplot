@@ -6,30 +6,59 @@
 [![License](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/nyetwurk/ecuxplot)
 
-**Downloads**: [Latest Release](https://github.com/nyetwurk/ecuxplot/releases/latest) | [Nightly Build](https://github.com/nyetwurk/ecuxplot/releases/tag/latest)
+**Downloads**: [Latest Release](https://github.com/nyetwurk/ecuxplot/releases/latest) | [All Downloads](https://github.com/nyetwurk/ecuxplot/releases)
 
-> **Note**: This README describes features in the `master` branch, which may not be available in the latest release or nightly build.
+> **Note**: This README may describe features in the `master` branch which may not be available in the latest release or nightly build.
 
-ECUxPlot is a data analysis tool for automotive ECU (Engine Control Unit) log files. It provides visualization and analysis capabilities for engine performance data, including power estimation, boost control, and fuel system analysis.
+## What is ECUxPlot?
 
-## Features
+ECUxPlot is a free, open-source tool for analyzing and visualizing automotive ECU (Engine Control Unit) log files. Whether you're tuning your car, diagnosing issues, or just curious about your engine's performance, ECUxPlot helps you make sense of the data your ECU collects.
 
-- **Data Visualization**: Plot engine parameters from CSV log files
-- **Performance Analysis**: Calculate horsepower estimates
-- **FATS Analysis**: "For the Advancement of the S4" ETs for 4200-6500 RPM (60-90 mph)
-- **Advanced Filtering**: Acceleration-based filtering with wheel spin detection
-- **Tuning Tools**: Real-time filter refinement and parameter adjustment
-- **Multi-Platform**: Runs on Windows, MacOS, and Linux
-- **Customizable**: Vehicle profiles and configurable parameters
+**ECUxPlot lets you:**
+
+- 📊 Visualize engine data from your ECU logs
+- 🔧 Analyze power, boost, and fuel system performance
+- 📈 Compare different logs to track tuning progress
+- ⚡ Measure acceleration performance (FATS timing)
+- 🎯 Filter data to focus on clean acceleration runs
+
+ECUxPlot works with log files from ME7Logger, VCDS, JB4, Cobb Accessport, Zeitronix, and many other popular ECU logging systems.
 
 ## Quick Start
 
-1. **Installation**: See [INSTALL.md](INSTALL.md) for detailed installation instructions
-2. **Load Data**: Import your ECU log file (CSV format)
-3. **Configure**: Set up vehicle profiles and parameters
-4. **Analyze**: Use filters and visualization tools to analyze your data
+### 1. Download & Install
 
-## Key Features
+**macOS**: Download the `.dmg` file → See [INSTALL.md](INSTALL.md) for macOS security steps
+**Windows**: Download `ECUxPlot-*-setup.exe` → Run the installer
+**Linux**: Download `.tar.gz` → Extract and run `./ECUxPlot.sh`
+
+📝 **New to ECUxPlot?** Start with [INSTALL.md](INSTALL.md) for detailed setup instructions.
+
+### 2. Open Your Log File
+
+- Launch ECUxPlot
+- Choose **File → Open** (or drag & drop)
+- Select your CSV log file from VCDS, JB4, Cobb Accessport, etc.
+
+### 3. View Your Data
+
+- ECUxPlot automatically detects your log format
+- Data is plotted on customizable charts
+- Use the axis menus to select what to display
+
+## System Requirements
+
+- **Operating System**: Windows 10+, macOS 10.15+, or Linux
+- **Java**:
+  - Windows: Included (no installation needed)
+  - macOS: Included (DMG installer) or [install separately](https://adoptium.net/) for ZIP
+  - Linux: Java 18+
+    - Debian/Ubuntu: `sudo apt-get install openjdk-21-jdk`
+    - Other distros: [Download Java](https://adoptium.net/)
+- **Memory**: 2GB RAM minimum
+- **Storage**: 256MB for installation
+
+## Detailed Features
 
 ### FATS (For the Advancement of the S4)
 
@@ -39,18 +68,17 @@ FATS measures elapsed time for acceleration runs, providing consistent performan
 
 - **Dual Mode Operation**:
   - **RPM Mode**: Direct RPM range measurement (e.g., 4200-6500 RPM)
-  - **MPH Mode**: Speed-based measurement (e.g., 60-90 mph) with automatic RPM conversion
-- **Advanced Filtering**: Acceleration-based filtering eliminates slow runs and wheel spin
-- **Real-time Analysis**: Live calculation with detailed logging and error reporting
+  - **mph & km/h Mode**: Speed-based measurement (e.g., 60-90 mph) with automatic RPM conversion
+- **Advanced Filtering**: Acceleration-based filtering eliminates incomplete and part throttle runs
 - **Multi-file Support**: Compare FATS results across multiple log files
-- **Integrated Debug Tools**: Filter debugging integrated into the filter configuration window
+- **Integrated Filter Refinement Tools**: Filter parameter refinement tools integrated into the filter configuration window
 
 #### Configuration
 
 FATS can be configured in two ways:
 
 1. **RPM Mode**: Set start and end RPM values directly
-2. **MPH Mode**: Set start and end speed values (automatically converted to RPM using `rpm_per_mph`)
+2. **mph & km/h Mode**: Set start and end speed values (automatically converted to RPM using `rpm_per_mph`)
 
 The `rpm_per_mph` constant in your vehicle profile determines the RPM-to-speed conversion ratio.
 
@@ -76,7 +104,7 @@ For accurate performance comparisons between different vehicles, adjust the FATS
 
 1. **Load Data**: Import your ECU log file
 2. **Configure Filter**: Set minimum acceleration threshold (default: 100 RPM/s)
-3. **Open FATS**: Use "Options → Show FATS Chart" menu
+3. **Open FATS**: Use "Options → Show FATS" menu
 4. **Set Range**: Configure RPM or MPH range for measurement
 5. **Analyze**: View FATS results with detailed logging
 
@@ -90,7 +118,6 @@ The Range Selector provides a convenient interface for selecting which files and
 - **Visual Organization**: Tree-based display groups files by common prefixes
 - **Performance Awards**: Visual indicators show best FATS and power runs
 - **Multi-file Support**: Manage selections across multiple loaded log files
-- **Automatic Updates**: Selections persist and update when filters change
 
 #### Using the Range Selector
 
@@ -120,7 +147,7 @@ ECUxPlot includes comprehensive tools to help refine and tune filter parameters 
 
 Access via "Options → Filter" to:
 
-- **Real-time Analysis**: View filtered data points with detailed filtering information
+- **Real-time Filter Refinement Analysis**: View filtered data points with detailed filtering information, as you make changes to the filter parameters
 - **Data Validation**: See which data points pass/fail filter criteria
 - **Parameter Tuning**: Adjust filter thresholds to match your driving patterns
 - **Multi-file Support**: Switch between multiple loaded datasets
@@ -134,70 +161,54 @@ Access via "Options → Show Events" to:
 - **Level Filtering**: Filter by event level (TRACE, DEBUG, INFO, WARN, ERROR)
 - **Search Function**: Find specific event entries
 - **Export Capability**: Save events to file for analysis
-- **Auto-scroll**: Automatically follow new log entries
 
 ## Troubleshooting
 
-### Filter Issues
+### Common Issues
 
-**Problem**: With the filter on, I don't see anything!
+#### With the filter on, I don't see anything
 
-**Solution**: The filter now uses acceleration-based filtering to find valid acceleration runs. If you don't meet the criteria, you won't see any data.
-
-- Use **"Options → Filter"** to see exactly why data points are being filtered out (debug info is now integrated into the filter window)
-- Adjust filter parameters in the filter window
-- Check minimum acceleration threshold (default: 100 RPM/s)
+- The filter requires valid acceleration runs (100 RPM/s minimum)
+- Open **"Options → Filter"** to see why data is filtered out
+- Check minimum acceleration threshold
 - Ensure you're logging gear and accelerator pedal position
-- Check that your run starts low enough and has sufficient RPM range
-- Use **"Options → Show Events"** to see detailed filter analysis
-- If problems persist, post your log file for assistance
+- Your run needs sufficient RPM range to show up
 
-### Performance Calculations
+#### My power/torque estimates are wrong
 
-**Problem**: My HP estimate is way off!
+- Adjust values in **"Vehicle Profiles → Edit Constants"**
+- The vehicle profile settings directly affect calculations
 
-**Solution**: Adjust the numbers in "Vehicle Profiles → Edit Constants"
+#### MAF (Mass Air Flow) readings are off
 
-**Problem**: My flow estimates (compressor map, calc AFR etc.) are way off!
+- Adjust the MAF parameter in your vehicle profile
+- Check the correction value shown under the MAF parameter
+- Non-stock intakes may need diameter adjustments
 
-**Solution**: Adjust the numbers in "Vehicle Profiles → Edit Fueling"
+#### FATS calculation shows no results
 
-### MAF Configuration
+- Your log needs valid acceleration runs that meet filter criteria
+- Open **"Options → Filter"** to debug data quality
+- Check that your RPM range covers the configured FATS range
+- Ensure the filter is enabled and finding valid ranges
 
-**Problem**: MAF parameter confusion
+#### FATS results vary between runs
 
-**Solution**: The "MAF" parameter sets a correction to MAF values calculated by the ECU.
+- May indicate wheel spin or data quality issues
+- Check the filter dialog for negative boost pressure (indicates wheel spin)
+- Verify consistent acceleration patterns and starting conditions
 
-- **Stock intake**: Leave parameter alone if your tune properly calibrates MAF readings
-- **Non-stock intake**: Increase MAF diameter if ECU uses underscaled MAF values
-- **Verification**: Check the correction value shown in the box under the MAF parameter
-- **Calibration**: Compare Calc AFR with wideband data if unsure
+#### ECUxPlot doesn't recognize my log format
 
-### FATS Issues
+- ECUxPlot supports 15+ formats automatically
+- If detection fails, ECUxPlot will still try to parse generic CSV
+- Please post your log file on the issue tracker for format support
 
-**Problem**: FATS calculation fails or shows no results!
+### Getting Help
 
-**Solution**: FATS requires valid acceleration runs that meet filter criteria.
-
-- Use **"Options → Filter"** to verify data quality (debug info is now integrated into the filter window)
-- Check that acceleration threshold is met (default: 100 RPM/s)
-- Ensure RPM range covers the configured FATS range
-- Verify `rpm_per_mph` constant is correct for your vehicle
-- Use **"Options → Show Events"** to see detailed FATS calculation events
-- Check that filter is enabled and finding valid ranges
-
-**Problem**: FATS results seem inconsistent between runs!
-
-**Solution**: This may indicate data quality issues or wheel spin.
-
-- Check for wheel spin using the filter configuration dialog (look for negative boost pressure)
-- Verify consistent acceleration patterns across runs
-- Ensure similar starting conditions (gear, throttle position)
-- Compare raw vs calculated MPH values for consistency
-
-## Getting Help
-
-If you encounter issues not covered here, please post your log file for assistance. In some cases, ECUxPlot may not detect pedal/gear data properly from the CSV header and may require adding your CSV format to the application.
+- 📁 **Post your log file** for assistance with detection or parsing issues
+- 🐛 **Found a bug?** Open an issue on [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues)
+- ❓ **Need help?** Check the [troubleshooting section in INSTALL.md](INSTALL.md#troubleshooting-installation)
 
 ## Supported Log Formats
 
@@ -221,7 +232,22 @@ All formats are automatically mapped to standardized field names (based on ECUx,
 
 ### Zeitronix Logs
 
-If you plan to use Zeitronix logs, make sure to check the **"Include initial summary"** box when exporting to .csv from the Zeitronix Data Logger application. This ensures that ECUxPlot can properly parse and analyze your Zeitronix log files.
+If you plan to use Zeitronix logs, make sure to check the **"Include initial summary"** box when exporting to `.csv` from the Zeitronix Data Logger application. This ensures that ECUxPlot can properly parse and analyze your Zeitronix log files.
+
+## Support & Contributing
+
+ECUxPlot is free and open source. If you find it useful, contributions are appreciated!
+
+**Support the project:**
+
+[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=FFD8L7RNYQ5B2)
+
+**Contribute:**
+
+- 🐛 **Report bugs** or request features on [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues)
+- 💻 **Contribute code** via pull requests
+- 📝 **Improve documentation**
+- 🔗 **Spread the word** to others who might benefit from ECUxPlot
 
 ## Installation
 
