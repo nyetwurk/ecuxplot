@@ -313,6 +313,10 @@ public class ECUxChartFactory {
         final ArrayList<String> ret = new ArrayList<String>();
         for(int i=0;i<d.getSeriesCount();i++) {
             final Comparable<?> key = d.getSeriesKey(i);
+
+            // Skip placeholder series
+            if(org.nyet.logfile.Dataset.isPlaceholderKey(key)) continue;
+
             String s;
             if(key instanceof Dataset.Key)
                 s=((Dataset.Key)key).getString();

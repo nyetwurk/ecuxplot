@@ -159,7 +159,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private Comparable<?> xkey() {
         // Use a hardcoded default instead of creating ECUxPreset to avoid infinite recursion
         final String defaultXkey = "RPM";
-        return this.prefs.get("xkey", defaultXkey);
+        final String key = this.prefs.get("xkey", defaultXkey);
+        return org.nyet.logfile.Dataset.isPlaceholderKey(key) ? defaultXkey : key;
     }
 
     private Comparable<?>[] ykeys(int index) {
@@ -168,8 +169,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         final String[] defaultYkeys1 = {"BoostPressureDesired (PSI)","BoostPressureActual (PSI)"};
         final String[] defaultYkeys = { Strings.join(",", defaultYkeys0), Strings.join(",", defaultYkeys1) };
 
-        final String k=this.prefs.get("ykeys"+index, defaultYkeys[index]);
-        return k.split(",");
+        // Check if preference was explicitly cleared (set to empty string)
+        final String k = this.prefs.get("ykeys"+index, defaultYkeys[index]);
+        if(k.isEmpty()) return new String[0];
+
+        final String[] keys = k.split(",");
+        final ArrayList<String> filtered = new ArrayList<String>();
+        for(String key : keys) {
+            key = key.trim();
+            if(key.length() > 0 && !org.nyet.logfile.Dataset.isPlaceholderKey(key)) filtered.add(key);
+        }
+
+        // If filtered empty and original was empty string, return empty; otherwise use defaults
+        return filtered.size() > 0 ? filtered.toArray(new String[0]) : defaultYkeys[index].split(",");
     }
 
     private java.awt.Dimension windowSize() {
@@ -297,7 +309,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     if(this.fileDatasets.size()==1) ykey.hideFilename();
                     else ykey.showFilename();
                 }
-                // Skip placeholder series (String keys like "Empty")
+                // Skip placeholder series (String keys like Dataset.PLACEHOLDER_KEY)
             }
         }
     }
@@ -891,8 +903,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     final Comparable<?> key = dataset.getSeriesKey(series);
                     if(key==null) continue;
 
-                    // Skip placeholder "Empty" series - they should not appear in chart titles
-                    if("Empty".equals(key)) continue;
+                    // Skip placeholder series - they should not appear in chart titles
+                    if(org.nyet.logfile.Dataset.isPlaceholderKey(key)) continue;
 
                     String s;
 
@@ -906,7 +918,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     if(!seriesTitle.contains(s)) seriesTitle.add(s);
 
                     // construct y axis label array
-                    final String l = findUnits(key);
+                    // Skip findUnits for non-Dataset.Key objects to avoid ConcurrentModificationException
+                    // Only Dataset.Key objects have valid data in the fileDatasets
+                    String l = null;
+                    if(key instanceof Dataset.Key) {
+                        try {
+                            l = findUnits(key);
+                        } catch (final Exception e) {
+                            // Ignore exceptions when looking up units to avoid crashes
+                            logger.debug("Error finding units for key {}: {}", key, e.getMessage());
+                        }
+                    }
                     if(l==null || l.length()==0) continue;
                     if(!label.contains(l)) label.add(l);
                 }
@@ -1150,6 +1172,15 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                         plot.setDataset(axis, newdataset);
 
+                        // Add placeholder data if axis is empty (to keep it clickable)
+                        if(newdataset.getSeriesCount() == 0) {
+                            newdataset.addSeries(org.nyet.logfile.Dataset.PLACEHOLDER_KEY, new double[][]{{Double.NaN, Double.NaN}, {0, 0}});
+                            final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis(axis);
+                            rangeAxis.setRange(0, 100);
+                            rangeAxis.setAutoRange(false);
+                            rangeAxis.setLabel("");
+                        }
+
                         // Track series metadata for this dataset
                         for(int series=0; series<newdataset.getSeriesCount(); series++) {
                             final Object seriesKey = newdataset.getSeriesKey(series);
@@ -1195,7 +1226,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             final DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
             if(dataset.getSeriesCount() == 0) {
                 // ODDITY: X-axis values are NaN to avoid interfering with domain axis autoscaling
-                dataset.addSeries("Empty", new double[][]{{Double.NaN, Double.NaN}, {0, 0}});
+                dataset.addSeries(org.nyet.logfile.Dataset.PLACEHOLDER_KEY, new double[][]{{Double.NaN, Double.NaN}, {0, 0}});
 
                 // Set clean range for empty axis
                 final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis(axis);
@@ -1225,10 +1256,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         ECUxChartFactory.removeDataset((DefaultXYDataset)plot.getDataset(axis));
         this.yAxis[axis].uncheckAll();
 
+        // Clear preferences for this axis so rebuild() doesn't restore old data
+        // Use empty string to mark as explicitly cleared
+        this.prefs.put("ykeys" + axis, "");
+
         // Add a placeholder dataset to show a clean, empty axis
         final DefaultXYDataset placeholderDataset = (DefaultXYDataset)plot.getDataset(axis);
         // ODDITY: X-axis values are NaN to avoid interfering with domain axis autoscaling
-        placeholderDataset.addSeries("Empty", new double[][]{{Double.NaN, Double.NaN}, {0, 0}});
+        placeholderDataset.addSeries(org.nyet.logfile.Dataset.PLACEHOLDER_KEY, new double[][]{{Double.NaN, Double.NaN}, {0, 0}});
 
         // Set a clean range for the empty axis
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis(axis);
@@ -1251,8 +1286,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         if(add) {
             // ODDITY: Check for and remove placeholder data before adding real data
             // This prevents placeholder data from interfering with real data display
-            if(pds.getSeriesCount() > 0 && "Empty".equals(pds.getSeriesKey(0))) {
-                pds.removeSeries("Empty");
+            if(pds.getSeriesCount() > 0 && org.nyet.logfile.Dataset.isPlaceholderKey(pds.getSeriesKey(0))) {
+                pds.removeSeries(org.nyet.logfile.Dataset.PLACEHOLDER_KEY);
             }
 
             final Dataset.Key key = data.new Key(ykey.toString(), data);
