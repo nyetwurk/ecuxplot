@@ -646,13 +646,13 @@ public class FilterWindow extends JFrame {
             // Get data columns
             Dataset.Column timeCol = dataset.get("TIME");
             Dataset.Column rpmCol = dataset.get("RPM");
-            Dataset.Column mphCol = dataset.get("VehicleSpeed (MPH)");
+            Dataset.Column mphCol = dataset.get("VehicleSpeed (mph)");
             if (mphCol == null) {
                 mphCol = dataset.get("VehicleSpeed");
             }
-            Dataset.Column pedalCol = dataset.get(DataLogger.pedal());
-            Dataset.Column throttleCol = dataset.get(DataLogger.throttle());
-            Dataset.Column gearCol = dataset.get(DataLogger.gear());
+            Dataset.Column pedalCol = dataset.get(DataLogger.pedalField());
+            Dataset.Column throttleCol = dataset.get(DataLogger.throttleField());
+            Dataset.Column gearCol = dataset.get(DataLogger.gearField());
 
 
             if (timeCol == null || timeCol.data.size() == 0) {

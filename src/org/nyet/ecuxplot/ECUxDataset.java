@@ -161,10 +161,10 @@ public class ECUxDataset extends Dataset {
             logger.debug("ECUxDataset constructor: filter is not null, enabled={}", filter.enabled());
         }
 
-        // Get pedal, throttle, and gear columns using getOrNull helper
-        this.pedal = getOrNull(DataLogger.pedal());
-        this.throttle = getOrNull(DataLogger.throttle());
-        this.gear = getOrNull(DataLogger.gear());
+        // Get pedal, throttle, and gear columns using field preferences
+        this.pedal = get(DataLogger.pedalField());
+        this.throttle = get(DataLogger.throttleField());
+        this.gear = get(DataLogger.gearField());
 
         // look for zeitronix boost for filtering
         this.zboost = get("Zeitronix Boost");
@@ -215,7 +215,6 @@ public class ECUxDataset extends Dataset {
         /* assume 10 == 1 sec smoothing */
         return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.accelMAW());
     }
-
 
 
     @Override
@@ -269,18 +268,6 @@ public class ECUxDataset extends Dataset {
         return c.mult(UnitConstants.CELSIUS_TO_FAHRENHEIT_FACTOR).add(UnitConstants.CELSIUS_TO_FAHRENHEIT_OFFSET);
     }
 
-    // given a list of id's, find the first that exists
-    public Column get(Comparable<?> [] id) {
-        for (final Comparable<?> k : id) {
-            Column ret = null;
-            try { ret=_get(k);
-            } catch (final NullPointerException e) {
-            }
-            if(ret!=null) return ret;
-        }
-        return null;
-    }
-
     @Override
     public Column get(Comparable<?> id) {
         try {
@@ -290,18 +277,29 @@ public class ECUxDataset extends Dataset {
         }
     }
 
-    /**
-     * Get a column by field names, returning null if not found or if data is all zeros.
-     * This is a convenience method for field categories that should be null when invalid.
-     */
-    private Column getOrNull(Comparable<?> [] id) {
-        Column col = get(id);
-        if (col != null && col.data.isZero()) col = null;
-        return col;
-    }
-
     private Column _get(Comparable<?> id) {
-        Column c=null;
+        // ========== GENERIC UNIT CONVERSION HANDLER ==========
+        // This handler parses "FieldName (unit)" pattern from menu items (e.g., "VehicleSpeed (mph)"),
+        // retrieves the base field (e.g., "VehicleSpeed"), performs the unit conversion, and returns
+        // a new Column with the converted data. This eliminates the need for individual handlers for
+        // each unit-converted field (previously there were 16+ hardcoded conversion handlers).
+        //
+        // Flow:
+        // 1. parseUnitConversion() extracts base field and target unit
+        // 2. Retrieve base field from dataset
+        // 3. convertUnits() performs the actual conversion math
+        // 4. Returns new Column with converted data
+        Units.ParsedUnitConversion parsed = Units.parseUnitConversion(id.toString());
+        if (parsed != null) {
+            Column baseColumn = super.get(parsed.baseField);
+            if (baseColumn != null) {
+                return convertUnits(baseColumn, parsed.targetUnit);
+            }
+        }
+
+        Column c = null;
+
+        // ========== BASIC FIELDS ==========
         if(id.equals("Sample")) {
             final double[] idx = new double[this.length()];
             for (int i=0;i<this.length();i++)
@@ -310,38 +308,36 @@ public class ECUxDataset extends Dataset {
             c = new Column("Sample", "#", a);
         } else if(id.equals("TIME")) {
             final DoubleArray a = super.get("TIME").data;
-            c = new Column("TIME", "s", a.div(this.time_ticks_per_sec));
+            c = new Column("TIME", UnitConstants.UNIT_SECONDS, a.div(this.time_ticks_per_sec));
         } else if(id.equals("RPM")) {
             // smooth sampling quantum noise/jitter, RPM is an integer!
             if (this.samples_per_sec>10) {
                 final DoubleArray a = super.get("RPM").data.smooth();
-                c = new Column(id, "RPM", a);
+                c = new Column(id, UnitConstants.UNIT_RPM, a);
             }
         } else if(id.equals("RPM - raw")) {
-            c = new Column(id, "RPM", super.get("RPM").data);
+            c = new Column(id, UnitConstants.UNIT_RPM, super.get("RPM").data);
+
+        // ========== CALCULATED MAF & FUEL FIELDS ==========
         } else if(id.equals("Sim Load")) {
             // g/sec to kg/hr
             final DoubleArray a = super.get("MassAirFlow").data.mult(UnitConstants.GPS_PER_KGH);
             final DoubleArray b = super.get("RPM").data.smooth();
 
             // KUMSRL
-            c = new Column(id, "%", a.div(b).div(.001072));
+            c = new Column(id, UnitConstants.UNIT_PERCENT, a.div(b).div(.001072));
         } else if(id.equals("Sim Load Corrected")) {
             // g/sec to kg/hr
             final DoubleArray a = this.get("Sim MAF").data.mult(UnitConstants.GPS_PER_KGH);
             final DoubleArray b = this.get("RPM").data;
 
             // KUMSRL
-            c = new Column(id, "%", a.div(b).div(.001072));
-        } else if(id.equals("MassAirFlow (kg/hr)")) {
-            // mass in g/sec
-            final DoubleArray maf = super.get("MassAirFlow").data;
-            c = new Column(id, "kg/hr", maf.mult(UnitConstants.GPS_PER_KGH));
+            c = new Column(id, UnitConstants.UNIT_PERCENT, a.div(b).div(.001072));
         } else if(id.equals("Sim MAF")) {
             // mass in g/sec
             final DoubleArray a = super.get("MassAirFlow").data.
                 mult(this.env.f.MAF_correction()).add(this.env.f.MAF_offset());
-            c = new Column(id, "g/sec", a);
+            c = new Column(id, UnitConstants.UNIT_GPS, a);
         } else if(id.equals("MassAirFlow df/dt")) {
             // mass in g/sec
             final DoubleArray maf = super.get("MassAirFlow").data;
@@ -363,38 +359,20 @@ public class ECUxDataset extends Dataset {
             if (bank2!=null) duty = duty.add(bank2.data).div(2);
             final DoubleArray a = duty.mult(cylinders*gps/100);
             c = new Column(id, "g/sec", a);
-        } else if(id.equals("TargetAFRDriverRequest (AFR)")) {
-            final DoubleArray abs = super.get("TargetAFRDriverRequest").data;
-            c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.equals("AirFuelRatioDesired (AFR)")) {
-            final DoubleArray abs = super.get("AirFuelRatioDesired").data;
-            c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.equals("AirFuelRatioCurrent (AFR)")) {
-            final DoubleArray abs = super.get("AirFuelRatioCurrent").data;
-            c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.equals("AirFuelRatioCurrentBank1 (AFR)")) {
-            final DoubleArray abs = super.get("AirFuelRatioCurrentBank1").data;
-            c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.equals("AirFuelRatioCurrentBank2 (AFR)")) {
-            final DoubleArray abs = super.get("AirFuelRatioCurrentBank2").data;
-            c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.equals("Lambda Bank 1 (AFR)")) {
-            final DoubleArray abs = super.get("Lambda Bank 1").data;
-            c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.equals("Lambda Bank 2 (AFR)")) {
-            final DoubleArray abs = super.get("Lambda Bank 2").data;
-            c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
+
+        // ========== CALCULATED AIR-FUEL RATIO FIELDS ==========
+        // Note: AFR conversions (lambda to AFR) are now handled by generic unit conversion handler
         } else if(id.equals("Sim AFR")) {
             final DoubleArray a = this.get("Sim MAF").data;
             final DoubleArray b = this.get("Sim Fuel Mass").data;
-            c = new Column(id, "AFR", a.div(b));
+            c = new Column(id, UnitConstants.UNIT_AFR, a.div(b));
         } else if(id.equals("Sim lambda")) {
             final DoubleArray a = this.get("Sim AFR").data.div(UnitConstants.STOICHIOMETRIC_AFR);
-            c = new Column(id, "lambda", a);
+            c = new Column(id, UnitConstants.UNIT_LAMBDA, a);
         } else if(id.equals("Sim lambda error")) {
             final DoubleArray a = super.get("AirFuelRatioDesired").data;
             final DoubleArray b = this.get("Sim lambda").data;
-            c = new Column(id, "%", a.div(b).mult(-1).add(1).mult(100).
+            c = new Column(id, UnitConstants.UNIT_PERCENT, a.div(b).mult(-1).add(1).mult(100).
                 max(-25).min(25));
 
         } else if(id.equals("FuelInjectorDutyCycle")) {
@@ -402,69 +380,61 @@ public class ECUxDataset extends Dataset {
                 div(60*1000);   /* assumes injector on time is in ms */
 
             final DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
-            c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
+            c = new Column(id, UnitConstants.UNIT_PERCENT, a.mult(b).mult(100)); // convert to %
         } else if(id.equals("EffInjectorDutyCycle")) {          /* te */
             final DoubleArray a = super.get("EffInjectionTime").data.
                 div(60*1000);   /* assumes injector on time is in ms */
 
             final DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
-            c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
+            c = new Column(id, UnitConstants.UNIT_PERCENT, a.mult(b).mult(100)); // convert to %
         } else if(id.equals("EffInjectorDutyCycleBank2")) {             /* te */
             final DoubleArray a = super.get("EffInjectionTimeBank2").data.
                 div(60*1000);   /* assumes injector on time is in ms */
 
             final DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
-            c = new Column(id, "%", a.mult(b).mult(100)); // convert to %
-/*****************************************************************************/
-        /* if log contains Engine torque */
+            c = new Column(id, UnitConstants.UNIT_PERCENT, a.mult(b).mult(100)); // convert to %
+
+        // ========== SPECIAL HANDLERS: ENGINE TORQUE/HP ==========
+        // if log contains Engine torque / converts TorqueDesired (Nm) to ft-lb and calculates HP
+        // See MenuHandlerRegistry.REGISTRY["Engine torque (ft-lb)"], etc.
         } else if(id.equals("Engine torque (ft-lb)")) {
-            final DoubleArray tq = this.get("Engine torque").data;
+            final DoubleArray tq = this.get("TorqueDesired").data;
             final DoubleArray value = tq.mult(UnitConstants.NM_PER_FTLB);       // nm to ft-lb
-            c = new Column(id, "ft-lb", value);
+            c = new Column(id, UnitConstants.UNIT_FTLB, value);
         } else if(id.equals("Engine HP")) {
             final DoubleArray tq = this.get("Engine torque (ft-lb)").data;
             final DoubleArray rpm = this.get("RPM").data;
             final DoubleArray value = tq.div(UnitConstants.HP_CALCULATION_FACTOR).mult(rpm);
-            c = new Column(id, "HP", value);
-/*****************************************************************************/
-        } else if(id.equals("VehicleSpeed (MPH)")) {
-            Column rawVehicleSpeed = this.get("VehicleSpeed");
-            if (rawVehicleSpeed != null) {
-                // Case 1: Convert raw VehicleSpeed to MPH
-                final DoubleArray a = rawVehicleSpeed.data.div(UnitConstants.KMH_PER_MPH);
-                c = new Column(id, "MPH", a);
-            } else {
-                // Case 2: Calculate VehicleSpeed from RPM
-                final DoubleArray rpm = this.get("RPM").data;
-                final DoubleArray calculatedMph = rpm.div(this.env.c.rpm_per_mph());
-                c = new Column(id, "MPH", calculatedMph);
-            }
+            c = new Column(id, UnitConstants.UNIT_HP, value);
+
+        // ========== CALCULATED FIELDS: VELOCITY & ACCELERATION ==========
+        // Calc Velocity, Acceleration (RPM/s), Acceleration (m/s^2), Acceleration (g)
+        // See MenuHandlerRegistry.REGISTRY["Calc Velocity"], etc.
         } else if(id.equals("Calc Velocity")) {
-            // TODO: Issue #57 - Rework unit conversions to be based on units, not column name
-            // Current conversions are hardcoded based on field names rather than actual units
-            // This makes the system brittle and requires manual updates for each field
-            // TODO: give user option to use raw VehicleSpeed or calculated from RPM
-            // VehicleSpeed sensors are notorioiusly inaccurate.
-            // Better to depend on RPM and user specified rpm_per_mph
+            // Calculate vehicle speed from RPM and gear ratio (more accurate than VehicleSpeed sensor)
+            // Uses user-specified rpm_per_mph for calibration
             final DoubleArray rpm = this.get("RPM").data;
-            c = new Column(id, "m/s", rpm.div(this.env.c.rpm_per_mph()).
+            c = new Column(id, UnitConstants.UNIT_MPS, rpm.div(this.env.c.rpm_per_mph()).
                 mult(UnitConstants.MPS_PER_MPH));
         } else if(id.equals("Acceleration (RPM/s)")) {
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
-            c = new Column(id, "RPM/s", y.derivative(x, this.AccelMAW()).max(0));
+            c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x, this.AccelMAW()).max(0));
         } else if(id.equals("Acceleration - raw (RPM/s)")) {
             final DoubleArray y = this.get("RPM - raw").data;
             final DoubleArray x = this.get("TIME").data;
-            c = new Column(id, "RPM/s", y.derivative(x));
+            c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x));
         } else if(id.equals("Acceleration (m/s^2)")) {
             final DoubleArray y = this.get("Calc Velocity").data;
             final DoubleArray x = this.get("TIME").data;
             c = new Column(id, "m/s^2", y.derivative(x, this.MAW()).max(0));
         } else if(id.equals("Acceleration (g)")) {
             final DoubleArray a = this.get("Acceleration (m/s^2)").data;
-            c = new Column(id, "g", a.div(UnitConstants.STANDARD_GRAVITY));
-/*****************************************************************************/
+            c = new Column(id, UnitConstants.UNIT_G, a.div(UnitConstants.STANDARD_GRAVITY));
+
+        // ========== CALCULATED FIELDS: POWER ==========
+        // WHP, WTQ, HP, TQ, Drag
+        // See MenuHandlerRegistry.REGISTRY["WHP"], etc.
         } else if(id.equals("WHP")) {
             final DoubleArray a = this.get("Acceleration (m/s^2)").data;
             final DoubleArray v = this.get("Calc Velocity").data;
@@ -472,7 +442,7 @@ public class ECUxDataset extends Dataset {
                 add(this.drag(v));      // in watts
 
             DoubleArray value = whp.mult(1.0 / UnitConstants.HP_PER_WATT);
-            String l = "HP";
+            String l = UnitConstants.UNIT_HP;
             if(this.env.sae.enabled()) {
                 value = value.mult(this.env.sae.correction());
                 l += " (SAE)";
@@ -482,70 +452,58 @@ public class ECUxDataset extends Dataset {
             final DoubleArray whp = this.get("WHP").data;
             final DoubleArray value = whp.div((1-this.env.c.driveline_loss())).
                     add(this.env.c.static_loss());
-            String l = "HP";
+            String l = UnitConstants.UNIT_HP;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value);
         } else if(id.equals("WTQ")) {
             final DoubleArray whp = this.get("WHP").data;
             final DoubleArray rpm = this.get("RPM").data;
             final DoubleArray value = whp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
-            String l = "ft-lb";
+            String l = UnitConstants.UNIT_FTLB;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value);
         } else if(id.equals("TQ")) {
             final DoubleArray hp = this.get("HP").data;
             final DoubleArray rpm = this.get("RPM").data;
             final DoubleArray value = hp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
-            String l = "ft-lb";
+            String l = UnitConstants.UNIT_FTLB;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value);
         } else if(id.equals("Drag")) {
             final DoubleArray v = this.get("Calc Velocity").data;
             final DoubleArray drag = this.drag(v);
             c = new Column(id, "HP", drag.mult(1.0 / UnitConstants.HP_PER_WATT));
-        } else if(id.equals("IntakeAirTemperature")) {
-            c = super.get(id);
-            if (c.getUnits().matches(".*C$"))
-                c = new Column(id, "\u00B0F", ECUxDataset.toFahrenheit(c.data));
-        } else if(id.equals("IntakeAirTemperature (C)")) {
-            c = super.get("IntakeAirTemperature");
-            if (c.getUnits().matches(".*F$"))
-                c = new Column(id, "\u00B0C", ECUxDataset.toCelcius(c.data));
-        } else if(id.equals("BoostPressureDesired (PSI)")) {
-            c = super.get("BoostPressureDesired");
-            if (!c.getUnits().matches("PSI"))
-                c = new Column(id, "PSI", this.toPSI(c.data));
+
+        // ========== BOOST PRESSURE & ZEITRONIX HANDLERS ==========
+        // BoostPressureDesired, Zeitronix Boost, Zeitronix AFR, Zeitronix Lambda
+        // See MenuHandlerRegistry.REGISTRY["Zeitronix Boost (PSI)"], etc.
         } else if(id.equals("BoostPressureDesired")) {
             final Column delta = super.get("BoostPressureDesiredDelta");
             if (delta != null) {
                 final Column ecu = super.get("ECUBoostPressureDesired");
                 if (ecu != null) {
-                    c = new Column(id, "PSI", ecu.data.add(delta.data));
+                    c = new Column(id, UnitConstants.UNIT_PSI, ecu.data.add(delta.data));
                 }
             }
-        } else if(id.equals("BoostPressureActual (PSI)")) {
-            c = super.get("BoostPressureActual");
-            if (!c.getUnits().matches("PSI"))
-                c = new Column(id, "PSI", this.toPSI(c.data));
-        } else if(id.equals("Zeitronix Boost (PSI)")) {
+        } else if(id.toString().equals(idWithUnit("Zeitronix Boost", UnitConstants.UNIT_PSI))) {
             final DoubleArray boost = super.get("Zeitronix Boost").data;
-            c = new Column(id, "PSI", boost.movingAverage(this.filter.ZeitMAW()));
+            c = new Column(id, UnitConstants.UNIT_PSI, boost.movingAverage(this.filter.ZeitMAW()));
         } else if(id.equals("Zeitronix Boost")) {
-            final DoubleArray boost = this.get("Zeitronix Boost (PSI)").data;
-            c = new Column(id, "mBar", boost.mult(UnitConstants.MBAR_PER_PSI).add(UnitConstants.MBAR_PER_ATM));
-        } else if(id.equals("Zeitronix AFR (lambda)")) {
+            final DoubleArray boost = this.get(idWithUnit("Zeitronix Boost", UnitConstants.UNIT_PSI)).data;
+            c = new Column(id, UnitConstants.UNIT_MBAR, boost.mult(UnitConstants.MBAR_PER_PSI).add(UnitConstants.MBAR_PER_ATM));
+        } else if(id.toString().equals(idWithUnit("Zeitronix AFR", UnitConstants.UNIT_LAMBDA))) {
             final DoubleArray abs = super.get("Zeitronix AFR").data;
-            c = new Column(id, "lambda", abs.div(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.equals("Zeitronix Lambda (AFR)")) {
+            c = new Column(id, UnitConstants.UNIT_LAMBDA, abs.div(UnitConstants.STOICHIOMETRIC_AFR));
+        } else if(id.toString().equals(idWithUnit("Zeitronix Lambda", UnitConstants.UNIT_AFR))) {
             final DoubleArray abs = super.get("Zeitronix Lambda").data;
-            c = new Column(id, "AFR", abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
+            c = new Column(id, UnitConstants.UNIT_AFR, abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
         } else if(id.equals("BoostDesired PR")) {
             final Column act = super.get("BoostPressureDesired");
             try {
                 final DoubleArray ambient = super.get("BaroPressure").data;
                 c = new Column(id, "PR", act.data.div(ambient));
             } catch (final Exception e) {
-                if (act.getUnits().matches("PSI"))
+                if (act.getUnits().matches(UnitConstants.UNIT_PSI))
                     c = new Column(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
                 else
                     c = new Column(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
@@ -557,13 +515,13 @@ public class ECUxDataset extends Dataset {
                 final DoubleArray ambient = super.get("BaroPressure").data;
                 c = new Column(id, "PR", act.data.div(ambient));
             } catch (final Exception e) {
-                if (act.getUnits().matches("PSI"))
+                if (act.getUnits().matches(UnitConstants.UNIT_PSI))
                     c = new Column(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
                 else
                     c = new Column(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
             }
         } else if(id.equals("Sim evtmod")) {
-            final DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
+            final DoubleArray tans = this.get(idWithUnit("IntakeAirTemperature", UnitConstants.UNIT_CELSIUS)).data;
             DoubleArray tmot = tans.ident(95);
             try {
                 tmot = this.get("CoolantTemperature").data;
@@ -574,7 +532,7 @@ public class ECUxDataset extends Dataset {
             final DoubleArray evtmod = tans.add((tmot.sub(tans)).mult(0.02));
             c = new Column(id, "\u00B0C", evtmod);
         } else if(id.equals("Sim ftbr")) {
-            final DoubleArray tans = this.get("IntakeAirTemperature (C)").data;
+            final DoubleArray tans = this.get(idWithUnit("IntakeAirTemperature", UnitConstants.UNIT_CELSIUS)).data;
             final DoubleArray evtmod = this.get("Sim evtmod").data;
             // linear fit to stock FWFTBRTA
             // fwtf = (tans+637.425)/731.334
@@ -652,7 +610,7 @@ public class ECUxDataset extends Dataset {
             // vplsspls from KFVPDKSD/KFVPDKSDSE
             boost = boost.div(1.016);   // plsol
 
-            c = new Column(id, "mBar", boost.max(ambient));
+            c = new Column(id, UnitConstants.UNIT_MBAR, boost.max(ambient));
         } else if(id.equals("Boost Spool Rate (RPM)")) {
             final DoubleArray abs = super.get("BoostPressureActual").data.smooth();
             final DoubleArray rpm = this.get("RPM").data;
@@ -663,14 +621,14 @@ public class ECUxDataset extends Dataset {
                 this.get("RPM").data.movingAverage(this.filter.ZeitMAW()).smooth();
             c = new Column(id, "mBar/RPM", boost.derivative(rpm).max(0));
         } else if(id.equals("Boost Spool Rate (time)")) {
-            final DoubleArray abs = this.get("BoostPressureActual (PSI)").data.smooth();
+            final DoubleArray abs = this.get(idWithUnit("BoostPressureActual", UnitConstants.UNIT_PSI)).data.smooth();
             final DoubleArray time = this.get("TIME").data;
             c = new Column(id, "PSI/sec", abs.derivative(time, this.MAW()).max(0));
         } else if(id.equals("ps_w error")) {
             final DoubleArray abs = super.get("BoostPressureActual").data.max(900);
             final DoubleArray ps_w = super.get("ME7L ps_w").data.max(900);
             //c = new Column(id, "%", abs.div(ps_w).sub(1).mult(-100));
-            c = new Column(id, "lambda", ps_w.div(abs));
+            c = new Column(id, UnitConstants.UNIT_LAMBDA, ps_w.div(abs));
         } else if(id.equals("LDR error")) {
             final DoubleArray set = super.get("BoostPressureDesired").data;
             final DoubleArray out = super.get("BoostPressureActual").data;
@@ -971,7 +929,7 @@ public class ECUxDataset extends Dataset {
                 rpmEnd = (int) Math.round(speedEnd);
                 logger.trace("FATS RPM calculation: {} RPM -> {} RPM", rpmStart, rpmEnd);
                 break;
-            case MPH:
+            case mph:
                 // Convert MPH to RPM
                 double rpmPerMph = this.env.c.rpm_per_mph();
                 rpmStart = (int) Math.round(speedStart * rpmPerMph);
@@ -979,7 +937,7 @@ public class ECUxDataset extends Dataset {
                 logger.trace("FATS MPH->RPM conversion: {} mph -> {} RPM, {} mph -> {} RPM",
                     speedStart, rpmStart, speedEnd, rpmEnd);
                 break;
-            case KPH:
+            case kmh:
                 // Convert KPH to RPM
                 double rpmPerKph = this.env.c.rpm_per_kph();
                 rpmStart = (int) Math.round(speedStart * rpmPerKph);
@@ -1103,6 +1061,111 @@ public class ECUxDataset extends Dataset {
     //public void setEnv(Env e) { this.env=e; }
     @Override
     public boolean useId2() { return this.env.prefs.getBoolean("altnames", false); }
+
+    /**
+     * Generic unit conversion method.
+     * Converts data from one unit to another using conversion factors from UnitConstants.
+     *
+     * Supported conversions:
+     * - Air-Fuel Ratio: lambda ↔ AFR (stoichiometric factor)
+     * - Temperature: Celsius ↔ Fahrenheit (temperature conversion)
+     * - Pressure: mBar ↔ PSI (with ambient pressure handling)
+     * - Speed: mph ↔ km/h (speed conversion)
+     * - Mass flow: g/sec ↔ kg/hr (mass flow conversion)
+     *
+     * @param baseColumn The base column to convert from
+     * @param targetUnit The target unit to convert to (from UnitConstants)
+     * @return A new Column with converted data, or the base column if no conversion needed
+     */
+    private Column convertUnits(Column baseColumn, String targetUnit) {
+        String baseUnit = baseColumn.getUnits();
+        DoubleArray data = baseColumn.data;
+        String newUnit = targetUnit;
+
+        // Air-Fuel Ratio: lambda <-> AFR
+        if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_AFR, UnitConstants.UNIT_LAMBDA)) {
+            data = data.mult(UnitConstants.STOICHIOMETRIC_AFR);
+            newUnit = UnitConstants.UNIT_AFR;
+        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_LAMBDA, UnitConstants.UNIT_AFR)) {
+            data = data.mult(UnitConstants.LAMBDA_PER_AFR);
+            newUnit = UnitConstants.UNIT_LAMBDA;
+        }
+
+        // Temperature: Celsius <-> Fahrenheit
+        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_FAHRENHEIT, UnitConstants.UNIT_CELSIUS)) {
+            data = toFahrenheit(data);
+            newUnit = UnitConstants.UNIT_FAHRENHEIT;
+        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_CELSIUS, UnitConstants.UNIT_FAHRENHEIT)) {
+            data = toCelcius(data);
+            newUnit = UnitConstants.UNIT_CELSIUS;
+        }
+
+        // Pressure: mBar <-> PSI
+        // Note: PSI is typically gauge pressure, mBar is absolute pressure
+        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_PSI, UnitConstants.UNIT_MBAR)) {
+            data = toPSI(data);
+            newUnit = UnitConstants.UNIT_PSI;
+        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI)) {
+            // PSI gauge to mBar absolute
+            // Get ambient pressure from dataset or use standard
+            double ambient = UnitConstants.MBAR_PER_ATM; // 1013 mBar standard
+            try {
+                Column baro = super.get("BaroPressure");
+                if (baro != null && baro.data != null) {
+                    ambient = baro.data.get(0); // Use first value as ambient
+                }
+            } catch (Exception e) {
+                // Use standard atmospheric pressure
+            }
+            data = data.mult(UnitConstants.MBAR_PER_PSI).add(ambient);
+            newUnit = UnitConstants.UNIT_MBAR;
+        }
+
+        // Speed: mph <-> km/h
+        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_MPH, UnitConstants.UNIT_KMH)) {
+            data = data.mult(UnitConstants.MPH_PER_KPH);
+            newUnit = UnitConstants.UNIT_MPH;
+        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_KMH, UnitConstants.UNIT_MPH)) {
+            data = data.mult(UnitConstants.KMH_PER_MPH);
+            newUnit = UnitConstants.UNIT_KMH;
+        }
+
+        // Mass flow: g/sec <-> kg/hr
+        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_KGH, UnitConstants.UNIT_GPS)) {
+            data = data.mult(UnitConstants.KGH_PER_GPS);
+            newUnit = UnitConstants.UNIT_KGH;
+        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_GPS, UnitConstants.UNIT_KGH)) {
+            data = data.mult(UnitConstants.GPS_PER_KGH);
+            newUnit = UnitConstants.UNIT_GPS;
+        }
+
+        // If no conversion matched, return base column as-is
+        // (This handles cases where units are already correct or not in our conversion list)
+        if (data == baseColumn.data) {
+            return baseColumn;
+        }
+
+        String baseId = baseColumn.getId();
+        return new Column(baseId, newUnit, data);
+    }
+
+    /**
+     * Helper method to construct a unit-converted column ID.
+     * @param originalId The original column ID (e.g., "IntakeAirTemperature")
+     * @param unit The target unit constant (e.g., UnitConstants.UNIT_CELSIUS)
+     * @return Formatted string like "IntakeAirTemperature (°C)"
+     */
+    private static String idWithUnit(String originalId, String unit) {
+        return String.format("%s (%s)", originalId, unit);
+    }
+
+    /**
+     * Helper method to check if a unit conversion should be applied.
+     */
+    private static boolean tryConversion(String targetUnit, String baseUnit, String expectedTarget, String expectedBase) {
+        return expectedTarget.equals(targetUnit) && expectedBase.equals(baseUnit);
+    }
+
 }
 
 // vim: set sw=4 ts=8 expandtab:

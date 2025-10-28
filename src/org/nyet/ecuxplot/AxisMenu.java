@@ -3,6 +3,8 @@ package org.nyet.ecuxplot;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.awt.Component;
 
@@ -54,16 +56,73 @@ public class AxisMenu extends JMenu {
         }
     }
 
+    /**
+     * Add a menu item to a submenu.
+     * NOTE: Prefer addToSubmenu(String, String, String) or addToSubmenu(String, DatasetId) to enable unit conversions.
+     * This overload is only for JSeparators and similar components.
+     */
     private void addToSubmenu(String submenu, JComponent item) {
-        // autoadd if not Calc, which is added last
-        //addToSubmenu(submenu, item, id.matches("^Calc")?false:true);
         addToSubmenu(submenu, item, true);
     }
 
+    /**
+     * Add a menu item to a submenu without units (for calculated/derived fields).
+     * This calls addToSubmenu(String, DatasetId) with null units.
+     */
     private void addToSubmenu(String submenu, String id) {
-        final AbstractButton item = makeMenuItem(id, null);
-        addToSubmenu(submenu, item);
+        addToSubmenu(submenu, new DatasetId(id, null, null));
     }
+
+    /**
+     * Add a menu item to a submenu WITH units from DatasetId.
+     * This enables automatic unit conversion menu items.
+     *
+     * Recursion Prevention:
+     * This method automatically creates unit-converted menu items (e.g., "VehicleSpeed (mph)")
+     * from the original field and its unit. To prevent infinite recursion:
+     * 1. Track column state (ORIGINAL vs UNIT_CONVERTED) in columnStates Map
+     * 2. Only process each column once
+     * 3. For converted items, pass a dummy DatasetId with null unit to prevent further conversions
+     *
+     * Example: For "VehicleSpeed" with unit "km/h":
+     * 1. Adds "VehicleSpeed" menu item (state: ORIGINAL)
+     * 2. Calls Units.getAlternateUnits("km/h") → returns ["mph"]
+     * 3. Adds "VehicleSpeed (mph)" menu item (state: UNIT_CONVERTED)
+     * 4. Since convertedId has no unit, no further conversions are attempted
+     *
+     * PREFERRED: Use this overload to ensure units are always passed.
+     */
+    private void addToSubmenu(String submenu, DatasetId dsid) {
+        final AbstractButton item = makeMenuItem(dsid.id, null);
+        addToSubmenu(submenu, item, true);
+
+        // Track this column's state
+        columnStates.put(dsid.id, ColumnState.ORIGINAL);
+
+        // Automatically add unit conversions if available (but avoid recursion)
+        if (dsid.unit != null) {
+            List<String> alternates = Units.getAlternateUnits(dsid.unit);
+            for (String alt : alternates) {
+                String convertedId = dsid.id + " (" + alt + ")";
+                // Only add if we haven't already processed this conversion
+                if (!columnStates.containsKey(convertedId)) {
+                    columnStates.put(convertedId, ColumnState.UNIT_CONVERTED);
+                    // For unit conversions, pass a dummy DatasetId with no units to avoid recursion
+                    DatasetId dummyDsid = new DatasetId(convertedId, null, null);
+                    addToSubmenu(submenu, dummyDsid); // Already a conversion, don't recurse
+                }
+            }
+        }
+    }
+
+    // Track the state of columns to prevent recursion
+    private enum ColumnState {
+        ORIGINAL,      // Original field from data
+        UNIT_CONVERTED // Field with unit conversion applied
+    }
+
+    private final Map<String, ColumnState> columnStates = new HashMap<>();
+
 
     private AbstractButton makeMenuItem(String id, String tip) {
         boolean checked = false;
@@ -105,12 +164,9 @@ public class AxisMenu extends JMenu {
         /* Return null if item already exists (duplicate) */
         if (this.members.containsKey(dsid.id)) return null;
 
+        final AbstractButton item = makeMenuItem(dsid.id, dsid.id2);
+
         final String id = dsid.id;
-        final String tip = dsid.id2;
-        final String units = dsid.unit;
-
-        final AbstractButton item = makeMenuItem(id, tip);
-
         if(id.matches("RPM")) {
             this.add(item, 0);  // always add rpms first!
             addDirect("RPM - raw", 1);
@@ -134,7 +190,7 @@ public class AxisMenu extends JMenu {
 
         // goes before .*Load.* to catch CalcLoad
         } else if(id.matches(".*(MAF|Mass *Air|Air *Mass|Mass *Air *Flow).*")) {
-            addToSubmenu("MAF", item);
+            addToSubmenu("MAF", dsid);
             if(id.matches("MassAirFlow")) {
                 this.add("MassAirFlow (kg/hr)");
                 if (dsid.type.equals("ME7LOGGER")) {
@@ -148,33 +204,7 @@ public class AxisMenu extends JMenu {
                 addToSubmenu("Calc MAF", new JSeparator());
             }
         } else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85|[LH]PFP|Rail).*")) {
-            addToSubmenu("Fuel", item);
-            if(id.matches("TargetAFRDriverRequest")) {
-                if (units==null || !units.equals("AFR"))
-                    this.add("TargetAFRDriverRequest (AFR)");
-            }
-            if(id.matches("AirFuelRatioDesired")) {
-                if (units==null || !units.equals("AFR"))
-                    this.add("AirFuelRatioDesired (AFR)");
-            }
-            if(id.matches("AirFuelRatioCurrent")) {
-                this.add("AirFuelRatioCurrent (AFR)");
-            }
-            if(id.matches("AirFuelRatioCurrentBank1")) {
-                this.add("AirFuelRatioCurrentBank1 (AFR)");
-            }
-            if(id.matches("AirFuelRatioCurrentBank2")) {
-                this.add("AirFuelRatioCurrentBank2 (AFR)");
-            }
-            if(id.matches("Lambda")) {
-                this.add("Lambda (AFR)");
-            }
-            if(id.matches("Lambda Bank 1")) {
-                this.add("Lambda Bank 1 (AFR)");
-            }
-            if(id.matches("Lambda Bank 2")) {
-                this.add("Lambda Bank 2 (AFR)");
-            }
+            addToSubmenu("Fuel", dsid);
             if(id.matches("FuelInjectorOnTime")) {      // ti
                 this.add("FuelInjectorDutyCycle");
             }
@@ -201,24 +231,20 @@ public class AxisMenu extends JMenu {
             if(id.matches("^Zeitronix Lambda")) {
                 this.add("Zeitronix Lambda (AFR)");
             }
-            addToSubmenu("Zeitronix", item);
+            addToSubmenu("Zeitronix", dsid);
         } else if(id.matches(".*(Load|Torque|ChargeLimit.*Protection).*")) {
             // before Boost so we catch ChargeLimit*Protection before Charge
-            addToSubmenu("Load", item);
+            addToSubmenu("Load", dsid);
             if(id.matches("EngineLoad(Requested|Corrected)")) {
                 addToSubmenu("Calc Boost", "Sim BoostPressureDesired");
                 addToSubmenu("Calc Boost", "Sim LoadSpecified correction");
             }
         } else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Press|PID|Turbine).*")) {
-            addToSubmenu("Boost", item);
+            addToSubmenu("Boost", dsid);
             if(id.matches("BoostPressureDesired")) {
-                if (units==null || !units.equals("PSI"))
-                    this.add("BoostPressureDesired (PSI)");
                 addToSubmenu("Calc Boost", "BoostDesired PR");
             }
             if(id.matches("BoostPressureActual")) {
-                if (units==null || !units.equals("PSI"))
-                    this.add("BoostPressureActual (PSI)");
                 addToSubmenu("Calc Boost", "BoostActual PR");
                 addToSubmenu("Calc Boost", "Boost Spool Rate (RPM)");
                 addToSubmenu("Calc Boost", "Boost Spool Rate (time)");
@@ -230,55 +256,53 @@ public class AxisMenu extends JMenu {
             /* JB4 does noth boost pressure desired, its calc'd */
             /* "target" is this delta */
             if(id.matches("BoostPressureDesiredDelta")) {
-                this.add(new DatasetId("BoostPressureDesired", null, units));
+                this.add(new DatasetId("BoostPressureDesired", null, dsid.unit));
             }
         /* do this before Timing so we don't match Throttle Angle */
         } else if(id.matches(".*(Pedal|Throttle).*")) {
-            addToSubmenu("Throttle", item);
+            addToSubmenu("Throttle", dsid);
         } else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing|Angle|Spark|Combustion).*")) {
-            addToSubmenu("Ignition", item);
+            addToSubmenu("Ignition", dsid);
             if(id.matches("IgnitionTimingAngleOverall")) {
                 this.add("IgnitionTimingAngleOverallDesired");
             }
-            final AbstractButton titem = makeMenuItem(id + " (ms)", tip);
+            final AbstractButton titem = makeMenuItem(id + " (ms)", dsid.id2);
             addToSubmenu("TrueTiming", titem, true);
         } else if(id.matches(".*(Cam|NWS|Valve).*")) {
-            addToSubmenu("VVT", item);
+            addToSubmenu("VVT", dsid);
         } else if(id.matches("(Cat|MainCat).*")) {
-            addToSubmenu("Cats", item);
+            addToSubmenu("Cats", dsid);
         } else if(id.matches(".*EGT.*")) {
-            addToSubmenu("EGT", item);
+            addToSubmenu("EGT", dsid);
         } else if(id.matches(".*(Idle|Idling).*")) {
-            addToSubmenu("Idle", item);
+            addToSubmenu("Idle", dsid);
         } else if(id.matches(".*[Kk]nock.*")) {
-            addToSubmenu("Knock", item);
+            addToSubmenu("Knock", dsid);
         } else if(id.matches(".*Misfire.*")) {
-            addToSubmenu("Misfires", item);
+            addToSubmenu("Misfires", dsid);
         } else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
-            addToSubmenu("O2 Sensor(s)", item);
+            addToSubmenu("O2 Sensor(s)", dsid);
         } else if(id.matches("VehicleSpeed")) {
-            addToSubmenu("Vehicle Speed", item);
-            addToSubmenu("Vehicle Speed", "VehicleSpeed (MPH)");
-        } else if(id.matches("Engine torque")) {
+            addToSubmenu("Vehicle Speed", dsid);
+        } else if(id.matches("TorqueDesired")) {
             this.add(item);  /* Must add self - standalone item with derived ft-lb and HP versions */
             this.add("Engine torque (ft-lb)");
             this.add("Engine HP");
         } else if(id.matches("IntakeAirTemperature")) {
-            addToSubmenu("Temperature", item);
-            this.add("IntakeAirTemperature (C)");
+            addToSubmenu("Temperature", dsid);
             if (dsid.type.equals("ME7LOGGER")) {
                 addToSubmenu("Calc IAT", "Sim evtmod");
                 addToSubmenu("Calc IAT", "Sim ftbr");
                 addToSubmenu("Calc IAT", "Sim BoostIATCorrection");
             }
         } else if(id.matches(".*Temperature.*")) {
-            addToSubmenu("Temperature", item);
+            addToSubmenu("Temperature", dsid);
         } else if(id.matches(".*VV.*")) {       // EvoScan
-            addToSubmenu("VVT", item);
+            addToSubmenu("VVT", dsid);
         } else if(id.matches("^Log.*")) {       // EvoScan
-            addToSubmenu("EvoScan", item);
+            addToSubmenu("EvoScan", dsid);
         } else if(id.matches("^ME7L.*")) {
-            addToSubmenu("ME7 Logger", item);
+            addToSubmenu("ME7 Logger", dsid);
             if(id.matches("ME7L ps_w")) {
                 addToSubmenu("Calc Boost", "Sim pspvds");
                 addToSubmenu("Boost", "ps_w error");
@@ -287,7 +311,7 @@ public class AxisMenu extends JMenu {
             this.add(item);
         }
 
-        this.members.put(id, item);
+        this.members.put(dsid.id, item);
 
         /* Return the item if it's a JMenuItem (e.g., JRadioButtonMenuItem),
          * otherwise return null (e.g., for JCheckBox) */
@@ -325,11 +349,6 @@ public class AxisMenu extends JMenu {
                 if(ids[i].id.length()>0 && !this.members.containsKey(ids[i].id)) {
                     this.add(ids[i]);
                 }
-            }
-
-            // Always add VehicleSpeed (MPH) to Vehicle Speed submenu - ECUxDataset will handle raw vs calculated
-            if (!this.members.containsKey("VehicleSpeed (MPH)")) {
-                addToSubmenu("Vehicle Speed", "VehicleSpeed (MPH)");
             }
 
             // put ME7Log next

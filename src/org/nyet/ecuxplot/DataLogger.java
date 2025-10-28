@@ -31,9 +31,9 @@ public class DataLogger {
     private static Map<String, DataLoggerConfig> loggerConfigs = new HashMap<>();
 
     // ============================================================================
-    // FIELD CATEGORIES - LOADED FROM YAML/XML (GLOBAL)
+    // FIELD PREFERENCES - LOADED FROM YAML/XML (GLOBAL)
     // ============================================================================
-    private static Map<String, String[]> fieldCategories = new HashMap<>();
+    private static Map<String, String> fieldPreferences = new HashMap<>();
 
     // ============================================================================
     // HEADER DATA CLASS
@@ -866,26 +866,31 @@ public class DataLogger {
             Document document = builder.parse(is);
             is.close();
 
-            // Parse field categories if present
-            NodeList fieldCategoriesNodes = document.getElementsByTagName("field_categories");
-            if (fieldCategoriesNodes.getLength() > 0) {
-                Element fieldCategoriesElement = (Element) fieldCategoriesNodes.item(0);
-                NodeList childNodes = fieldCategoriesElement.getChildNodes();
-                logger.debug("Found field categories section");
-
-                for (int i = 0; i < childNodes.getLength(); i++) {
-                    if (childNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                        Element categoryElement = (Element) childNodes.item(i);
-                        String categoryName = categoryElement.getTagName();
-                        NodeList fieldNodes = categoryElement.getElementsByTagName("item");
-                        String[] fields = new String[fieldNodes.getLength()];
-
-                        for (int j = 0; j < fieldNodes.getLength(); j++) {
-                            fields[j] = fieldNodes.item(j).getTextContent();
+            // Parse field preferences if present
+            NodeList fieldPreferencesNodes = document.getElementsByTagName("field_preferences");
+            if (fieldPreferencesNodes.getLength() > 0) {
+                Element fieldPreferencesElement = (Element) fieldPreferencesNodes.item(0);
+                // Check if field preferences are stored as attributes (YAML converts single values to attributes)
+                if (fieldPreferencesElement.hasAttributes()) {
+                    var attributes = fieldPreferencesElement.getAttributes();
+                    for (int i = 0; i < attributes.getLength(); i++) {
+                        var attr = attributes.item(i);
+                        String preferenceName = attr.getNodeName();
+                        String fieldName = attr.getNodeValue();
+                        fieldPreferences.put(preferenceName, fieldName);
+                        logger.debug("Loaded field preference '{}' = '{}'", preferenceName, fieldName);
+                    }
+                } else {
+                    // Legacy: check for child elements
+                    NodeList childNodes = fieldPreferencesElement.getChildNodes();
+                    for (int i = 0; i < childNodes.getLength(); i++) {
+                        if (childNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                            Element preferenceElement = (Element) childNodes.item(i);
+                            String preferenceName = preferenceElement.getTagName();
+                            String fieldName = preferenceElement.getTextContent().trim();
+                            fieldPreferences.put(preferenceName, fieldName);
+                            logger.debug("Loaded field preference '{}' = '{}'", preferenceName, fieldName);
                         }
-
-                        fieldCategories.put(categoryName, fields);
-                        logger.debug("Loaded field category '{}' with {} fields", categoryName, fields.length);
                     }
                 }
             }
@@ -902,8 +907,8 @@ public class DataLogger {
                         Element childElement = (Element) childNodes.item(i);
                         String childTagName = childElement.getTagName();
 
-                        // Skip field_categories - already processed
-                        if ("field_categories".equals(childTagName)) {
+                        // Skip field_preferences - already processed
+                        if ("field_preferences".equals(childTagName)) {
                             continue;
                         }
 
@@ -1132,33 +1137,33 @@ public class DataLogger {
     // FIELD CATEGORY ENUM AND ACCESS METHODS
     // ============================================================================
 
-    public enum FieldCategory {
+    public enum FieldPreference {
         PEDAL("pedal"),
         THROTTLE("throttle"),
         GEAR("gear");
 
-        private final String categoryName;
+        private final String preferenceName;
 
-        FieldCategory(String categoryName) {
-            this.categoryName = categoryName;
+        FieldPreference(String preferenceName) {
+            this.preferenceName = preferenceName;
         }
 
-        public String[] fields() {
-            return fieldCategories.getOrDefault(categoryName, new String[0]);
+        public String field() {
+            return fieldPreferences.getOrDefault(preferenceName, "");
         }
     }
 
-    // Concise wrapper methods for common field categories
-    public static String[] pedal() {
-        return FieldCategory.PEDAL.fields();
+    // Concise wrapper methods for common field preferences
+    public static String pedalField() {
+        return FieldPreference.PEDAL.field();
     }
 
-    public static String[] throttle() {
-        return FieldCategory.THROTTLE.fields();
+    public static String throttleField() {
+        return FieldPreference.THROTTLE.field();
     }
 
-    public static String[] gear() {
-        return FieldCategory.GEAR.fields();
+    public static String gearField() {
+        return FieldPreference.GEAR.field();
     }
 
     // ============================================================================
@@ -1211,7 +1216,7 @@ public class DataLogger {
             }
             // Group 24 blacklist logic (using id2 as Group line)
             if (g != null && g.matches("^Group 24.*") && id[i].equals("Accelerator position")) {
-                id[i] = "AcceleratorPedalPosition (G024)";
+                id[i] = "AccelPedalPosition (G024)";
             }
             logger.debug("VCDS field {}: '{}' (unit: '{}')", i, id[i], u != null && i < u.length ? u[i] : "N/A");
         }

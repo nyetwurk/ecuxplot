@@ -78,7 +78,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         // Create main input panel with horizontal layout to use full width
         JPanel mainInputPanel = new JPanel(new BorderLayout());
 
-        this.speedUnitCombo = new JComboBox<>(new String[]{"RPM", "MPH", "KPH"});
+        this.speedUnitCombo = new JComboBox<>(new String[]{"RPM", "mph", "km/h"});
 
         // Add action listener to combo box
         this.speedUnitCombo.addActionListener(new ActionListener() {
@@ -102,11 +102,11 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         this.startLabel = new JLabel("Start");
         this.endLabel = new JLabel("End");
         switch (this.fats.speedUnit()) {
-            case MPH:
+            case mph:
                 this.start=new JTextField(""+Math.round(this.fats.startMph()), 6);
                 this.end=new JTextField(""+Math.round(this.fats.endMph()), 6);
                 break;
-            case KPH:
+            case kmh:
                 this.start=new JTextField(""+Math.round(this.fats.startKph()), 6);
                 this.end=new JTextField(""+Math.round(this.fats.endKph()), 6);
                 break;
@@ -188,10 +188,10 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 
     private FATS.SpeedUnit getSelectedSpeedUnit() {
         String selectedUnit = (String) this.speedUnitCombo.getSelectedItem();
-        if ("MPH".equals(selectedUnit)) {
-            return FATS.SpeedUnit.MPH;
-        } else if ("KPH".equals(selectedUnit)) {
-            return FATS.SpeedUnit.KPH;
+        if ("mph".equals(selectedUnit)) {
+            return FATS.SpeedUnit.mph;
+        } else if ("km/h".equals(selectedUnit)) {
+            return FATS.SpeedUnit.kmh;
         } else {
             return FATS.SpeedUnit.RPM;
         }
@@ -203,11 +203,11 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
             case RPM:
                 this.speedUnitCombo.setSelectedItem("RPM");
                 break;
-            case MPH:
-                this.speedUnitCombo.setSelectedItem("MPH");
+            case mph:
+                this.speedUnitCombo.setSelectedItem("mph");
                 break;
-            case KPH:
-                this.speedUnitCombo.setSelectedItem("KPH");
+            case kmh:
+                this.speedUnitCombo.setSelectedItem("km/h");
                 break;
         }
     }
@@ -245,11 +245,11 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         this.dataset.refreshFromFATS();
         // Update text fields to show current values
         switch (this.fats.speedUnit()) {
-            case MPH:
+            case mph:
                 this.start.setText("" + Math.round(this.fats.startMph()));
                 this.end.setText("" + Math.round(this.fats.endMph()));
                 break;
-            case KPH:
+            case kmh:
                 this.start.setText("" + Math.round(this.fats.startKph()));
                 this.end.setText("" + Math.round(this.fats.endKph()));
                 break;
@@ -269,11 +269,11 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
             this.fats.speedUnit(speedUnit);
 
             switch (speedUnit) {
-                case MPH:
+                case mph:
                     this.fats.startMph(Double.valueOf(this.start.getText()));
                     this.fats.endMph(Double.valueOf(this.end.getText()));
                     break;
-                case KPH:
+                case kmh:
                     this.fats.startKph(Double.valueOf(this.start.getText()));
                     this.fats.endKph(Double.valueOf(this.end.getText()));
                     break;
@@ -312,11 +312,11 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         // Values are updated based on current mode
         FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
         switch (speedUnit) {
-            case MPH:
+            case mph:
                 start.setText("" + Math.round(this.fats.startMph()));
                 end.setText("" + Math.round(this.fats.endMph()));
                 break;
-            case KPH:
+            case kmh:
                 start.setText("" + Math.round(this.fats.startKph()));
                 end.setText("" + Math.round(this.fats.endKph()));
                 break;

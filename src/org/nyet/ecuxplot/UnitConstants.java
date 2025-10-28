@@ -12,6 +12,8 @@ public class UnitConstants {
     // Speed conversions
     /** Conversion factor from kilometers per hour to miles per hour */
     public static final double KMH_PER_MPH = 1.609344;
+    /** Conversion factor from miles per hour to kilometers per hour */
+    public static final double MPH_PER_KPH = 1.0 / KMH_PER_MPH;
     /** Conversion factor from miles per hour to meters per second */
     public static final double MPS_PER_MPH = 1.0 / 2.23693629;
 
@@ -40,6 +42,8 @@ public class UnitConstants {
     // Mass flow conversions
     /** Conversion factor from grams per second to kilograms per hour */
     public static final double GPS_PER_KGH = 3.6;
+    /** Conversion factor from kilograms per hour to grams per second */
+    public static final double KGH_PER_GPS = 1.0 / GPS_PER_KGH;
 
     // Torque conversions
     /** Conversion factor from Newton-meters to foot-pounds */
@@ -48,6 +52,8 @@ public class UnitConstants {
     // Air-fuel ratio conversions
     /** Stoichiometric air-fuel ratio for gasoline */
     public static final double STOICHIOMETRIC_AFR = 14.7;
+    /** Conversion factor from AFR to lambda */
+    public static final double LAMBDA_PER_AFR = 1.0 / STOICHIOMETRIC_AFR;
 
     // Acceleration conversions
     /** Standard gravity acceleration in m/s² */
@@ -60,6 +66,58 @@ public class UnitConstants {
     // Fuel flow conversions
     /** Conversion factor from cc/min to grams/sec for fuel flow */
     public static final double GPS_PER_CCMIN = 0.0114;
+
+    // Unit strings
+    /** Unit string for air-fuel ratio */
+    public static final String UNIT_AFR = "AFR";
+    /** Unit string for lambda */
+    public static final String UNIT_LAMBDA = "lambda";
+    /** Unit string for pounds per square inch */
+    public static final String UNIT_PSI = "PSI";
+    /** Unit string for millibar */
+    public static final String UNIT_MBAR = "mBar";
+    /** Unit string for miles per hour */
+    public static final String UNIT_MPH = "mph";
+    /** Unit string for kilometers per hour */
+    public static final String UNIT_KMH = "km/h";
+    /** Unit string for degrees Fahrenheit */
+    public static final String UNIT_FAHRENHEIT = "\u00B0F";
+    /** Unit string for degrees Celsius */
+    public static final String UNIT_CELSIUS = "\u00B0C";
+    /** Unit string for degrees */
+    public static final String UNIT_DEGREES = "\u00B0";
+    /** Unit string for revolutions per minute */
+    public static final String UNIT_RPM = "RPM";
+    /** Unit string for seconds */
+    public static final String UNIT_SECONDS = "s";
+    /** Unit string for grams per second */
+    public static final String UNIT_GPS = "g/sec";
+    /** Unit string for kilograms per hour */
+    public static final String UNIT_KGH = "kg/hr";
+    /** Unit string for percent */
+    public static final String UNIT_PERCENT = "%";
+    /** Unit string for voltage */
+    public static final String UNIT_VOLTS = "V";
+    /** Unit string for milliseconds */
+    public static final String UNIT_MS = "ms";
+    /** Unit string for horsepower */
+    public static final String UNIT_HP = "HP";
+    /** Unit string for foot-pounds */
+    public static final String UNIT_FTLB = "ft-lb";
+    /** Unit string for meters per second */
+    public static final String UNIT_MPS = "m/s";
+    /** Unit string for RPM per second */
+    public static final String UNIT_RPS = "RPM/s";
+    /** Unit string for g (acceleration) */
+    public static final String UNIT_G = "g";
+    /** Unit string for pounds per minute */
+    public static final String UNIT_LBMIN = "lb/min";
+    /** Unit string for pounds per minute */
+    public static final String UNIT_PR = "PR";
+    /** Unit string for Kelvin */
+    public static final String UNIT_KELVIN = "K";
+    /** Unit string for sample number */
+    public static final String UNIT_SAMPLE = "#";
 
     // Private constructor to prevent instantiation
     private UnitConstants() {

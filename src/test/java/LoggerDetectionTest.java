@@ -130,6 +130,9 @@ public class LoggerDetectionTest {
                         // Test Units
                         testExpectedUnits(testCase, dataset, fileName);
 
+                        // Test category mappings
+                        testExpectedCategories(testCase, dataset, fileName);
+
                         // Test sanity check (first data cell)
                         testSanityCheck(testCase, dataset, fileName);
                     }
@@ -229,6 +232,37 @@ public class LoggerDetectionTest {
                 assertTest("Unit[" + index + "] for " + fileName + ": expected '" + expectedUnit + "', got '" + actualUnit + "'",
                     expectedUnit.equals(actualUnit));
             }
+        }
+    }
+
+    private static void testExpectedCategories(Element testCase, ECUxDataset dataset, String fileName) {
+        NodeList expectedCategories = testCase.getElementsByTagName("expected_category_mappings");
+        if (expectedCategories.getLength() == 0) return;
+
+        Element categoriesElement = (Element) expectedCategories.item(0);
+        NodeList categoryNodes = categoriesElement.getElementsByTagName("category");
+
+        for (int i = 0; i < categoryNodes.getLength(); i++) {
+            Element categoryElement = (Element) categoryNodes.item(i);
+            String categoryName = categoryElement.getAttribute("name");
+            String expectedField = categoryElement.getTextContent();
+
+            // Get the actual field from the category
+            Dataset.Column actualColumn = null;
+            if ("pedal".equals(categoryName)) {
+                actualColumn = dataset.get(org.nyet.ecuxplot.DataLogger.pedalField());
+            } else if ("throttle".equals(categoryName)) {
+                actualColumn = dataset.get(org.nyet.ecuxplot.DataLogger.throttleField());
+            } else if ("gear".equals(categoryName)) {
+                actualColumn = dataset.get(org.nyet.ecuxplot.DataLogger.gearField());
+            }
+
+            String actualField = (actualColumn != null) ? actualColumn.getId() : null;
+            // Handle "null" as string vs actual null
+            String expectedValue = "null".equals(expectedField) ? null : expectedField;
+            String actualValue = actualField == null ? null : actualField;
+            assertTest("Category[" + categoryName + "] for " + fileName + ": expected '" + (expectedValue == null ? "null" : expectedValue) + "', got '" + (actualValue == null ? "null" : actualValue) + "'",
+                (expectedValue == null && actualValue == null) || (expectedValue != null && expectedValue.equals(actualValue)));
         }
     }
 
