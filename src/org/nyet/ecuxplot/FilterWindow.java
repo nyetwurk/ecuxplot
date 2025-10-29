@@ -14,20 +14,15 @@ import javax.swing.table.*;
 
 import org.nyet.logfile.Dataset;
 import org.nyet.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Filter Window - Integrates filter parameter editing with real-time data visualization
  * Provides a unified interface for configuring filters and immediately seeing their impact on data
  */
-public class FilterWindow extends JFrame {
-    private static final Logger logger = LoggerFactory.getLogger(FilterWindow.class);
+public class FilterWindow extends ECUxPlotWindow {
     private static final long serialVersionUID = 1L;
 
     // Filter editing components (from FilterEditor)
-    private final Filter filter;
-    private ECUxPlot eplot;
     private JButton okButton; // Store reference to OK button
 
     // Filter parameter fields
@@ -46,7 +41,6 @@ public class FilterWindow extends JFrame {
 
     // Data visualization components
     private ECUxDataset dataset;
-    private TreeMap<String, ECUxDataset> fileDatasets;
     private ArrayList<Integer> rowIndexMapping;
     private JTable dataTable;
     private DefaultTableModel tableModel;
@@ -129,16 +123,13 @@ public class FilterWindow extends JFrame {
     }
 
     public FilterWindow(Filter filter, ECUxPlot eplot) {
-        super("Filter Window");
+        super("Filter Window", filter, eplot);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // Set minimum size first to ensure loaded preferences are enforced
         setMinimumSize(new Dimension(800, 600));
         setSize(this.windowSize());
         setLocationRelativeTo(null);
-
-        this.filter = filter;
-        this.eplot = eplot;
 
         initializeComponents();
         setupLayout();
@@ -355,44 +346,53 @@ public class FilterWindow extends JFrame {
         JButton cancelButton = new JButton("Cancel");
 
         applyButton.addActionListener(e -> {
+            // Keep window on top during the entire process
+            setTopWindow();
+
             try {
                 // Apply filter changes (WaitCursor will be handled by rebuild())
                 applyFilterChanges();
             } catch (Exception ex) {
                 logger.error("Exception in Apply button: ", ex);
+                // Clear top status on error
+                clearTopWindow();
             }
         });
 
         this.okButton.addActionListener(e -> {
             // Keep window on top during the entire process
-            this.setAlwaysOnTop(true);
+            setTopWindow();
 
             try {
                 // Apply filter changes (WaitCursor will be handled by rebuild())
                 applyFilterChanges();
+                // Clear top status before disposing
+                clearTopWindow();
                 dispose(); // Close window after applying
             } catch (Exception ex) {
                 logger.error("Exception in OK button: ", ex);
+                // Clear top status on error
+                clearTopWindow();
             }
         });
 
         restoreDefaultsButton.addActionListener(e -> {
             // Keep window on top during the entire process
-            this.setAlwaysOnTop(true);
+            setTopWindow();
 
             try {
                 // Restore defaults and apply changes - rebuild() will handle WaitCursor on main window
                 restoreDefaultsAndApply();
             } catch (Exception ex) {
                 logger.error("Exception in Restore Defaults button: ", ex);
+                // Clear top status on error
+                clearTopWindow();
             }
         });
 
         rangesButton.addActionListener(e -> {
             // Open Range Selector window
-            if(this.eplot != null) {
-                this.eplot.openRangeSelectorWindow();
-            }
+            withEplot(plot -> plot.openRangeSelectorWindow());
         });
 
         cancelButton.addActionListener(e -> {
@@ -954,16 +954,6 @@ public class FilterWindow extends JFrame {
     }
 
     /**
-     * Helper method to restore normal window behavior
-     */
-    private void restoreWindowBehavior() {
-        this.setAlwaysOnTop(false);
-        this.toFront();
-        this.requestFocus();
-    }
-
-
-    /**
      * Apply filter changes and rebuild the plot
      * @throws Exception if any error occurs during the process
      */
@@ -971,8 +961,7 @@ public class FilterWindow extends JFrame {
         // Actually read the values from the text fields and apply them
         processFilterChanges();
 
-        // Keep window on top during the entire process
-        this.setAlwaysOnTop(true);
+        // Window is already set as top by the button action listener
 
         try {
             if (this.eplot != null) {
@@ -988,7 +977,8 @@ public class FilterWindow extends JFrame {
                 }, this);
             }
         } finally {
-            restoreWindowBehavior();
+            // Clear top status after rebuild completes
+            clearTopWindow();
         }
     }
 
@@ -1016,6 +1006,8 @@ public class FilterWindow extends JFrame {
                     // Refresh Range Selector if open (ranges may have changed)
                     this.eplot.refreshRangeSelector();
                 }
+                // Clear top status after rebuild completes
+                clearTopWindow();
             }, this);
         }
     }

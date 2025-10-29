@@ -51,6 +51,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private FilterWindow filterWindow;
     private RangeSelectorWindow rangeSelectorWindow;
 
+    // Window z-order management: only one window should be alwaysOnTop at a time
+    private java.awt.Window topWindow = null;
+
     // Menus
     private final JMenuBar menuBar;
     private AxisMenu xAxis;
@@ -1503,7 +1506,37 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         }
         // Set all datasets for multi-file support
         this.filterWindow.setFileDatasets(this.fileDatasets);
+        // Set FilterWindow as top window (transfers from RangeSelector if it's currently top)
+        setTopWindow(this.filterWindow);
         this.filterWindow.setVisible(true);
+    }
+
+    /**
+     * Set a window as the top window (alwaysOnTop). Only one window can be top at a time.
+     * If another window is already top, it will be cleared first.
+     */
+    public void setTopWindow(java.awt.Window window) {
+        if (window == null) return;
+
+        // Clear the current top window if different
+        if (this.topWindow != null && this.topWindow != window) {
+            this.topWindow.setAlwaysOnTop(false);
+        }
+
+        this.topWindow = window;
+        window.setAlwaysOnTop(true);
+    }
+
+    /**
+     * Clear the top window status (remove alwaysOnTop). Brings the window to front.
+     */
+    public void clearTopWindow(java.awt.Window window) {
+        if (window != null && this.topWindow == window) {
+            window.setAlwaysOnTop(false);
+            window.toFront();
+            window.requestFocus();
+            this.topWindow = null;
+        }
     }
 
     /**
@@ -1525,6 +1558,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         }
         // Set all datasets for multi-file support (this triggers updateList which needs FATS dataset)
         this.rangeSelectorWindow.setFileDatasets(this.fileDatasets);
+
+        // Set Range Selector as top window (transfers from FilterWindow if it's currently top)
+        setTopWindow(this.rangeSelectorWindow);
         this.rangeSelectorWindow.setVisible(true);
     }
 

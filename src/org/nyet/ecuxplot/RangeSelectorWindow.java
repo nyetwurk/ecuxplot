@@ -20,13 +20,10 @@ import org.nyet.util.FileDropHost;
  * Replaces the previous "Next Range", "Previous Range", and "Show all ranges" controls
  * with a comprehensive file and range selection system.
  */
-public class RangeSelectorWindow extends JFrame implements FileDropHost {
+public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost {
     private static final long serialVersionUID = 1L;
 
     // Core components
-    private final Filter filter;
-    private ECUxPlot eplot;
-    private TreeMap<String, ECUxDataset> fileDatasets;
     private FATSDataset fatsDataset;
 
     // Track overall best ranges across all files
@@ -615,12 +612,9 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
     }
 
     public RangeSelectorWindow(Filter filter, ECUxPlot eplot) {
-        super("Range Selector");
+        super("Range Selector", filter, eplot);
         // Hide window instead of dispose to preserve tree state (selections, expanded nodes, scroll position)
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-
-        this.filter = filter;
-        this.eplot = eplot;
 
         initializeComponents();
         setupLayout();
@@ -701,20 +695,24 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
 
         filterButton = new JButton("Filter...");
         filterButton.addActionListener(e -> {
-            // Open Filter Window
-            if(this.eplot != null) {
-                this.eplot.openFilterWindow();
-            }
+            // Open Filter Window (transfer of top status is handled by openFilterWindow())
+            withEplot(plot -> plot.openFilterWindow());
         });
 
         okButton = new JButton("OK");
         okButton.addActionListener(e -> {
             applySelection();
+            // Clear top status before hiding
+            clearTopWindow();
             setVisible(false);
         });
 
         cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(e -> setVisible(false));
+        cancelButton.addActionListener(e -> {
+            // Clear top status before hiding
+            clearTopWindow();
+            setVisible(false);
+        });
 
         // Create status label
         statusLabel = new JLabel("No files loaded");
@@ -1214,7 +1212,7 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
 
                     // Add range nodes as children only if file has multiple ranges AND filter is enabled
                     // When filter is disabled, Range Selector acts as file selector (no range nodes)
-                    if (filter != null && filter.enabled()) {
+                    if (isFilterEnabled()) {
                         List<Dataset.Range> ranges = fileNode.getDataset().getRanges();
                         if (ranges.size() > 1) {
                             for (int i = 0; i < ranges.size(); i++) {
@@ -1253,7 +1251,7 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         Enumeration<?> nodes = checkRoot.depthFirstEnumeration();
 
         boolean hasSelection = false;
-        boolean filterDisabled = (filter != null && !filter.enabled());
+        boolean filterDisabled = isFilterDisabled();
 
         while (nodes.hasMoreElements()) {
             Object node = nodes.nextElement();
@@ -1790,7 +1788,7 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
             eplot.updateChartVisibility();
 
             // Rebuild FATS to show only selected ranges (only when filter enabled)
-            if (filter != null && filter.enabled() && eplot.fatsDataset != null) {
+            if (isFilterEnabled() && eplot.fatsDataset != null) {
                 eplot.fatsDataset.rebuild();
                 if (eplot.fatsFrame != null) {
                     eplot.fatsFrame.refreshFromFATS();
