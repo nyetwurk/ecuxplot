@@ -57,16 +57,10 @@ jobs:
         ECUxPlot ${{ needs.get-tag.outputs.tag_name }}
 
         **Downloads:**
-        - **Windows**:
-          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-setup.exe](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-setup.exe)
-        - **macOS**:
-          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.dmg](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.dmg),
-          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-MacOS.zip](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-MacOS.zip)
-        - **Linux**:
-          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.tar.gz](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.tar.gz)
-        - **Portable**:
-          [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.jar](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.jar),
-          [mapdump.jar](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/mapdump.jar)
+        - **Windows**: [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-setup.exe](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-setup.exe)
+        - **macOS**: [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.dmg](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.dmg), [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-MacOS.zip](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}-MacOS.zip)
+        - **Linux**: [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.tar.gz](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.tar.gz)
+        - **Portable**: [ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.jar](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/ECUxPlot-${{ needs.get-tag.outputs.tag_name }}.jar), [mapdump.jar](https://github.com/nyetwurk/ecuxplot/releases/download/${{ needs.get-tag.outputs.tag_name }}/mapdump.jar)
 
         Built from tag: ${{ needs.get-tag.outputs.tag_name }}
     secrets: inherit
