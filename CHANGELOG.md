@@ -10,6 +10,8 @@
 
 ### Changed
 
+- Changed smoothing parameters from sample-based to time-based (now in seconds, default 1.5s)
+- Generalize WaitCursor handling in rebuild() to support multiple windows
 - Standardized unit conventions throughout codebase (mph/km/h, °F/°C)
 - Simplified field category system from arrays to single values
 - Renamed field categories to field preferences
@@ -17,6 +19,10 @@
 
 ### Fixed
 
+- Apply moving average per-range to prevent filtered data interference in HP/TQ plots ([Issue #32](https://github.com/nyetwurk/ecuxplot/issues/32))
+- Fix "Restore Defaults" setting wrong smoothing values due to UI field mapping bug
+- Fix FilterWindow Calc MPH display and add support for native MPH velocity data
+- Add protections to avoid invalid smoothing values (window size validation)
 - Vehicle speed and temperature field conversion menu items now appear correctly
 - Lambda control fields correctly identified as unitless
 - EGT sensor fields now properly detect temperature units

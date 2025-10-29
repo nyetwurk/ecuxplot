@@ -104,18 +104,18 @@ public class FilterWindow extends JFrame {
 
 
     private static final String [][] pairs = {
-        {"Gear (-1 to ignore)", "gear"},
+        {"Gear", "gear"},
         {"Min RPM", "minRPM"},
         {"Max RPM", "maxRPM"},
         {"Min RPM Range", "minRPMRange"},
         {"RPM Fuzz Tolerance", "monotonicRPMfuzz"},
         {"Min Pedal (%)", "minPedal"},
         {"Min Throttle (%)", "minThrottle"},
-        {"Min Acceleration (RPM/s)", "minAcceleration"},
+        {"Min Accel (RPM/s)", "minAcceleration"},
         {"Min Points", "minPoints"},
-        {"Acceleration Smoothing", "accelMAW"},
-        {"HP/TQ Smoothing", "HPTQMAW"},
-        {"Zeitronix Smoothing", "ZeitMAW"},
+        {"Accel Smoothing (s)", "accelMAW"},
+        {"HP/TQ Smoothing (s)", "HPTQMAW"},
+        {"Zeitronix Smoothing (s)", "ZeitMAW"},
     };
 
     @Override
@@ -178,8 +178,8 @@ public class FilterWindow extends JFrame {
         minPedal = new JTextField(10);
         minThrottle = new JTextField(10);
         minAcceleration = new JTextField(10);
-        accelMAW = new JTextField(10);
         minPoints = new JTextField(10);
+        accelMAW = new JTextField(10);
         HPTQMAW = new JTextField(10);
         ZeitMAW = new JTextField(10);
 
@@ -312,8 +312,8 @@ public class FilterWindow extends JFrame {
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         // Add filter parameter fields in separate panels
         JTextField[] fields = {minRPM, maxRPM, minRPMRange, monotonicRPMfuzz,
-                              minPedal, minThrottle, minAcceleration, accelMAW,
-                              minPoints, HPTQMAW, ZeitMAW};
+                              minPedal, minThrottle, minAcceleration, minPoints,
+                              accelMAW, HPTQMAW, ZeitMAW};
 
         // Engine Panel
         JPanel enginePanel = createParameterPanel("Engine",
@@ -325,14 +325,9 @@ public class FilterWindow extends JFrame {
             new int[]{5, 6}, fields);
         formPanel.add(throttlePanel);
 
-        // Acceleration Panel
-        JPanel accelPanel = createParameterPanel("Acceleration",
-            new int[]{7, 8}, fields);
-        formPanel.add(accelPanel);
-
-        // Data Quality Panel
+        // Data Quality Panel (including smoothing parameters)
         JPanel qualityPanel = createParameterPanel("Data Quality",
-            new int[]{9, 10, 11}, fields);
+            new int[]{8, 9, 10, 11}, fields);  // minPoints, accelMAW, HPTQMAW, ZeitMAW
         formPanel.add(qualityPanel);
 
         // Add scroll pane to handle overflow
@@ -455,11 +450,14 @@ public class FilterWindow extends JFrame {
             // Handle gear field specially (it's a JSpinner, not JTextField)
             // Widths tuned to windows rendering
             if (fieldIndex == 0) { // gear is at index 0 in pairs array
-                gear.setPreferredSize(new Dimension(45, gear.getPreferredSize().height));
+                gear.setPreferredSize(new Dimension(60, gear.getPreferredSize().height));
                 formPanel.add(gear, gbc);
             } else {
-                fields[fieldIndex - 1].setColumns(5); // Adjust index since gear is not in fields array
-                formPanel.add(fields[fieldIndex - 1], gbc);
+                // Map pairs index to fields array index
+                // pairs: [0:gear(not in fields), 1:minRPM(0), 2:maxRPM(1), ... 8:accelMAW(7), 9:minPoints(8), 10:HPTQMAW(9), 11:ZeitMAW(10)]
+                int fieldsIndex = fieldIndex - 1; // Subtract 1 because gear is not in fields array
+                fields[fieldsIndex].setColumns(5);
+                formPanel.add(fields[fieldsIndex], gbc);
             }
         }
 
@@ -529,9 +527,19 @@ public class FilterWindow extends JFrame {
         // Filter checkbox is now in OptionsMenu, no need to update separately
     }
 
-    private void setFilterValueFromTextField(JTextField textField, java.util.function.IntConsumer setter) {
+    private void setFilterIntValueFromTextField(JTextField textField, java.util.function.IntConsumer setter) {
         try {
             setter.accept(Integer.parseInt(textField.getText()));
+        } catch (NumberFormatException e) {
+            // Handle invalid input gracefully - keep current value
+        }
+    }
+
+    private void setFilterDoubleValueFromTextField(JTextField textField, java.util.function.DoubleConsumer setter) {
+        try {
+            String text = textField.getText();
+            double value = Double.parseDouble(text);
+            setter.accept(value);
         } catch (NumberFormatException e) {
             // Handle invalid input gracefully - keep current value
         }
@@ -551,17 +559,19 @@ public class FilterWindow extends JFrame {
     private void processPairs(Filter filter, String[][] pairs, Class<?> clazz) {
         if (clazz == Integer.class) {
             setFilterValueFromSpinner(gear, filter::gear);
-            setFilterValueFromTextField(minRPM, filter::minRPM);
-            setFilterValueFromTextField(maxRPM, filter::maxRPM);
-            setFilterValueFromTextField(minRPMRange, filter::minRPMRange);
-            setFilterValueFromTextField(monotonicRPMfuzz, filter::monotonicRPMfuzz);
-            setFilterValueFromTextField(minPedal, filter::minPedal);
-            setFilterValueFromTextField(minThrottle, filter::minThrottle);
-            setFilterValueFromTextField(minAcceleration, filter::minAcceleration);
-            setFilterValueFromTextField(accelMAW, filter::accelMAW);
-            setFilterValueFromTextField(minPoints, filter::minPoints);
-            setFilterValueFromTextField(HPTQMAW, filter::HPTQMAW);
-            setFilterValueFromTextField(ZeitMAW, filter::ZeitMAW);
+            setFilterIntValueFromTextField(minRPM, filter::minRPM);
+            setFilterIntValueFromTextField(maxRPM, filter::maxRPM);
+            setFilterIntValueFromTextField(minRPMRange, filter::minRPMRange);
+            setFilterIntValueFromTextField(monotonicRPMfuzz, filter::monotonicRPMfuzz);
+            setFilterIntValueFromTextField(minPedal, filter::minPedal);
+            setFilterIntValueFromTextField(minThrottle, filter::minThrottle);
+            setFilterIntValueFromTextField(minAcceleration, filter::minAcceleration);
+            setFilterIntValueFromTextField(minPoints, filter::minPoints);
+
+        // Double fields
+        setFilterDoubleValueFromTextField(accelMAW, filter::accelMAW);
+        setFilterDoubleValueFromTextField(HPTQMAW, filter::HPTQMAW);
+        setFilterDoubleValueFromTextField(ZeitMAW, filter::ZeitMAW);
         }
     }
 

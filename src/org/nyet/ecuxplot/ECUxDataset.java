@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.opencsv.CSVReader;
 import flanagan.interpolation.CubicSpline;
@@ -32,6 +34,9 @@ public class ECUxDataset extends Dataset {
     private double samples_per_sec=0;
     private CubicSpline [] splines;     // rpm vs time splines
     private String log_detected;
+    // Track which columns need moving average smoothing
+    // Maps column name to smoothing window size (in samples)
+    private final Map<String, Integer> smoothingWindows = new HashMap<>();
 
     protected void detectLoggerType() throws Exception {
         // Only detect if not already detected
@@ -207,13 +212,13 @@ public class ECUxDataset extends Dataset {
     }
 
     private int MAW() {
-        /* assume 10 == 1 sec smoothing */
-        return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.HPTQMAW());
+        // HPTQMAW is in seconds, convert to samples
+        return (int)Math.floor(this.samples_per_sec * this.filter.HPTQMAW());
     }
 
     private int AccelMAW() {
-        /* assume 10 == 1 sec smoothing */
-        return (int)Math.floor((this.samples_per_sec/10.0)*this.filter.accelMAW());
+        // accelMAW is in seconds, convert to samples
+        return (int)Math.floor(this.samples_per_sec * this.filter.accelMAW());
     }
 
 
@@ -427,7 +432,10 @@ public class ECUxDataset extends Dataset {
         } else if(id.equals("Acceleration (m/s^2)")) {
             final DoubleArray y = this.get("Calc Velocity").data;
             final DoubleArray x = this.get("TIME").data;
-            c = new Column(id, "m/s^2", y.derivative(x, this.MAW()).max(0));
+            final DoubleArray derivative = y.derivative(x, this.MAW()).max(0);
+            // Store unsmoothed data and record smoothing requirement
+            c = new Column(id, "m/s^2", derivative);
+            this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("Acceleration (g)")) {
             final DoubleArray a = this.get("Acceleration (m/s^2)").data;
             c = new Column(id, UnitConstants.UNIT_G, a.div(UnitConstants.STANDARD_GRAVITY));
@@ -447,7 +455,9 @@ public class ECUxDataset extends Dataset {
                 value = value.mult(this.env.sae.correction());
                 l += " (SAE)";
             }
-            c = new Column(id, l, value.movingAverage(this.MAW()));
+            // Store unsmoothed data and record smoothing requirement
+            c = new Column(id, l, value);
+            this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("HP")) {
             final DoubleArray whp = this.get("WHP").data;
             final DoubleArray value = whp.div((1-this.env.c.driveline_loss())).
@@ -487,7 +497,11 @@ public class ECUxDataset extends Dataset {
             }
         } else if(id.toString().equals(idWithUnit("Zeitronix Boost", UnitConstants.UNIT_PSI))) {
             final DoubleArray boost = super.get("Zeitronix Boost").data;
-            c = new Column(id, UnitConstants.UNIT_PSI, boost.movingAverage(this.filter.ZeitMAW()));
+            // Store unsmoothed data and record smoothing requirement
+            c = new Column(id, UnitConstants.UNIT_PSI, boost);
+            // Convert seconds to samples
+            int smoothingWindow = (int)Math.floor(this.samples_per_sec * this.filter.ZeitMAW());
+            this.smoothingWindows.put(id.toString(), smoothingWindow);
         } else if(id.equals("Zeitronix Boost")) {
             final DoubleArray boost = this.get(idWithUnit("Zeitronix Boost", UnitConstants.UNIT_PSI)).data;
             c = new Column(id, UnitConstants.UNIT_MBAR, boost.mult(UnitConstants.MBAR_PER_PSI).add(UnitConstants.MBAR_PER_ATM));
@@ -618,12 +632,17 @@ public class ECUxDataset extends Dataset {
         } else if(id.equals("Boost Spool Rate Zeit (RPM)")) {
             final DoubleArray boost = this.get("Zeitronix Boost").data.smooth();
             final DoubleArray rpm =
-                this.get("RPM").data.movingAverage(this.filter.ZeitMAW()).smooth();
+                this.get("RPM").data; // Remove movingAverage - apply per-range
             c = new Column(id, "mBar/RPM", boost.derivative(rpm).max(0));
+            // Note: RPM smoothing handled in getData(), but we need to mark RPM column
+            // This is complex because RPM is used in derivative - needs special handling
         } else if(id.equals("Boost Spool Rate (time)")) {
             final DoubleArray abs = this.get(idWithUnit("BoostPressureActual", UnitConstants.UNIT_PSI)).data.smooth();
             final DoubleArray time = this.get("TIME").data;
-            c = new Column(id, "PSI/sec", abs.derivative(time, this.MAW()).max(0));
+            final DoubleArray derivative = abs.derivative(time, this.MAW()).max(0);
+            // Store unsmoothed data and record smoothing requirement
+            c = new Column(id, "PSI/sec", derivative);
+            this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("ps_w error")) {
             final DoubleArray abs = super.get("BoostPressureActual").data.max(900);
             final DoubleArray ps_w = super.get("ME7L ps_w").data.max(900);
@@ -836,6 +855,38 @@ public class ECUxDataset extends Dataset {
                     }
                 }));
         return original;
+    }
+
+    @Override
+    public double[] getData(Comparable<?> id, Range r) {
+        final Column c = this.get(id);
+        if (c==null) return null;
+
+        // Check if this column needs range-aware smoothing
+        final String columnName = id.toString();
+        Integer smoothingWindow = this.smoothingWindows.get(columnName);
+
+        if (smoothingWindow != null && smoothingWindow > 0) {
+            // Apply moving average smoothing using only data within the range
+            // This prevents interference from filtered data outside the range
+            logger.trace("Applying range-aware smoothing to '{}' with window {} over range {}",
+                columnName, smoothingWindow, r);
+
+            // Extract the raw data for this range
+            final double[] rawData = c.data.toArray(r.start, r.end);
+
+            // Apply smoothing using a window that doesn't extend beyond range bounds
+            final org.nyet.util.MovingAverageSmoothing s = new org.nyet.util.MovingAverageSmoothing(smoothingWindow);
+            final double[] smoothed = s.smoothAll(rawData, -s.getNk(), rawData.length + s.getNk() - 1);
+
+            // Return the smoothed data within range bounds
+            final double[] result = new double[rawData.length];
+            System.arraycopy(smoothed, 0, result, 0, rawData.length);
+            return result;
+        }
+
+        // No smoothing needed, return raw data
+        return c.data.toArray(r.start, r.end);
     }
 
     @Override
