@@ -559,8 +559,31 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.chartPanel.removeAll();
             this.chartPanel=null;
         }
+
+        // Clear FATS data and related caches
+        this.fatsDataset = null;
+
+        // Clear series tracking
+        this.seriesInfoMap.clear();
+
+        // Clear filter range selections
+        this.filter.clearAllRangeSelections();
+
+        // Clear FATS frame
         if(this.fatsFrame != null)
             this.fatsFrame.clearDataset();
+
+        // Close range selector window if open
+        if(this.rangeSelectorWindow != null) {
+            this.rangeSelectorWindow.dispose();
+            this.rangeSelectorWindow = null;
+        }
+
+        // Close filter window if open
+        if(this.filterWindow != null) {
+            this.filterWindow.dispose();
+            this.filterWindow = null;
+        }
     }
 
     private String getExportStem() {
