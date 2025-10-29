@@ -24,16 +24,60 @@ public class Filter {
     private static final int defaultMinPedal = 95;
     private static final int defaultMinThrottle = 40;   // allow for bad throttle cut
     private static final int defaultMinAcceleration = 100;      // RPM/s minimum acceleration
-    private static final int defaultAccelMAW = 5;               // acceleration moving average window
     private static final int defaultGear = 3;
     private static final int defaultMinPoints = 5;
-    private static final int defaultHPTQMAW = 5; // hp/tq moving average window
-    private static final int defaultZeitMAW = 30; // zeitronix MAW
+    private static final double defaultAccelMAW = 1.5;         // acceleration moving average window (seconds)
+    private static final double defaultHPTQMAW = 1.5;         // hp/tq moving average window (seconds)
+    private static final double defaultZeitMAW = 1.5;          // zeitronix MAW (seconds)
 
     private final Preferences prefs;
 
     public Filter (Preferences prefs) {
         this.prefs = prefs.node(PREFS_TAG);
+        migrateSmoothingPreferences();
+    }
+
+    /**
+     * Migrate old int-based smoothing preferences to new double-based (seconds) preferences
+     */
+    private void migrateSmoothingPreferences() {
+        try {
+            // Check if we have old int values stored
+            int oldAccelMAW = this.prefs.getInt("accelMAW", -1);
+            if (oldAccelMAW > 0) {
+                // Old system: 5 was default, equivalent to ~0.5 seconds at 10 Hz
+                // Convert to seconds (assuming typical 10 Hz = 0.1s per sample)
+                double newValue = oldAccelMAW / 10.0;
+                this.prefs.putDouble("accelMAW_sec", newValue);
+                this.prefs.remove("accelMAW");
+            }
+        } catch (Exception e) {
+            // ignore and use defaults
+        }
+
+        try {
+            int oldHPTQMAW = this.prefs.getInt("HPTQMAW", -1);
+            if (oldHPTQMAW > 0) {
+                // Old default was 5, equivalent to 0.5 seconds at 10 Hz
+                double newValue = oldHPTQMAW / 10.0;
+                this.prefs.putDouble("HPTQMAW_sec", newValue);
+                this.prefs.remove("HPTQMAW");
+            }
+        } catch (Exception e) {
+            // ignore and use defaults
+        }
+
+        try {
+            int oldZeitMAW = this.prefs.getInt("ZeitMAW", -1);
+            if (oldZeitMAW > 0) {
+                // Old default was 30, convert to seconds
+                double newValue = oldZeitMAW;
+                this.prefs.putDouble("ZeitMAW_sec", newValue);
+                this.prefs.remove("ZeitMAW");
+            }
+        } catch (Exception e) {
+            // ignore and use defaults
+        }
     }
 
     public static boolean enabled(Preferences prefs) {
@@ -163,11 +207,12 @@ public class Filter {
         this.prefs.putInt("minAcceleration", val);
     }
 
-    public int accelMAW() {
-        return this.prefs.getInt("accelMAW", defaultAccelMAW);
+    public double accelMAW() {
+        // Use new key name to avoid type mismatch with old int values
+        return this.prefs.getDouble("accelMAW_sec", defaultAccelMAW);
     }
-    public void accelMAW(Integer val) {
-        this.prefs.putInt("accelMAW", val);
+    public void accelMAW(Double val) {
+        this.prefs.putDouble("accelMAW_sec", val);
     }
 
     public int gear() {
@@ -184,18 +229,20 @@ public class Filter {
         this.prefs.putInt("minPoints", val);
     }
 
-    public int HPTQMAW() {
-        return this.prefs.getInt("HPTQMAW", defaultHPTQMAW);
+    public double HPTQMAW() {
+        // Use new key name to avoid type mismatch with old int values
+        return this.prefs.getDouble("HPTQMAW_sec", defaultHPTQMAW);
     }
-    public void HPTQMAW(Integer val) {
-        this.prefs.putInt("HPTQMAW", val);
+    public void HPTQMAW(Double val) {
+        this.prefs.putDouble("HPTQMAW_sec", val);
     }
 
-    public int ZeitMAW() {
-        return this.prefs.getInt("ZeitMAW", defaultZeitMAW);
+    public double ZeitMAW() {
+        // Use new key name to avoid type mismatch with old int values
+        return this.prefs.getDouble("ZeitMAW_sec", defaultZeitMAW);
     }
-    public void ZeitMAW(Integer val) {
-        this.prefs.putInt("ZeitMAW", val);
+    public void ZeitMAW(Double val) {
+        this.prefs.putDouble("ZeitMAW_sec", val);
     }
 
     public void resetToDefaults() {
@@ -207,10 +254,10 @@ public class Filter {
         this.minPedal(defaultMinPedal);
         this.minThrottle(defaultMinThrottle);
         this.minAcceleration(defaultMinAcceleration);
-        this.accelMAW(defaultAccelMAW);
+        this.accelMAW(1.5);
         this.minPoints(defaultMinPoints);
-        this.HPTQMAW(defaultHPTQMAW);
-        this.ZeitMAW(defaultZeitMAW);
+        this.HPTQMAW(1.5);
+        this.ZeitMAW(1.5);
     }
 }
 
