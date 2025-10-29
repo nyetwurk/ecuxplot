@@ -363,6 +363,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             // Update all open windows to show new file data
             updateOpenWindows();
 
+            // Apply filter visibility rules after chart is built
+            updateChartVisibility();
+
         } finally {
             WaitCursor.stopWaitCursor(this);
         }
