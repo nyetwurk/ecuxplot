@@ -2,6 +2,21 @@
   "extends": [
     "config:recommended"
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "scripts/launch4j-version.txt"
+      ],
+      "matchStrings": [
+        "^(?<currentValue>.*)$"
+      ],
+      "datasourceTemplate": "sourceforge",
+      "versioningTemplate": "regex:^(?<minor>\\d+)$",
+      "depNameTemplate": "launch4j",
+      "extractVersionTemplate": "^3\\.(?<minor>\\d+)$"
+    }
+  ],
   "packageRules": [
     {
       "matchFileNames": [
@@ -13,11 +28,7 @@
       ],
       "automerge": true,
       "automergeType": "pr",
-      "platformAutomerge": true,
-      "datasourceTemplate": "sourceforge",
-      "packageNameTemplate": "launch4j",
-      "extractVersionTemplate": "^3\\.(?<minor>\\d+)$",
-      "currentValueTemplate": "3.{{minor}}"
+      "platformAutomerge": true
     }
   ],
   "ignorePaths": [
