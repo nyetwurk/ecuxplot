@@ -472,11 +472,23 @@ public class ECUxDataset extends Dataset {
             String l = UnitConstants.UNIT_FTLB;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value);
+        } else if(id.toString().equals(idWithUnit("WTQ", UnitConstants.UNIT_NM))) {
+            final DoubleArray wtq = this.get("WTQ").data;
+            final DoubleArray value = wtq.mult(UnitConstants.FTLB_PER_NM); // ft-lb to Nm
+            String l = UnitConstants.UNIT_NM;
+            if(this.env.sae.enabled()) l += " (SAE)";
+            c = new Column(id, l, value);
         } else if(id.equals("TQ")) {
             final DoubleArray hp = this.get("HP").data;
             final DoubleArray rpm = this.get("RPM").data;
             final DoubleArray value = hp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
             String l = UnitConstants.UNIT_FTLB;
+            if(this.env.sae.enabled()) l += " (SAE)";
+            c = new Column(id, l, value);
+        } else if(id.toString().equals(idWithUnit("TQ", UnitConstants.UNIT_NM))) {
+            final DoubleArray tq = this.get("TQ").data;
+            final DoubleArray value = tq.mult(UnitConstants.FTLB_PER_NM); // ft-lb to Nm
+            String l = UnitConstants.UNIT_NM;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value);
         } else if(id.equals("Drag")) {
@@ -1123,6 +1135,7 @@ public class ECUxDataset extends Dataset {
      * - Pressure: mBar ↔ PSI (with ambient pressure handling)
      * - Speed: mph ↔ km/h (speed conversion)
      * - Mass flow: g/sec ↔ kg/hr (mass flow conversion)
+     * - Torque: ft-lb ↔ Nm (torque conversion)
      *
      * @param baseColumn The base column to convert from
      * @param targetUnit The target unit to convert to (from UnitConstants)
@@ -1188,6 +1201,15 @@ public class ECUxDataset extends Dataset {
         } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_GPS, UnitConstants.UNIT_KGH)) {
             data = data.mult(UnitConstants.GPS_PER_KGH);
             newUnit = UnitConstants.UNIT_GPS;
+        }
+
+        // Torque: ft-lb <-> Nm
+        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_NM, UnitConstants.UNIT_FTLB)) {
+            data = data.mult(UnitConstants.FTLB_PER_NM);
+            newUnit = UnitConstants.UNIT_NM;
+        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_FTLB, UnitConstants.UNIT_NM)) {
+            data = data.mult(UnitConstants.NM_PER_FTLB);
+            newUnit = UnitConstants.UNIT_FTLB;
         }
 
         // If no conversion matched, return base column as-is

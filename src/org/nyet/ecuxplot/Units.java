@@ -182,6 +182,9 @@ public final class Units {
         // Mass flow conversions
         conversions.put("MassAirFlow", List.of(UnitConstants.UNIT_GPS, UnitConstants.UNIT_KGH));
 
+        // Torque conversions
+        conversions.put("Torque", List.of(UnitConstants.UNIT_FTLB, UnitConstants.UNIT_NM));
+
         CONVERSIONS = Collections.unmodifiableMap(conversions);
     }
 

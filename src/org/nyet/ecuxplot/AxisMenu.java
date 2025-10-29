@@ -173,8 +173,10 @@ public class AxisMenu extends JMenu {
 
             addToSubmenu("Calc Power", "WHP");
             addToSubmenu("Calc Power", "WTQ");
+            addToSubmenu("Calc Power", idWithUnit("WTQ", UnitConstants.UNIT_NM));
             addToSubmenu("Calc Power", "HP");
             addToSubmenu("Calc Power", "TQ");
+            addToSubmenu("Calc Power", idWithUnit("TQ", UnitConstants.UNIT_NM));
             addToSubmenu("Calc Power", "Drag");
 
             addToSubmenu("Calc Power", new JSeparator());
@@ -439,6 +441,16 @@ public class AxisMenu extends JMenu {
             final AbstractButton item = this.members.get(ik);
             item.setSelected(keys.contains(ik));
         }
+    }
+
+    /**
+     * Helper method to construct a unit-converted column ID.
+     * @param originalId The original column ID (e.g., "WTQ")
+     * @param unit The target unit constant (e.g., UnitConstants.UNIT_NM)
+     * @return Formatted string like "WTQ (Nm)"
+     */
+    private static String idWithUnit(String originalId, String unit) {
+        return String.format("%s (%s)", originalId, unit);
     }
 }
 

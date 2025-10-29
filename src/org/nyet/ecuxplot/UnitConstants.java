@@ -46,8 +46,10 @@ public class UnitConstants {
     public static final double KGH_PER_GPS = 1.0 / GPS_PER_KGH;
 
     // Torque conversions
+    /** Conversion factor from foot-pounds to Newton-meters */
+    public static final double FTLB_PER_NM = 1.356;
     /** Conversion factor from Newton-meters to foot-pounds */
-    public static final double NM_PER_FTLB = 1.356;
+    public static final double NM_PER_FTLB = 1.0 / FTLB_PER_NM;
 
     // Air-fuel ratio conversions
     /** Stoichiometric air-fuel ratio for gasoline */
@@ -104,6 +106,8 @@ public class UnitConstants {
     public static final String UNIT_HP = "HP";
     /** Unit string for foot-pounds */
     public static final String UNIT_FTLB = "ft-lb";
+    /** Unit string for Newton-meters */
+    public static final String UNIT_NM = "Nm";
     /** Unit string for meters per second */
     public static final String UNIT_MPS = "m/s";
     /** Unit string for RPM per second */
