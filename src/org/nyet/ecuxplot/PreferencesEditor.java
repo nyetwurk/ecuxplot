@@ -55,8 +55,18 @@ public class PreferencesEditor extends JPanel {
     }
 
     protected void addPairs(String [][] pairs, int [] fieldSizes) {
-        for(int i=0;i<pairs.length; i++) {
-            this.prefsPanel.add(new JLabel(pairs[i][0], SwingConstants.TRAILING));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 6, 4, 6);
+
+        for(int i=0; i<pairs.length; i++) {
+            // Add label
+            gbc.gridx = 0;
+            gbc.gridy = i;
+            gbc.anchor = GridBagConstraints.EAST;
+            JLabel label = new JLabel(pairs[i][0], SwingConstants.TRAILING);
+            this.prefsPanel.add(label, gbc);
+
+            // Add field
             try {
                 final Field fld = this.getClass().getField(pairs[i][1]);
                 Container tf;
@@ -67,7 +77,11 @@ public class PreferencesEditor extends JPanel {
                 else
                     tf = new JLabel("");
                 fld.set(this, tf);
-                this.prefsPanel.add(tf);
+
+                gbc.gridx = 1;
+                gbc.gridy = i;
+                gbc.anchor = GridBagConstraints.WEST;
+                this.prefsPanel.add(tf, gbc);
             } catch (final Exception e) {
                 e.printStackTrace();
             }
@@ -84,13 +98,11 @@ public class PreferencesEditor extends JPanel {
         this.setLayout(new BorderLayout());
 
         this.prefsPanel = new JPanel();
-        this.prefsPanel.setLayout(new SpringLayout());
+        this.prefsPanel.setLayout(new GridBagLayout());
         this.add(this.prefsPanel, BorderLayout.CENTER);
 
         if(pairs!=null) {
             addPairs(pairs, fieldSizes);
-            org.nyet.util.SpringUtilities.makeCompactGrid(this.prefsPanel,
-                pairs.length, 2, 6, 6, 6, 6);
         }
 
         final JPanel panel = new JPanel();
@@ -177,14 +189,14 @@ public class PreferencesEditor extends JPanel {
             this.dialog = new JDialog(owner);
             this.dialog.add(this);
             this.dialog.getRootPane().setDefaultButton(this.jbtnOK);
+            this.dialog.setResizable(false);
             this.dialog.pack();
             final Point where = owner.getLocation();
             where.translate(20,20);
             this.dialog.setLocation(where);
-            this.dialog.setResizable(true);
-            this.dialog.setMinimumSize(new Dimension(300, 200));
         }
         this.dialog.setTitle(title);
+        this.dialog.pack();
         this.dialog.setVisible(true);
         return this.ok;
     }

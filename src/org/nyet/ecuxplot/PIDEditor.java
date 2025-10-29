@@ -41,32 +41,66 @@ public class PIDEditor extends PreferencesEditor {
         this.pid = pid;
 
         final JPanel pp = this.getPrefsPanel();
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 6, 4, 6);
 
-        pp.add(new JLabel(" Time constant (s)", SwingConstants.TRAILING));
+        // Time constant
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        pp.add(new JLabel(" Time constant (s)", SwingConstants.TRAILING), gbc);
+
         this.time_constant = new JTextField(10);
-        pp.add(this.time_constant);
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        pp.add(this.time_constant, gbc);
 
-        pp.add(new JLabel(" P deadband (mBar)", SwingConstants.TRAILING));
+        // P deadband
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        pp.add(new JLabel(" P deadband (mBar)", SwingConstants.TRAILING), gbc);
+
         this.P_deadband = new JTextField(10);
-        pp.add(this.P_deadband);
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        pp.add(this.P_deadband, gbc);
 
-        pp.add(new JLabel(" I limiter (%)", SwingConstants.TRAILING));
+        // I limiter
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.EAST;
+        pp.add(new JLabel(" I limiter (%)", SwingConstants.TRAILING), gbc);
+
         this.I_limit = new JTextField(10);
-        pp.add(this.I_limit);
+        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        pp.add(this.I_limit, gbc);
 
-        pp.add(new JLabel(" P (%/100mBar)", SwingConstants.TRAILING));
+        // P
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.EAST;
+        pp.add(new JLabel(" P (%/100mBar)", SwingConstants.TRAILING), gbc);
+
         this.P = new JTextField(10);
-        pp.add(this.P);
+        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.WEST;
+        pp.add(this.P, gbc);
 
-        pp.add(new JLabel(" I (%/100mBar)", SwingConstants.TRAILING));
+        // I
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.anchor = GridBagConstraints.EAST;
+        pp.add(new JLabel(" I (%/100mBar)", SwingConstants.TRAILING), gbc);
+
         this.I = new JTextField(10);
-        pp.add(this.I);
+        gbc.gridx = 1; gbc.gridy = 4;
+        gbc.anchor = GridBagConstraints.WEST;
+        pp.add(this.I, gbc);
 
-        pp.add(new JLabel(" D (%/100mBar)", SwingConstants.TRAILING));
+        // D with special panel for 4 fields
+        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.anchor = GridBagConstraints.EAST;
+        pp.add(new JLabel(" D (%/100mBar)", SwingConstants.TRAILING), gbc);
 
         final JPanel pd = new JPanel();
         pd.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
-        pp.add(pd);
 
         this.D0 = new JTextField(4);
         pd.add(this.D0);
@@ -77,8 +111,9 @@ public class PIDEditor extends PreferencesEditor {
         this.D3 = new JTextField(4);
         pd.add(this.D3);
 
-        org.nyet.util.SpringUtilities.makeCompactGrid(pp,
-                6, 2, 6, 6, 6, 6);
+        gbc.gridx = 1; gbc.gridy = 5;
+        gbc.anchor = GridBagConstraints.WEST;
+        pp.add(pd, gbc);
     }
 
     @Override
