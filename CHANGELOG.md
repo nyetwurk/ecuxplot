@@ -1,6 +1,13 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+-  Fix bug where which window was on top was confusing
+-  Fix bug where ranges that should not be visible are visible on startup
+
 ## [1.1.4] - 2025-10-29
 
 ### Added
