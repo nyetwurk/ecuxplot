@@ -160,7 +160,6 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
     private JTree rangeTree;
     private DefaultTreeModel treeModel;
     private JLabel statusLabel;
-    private JLabel rangeCountLabel;
     private JButton applyButton;
     private JButton selectAllButton;
     private JButton selectNoneButton;
@@ -717,9 +716,8 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> setVisible(false));
 
-        // Create status labels
+        // Create status label
         statusLabel = new JLabel("No files loaded");
-        rangeCountLabel = new JLabel("0 ranges selected");
 
         // Set initial button states
         updateButtonStates();
@@ -742,7 +740,6 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         // Status panel at top of tree panel
         JPanel statusPanel = new JPanel(new BorderLayout());
         statusPanel.add(statusLabel, BorderLayout.WEST);
-        statusPanel.add(rangeCountLabel, BorderLayout.EAST);
         treePanel.add(statusPanel, BorderLayout.NORTH);
 
         // Tree panel with scroll pane - let pack() size it based on content
@@ -1074,6 +1071,15 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         updateButtonStates();
     }
 
+    /**
+     * Rebuild tree when filter state changes (to show/hide range nodes)
+     */
+    void refreshForFilterState() {
+        if (fileDatasets != null && !fileDatasets.isEmpty()) {
+            updateList();
+        }
+    }
+
     // FileDropHost implementation - delegate to parent ECUxPlot
     @Override
     public void loadFile(File file) {
@@ -1206,12 +1212,15 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
                 for (FileNode fileNode : files) {
                     groupNode.addFile(fileNode);
 
-                    // Add range nodes as children only if file has multiple ranges
-                    List<Dataset.Range> ranges = fileNode.getDataset().getRanges();
-                    if (ranges.size() > 1) {
-                        for (int i = 0; i < ranges.size(); i++) {
-                            RangeNode rangeNode = new RangeNode(fileNode.getFilename(), i, ranges.get(i), fileNode.getDataset(), this);
-                            fileNode.add(rangeNode);
+                    // Add range nodes as children only if file has multiple ranges AND filter is enabled
+                    // When filter is disabled, Range Selector acts as file selector (no range nodes)
+                    if (filter != null && filter.enabled()) {
+                        List<Dataset.Range> ranges = fileNode.getDataset().getRanges();
+                        if (ranges.size() > 1) {
+                            for (int i = 0; i < ranges.size(); i++) {
+                                RangeNode rangeNode = new RangeNode(fileNode.getFilename(), i, ranges.get(i), fileNode.getDataset(), this);
+                                fileNode.add(rangeNode);
+                            }
                         }
                     }
                 }
@@ -1220,12 +1229,15 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
                 FileNode fileNode = files.get(0);
                 root.add(fileNode);
 
-                // Add range nodes as children only if file has multiple ranges
-                List<Dataset.Range> ranges = fileNode.getDataset().getRanges();
-                if (ranges.size() > 1) {
-                    for (int i = 0; i < ranges.size(); i++) {
-                        RangeNode rangeNode = new RangeNode(fileNode.getFilename(), i, ranges.get(i), fileNode.getDataset(), this);
-                        fileNode.add(rangeNode);
+                // Add range nodes as children only if file has multiple ranges AND filter is enabled
+                // When filter is disabled, Range Selector acts as file selector (no range nodes)
+                if (filter != null && filter.enabled()) {
+                    List<Dataset.Range> ranges = fileNode.getDataset().getRanges();
+                    if (ranges.size() > 1) {
+                        for (int i = 0; i < ranges.size(); i++) {
+                            RangeNode rangeNode = new RangeNode(fileNode.getFilename(), i, ranges.get(i), fileNode.getDataset(), this);
+                            fileNode.add(rangeNode);
+                        }
                     }
                 }
             }
@@ -1236,19 +1248,34 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         // Automatically expand all nodes
         expandAllNodes();
 
-        // Select all by default if this is the first time the tree is built
-        // If window was just hidden, tree state is already preserved
+        // Restore selection state based on filter mode
         DefaultMutableTreeNode checkRoot = (DefaultMutableTreeNode) treeModel.getRoot();
         Enumeration<?> nodes = checkRoot.depthFirstEnumeration();
+
         boolean hasSelection = false;
+        boolean filterDisabled = (filter != null && !filter.enabled());
+
         while (nodes.hasMoreElements()) {
             Object node = nodes.nextElement();
-            if (node instanceof TreeNode && ((TreeNode) node).isSelected()) {
-                hasSelection = true;
-                break;
+
+            if (filterDisabled) {
+                // Filter disabled - restore file selections
+                if (node instanceof FileNode) {
+                    FileNode fileNode = (FileNode) node;
+                    // Default to all selected if no explicit selection (isFileSelected returns true when empty)
+                    fileNode.setSelected(filter.isFileSelected(fileNode.getFilename()));
+                }
+            } else {
+                // Filter enabled - check if any nodes are already selected
+                if (node instanceof TreeNode && ((TreeNode) node).isSelected()) {
+                    hasSelection = true;
+                    break;
+                }
             }
         }
-        if (!hasSelection) {
+
+        // If filter enabled and no selection found, select all
+        if (!filterDisabled && !hasSelection) {
             selectAll();
         }
 
@@ -1644,39 +1671,23 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
     private void updateStatus() {
         if (fileDatasets == null || fileDatasets.isEmpty()) {
             statusLabel.setText("No files loaded");
-            rangeCountLabel.setText("0 ranges selected");
             return;
         }
 
         int totalRanges = 0;
-        int selectedRanges = 0;
-
         for (ECUxDataset dataset : fileDatasets.values()) {
             totalRanges += dataset.getRanges().size();
         }
 
-        // Count selected ranges from tree
-        selectedRanges = countSelectedRanges();
-
-        statusLabel.setText(String.format("%d files, %d total ranges", fileDatasets.size(), totalRanges));
-        rangeCountLabel.setText(String.format("%d ranges selected", selectedRanges));
-    }
-
-    private int countSelectedRanges() {
-        int count = 0;
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
-        Enumeration<?> enumeration = root.depthFirstEnumeration();
-        while (enumeration.hasMoreElements()) {
-            Object node = enumeration.nextElement();
-            if (node instanceof RangeNode) {
-                RangeNode rangeNode = (RangeNode) node;
-                if (rangeNode.isSelected()) {
-                    count++;
-                }
-            }
+        if (totalRanges > fileDatasets.size()) {
+            // Multiple ranges across files - show both counts
+            statusLabel.setText(String.format("%d files, %d total ranges", fileDatasets.size(), totalRanges));
+        } else {
+            // One range per file (or filter disabled) - show files only
+            statusLabel.setText(String.format("%d files loaded", fileDatasets.size()));
         }
-        return count;
     }
+
 
     private void selectAll() {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
@@ -1707,59 +1718,79 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
     }
 
     private void applySelection() {
-        // Build selection map from tree state
-        Map<String, Set<Integer>> newSelection = new HashMap<>();
-
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
         Enumeration<?> enumeration = root.depthFirstEnumeration();
+
+        boolean filterDisabled = (filter == null || !filter.enabled());
+        Set<String> selectedFiles = new HashSet<>();
+        Map<String, Set<Integer>> newSelection = new HashMap<>();
+
         while (enumeration.hasMoreElements()) {
             Object node = enumeration.nextElement();
             if (node instanceof FileNode) {
                 FileNode fileNode = (FileNode) node;
-                String filename = fileNode.getFilename();
-                ECUxDataset dataset = fileNode.getDataset();
-                List<Dataset.Range> ranges = dataset.getRanges();
 
-                if (fileNode.isSelected()) {
-                    // File is selected - add all ranges
-                    Set<Integer> rangeSet = new HashSet<>();
-                    for (int i = 0; i < ranges.size(); i++) {
-                        rangeSet.add(i);
+                if (filterDisabled) {
+                    // Filter disabled - Range Selector acts as file selector
+                    if (fileNode.isSelected()) {
+                        selectedFiles.add(fileNode.getFilename());
                     }
-                    newSelection.put(filename, rangeSet);
-                } else if (ranges.size() > 1) {
-                    // File is not selected but has multiple ranges - check individual range selections
-                    Set<Integer> rangeSet = new HashSet<>();
-                    Enumeration<?> children = fileNode.children();
-                    while (children.hasMoreElements()) {
-                        Object child = children.nextElement();
-                        if (child instanceof RangeNode) {
-                            RangeNode rangeNode = (RangeNode) child;
-                            if (rangeNode.isSelected()) {
-                                rangeSet.add(rangeNode.getRangeIndex());
+                } else {
+                    // Filter enabled - Range Selector acts as range selector (normal mode)
+                    String filename = fileNode.getFilename();
+                    ECUxDataset dataset = fileNode.getDataset();
+                    List<Dataset.Range> ranges = dataset.getRanges();
+
+                    if (fileNode.isSelected()) {
+                        // File is selected - add all ranges
+                        Set<Integer> rangeSet = new HashSet<>();
+                        for (int i = 0; i < ranges.size(); i++) {
+                            rangeSet.add(i);
+                        }
+                        newSelection.put(filename, rangeSet);
+                    } else if (ranges.size() > 1) {
+                        // File is not selected but has multiple ranges - check individual range selections
+                        Set<Integer> rangeSet = new HashSet<>();
+                        Enumeration<?> children = fileNode.children();
+                        while (children.hasMoreElements()) {
+                            Object child = children.nextElement();
+                            if (child instanceof RangeNode) {
+                                RangeNode rangeNode = (RangeNode) child;
+                                if (rangeNode.isSelected()) {
+                                    rangeSet.add(rangeNode.getRangeIndex());
+                                }
                             }
                         }
+                        if (!rangeSet.isEmpty()) {
+                            newSelection.put(filename, rangeSet);
+                        }
                     }
-                    if (!rangeSet.isEmpty()) {
-                        newSelection.put(filename, rangeSet);
-                    }
+                    // For files with single range that are not selected, don't add anything
                 }
-                // For files with single range that are not selected, don't add anything
             }
         }
 
-        // Update filter's per-file range selection
-        filter.clearAllRangeSelections();
-        for (Map.Entry<String, Set<Integer>> entry : newSelection.entrySet()) {
-            filter.setSelectedRanges(entry.getKey(), entry.getValue());
+        // Update filter's selection based on mode
+        if (filterDisabled) {
+            // Update filter's file selection (not range selection)
+            if (filter != null) {
+                filter.clearAllFileSelections();
+                filter.setSelectedFiles(selectedFiles);
+            }
+        } else {
+            // Update filter's per-file range selection
+            filter.clearAllRangeSelections();
+            for (Map.Entry<String, Set<Integer>> entry : newSelection.entrySet()) {
+                filter.setSelectedRanges(entry.getKey(), entry.getValue());
+            }
         }
 
         // Update chart visibility and FATS window
         if (eplot != null) {
             eplot.updateChartVisibility();
 
-            // Rebuild FATS to show only selected ranges
-            if (eplot.fatsDataset != null) {
+            // Rebuild FATS to show only selected ranges (only when filter enabled)
+            if (filter != null && filter.enabled() && eplot.fatsDataset != null) {
                 eplot.fatsDataset.rebuild();
                 if (eplot.fatsFrame != null) {
                     eplot.fatsFrame.refreshFromFATS();

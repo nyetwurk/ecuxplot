@@ -751,6 +751,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             if (this.optionsMenu != null) {
                 this.optionsMenu.updateFATSAvailability();
             }
+            // Rebuild Range Selector tree when filter state changes (to show/hide range nodes)
+            if (this.rangeSelectorWindow != null) {
+                this.rangeSelectorWindow.refreshForFilterState();
+            }
         } else if(source.getText().equals("Filter...")) {
             // Old range selectors removed - now using Range Selector for per-file range selection
             if(this.filterWindow == null) this.filterWindow =
@@ -1020,15 +1024,23 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     final Integer range = key.getRange();
 
                     // Check if this range should be visible
-                    Set<Integer> selectedRanges = this.filter.getSelectedRanges(filename);
                     boolean shouldBeVisible;
 
-                    if(range != null && range >= 0) {
-                        // Multiple range file - check if specific range is selected
-                        shouldBeVisible = selectedRanges.contains(range);
+                    if (!this.filter.enabled()) {
+                        // Filter disabled - Range Selector becomes file selector
+                        // Check if this file is selected
+                        shouldBeVisible = this.filter.isFileSelected(filename);
                     } else {
-                        // Single range file - visible if any range for this file is selected
-                        shouldBeVisible = !selectedRanges.isEmpty();
+                        // Filter enabled - respect Range Selector range selections
+                        Set<Integer> selectedRanges = this.filter.getSelectedRanges(filename);
+
+                        if(range != null && range >= 0) {
+                            // Multiple range file - check if specific range is selected
+                            shouldBeVisible = selectedRanges.contains(range);
+                        } else {
+                            // Single range file - visible if any range for this file is selected
+                            shouldBeVisible = !selectedRanges.isEmpty();
+                        }
                     }
 
                     // Toggle visibility
@@ -1170,6 +1182,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     }
 
                     updateXAxisLabel(plot);
+
+                    // Update visibility based on filter state (filter disabled = show all, enabled = respect Range Selector)
+                    updateChartVisibility();
 
                     // Don't call updateOpenWindows() here - window updates are handled by callbacks
                     // This prevents Range Selector tree from being rebuilt when user changes selections

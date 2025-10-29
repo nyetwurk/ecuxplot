@@ -518,12 +518,26 @@ public class Dataset {
         // only match the string portion of the key
         final Column c = this.get(id.getString());
         if (c==null) return null;
+        // If range is null, use full dataset
+        if (r == null) {
+            if (this.length() == 0) {
+                return null;
+            }
+            r = new Range(0, this.length() - 1);
+        }
         return c.data.toArray(r.start, r.end);
     }
 
     public double[] getData(Comparable<?> id, Range r) {
         final Column c = this.get(id);
         if (c==null) return null;
+        // If range is null, use full dataset
+        if (r == null) {
+            if (this.length() == 0) {
+                return null;
+            }
+            r = new Range(0, this.length() - 1);
+        }
         return c.data.toArray(r.start, r.end);
     }
 

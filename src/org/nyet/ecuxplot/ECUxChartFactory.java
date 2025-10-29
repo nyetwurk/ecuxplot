@@ -236,33 +236,41 @@ public class ECUxChartFactory {
         final ArrayList<Dataset.Range> ranges = data.getRanges();
         // add empty data in case of error
         final double[][] empty = {{},{}};
-        if(ranges.size()==0) {
-            final Dataset.Key key = data.new Key(ykey, data);
-            key.hideRange();
-            d.addSeries(key, empty);
+
+        // Helper method to add a series with data retrieval
+        java.util.function.BiConsumer<Dataset.Key, Dataset.Range> addSeriesWithData = (key, r) -> {
+            final double[] xData = data.getData(xkey, r);
+            final double[] yData = data.getData(ykey, r);
+
+            double[][] s = empty; // Default to empty
+            if (xData != null && yData != null) {
+                s = new double[][]{xData, yData};
+            }
+
+            d.addSeries(key, s);
             ret.add(d.indexOf(key));
+        };
+
+        if(ranges.size() == 0) {
+            // No ranges could mean:
+            // 1. Filter is disabled (no ranges detected, but data exists) - show all data
+            // 2. Data is truly empty - don't add any series
+            if(data.length() > 0) {
+                final Dataset.Key key = data.new Key(ykey, data);
+                key.hideRange();
+                addSeriesWithData.accept(key, null); // null range = full dataset
+            }
+            // If data is truly empty (data.length() == 0), don't add any series - return empty array
             return ret.toArray(new Integer[0]);
         }
 
         // Add ALL ranges to the dataset - Filter only controls visibility, not existence
         // This ensures all series exist in the chart, then updateChartVisibility() controls what's shown
         for (int i = 0; i < ranges.size(); i++) {
-
             final Dataset.Key key = data.new Key(ykey, i, data);
-            if(ranges.size()==1) key.hideRange();
+            if(ranges.size() == 1) key.hideRange();
             else key.showRange();
-
-            final Dataset.Range r=ranges.get(i);
-            try {
-                final double [][] s = new double [][]{
-                    data.getData(xkey, r),
-                    data.getData(ykey, r)};
-                d.addSeries(key, s);
-                ret.add(d.indexOf(key));
-            } catch (final Exception e){
-                d.addSeries(key, empty);
-                ret.add(d.indexOf(key));
-            }
+            addSeriesWithData.accept(key, ranges.get(i));
         }
         return ret.toArray(new Integer[0]);
     }

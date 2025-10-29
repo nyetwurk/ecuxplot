@@ -871,6 +871,13 @@ public class ECUxDataset extends Dataset {
 
     @Override
     public double[] getData(Comparable<?> id, Range r) {
+        // If range is null, use full dataset
+        if (r == null) {
+            if (this.length() == 0) {
+                return null;
+            }
+            r = new Range(0, this.length() - 1);
+        }
         final Column c = this.get(id);
         if (c==null) return null;
 

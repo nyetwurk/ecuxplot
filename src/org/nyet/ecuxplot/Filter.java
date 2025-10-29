@@ -141,6 +141,49 @@ public class Filter {
         return !selectedRanges.isEmpty();
     }
 
+    // Per-file selection support (for filter disabled mode)
+    private Set<String> selectedFiles = new HashSet<>();
+
+    /**
+     * Get the selected files (for filter disabled mode)
+     * @return Set of selected filenames
+     */
+    public Set<String> getSelectedFiles() {
+        return new HashSet<>(selectedFiles);
+    }
+
+    /**
+     * Set the selected files (for filter disabled mode)
+     * @param files Set of selected filenames
+     */
+    public void setSelectedFiles(Set<String> files) {
+        if (files == null || files.isEmpty()) {
+            selectedFiles.clear();
+        } else {
+            selectedFiles = new HashSet<>(files);
+        }
+    }
+
+    /**
+     * Clear all file selections
+     */
+    public void clearAllFileSelections() {
+        selectedFiles.clear();
+    }
+
+    /**
+     * Check if a file is selected (for filter disabled mode)
+     * @param filename The filename to check
+     * @return true if file is selected
+     */
+    public boolean isFileSelected(String filename) {
+        // If no files explicitly selected, default to all selected (for initial state)
+        if (selectedFiles.isEmpty()) {
+            return true;
+        }
+        return selectedFiles.contains(filename);
+    }
+
     public static boolean showAllRanges(Preferences prefs) {
     return prefs.node(PREFS_TAG).getBoolean("showAllRanges", defaultShowAllRanges);
     }
