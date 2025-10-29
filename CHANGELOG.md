@@ -1,6 +1,12 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Bug which made the X-Axis RPM only
+
 ## [1.1.3] - 2025-10-28
 
 ### Added

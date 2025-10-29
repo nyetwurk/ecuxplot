@@ -353,7 +353,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                         // Create base key for this Y-variable
                         final Dataset.Key baseKey = data.new Key(yvar, data);
-                        final Comparable<?> xkey = "RPM";
+                        final Comparable<?> xkey = this.xkey();
 
                         // addDataset will read the filter and add only selected ranges
                         ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey, this.filter, filename);
@@ -1137,7 +1137,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                                 // Create base key for this Y-variable
                                 final Dataset.Key baseKey = data.new Key(yvar, data);
-                                final Comparable<?> xkey = "RPM";
+                                final Comparable<?> xkey = ECUxPlot.this.xkey();
 
                                 // addDataset will read the filter and add only selected ranges
                                 ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey, ECUxPlot.this.filter, filename);
