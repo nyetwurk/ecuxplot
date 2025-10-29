@@ -137,8 +137,25 @@ public class DataLogger {
             String[][] aliasesToUse = DataLogger.which(loggerType);
             logger.debug("which('{}') returned {} aliases", loggerType, aliasesToUse.length);
 
+            // Get ME7_ALIASES map for O(1) lookup
+            java.util.Map<String, String> me7AliasesMap = getMe7AliasesMap();
+
             for(int i = 0; i < this.id.length; i++) {
                 // logger.debug("{}: '{}'", i, this.id[i]);
+
+                // First check ME7_ALIASES map for exact match (O(1))
+                if (me7AliasesMap != null && this.id[i] != null) {
+                    String target = me7AliasesMap.get(this.id[i]);
+                    if (target != null) {
+                        if (!org.apache.commons.lang3.ArrayUtils.contains(this.id, target)) {
+                            logger.debug("{}: ME7 alias '{}'->'{}'", i, this.id[i], target);
+                            this.id[i] = target;
+                            continue;
+                        }
+                    }
+                }
+
+                // Then check regex-based aliases (logger-specific and DEFAULT)
                 for (final String [] s: aliasesToUse) {
                     if (this.id[i] != null && this.id[i].matches(s[0])) {
                         // Only rename the first one
@@ -715,12 +732,12 @@ public class DataLogger {
             h.processAliases(this.type);
             this.applyGeneralUnitParsing(h, verbose);
 
+            // Apply field transformations for all logger types (prepend/append)
+            // This must happen BEFORE unit processing so units can be found for transformed field names
+            this.applyFieldTransformations(h);
+
             // Process and normalize units
             h.processUnits();
-
-            // Apply field transformations for all logger types (prepend/append)
-            // This must happen AFTER unit processing so units can be found for original field names
-            this.applyFieldTransformations(h);
 
             // Log final results
             for (int i = 0; i < h.id.length; i++) {
@@ -1097,24 +1114,56 @@ public class DataLogger {
     // PARSER METHODS - ACTIVE FOR FUTURE PARSING PHASE
     // ============================================================================
 
+    private static java.util.Map<String, String> me7AliasesMap = null;
+
     private static String[][] which(String loggerType) {
         // Find the aliases for this logger type
         DataLoggerConfig config = loggerConfigs.get(loggerType);
-        if (config != null) {
-            logger.debug("which('{}'): found config with {} aliases", loggerType, config.parser.aliases.length);
-            return config.parser.aliases;
-        }
-
-        // If not found, use DEFAULT logger aliases
+        DataLoggerConfig me7Config = loggerConfigs.get("ME7_ALIASES");
         DataLoggerConfig defaultConfig = loggerConfigs.get("DEFAULT");
-        if (defaultConfig != null) {
-            logger.debug("which('{}'): using DEFAULT config with {} aliases", loggerType, defaultConfig.parser.aliases.length);
-            return defaultConfig.parser.aliases;
+
+        int totalAliases = 0;
+        if (config != null) totalAliases += config.parser.aliases.length;
+        // ME7_ALIASES now uses Map for efficiency (O(1) lookup vs O(n))
+        if (defaultConfig != null) totalAliases += defaultConfig.parser.aliases.length;
+
+        if (totalAliases == 0) {
+            logger.debug("which('{}'): returning empty aliases", loggerType);
+            return new String[0][0];
         }
 
-        // Fallback to empty aliases if nothing found
-        logger.debug("which('{}'): returning empty aliases", loggerType);
-        return new String[0][0];
+        // Combine aliases: logger-specific first, then DEFAULT
+        String[][] combinedAliases = new String[totalAliases][2];
+        int pos = 0;
+
+        if (config != null) {
+            System.arraycopy(config.parser.aliases, 0, combinedAliases, pos, config.parser.aliases.length);
+            pos += config.parser.aliases.length;
+        }
+
+        if (defaultConfig != null) {
+            System.arraycopy(defaultConfig.parser.aliases, 0, combinedAliases, pos, defaultConfig.parser.aliases.length);
+            pos += defaultConfig.parser.aliases.length;
+        }
+
+        logger.debug("which('{}'): returning {} combined aliases ({} logger + {} me7 map + {} default)",
+                    loggerType, totalAliases,
+                    config != null ? config.parser.aliases.length : 0,
+                    me7Config != null ? 1 : 0,
+                    defaultConfig != null ? defaultConfig.parser.aliases.length : 0);
+        return combinedAliases;
+    }
+
+    private static java.util.Map<String, String> getMe7AliasesMap() {
+        if (me7AliasesMap == null && loggerConfigs.containsKey("ME7_ALIASES")) {
+            DataLoggerConfig me7Config = loggerConfigs.get("ME7_ALIASES");
+            me7AliasesMap = new java.util.HashMap<String, String>();
+            for (String[] alias : me7Config.parser.aliases) {
+                me7AliasesMap.put(alias[0], alias[1]);
+            }
+            logger.debug("Initialized ME7_ALIASES map with {} entries", me7AliasesMap.size());
+        }
+        return me7AliasesMap;
     }
 
 

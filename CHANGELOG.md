@@ -5,6 +5,7 @@
 
 ### Added
 
+- Winlog logger type support ([Issue #33](https://github.com/nyetwurk/ecuxplot/issues/33))
 - Calc torque in Nm option ([Issue #1](https://github.com/nyetwurk/ecuxplot/issues/1))
 - Unit conversion system for axis menu based on actual units rather than column names ([Issue #57](https://github.com/nyetwurk/ecuxplot/issues/57))
 - Automatic generation of unit conversion menu items (e.g., mph/km/h for speed, °F/°C for temperature)

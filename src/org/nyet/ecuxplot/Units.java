@@ -79,18 +79,24 @@ public final class Units {
             {"Time", UnitConstants.UNIT_SECONDS},
 
             {"Zeitronix TPS", UnitConstants.UNIT_PERCENT},
-            {"Zeitronix Time", UnitConstants.UNIT_SECONDS},
+            {"Zeitronix TIME.*", UnitConstants.UNIT_SECONDS},
+            {"Zeitronix IAT.*", UnitConstants.UNIT_FAHRENHEIT},
+            {"Zeitronix SPARKADV.*", UnitConstants.UNIT_DEGREES},
+            {"Zeitronix EGT.*", UnitConstants.UNIT_FAHRENHEIT},
+            {"Zeitronix MAP.*", UnitConstants.UNIT_PSI},
+            {"Zeitronix ThrottlePlateAngle.*", UnitConstants.UNIT_PERCENT},
 
             {"KnockVolt.*", UnitConstants.UNIT_VOLTS},
             {"OXSVolt.*", UnitConstants.UNIT_VOLTS},
 
             {".*BoostPressure.*", UnitConstants.UNIT_MBAR},
-            {".*DutyCycle.*", UnitConstants.UNIT_PERCENT},
+            {".*Duty.*Cycle.*", UnitConstants.UNIT_PERCENT},
             {".*Angle.*", UnitConstants.UNIT_DEGREES},
             {".*Ignition.*Retard.*", UnitConstants.UNIT_DEGREES},
             {".*Ignition.*Timing.*", UnitConstants.UNIT_DEGREES},
             {".*Load.*", UnitConstants.UNIT_PERCENT},
             {".*Pressure.*", UnitConstants.UNIT_MBAR},
+            {".*Temperature.*", UnitConstants.UNIT_CELSIUS},
             {".*Voltage.*", UnitConstants.UNIT_VOLTS},
             {"TargetAFRDriverRequest.*", UnitConstants.UNIT_LAMBDA}, // ECUx/ME7l oddity - must come before .*AFR.*
             {".*AFR.*", UnitConstants.UNIT_AFR},

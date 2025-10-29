@@ -1322,20 +1322,172 @@
         <sanity_check row="0" col="0">0.0</sanity_check>
     </test_case>
 
+    <!-- WinLog Logger Test Expectations -->
+    <test_case file="winlog.csv">
+        <expected_type>WINLOG</expected_type>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">TIME 2</id>
+            <id index="2">RPM</id>
+            <id index="3">CondBrakePedalSwitch</id>
+            <id index="4">CondClutchPedalSwitch</id>
+            <id index="5">B_kr</id>
+            <id index="6">EngineLoad</id>
+            <id index="7">EngineLoadRequested</id>
+            <id index="8">EngineLoadCorrected</id>
+            <id index="9">EngineLoadSpecified</id>
+            <id index="10">ChargeLimitTurboProtection</id>
+            <id index="11">BoostPressureDesired</id>
+            <id index="12">BaroPressure</id>
+            <id index="13">BoostPressureActual</id>
+            <id index="14">WastegateDutyCycle</id>
+            <id index="15">WastegateDutyCycleBeforeLin</id>
+            <id index="16">ps_w</id>
+            <id index="17">plsolr_w</id>
+            <id index="18">ldimx</id>
+            <id index="19">ldimn</id>
+            <id index="20">lde</id>
+            <id index="21">BoostPID-I-Result</id>
+            <id index="22">BoostPID-P-Result</id>
+            <id index="23">BoostPID-D-Result</id>
+            <id index="24">MassAirFlow</id>
+            <id index="25">MassAirFlowAtThrottlePlate</id>
+            <id index="26">EGTModelBeforeCat8</id>
+            <id index="27">IntakeAirTemperatureAfterLin</id>
+            <id index="28">CoolantTemperatureAfterLin</id>
+            <id index="29">VehicleSpeed</id>
+            <id index="30">ThrottlePlateAngle</id>
+            <id index="31">tevfa_w_kge</id>
+            <id index="32">AirFuelRatioDesired</id>
+            <id index="33">LambdaPartProtection</id>
+            <id index="34">FuelInjectorOnTime</id>
+            <id index="35">LambdaControl</id>
+            <id index="36">AirFuelRatioCurrent</id>
+            <id index="37">AirFuelRatioCurrentBank2</id>
+            <id index="38">IgnitionTimingAngleOverall</id>
+            <id index="39">AvgIgnitionRetardKnockControl</id>
+            <id index="40">zwgru</id>
+            <id index="41">fnwue</id>
+            <id index="42">AccelPedalPosition</id>
+            <id index="43">TorqueDesired</id>
+            <id index="44">Gear</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">logtime</id2>
+            <id2 index="1">TimeStamp</id2>
+            <id2 index="2">nmot_w</id2>
+            <id2 index="3">B_br</id2>
+            <id2 index="4">B_kuppl</id2>
+            <id2 index="5">B_kr</id2>
+            <id2 index="6">rl_w</id2>
+            <id2 index="7">rlsol_w</id2>
+            <id2 index="8">rlmax_w</id2>
+            <id2 index="9">rlmx_w</id2>
+            <id2 index="10">ldrlts_w</id2>
+            <id2 index="11">plsol_w</id2>
+            <id2 index="12">pu_w</id2>
+            <id2 index="13">pvdks_w</id2>
+            <id2 index="14">ldtvm</id2>
+            <id2 index="15">ldtvr_w</id2>
+            <id2 index="16">ps_w</id2>
+            <id2 index="17">plsolr_w</id2>
+            <id2 index="18">ldimx</id2>
+            <id2 index="19">ldimn</id2>
+            <id2 index="20">lde</id2>
+            <id2 index="21">lditv_w</id2>
+            <id2 index="22">ldptv</id2>
+            <id2 index="23">ldrdtv</id2>
+            <id2 index="24">mshfm_w</id2>
+            <id2 index="25">msdk_w</id2>
+            <id2 index="26">tabgm</id2>
+            <id2 index="27">tanslin</id2>
+            <id2 index="28">tmotlin</id2>
+            <id2 index="29">vfil_w</id2>
+            <id2 index="30">wdkba</id2>
+            <id2 index="31">tevfa_w_kge</id2>
+            <id2 index="32">lamsbg_w</id2>
+            <id2 index="33">lambts_w</id2>
+            <id2 index="34">ti_b1</id2>
+            <id2 index="35">fr_w</id2>
+            <id2 index="36">lamsoni_w</id2>
+            <id2 index="37">lamsoni2_w</id2>
+            <id2 index="38">zwout</id2>
+            <id2 index="39">wkrm</id2>
+            <id2 index="40">zwgru</id2>
+            <id2 index="41">fnwue</id2>
+            <id2 index="42">wped_w</id2>
+            <id2 index="43">mifa_w</id2>
+            <id2 index="44">gangi</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1"></unit>
+            <unit index="2">RPM</unit>
+            <unit index="3"></unit>
+            <unit index="4"></unit>
+            <unit index="5"></unit>
+            <unit index="6">%</unit>
+            <unit index="7">%</unit>
+            <unit index="8">%</unit>
+            <unit index="9">%</unit>
+            <unit index="10"></unit>
+            <unit index="11">mBar</unit>
+            <unit index="12">mBar</unit>
+            <unit index="13">mBar</unit>
+            <unit index="14">%</unit>
+            <unit index="15">%</unit>
+            <unit index="16"></unit>
+            <unit index="17"></unit>
+            <unit index="18"></unit>
+            <unit index="19"></unit>
+            <unit index="20"></unit>
+            <unit index="21"></unit>
+            <unit index="22"></unit>
+            <unit index="23"></unit>
+            <unit index="24">g/sec</unit>
+            <unit index="25"></unit>
+            <unit index="26"></unit>
+            <unit index="27">°C</unit>
+            <unit index="28">°C</unit>
+            <unit index="29">km/h</unit>
+            <unit index="30">%</unit>
+            <unit index="31"></unit>
+            <unit index="32">lambda</unit>
+            <unit index="33">lambda</unit>
+            <unit index="34">ms</unit>
+            <unit index="35"></unit>
+            <unit index="36">AFR</unit>
+            <unit index="37">AFR</unit>
+            <unit index="38">°</unit>
+            <unit index="39">°</unit>
+            <unit index="40"></unit>
+            <unit index="41"></unit>
+            <unit index="42">%</unit>
+            <unit index="43"></unit>
+            <unit index="44"></unit>
+        </expected_units>
+        <expected_category_mappings>
+            <category name="pedal">AccelPedalPosition</category>
+            <category name="throttle">ThrottlePlateAngle</category>
+            <category name="gear">Gear</category>
+        </expected_category_mappings>
+        <sanity_check row="0" col="0">51.0</sanity_check>
+    </test_case>
+
     <!-- Zeitronix Logger Test Expectations -->
     <test_case file="zeitronix.csv">
         <expected_type>ZEITRONIX</expected_type>
         <expected_ids>
-            <id index="0">ZeitronixTime</id>
-            <id index="1">ZeitronixIAT</id>
-            <id index="2">ZeitronixSPARKADV</id>
-            <id index="3">ZeitronixThrottlePlateAngle</id>
-            <id index="4">ZeitronixMAP</id>
+            <id index="0">Zeitronix TIME</id>
+            <id index="1">Zeitronix IAT</id>
+            <id index="2">Zeitronix SPARKADV</id>
+            <id index="3">Zeitronix ThrottlePlateAngle</id>
+            <id index="4">Zeitronix MAP</id>
             <id index="5">RPM</id>
-            <id index="6">ZeitronixAFR</id>
-            <id index="7">ZeitronixEGT</id>
-            <id index="8">ZeitronixMAP 2</id>
-            <id index="9">ZeitronixAFR 2</id>
+            <id index="6">Zeitronix AFR</id>
+            <id index="7">Zeitronix EGT</id>
+            <id index="8">Zeitronix MAP 2</id>
+            <id index="9">Zeitronix AFR 2</id>
         </expected_ids>
         <expected_id2s>
             <id2 index="0">Time</id2>
@@ -1351,14 +1503,14 @@
         </expected_id2s>
         <expected_units>
             <unit index="0">s</unit>
-            <unit index="1"></unit>
-            <unit index="2"></unit>
+            <unit index="1">°F</unit>
+            <unit index="2">°</unit>
             <unit index="3">%</unit>
-            <unit index="4"></unit>
+            <unit index="4">PSI</unit>
             <unit index="5">RPM</unit>
             <unit index="6">AFR</unit>
-            <unit index="7"></unit>
-            <unit index="8"></unit>
+            <unit index="7">°F</unit>
+            <unit index="8">PSI</unit>
             <unit index="9">AFR</unit>
         </expected_units>
         <sanity_check row="0" col="0">37155.004</sanity_check>
