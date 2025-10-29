@@ -38,6 +38,7 @@
 - Fix filter initialization: Initialize filter selections per-file when adding files to existing datasets instead of all-or-nothing
 - Fix window updates: Ensure open windows (Filter, Range, FATS) are updated when files are added
 - Bug which made the X-Axis RPM only
+- Keep scatter box and filter checkbox consistent with app state
 
 ## [1.1.3] - 2025-10-28
 

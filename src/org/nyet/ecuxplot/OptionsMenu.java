@@ -13,6 +13,8 @@ public final class OptionsMenu extends JMenu {
      */
     private static final long serialVersionUID = 1L;
     private JMenuItem showFATSItem;
+    private JCheckBox filterCheckBox;
+    private JCheckBox scatterCheckBox;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
         super(id);
@@ -25,10 +27,12 @@ public final class OptionsMenu extends JMenu {
         jcb = new JCheckBox("Enable filter", Filter.enabled(prefs));
         jcb.addActionListener(plotFrame);
         this.add(jcb);
+        this.filterCheckBox = jcb;
 
         jcb = new JCheckBox("Scatter plot", ECUxPlot.scatter(prefs));
         jcb.addActionListener(plotFrame);
         this.add(jcb);
+        this.scatterCheckBox = jcb;
 
         jcb = new JCheckBox("Alt column names",
                 prefs.getBoolean("altnames", false));
@@ -80,6 +84,34 @@ public final class OptionsMenu extends JMenu {
             final Preferences prefs = ECUxPlot.getPreferences();
             boolean filterEnabled = Filter.enabled(prefs);
             this.showFATSItem.setEnabled(filterEnabled);
+        }
+    }
+
+    /**
+     * Update the filter checkbox to reflect the current filter enabled state
+     */
+    public void updateFilterCheckBox() {
+        if (this.filterCheckBox != null) {
+            final Preferences prefs = ECUxPlot.getPreferences();
+            boolean filterEnabled = Filter.enabled(prefs);
+            // Only update if state has changed to avoid triggering action listeners
+            if (this.filterCheckBox.isSelected() != filterEnabled) {
+                this.filterCheckBox.setSelected(filterEnabled);
+            }
+        }
+    }
+
+    /**
+     * Update the scatter checkbox to reflect the current scatter state
+     */
+    public void updateScatterCheckBox() {
+        if (this.scatterCheckBox != null) {
+            final Preferences prefs = ECUxPlot.getPreferences();
+            boolean scatterEnabled = ECUxPlot.scatter(prefs);
+            // Only update if state has changed to avoid triggering action listeners
+            if (this.scatterCheckBox.isSelected() != scatterEnabled) {
+                this.scatterCheckBox.setSelected(scatterEnabled);
+            }
         }
     }
 }

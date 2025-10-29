@@ -524,7 +524,10 @@ public class FilterWindow extends JFrame {
         // Enable the filter when settings are applied
         this.filter.enabled(true);
 
-        // Filter checkbox is now in OptionsMenu, no need to update separately
+        // Update the filter checkbox in OptionsMenu to reflect that filter is enabled
+        if (this.eplot != null && this.eplot.optionsMenu != null) {
+            this.eplot.optionsMenu.updateFilterCheckBox();
+        }
     }
 
     private void setFilterIntValueFromTextField(JTextField textField, java.util.function.IntConsumer setter) {
