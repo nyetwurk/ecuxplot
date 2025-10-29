@@ -5,8 +5,8 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "scripts/launch4j-version.txt"
+      "managerFilePatterns": [
+        "/scripts/launch4j-version.txt/"
       ],
       "matchStrings": [
         "^(?<currentValue>.*)$"
