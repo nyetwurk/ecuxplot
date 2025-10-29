@@ -39,11 +39,6 @@ public final class OptionsMenu extends JMenu {
         jcb.addActionListener(plotFrame);
         this.add(jcb);
 
-        jcb = new JCheckBox("Hide axis menus",
-                prefs.getBoolean("hideaxismenus", false));
-        jcb.addActionListener(plotFrame);
-        this.add(jcb);
-
         this.add(new JSeparator());
 
         // Analysis tools

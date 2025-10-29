@@ -10,19 +10,6 @@ import com.opencsv.*;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
-    /** Placeholder key used for empty datasets to maintain clickable axis functionality */
-    public static final String PLACEHOLDER_KEY = "Empty";
-
-    /**
-     * Check if a key is the placeholder key used for empty datasets.
-     * @param key the key to check
-     * @return true if this is the placeholder key
-     */
-    public static boolean isPlaceholderKey(Comparable<?> key) {
-        if(key == null) return false;
-        return PLACEHOLDER_KEY.equals(key) || PLACEHOLDER_KEY.equals(key.toString());
-    }
-
     public static class DatasetId implements Comparable<Object> {
         public String id;
         public String id2;

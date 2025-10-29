@@ -18,6 +18,7 @@
 - Simplified field category system from arrays to single values
 - Renamed field categories to field preferences
 - Aligned field names with canonical aliases from `me7_alias.map`
+- Remove clickable axis feature: it broke too many things
 
 ### Fixed
 

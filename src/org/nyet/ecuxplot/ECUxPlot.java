@@ -159,8 +159,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private Comparable<?> xkey() {
         // Use a hardcoded default instead of creating ECUxPreset to avoid infinite recursion
         final String defaultXkey = "RPM";
-        final String key = this.prefs.get("xkey", defaultXkey);
-        return org.nyet.logfile.Dataset.isPlaceholderKey(key) ? defaultXkey : key;
+        return this.prefs.get("xkey", defaultXkey);
     }
 
     private Comparable<?>[] ykeys(int index) {
@@ -177,7 +176,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         final ArrayList<String> filtered = new ArrayList<String>();
         for(String key : keys) {
             key = key.trim();
-            if(key.length() > 0 && !org.nyet.logfile.Dataset.isPlaceholderKey(key)) filtered.add(key);
+            if(key.length() > 0) filtered.add(key);
         }
 
         // If filtered empty and original was empty string, return empty; otherwise use defaults
@@ -249,8 +248,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         }
 
         // rebuild the axis menus
-        // ODDITY: Create axis menus for popup functionality (not added to menu bar)
-        // These menus are used for axis click popups but are no longer displayed in the menu bar
         this.xAxis = new AxisMenu("X Axis", ids, this, true, this.xkey());
         this.yAxis[0] = new AxisMenu("Y Axis", ids, this, false, this.ykeys(0));
         this.yAxis[1] = new AxisMenu("Y Axis2", ids, this, false, this.ykeys(1));
@@ -263,8 +260,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.optionsMenu.updateFATSAvailability();
         }
 
-        // Update axis menu visibility based on user preference
-        updateAxisMenuVisibility();
+        // Add axis menus to menu bar after Axis Presets and before the Glue
+        this.menuBar.add(this.xAxis, 4); // Insert after Axis Presets (position 3)
+        this.menuBar.add(this.yAxis[0], 5); // Insert after X Axis
+        this.menuBar.add(this.yAxis[1], 6); // Insert after Y Axis
 
         // Initialize filter with "show all" for each file that doesn't have selections yet
         // DO THIS FIRST so the chart update has correct filter selections
@@ -302,14 +301,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
             for(int series=0;series<pds.getSeriesCount();series++) {
                 final Object seriesKey = pds.getSeriesKey(series);
-                // ODDITY: Type safety check needed because placeholder data uses String keys
-                // while real data uses Dataset.Key objects. This prevents ClassCastException.
                 if(seriesKey instanceof Dataset.Key) {
                     final Dataset.Key ykey = (Dataset.Key)seriesKey;
                     if(this.fileDatasets.size()==1) ykey.hideFilename();
                     else ykey.showFilename();
                 }
-                // Skip placeholder series (String keys like Dataset.PLACEHOLDER_KEY)
             }
         }
     }
@@ -389,6 +385,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
             }
             updateXAxisLabel(plot);
+            updatePlotTitleAndYAxisLabels(plot);
 
             logger.debug("Chart update complete, updating windows");
             // Update all open windows to show new file data
@@ -448,11 +445,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             if(this.chartPanel == null) {
                 final JFreeChart chart =
                     ECUxChartFactory.create2AxisChart(this.scatter());
-                this.chartPanel = new ECUxChartPanel(chart, this);
+                this.chartPanel = new ECUxChartPanel(chart);
                 setContentPane(this.chartPanel);
 
-                // Add placeholder data to empty axes for clean startup appearance
-                addPlaceholderDataToEmptyAxes();
             }
 
             final ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
@@ -829,11 +824,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.env.sae.enabled(source.isSelected());
             rebuild();
             updatePlotTitleAndYAxisLabels();
-        } else if(source.getText().equals("Hide axis menus")) {
-            // UX Enhancement: Allow users to choose between new axis click functionality
-            // and traditional menu bar dropdowns for axis configuration
-            this.prefs.putBoolean("hideaxismenus", source.isSelected());
-            updateAxisMenuVisibility();
         } else if(source.getText().equals("SAE constants...")) {
             if(this.sae == null) this.sae = new SAEEditor(this.prefs, this.env.sae);
             this.sae.showDialog(this, "SAE");
@@ -926,9 +916,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     final Comparable<?> key = dataset.getSeriesKey(series);
                     if(key==null) continue;
 
-                    // Skip placeholder series - they should not appear in chart titles
-                    if(org.nyet.logfile.Dataset.isPlaceholderKey(key)) continue;
-
                     String s;
 
                     if(key instanceof Dataset.Key) {
@@ -961,9 +948,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 title.add(Strings.join(", ", seriesTitle));
 
             plot.getRangeAxis(axis).setLabel(Strings.join(",",label));
-            // ODDITY: Always keep axes visible so they remain clickable even when empty
-            // This enables axis click functionality for configuration even when no data is displayed
-            plot.getRangeAxis(axis).setVisible(true);
         }
         this.chartTitle(Strings.join(" and ", title));
     }
@@ -973,61 +957,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             updateXAxisLabel(this.chartPanel.getChart().getXYPlot());
     }
 
-    /**
-     * Update axis menu visibility based on user preference.
-     * If "Hide axis menus" is enabled, removes axis menus from menu bar.
-     * If disabled, adds them to menu bar (but keeps them for popup functionality).
-     */
-    private void updateAxisMenuVisibility() {
-        boolean hideAxisMenus = this.prefs.getBoolean("hideaxismenus", false);
-        boolean showInMenuBar = !hideAxisMenus; // Invert the logic
-
-        // ODDITY: Axis menus may not be created yet if no files are loaded
-        // This method is called from the constructor and from preference changes
-        if (this.xAxis == null || this.yAxis[0] == null || this.yAxis[1] == null) {
-            return; // Skip if axis menus haven't been created yet
-        }
-
-        if (showInMenuBar) {
-            // Add axis menus after Axis Presets and before the Glue
-            if (this.xAxis != null && !this.menuBarContains(this.xAxis)) {
-                this.menuBar.add(this.xAxis, 4); // Insert after Axis Presets (position 3)
-            }
-            if (this.yAxis[0] != null && !this.menuBarContains(this.yAxis[0])) {
-                this.menuBar.add(this.yAxis[0], 5); // Insert after X Axis
-            }
-            if (this.yAxis[1] != null && !this.menuBarContains(this.yAxis[1])) {
-                this.menuBar.add(this.yAxis[1], 6); // Insert after Y Axis
-            }
-        } else {
-            // Remove axis menus from menu bar if present
-            if (this.xAxis != null) {
-                this.menuBar.remove(this.xAxis);
-            }
-            if (this.yAxis[0] != null) {
-                this.menuBar.remove(this.yAxis[0]);
-            }
-            if (this.yAxis[1] != null) {
-                this.menuBar.remove(this.yAxis[1]);
-            }
-        }
-
-        // Refresh the menu bar
-        this.menuBar.revalidate();
-        this.menuBar.repaint();
-    }
-
-    /**
-     * Helper method to check if a menu is already in the menu bar.
-     */
-    private boolean menuBarContains(JMenu menu) {
-        for (int i = 0; i < this.menuBar.getMenuCount(); i++) {
-            if (this.menuBar.getMenu(i) == menu) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private void updateXAxisLabel(XYPlot plot) {
         // find x axis label. just pick first one that has units we can use
@@ -1209,15 +1138,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                         plot.setDataset(axis, newdataset);
 
-                        // Add placeholder data if axis is empty (to keep it clickable)
-                        if(newdataset.getSeriesCount() == 0) {
-                            newdataset.addSeries(org.nyet.logfile.Dataset.PLACEHOLDER_KEY, new double[][]{{Double.NaN, Double.NaN}, {0, 0}});
-                            final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis(axis);
-                            rangeAxis.setRange(0, 100);
-                            rangeAxis.setAutoRange(false);
-                            rangeAxis.setLabel("");
-                        }
-
                         // Track series metadata for this dataset
                         for(int series=0; series<newdataset.getSeriesCount(); series++) {
                             final Object seriesKey = newdataset.getSeriesKey(series);
@@ -1231,6 +1151,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                         // Apply custom axis range calculation for better padding with negative values
                         ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
                     }
+
                     updateXAxisLabel(plot);
 
                     // Don't call updateOpenWindows() here - window updates are handled by callbacks
@@ -1257,46 +1178,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         worker.execute();
     }
 
-    /**
-     * Add placeholder data to empty Y-axes for clean startup appearance.
-     * This prevents JFreeChart from showing garbage ranges like "0 to 1.05" when no data is loaded.
-     *
-     * ODDITY: Uses Double.NaN for X-axis values to prevent interference with domain axis autoscaling.
-     * JFreeChart ignores NaN values when calculating axis ranges, so the X-axis can still autoscale
-     * to real data when it's loaded.
-     */
-    private void addPlaceholderDataToEmptyAxes() {
-        final XYPlot plot = this.chartPanel.getChart().getXYPlot();
-
-        // Add placeholder to both Y axes
-        for(int axis = 0; axis < plot.getDatasetCount(); axis++) {
-            final DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
-            if(dataset.getSeriesCount() == 0) {
-                // ODDITY: X-axis values are NaN to avoid interfering with domain axis autoscaling
-                dataset.addSeries(org.nyet.logfile.Dataset.PLACEHOLDER_KEY, new double[][]{{Double.NaN, Double.NaN}, {0, 0}});
-
-                // Set clean range for empty axis
-                final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis(axis);
-                rangeAxis.setRange(0, 100);
-                rangeAxis.setAutoRange(false);
-                rangeAxis.setLabel("");
-            }
-        }
-
-        // Ensure X-axis remains in auto-range mode AFTER adding placeholder data
-        final NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-        domainAxis.setAutoRange(true);
-    }
 
     private void removeAllY() { this.removeAllY(0); this.removeAllY(1); }
 
     /**
-     * Remove all data from a Y-axis and add clean placeholder data.
-     * This ensures the axis remains clickable and shows a professional appearance.
-     *
-     * ODDITY: After removing all data, we immediately add placeholder data to prevent
-     * the axis from becoming invisible/unclickable. This maintains the axis click functionality
-     * for configuration even when empty.
+     * Remove all data from a Y-axis.
      */
     private void removeAllY(int axis) {
         final XYPlot plot = this.chartPanel.getChart().getXYPlot();
@@ -1307,16 +1193,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         // Use empty string to mark as explicitly cleared
         this.prefs.put("ykeys" + axis, "");
 
-        // Add a placeholder dataset to show a clean, empty axis
-        final DefaultXYDataset placeholderDataset = (DefaultXYDataset)plot.getDataset(axis);
-        // ODDITY: X-axis values are NaN to avoid interfering with domain axis autoscaling
-        placeholderDataset.addSeries(org.nyet.logfile.Dataset.PLACEHOLDER_KEY, new double[][]{{Double.NaN, Double.NaN}, {0, 0}});
-
-        // Set a clean range for the empty axis
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis(axis);
-        rangeAxis.setRange(0, 100);
-        rangeAxis.setAutoRange(false);
-        rangeAxis.setLabel("");
+        // Hide the axis when all items are removed
+        plot.getRangeAxis(axis).setVisible(false);
     }
 
     private void editChartY(Comparable<?> ykey, int axis, boolean add) {
@@ -1331,12 +1209,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         final XYPlot plot = this.chartPanel.getChart().getXYPlot();
         final DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
         if(add) {
-            // ODDITY: Check for and remove placeholder data before adding real data
-            // This prevents placeholder data from interfering with real data display
-            if(pds.getSeriesCount() > 0 && org.nyet.logfile.Dataset.isPlaceholderKey(pds.getSeriesKey(0))) {
-                pds.removeSeries(org.nyet.logfile.Dataset.PLACEHOLDER_KEY);
-            }
-
             final Dataset.Key key = data.new Key(ykey.toString(), data);
             if(this.fileDatasets.size()==1) key.hideFilename();
             addDataset(axis, pds, key);
@@ -1344,6 +1216,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             // Restore normal axis behavior
             final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis(axis);
             rangeAxis.setAutoRange(true);
+            // Reset axis visibility to default when adding items
+            rangeAxis.setVisible(true);
 
             // Ensure X-axis remains in auto-range mode
             final NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
@@ -1711,46 +1585,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
             if(width>0 && height>0)
                 this.size = new java.awt.Dimension(width, height);
-        }
-    }
-
-    // Axis click handlers for chart panel
-    // ODDITY: These methods are called from ECUxChartPanel when axes are clicked
-    // The axis menus are no longer in the menu bar but still exist for popup functionality
-
-    public void showXAxisDialog(Point clickPoint) {
-        if (this.xAxis != null) {
-            showAxisPopupMenu(this.xAxis, "X Axis", clickPoint);
-        }
-    }
-
-    public void showYAxisDialog(Point clickPoint) {
-        if (this.yAxis[0] != null) {
-            showAxisPopupMenu(this.yAxis[0], "Y Axis", clickPoint);
-        }
-    }
-
-    public void showY2AxisDialog(Point clickPoint) {
-        if (this.yAxis[1] != null) {
-            showAxisPopupMenu(this.yAxis[1], "Y Axis2", clickPoint);
-        }
-    }
-
-    /**
-     * Show axis configuration popup menu at the clicked location.
-     *
-     * ODDITY: This method leverages the existing AxisMenu.getPopupMenu() instead of
-     * trying to recreate the menu structure. This preserves all the original functionality
-     * including nested submenus, which would be complex to recreate manually.
-     */
-    private void showAxisPopupMenu(AxisMenu axisMenu, String parentId, Point clickPoint) {
-        // Get the popup menu from the AxisMenu and show it
-        // This preserves all the original functionality including submenus
-        if (this.chartPanel != null && clickPoint != null) {
-            JPopupMenu popup = axisMenu.getPopupMenu();
-            if (popup != null) {
-                popup.show(this.chartPanel, clickPoint.x, clickPoint.y);
-            }
         }
     }
 

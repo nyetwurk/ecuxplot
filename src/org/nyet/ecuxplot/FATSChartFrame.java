@@ -60,7 +60,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
 
         final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        final ECUxChartPanel chartPanel = new ECUxChartPanel(chart, plotFrame);
+        final ECUxChartPanel chartPanel = new ECUxChartPanel(chart);
         // chartPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         chartPanel.setBorder(BorderFactory.createLoweredBevelBorder());
 

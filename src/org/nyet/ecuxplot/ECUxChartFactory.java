@@ -92,6 +92,9 @@ public class ECUxChartFactory {
         plot.getRangeAxis(1).setLabelFont(
                 plot.getRangeAxis(0).getLabelFont());
 
+        plot.getRangeAxis(0).setVisible(false);
+        plot.getRangeAxis(1).setVisible(false);
+
         return chart;
     }
 
@@ -313,9 +316,6 @@ public class ECUxChartFactory {
         final ArrayList<String> ret = new ArrayList<String>();
         for(int i=0;i<d.getSeriesCount();i++) {
             final Comparable<?> key = d.getSeriesKey(i);
-
-            // Skip placeholder series
-            if(org.nyet.logfile.Dataset.isPlaceholderKey(key)) continue;
 
             String s;
             if(key instanceof Dataset.Key)
