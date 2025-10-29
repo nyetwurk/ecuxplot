@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
-## [In Progress]
+## [Unreleased]
 
 ### Added
 
@@ -27,11 +27,6 @@
 - Lambda control fields correctly identified as unitless
 - EGT sensor fields now properly detect temperature units
 - VCDS vehicle speed alias mapping
-
-## [Unreleased]
-
-### Fixed
-
 - Fix regression in FATS window that caused FATS times to disappear
 - Do not show "Empty" in chart titles ([Issue #89](https://github.com/nyetwurk/ecuxplot/issues/89))
 - Fix file loading and drag-and-drop for multiple files into Filter, Range, and FATS windows correctly ([Issue #88](https://github.com/nyetwurk/ecuxplot/issues/88))
