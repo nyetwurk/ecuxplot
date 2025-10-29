@@ -417,8 +417,26 @@ public class AxisMenu extends JMenu {
     }
 
     public void uncheckAll() {
-        for(final AbstractButton item : this.members.values())
-            item.setSelected(false);
+        // Recursively find and uncheck all AbstractButtons in the entire menu tree
+        // This ensures we catch all items regardless of how they're tracked
+        uncheckAllRecursive(this);
+    }
+
+    private void uncheckAllRecursive(Component comp) {
+        if(comp == null) return;
+
+        // If this is an AbstractButton, uncheck it
+        if(comp instanceof AbstractButton) {
+            ((AbstractButton)comp).setSelected(false);
+        }
+
+        // If this is a menu, recursively process all its components
+        if(comp instanceof JMenu) {
+            JMenu menu = (JMenu)comp;
+            for(int i = 0; i < menu.getMenuComponentCount(); i++) {
+                uncheckAllRecursive(menu.getMenuComponent(i));
+            }
+        }
     }
 
     public void setSelected(Comparable<?> key) {
