@@ -86,10 +86,55 @@ public class FATSDataset extends DefaultCategoryDataset {
 
     public void rebuild() {
         clear();
-        fatsDataMap.clear();
+
+        // Ensure map has all FATS values (for tree display), calculate only missing ones
+        for(final ECUxDataset data : this.fileDatasets.values()) {
+            String filename = data.getFileId();
+            Map<Integer, Double> fileData = fatsDataMap.computeIfAbsent(filename, k -> new HashMap<>());
+
+            // Calculate FATS for any ranges that aren't in the map yet
+            for(int i = 0; i < data.getRanges().size(); i++) {
+                if (!fileData.containsKey(i)) {
+                    double value = calculateFATS(data, i);
+                    if (!Double.isNaN(value)) {
+                        fileData.put(i, value);
+                        logFATSSummary(data, i, value, this.start, this.end);
+                    }
+                }
+            }
+        }
+
+        // Populate chart with selected ranges only
         for(final ECUxDataset data : this.fileDatasets.values()) {
             setValue(data);
         }
+    }
+
+    /**
+     * Calculate FATS for a specific range
+     * @return The calculated value, or NaN if calculation fails
+     */
+    private double calculateFATS(ECUxDataset data, int series) {
+        try {
+            FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
+            if (handler.requiresRpmConversionFields()) {
+                return data.calcFATSBySpeed(series, handler.getStartValue(this.fats), handler.getEndValue(this.fats), this.fats.speedUnit());
+            } else {
+                return data.calcFATS(series, this.start, this.end);
+            }
+        } catch (final Exception e) {
+            logger.debug("FATS calculation failed for {} run {}: {}", Files.stem(data.getFileId()), series, e.getMessage());
+            return Double.NaN;
+        }
+    }
+
+    /**
+     * Force a full recalculation of all FATS values
+     * Used when FATS parameters (start/end/speed unit) change
+     */
+    public void rebuildAll() {
+        fatsDataMap.clear();
+        rebuild();
     }
 
     // set one (calls super)
@@ -201,23 +246,11 @@ public class FATSDataset extends DefaultCategoryDataset {
      * @param series The run number (0-based)
      */
     public void setValue(ECUxDataset data, int series) {
-        try {
-            double value;
-            FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
-
-            if (handler.requiresRpmConversionFields()) {
-                // Use speed-based calculation (will fall back to RPM if no VehicleSpeed)
-                value = data.calcFATSBySpeed(series, handler.getStartValue(this.fats), handler.getEndValue(this.fats), this.fats.speedUnit());
-            } else {
-                // Use RPM-based calculation
-                value = data.calcFATS(series, this.start, this.end);
-            }
+        double value = calculateFATS(data, series);
+        if (!Double.isNaN(value)) {
             setValue(data, series, value);
-
-            // Log successful FATS calculation with concise summary
             logFATSSummary(data, series, value, this.start, this.end);
-        } catch (final Exception e) {
-            logger.debug("FATS calculation failed for {} run {}: {}", Files.stem(data.getFileId()), series, e.getMessage());
+        } else {
             removeValue(data, series);
         }
     }
@@ -236,7 +269,8 @@ public class FATSDataset extends DefaultCategoryDataset {
             this.fats.start(start);
         }
         updateFromFATS();
-        rebuild();
+        // Start changed - recalculate all FATS values
+        rebuildAll();
     }
     public void setEnd(int end) {
         FATS.SpeedUnitHandler handler = this.fats.speedUnit().getHandler();
@@ -250,14 +284,16 @@ public class FATSDataset extends DefaultCategoryDataset {
             this.fats.end(end);
         }
         updateFromFATS();
-        rebuild();
+        // End changed - recalculate all FATS values
+        rebuildAll();
     }
     public int getStart() { return this.start; }
     public int getEnd() { return this.end; }
 
     public void refreshFromFATS() {
         updateFromFATS();
-        rebuild();
+        // FATS parameters changed - need to recalculate all values
+        rebuildAll();
     }
 
     public String getTitle() {

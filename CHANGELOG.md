@@ -5,6 +5,7 @@
 
 ### Fixed
 
+- Fix regression in FATS window that caused FATS times to disappear
 - Do not show "Empty" in chart titles ([Issue #89](https://github.com/nyetwurk/ecuxplot/issues/89))
 - Fix file loading and drag-and-drop for multiple files into Filter, Range, and FATS windows correctly ([Issue #88](https://github.com/nyetwurk/ecuxplot/issues/88))
 - Fix macOS multiple file drag-and-drop: Read all files from URI list instead of just the first one
