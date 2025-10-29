@@ -21,7 +21,6 @@ import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.HashMap;
 
 import org.nyet.util.*;
 import org.nyet.logfile.Dataset;
@@ -37,27 +36,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
      */
     private TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
 
-    // Track series metadata for fast visibility updates
-    // Map: (axis, seriesIndex) -> (filename, rangeIndex)
-    private Map<String, SeriesInfo> seriesInfoMap = new HashMap<>();
-
-    private static class SeriesInfo {
-        final String filename;
-        final Integer range;
-        final int axis;
-        final int seriesIndex;
-
-        SeriesInfo(String filename, Integer range, int axis, int seriesIndex) {
-            this.filename = filename;
-            this.range = range;
-            this.axis = axis;
-            this.seriesIndex = seriesIndex;
-        }
-
-        String getKey() {
-            return axis + ":" + seriesIndex;
-        }
-    }
+    // Track rebuild state to prevent race conditions
+    private SwingWorker<Void, Void> currentRebuildWorker = null;
+    private volatile boolean isRebuilding = false;
 
     private static final long serialVersionUID = 1L;
     // each file loaded has an associated dataset
@@ -223,6 +204,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         // xaxis label depends on units found in files
         updateXAxisLabel();
 
+        // Initialize filter with "show all" for each file that doesn't have selections yet
+        // DO THIS FIRST so visibility is correct when series are added
+        // Note: addDataset() adds ALL ranges regardless of Filter, but Filter controls visibility
+        initializeFilterSelections();
+
         // Add all the data we just finished loading fom the files
         addChartYFromPrefs();
 
@@ -265,8 +251,31 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.menuBar.add(this.yAxis[0], 5); // Insert after X Axis
         this.menuBar.add(this.yAxis[1], 6); // Insert after Y Axis
 
-        // Initialize filter with "show all" for each file that doesn't have selections yet
-        // DO THIS FIRST so the chart update has correct filter selections
+        // For initial file load, do synchronous update to avoid callback complexity
+        // Ranges are already built during dataset construction, so we can proceed directly
+        updateChartForNewFiles();
+
+        // Hide/unhide filenames in the legend
+        final XYPlot plot = this.chartPanel.getChart().getXYPlot();
+        for(int axis=0;axis<plot.getDatasetCount();axis++) {
+            final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
+            for(int series=0;series<pds.getSeriesCount();series++) {
+                final Object seriesKey = pds.getSeriesKey(series);
+                if(seriesKey instanceof Dataset.Key) {
+                    final Dataset.Key ykey = (Dataset.Key)seriesKey;
+                    if(this.fileDatasets.size()==1) ykey.hideFilename();
+                    else ykey.showFilename();
+                }
+            }
+        }
+    }
+
+    /**
+     * Initialize filter selections for all loaded files.
+     * Sets all ranges as selected for files that don't have selections yet.
+     * This ensures charts display all ranges by default.
+     */
+    private void initializeFilterSelections() {
         logger.debug("Initializing filter selections for {} files", fileDatasets.size());
         for (Map.Entry<String, ECUxDataset> entry : this.fileDatasets.entrySet()) {
             String filename = entry.getValue().getFileId();
@@ -290,24 +299,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 logger.debug("  {} already has {} selections, skipping", filename, existingSelections.size());
             }
         }
-
-        // For initial file load, do synchronous update to avoid callback complexity
-        // Ranges are already built during dataset construction, so we can proceed directly
-        updateChartForNewFiles();
-
-        // Hide/unhide filenames in the legend
-        final XYPlot plot = this.chartPanel.getChart().getXYPlot();
-        for(int axis=0;axis<plot.getDatasetCount();axis++) {
-            final org.jfree.data.xy.XYDataset pds = plot.getDataset(axis);
-            for(int series=0;series<pds.getSeriesCount();series++) {
-                final Object seriesKey = pds.getSeriesKey(series);
-                if(seriesKey instanceof Dataset.Key) {
-                    final Dataset.Key ykey = (Dataset.Key)seriesKey;
-                    if(this.fileDatasets.size()==1) ykey.hideFilename();
-                    else ykey.showFilename();
-                }
-            }
-        }
     }
 
     /**
@@ -320,14 +311,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
         logger.debug("updateChartForNewFiles: Updating chart with {} files", fileDatasets.size());
 
-        // Clear series tracking when updating chart
-        seriesInfoMap.clear();
-
         WaitCursor.startWaitCursor(this);
         try {
             // Create FATSDataset if it doesn't exist
             if (this.fatsDataset == null && !this.fileDatasets.isEmpty()) {
-                logger.debug("Creating new FATSDataset");
                 this.fatsDataset = new FATSDataset(this.fileDatasets, this.fats, this.filter);
 
                 // Update Range Selector window if it's open
@@ -336,12 +323,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 }
             } else if (this.fatsDataset != null && !this.fileDatasets.isEmpty()) {
                 // Rebuild existing FATS dataset when new files are loaded
-                logger.debug("Rebuilding existing FATSDataset");
                 this.fatsDataset.rebuild();
             }
 
             final XYPlot plot = this.chartPanel.getChart().getXYPlot();
-            logger.debug("Updating {} axes with current data", plot.getDatasetCount());
 
             // Rebuild each axis by re-adding all Y-keys from preferences
             for(int axis=0;axis<plot.getDatasetCount();axis++) {
@@ -356,30 +341,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                     // Add data for each loaded file
                     for (final Map.Entry<String, ECUxDataset> entry : this.fileDatasets.entrySet()) {
-                        final String filename = entry.getKey();
                         final ECUxDataset data = entry.getValue();
 
                         // Create base key for this Y-variable
                         final Dataset.Key baseKey = data.new Key(yvar, data);
                         final Comparable<?> xkey = this.xkey();
 
-                        // addDataset will read the filter and add only selected ranges
-                        ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey, this.filter, filename);
+                        // addDataset adds ALL ranges - Filter controls visibility via updateChartVisibility()
+                        ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey);
                     }
                 }
 
                 plot.setDataset(axis, newdataset);
-                logger.debug("  Axis {}: {} series added", axis, newdataset.getSeriesCount());
-
-                // Track series metadata for this dataset
-                for(int series=0; series<newdataset.getSeriesCount(); series++) {
-                    final Object seriesKey = newdataset.getSeriesKey(series);
-                    if(seriesKey instanceof Dataset.Key) {
-                        final Dataset.Key key = (Dataset.Key)seriesKey;
-                        final SeriesInfo info = new SeriesInfo(key.getFilename(), key.getRange(), axis, series);
-                        seriesInfoMap.put(info.getKey(), info);
-                    }
-                }
 
                 // Apply custom axis range calculation for better padding with negative values
                 ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
@@ -387,7 +360,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             updateXAxisLabel(plot);
             updatePlotTitleAndYAxisLabels(plot);
 
-            logger.debug("Chart update complete, updating windows");
             // Update all open windows to show new file data
             updateOpenWindows();
 
@@ -557,9 +529,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
         // Clear FATS data and related caches
         this.fatsDataset = null;
-
-        // Clear series tracking
-        this.seriesInfoMap.clear();
 
         // Clear filter range selections
         this.filter.clearAllRangeSelections();
@@ -993,7 +962,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
         /* returns the series indicies of the dataset we just added */
         final Integer[] series =
-            ECUxChartFactory.addDataset(d, data, this.xkey(), ykey, this.filter);
+            ECUxChartFactory.addDataset(d, data, this.xkey(), ykey);
 
         /* set the color for those series */
         if (series.length > 0) {
@@ -1016,29 +985,56 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     /**
      * Update chart visibility based on current filter selections
      * Does NOT rebuild ranges or FATS - only toggles visibility of existing series
+     *
+     * Iterates chart datasets directly to determine visibility - no cache needed.
      */
     public void updateChartVisibility() {
-        if(this.chartPanel==null || seriesInfoMap.isEmpty()) return;
+        logger.debug(">>> updateChartVisibility() [Thread: {}] - isRebuilding={}",
+            Thread.currentThread().getName(), isRebuilding);
+
+        if(this.chartPanel==null) {
+            return;
+        }
+
+        // If rebuild is in progress, defer visibility update
+        // The rebuild will set correct visibility when it completes
+        if(isRebuilding) {
+            logger.warn("  RACE CONDITION: updateChartVisibility() called during rebuild - deferring visibility update");
+            return;
+        }
 
         final XYPlot plot = this.chartPanel.getChart().getXYPlot();
 
-        // Use pre-computed series info for fast updates
-        for(SeriesInfo info : seriesInfoMap.values()) {
-            // Check if this range should be visible
-            Set<Integer> selectedRanges = this.filter.getSelectedRanges(info.filename);
-            boolean shouldBeVisible;
+        // Iterate datasets directly - no cache needed
+        for(int axis = 0; axis < plot.getDatasetCount(); axis++) {
+            final DefaultXYDataset dataset = (DefaultXYDataset)plot.getDataset(axis);
+            if(dataset == null) continue;
 
-            if(info.range != null && info.range >= 0) {
-                // Multiple range file - check if specific range is selected
-                shouldBeVisible = selectedRanges.contains(info.range);
-            } else {
-                // Single range file - visible if any range for this file is selected
-                shouldBeVisible = !selectedRanges.isEmpty();
+            final XYItemRenderer renderer = plot.getRenderer(axis);
+
+            for(int series = 0; series < dataset.getSeriesCount(); series++) {
+                final Object seriesKey = dataset.getSeriesKey(series);
+                if(seriesKey instanceof Dataset.Key) {
+                    final Dataset.Key key = (Dataset.Key)seriesKey;
+                    final String filename = key.getFilename();
+                    final Integer range = key.getRange();
+
+                    // Check if this range should be visible
+                    Set<Integer> selectedRanges = this.filter.getSelectedRanges(filename);
+                    boolean shouldBeVisible;
+
+                    if(range != null && range >= 0) {
+                        // Multiple range file - check if specific range is selected
+                        shouldBeVisible = selectedRanges.contains(range);
+                    } else {
+                        // Single range file - visible if any range for this file is selected
+                        shouldBeVisible = !selectedRanges.isEmpty();
+                    }
+
+                    // Toggle visibility
+                    renderer.setSeriesVisible(series, shouldBeVisible);
+                }
             }
-
-            // Toggle visibility
-            final XYItemRenderer renderer = plot.getRenderer(info.axis);
-            renderer.setSeriesVisible(info.seriesIndex, shouldBeVisible);
         }
 
         // Update axis ranges after visibility changes
@@ -1058,8 +1054,24 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         }
     }
 
+
     public void rebuild(Runnable callback, JFrame... additionalWindows) {
-        if(this.chartPanel==null) return;
+        logger.debug(">>> rebuild() [Thread: {}] - callback={}, additionalWindows={}",
+            Thread.currentThread().getName(), callback != null, additionalWindows.length);
+
+        if(this.chartPanel==null) {
+            return;
+        }
+
+        // Cancel any in-progress rebuild to prevent concurrent rebuilds
+        // WARNING: If this triggers, it indicates concurrent rebuild() calls
+        synchronized(this) {
+            if(currentRebuildWorker != null && !currentRebuildWorker.isDone()) {
+                logger.warn("  RACE CONDITION: Cancelling previous rebuild worker - concurrent rebuild() calls detected");
+                currentRebuildWorker.cancel(true);
+            }
+            isRebuilding = true;
+        }
 
         // Start wait cursor on main window and any additional windows
         WaitCursor.startWaitCursor(this);
@@ -1069,26 +1081,42 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             }
         }
 
-        // Clear series tracking when rebuilding
-        seriesInfoMap.clear();
 
         // Move heavy work to background thread to keep UI responsive
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        final SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
+                // Check for cancellation during background work
+                int datasetCount = 0;
                 for(final ECUxDataset data : fileDatasets.values()) {
+                    if(isCancelled()) {
+                        logger.warn("  [BACKGROUND] Rebuild cancelled during range building (processed {} datasets)", datasetCount);
+                        return null;
+                    }
+                    datasetCount++;
                     data.buildRanges();
                 }
+                logger.debug("  [BACKGROUND] doInBackground() complete - processed {} datasets", datasetCount);
                 return null;
             }
 
             @Override
             protected void done() {
+                logger.debug("  [EDT] done() called [Thread: {}]", Thread.currentThread().getName());
                 try {
-                    // Check for exceptions during background work
+                    // Check for cancellation or exceptions during background work
+                    if(isCancelled()) {
+                        logger.warn("  [EDT] Rebuild was cancelled");
+                        return;
+                    }
                     get(); // This will throw any exception that occurred in doInBackground()
                 } catch (final Exception e) {
-                    logger.error("Error building ranges: {}", e.getMessage(), e);
+                    // Ignore CancellationException if we were cancelled
+                    if(!isCancelled()) {
+                        logger.error("  [EDT] Error building ranges: {}", e.getMessage(), e);
+                    } else {
+                        logger.debug("  [EDT] Exception after cancellation (ignoring): {}", e.getMessage());
+                    }
                     // Continue - partial data is better than nothing
                 }
 
@@ -1124,29 +1152,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                             // Add data for each loaded file
                             for (final Map.Entry<String, ECUxDataset> entry : ECUxPlot.this.fileDatasets.entrySet()) {
-                                final String filename = entry.getKey();
                                 final ECUxDataset data = entry.getValue();
 
                                 // Create base key for this Y-variable
                                 final Dataset.Key baseKey = data.new Key(yvar, data);
                                 final Comparable<?> xkey = ECUxPlot.this.xkey();
 
-                                // addDataset will read the filter and add only selected ranges
-                                ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey, ECUxPlot.this.filter, filename);
+                                // addDataset adds ALL ranges - Filter controls visibility via updateChartVisibility()
+                                ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey);
                             }
                         }
 
                         plot.setDataset(axis, newdataset);
-
-                        // Track series metadata for this dataset
-                        for(int series=0; series<newdataset.getSeriesCount(); series++) {
-                            final Object seriesKey = newdataset.getSeriesKey(series);
-                            if(seriesKey instanceof Dataset.Key) {
-                                final Dataset.Key key = (Dataset.Key)seriesKey;
-                                final SeriesInfo info = new SeriesInfo(key.getFilename(), key.getRange(), axis, series);
-                                seriesInfoMap.put(info.getKey(), info);
-                            }
-                        }
 
                         // Apply custom axis range calculation for better padding with negative values
                         ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
@@ -1161,6 +1178,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     logger.error("Error updating chart: {}", e.getMessage(), e);
                     // Continue - WaitCursor will be stopped in finally block
                 } finally {
+                    // Clear rebuild flag
+                    synchronized(ECUxPlot.this) {
+                        isRebuilding = false;
+                        if(ECUxPlot.this.currentRebuildWorker == this) {
+                            ECUxPlot.this.currentRebuildWorker = null;
+                        }
+                    }
+
                     // Stop wait cursor on all windows
                     WaitCursor.stopWaitCursor(ECUxPlot.this);
                     for (JFrame window : additionalWindows) {
@@ -1169,12 +1194,17 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                         }
                     }
                     // Execute callback after rebuild is complete
-                    if (callback != null) {
+                    if (callback != null && !isCancelled()) {
                         callback.run();
                     }
                 }
             }
         };
+
+        // Store reference to worker for cancellation
+        synchronized(this) {
+            currentRebuildWorker = worker;
+        }
         worker.execute();
     }
 
@@ -1211,6 +1241,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         if(add) {
             final Dataset.Key key = data.new Key(ykey.toString(), data);
             if(this.fileDatasets.size()==1) key.hideFilename();
+
             addDataset(axis, pds, key);
 
             // Restore normal axis behavior
@@ -1223,6 +1254,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             final NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
             domainAxis.setAutoRange(true);
         } else {
+            // Series removal - no cache to maintain, visibility updates read directly from chart
             ECUxChartFactory.removeDataset(pds, ykey);
         }
 
@@ -1278,18 +1310,42 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             return;
         }
 
-        // get rid of everything
-        removeAllY();
+        // Update X-axis if it changed
+        Comparable<?> currentXkey = this.xkey();
+        if (!currentXkey.equals(p.xkey())) {
+            prefsPutXkey(p.xkey());
+            // updateXAxisLabel depends on xkey prefs
+            updateXAxisLabel();
+            // X-axis change requires full rebuild, but we need to update Y-keys prefs first
+            // so rebuild() uses the preset Y-keys
+            prefsPutYkeys(0, p.ykeys(0));
+            prefsPutYkeys(1, p.ykeys(1));
+            // X-axis change requires full rebuild - this will rebuild with new Y-keys from prefs
+            rebuild();
+            // Rebuild complete - continue with menu updates below
+        } else {
+            // X-axis unchanged - remove all, then add preset items (simple and deterministic)
+            for (int axis = 0; axis < 2; axis++) {
+                // Remove all current Y-keys
+                Comparable<?>[] currentYkeys = this.ykeys(axis);
+                for (Comparable<?> ykey : currentYkeys) {
+                    editChartY(ykey, axis, false);
+                }
 
-        prefsPutXkey(p.xkey());
-        // updateXAxisLabel depends on xkey prefs
-        updateXAxisLabel();
+                // Add all preset Y-keys (in preset order - deterministic)
+                Comparable<?>[] presetYkeys = p.ykeys(axis);
+                for (Comparable<?> ykey : presetYkeys) {
+                    editChartY(ykey, axis, true);
+                }
 
-        prefsPutYkeys(0,p.ykeys(0));
-        prefsPutYkeys(1,p.ykeys(1));
+                // Update prefs to reflect new state
+                prefsPutYkeys(axis);
+            }
 
-        // addChart depends on the xkey,ykeys put in prefs
-        addChartYFromPrefs();
+            // Apply visibility based on Filter state (Filter controls visibility, not series existence)
+            // Preserve existing Filter selections - presets only change columns, not range selections
+            updateChartVisibility();
+        }
 
         // set up scatter depending on preset
         final boolean s = p.scatter();

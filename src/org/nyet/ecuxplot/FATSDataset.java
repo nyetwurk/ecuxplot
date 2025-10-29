@@ -25,7 +25,8 @@ public class FATSDataset extends DefaultCategoryDataset {
     // Store FATS data keyed by (filename, rangeIndex) for reliable lookup
     private final Map<String, Map<Integer, Double>> fatsDataMap = new HashMap<>();
 
-    // Filter to query which ranges are selected - only show FATS for visible ranges
+    // Filter to query which ranges are selected - only controls FATS window DISPLAY, not calculation
+    // FATS is calculated for ALL ranges regardless of selection
     private Filter filter;
 
     /**
@@ -84,10 +85,24 @@ public class FATSDataset extends DefaultCategoryDataset {
         return false;
     }
 
+    /**
+     * Rebuild FATS dataset with current selections.
+     * CRITICAL: FATS calculation is completely independent of range selection.
+     * - Calculates FATS for ALL ranges (stored in fatsDataMap)
+     * - Filter only controls DISPLAY in FATS window chart (not calculation)
+     * - Range Selector tree queries fatsDataMap directly for all ranges
+     *
+     * Note: This method is called from the EDT. All Swing operations are on EDT,
+     * so there's no true thread concurrency, but there could be order-of-operations
+     * issues if rebuild() is called while another rebuild is in progress.
+     * The calling code (ECUxPlot.rebuild()) handles this by cancelling previous rebuilds.
+     */
     public void rebuild() {
+        logger.debug(">>> FATSDataset.rebuild() [Thread: {}]", Thread.currentThread().getName());
         clear();
 
-        // Ensure map has all FATS values (for tree display), calculate only missing ones
+        // Calculate FATS for ALL ranges (independent of Filter selection)
+        // This ensures fatsDataMap has all values for tree display and quick toggling
         for(final ECUxDataset data : this.fileDatasets.values()) {
             String filename = data.getFileId();
             Map<Integer, Double> fileData = fatsDataMap.computeIfAbsent(filename, k -> new HashMap<>());
@@ -105,9 +120,13 @@ public class FATSDataset extends DefaultCategoryDataset {
         }
 
         // Populate chart with selected ranges only
+        int fileCount = 0;
         for(final ECUxDataset data : this.fileDatasets.values()) {
+            fileCount++;
             setValue(data);
         }
+        logger.debug("<<< FATSDataset.rebuild() complete - processed {} files, fatsDataMap entries: {}",
+            fileCount, fatsDataMap.size());
     }
 
     /**
@@ -216,15 +235,17 @@ public class FATSDataset extends DefaultCategoryDataset {
 
     // helpers
     /**
-     * Set FATS data for all runs in a dataset
-     * Only adds ranges that are selected in the filter
+     * Add FATS data to chart dataset for selected ranges only.
+     * Note: FATS is calculated for ALL ranges in rebuild() and stored in fatsDataMap.
+     * This method only controls what appears in the FATS window chart - Filter controls display, not calculation.
      * @param data The dataset containing FATS runs
      */
     public void setValue(ECUxDataset data) {
         try { removeColumn(Files.stem(data.getFileId()));
         } catch (final Exception e) {}
 
-        // Only add FATS data for selected ranges
+        // Only add FATS data for selected ranges (display in FATS window)
+        // Calculation happens independently in rebuild() for ALL ranges
         if (filter != null) {
             String filename = data.getFileId();
             Set<Integer> selectedRanges = filter.getSelectedRanges(filename);

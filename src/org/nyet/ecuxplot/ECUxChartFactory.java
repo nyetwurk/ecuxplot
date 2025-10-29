@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.ArrayList;
-import java.util.Set;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -222,26 +221,20 @@ public class ECUxChartFactory {
             renderer.setSeriesStroke(serie, strokes[index%strokes.length]);
     }
 
-    public static Integer[] addDataset(DefaultXYDataset d, ECUxDataset data,
-                    Comparable<?> xkey, Dataset.Key ykey, Filter filter) {
-        return addDataset(d, data, xkey, ykey, filter, ykey.getFilename());
-    }
-
     /**
-     * Add dataset with support for per-file range selection
+     * Add dataset by adding ALL ranges for the given Y-key.
+     * Filter only controls visibility via updateChartVisibility(), not series existence.
      * @param d The chart dataset to add to
      * @param data The ECUxDataset containing the data
      * @param xkey The X-axis key
      * @param ykey The Y-axis key
-     * @param filter The filter containing range selection information
-     * @param filename The filename for per-file range selection
      * @return Array of series indices added
      */
     public static Integer[] addDataset(DefaultXYDataset d, ECUxDataset data,
-                    Comparable<?> xkey, Dataset.Key ykey, Filter filter, String filename) {
+                    Comparable<?> xkey, Dataset.Key ykey) {
         final ArrayList<Integer> ret = new ArrayList<Integer>();
         final ArrayList<Dataset.Range> ranges = data.getRanges();
-        // add empty data in case we turn off filter, or we get some error
+        // add empty data in case of error
         final double[][] empty = {{},{}};
         if(ranges.size()==0) {
             final Dataset.Key key = data.new Key(ykey, data);
@@ -251,23 +244,9 @@ public class ECUxChartFactory {
             return ret.toArray(new Integer[0]);
         }
 
-        // Get per-file range selections from Range Selector
-        Set<Integer> selectedRanges = filter.getSelectedRanges(filename);
-
-        // Range Selector is the only source of truth for dataset visibility
-        // If no selections exist, show nothing
-        if (selectedRanges.isEmpty()) {
-            return ret.toArray(new Integer[0]);
-        }
-
-        // Display only the selected ranges
-        Set<Integer> rangesToDisplay = selectedRanges;
-
-        for (Integer i : rangesToDisplay) {
-            // Validate range index to prevent IndexOutOfBoundsException
-            if (i < 0 || i >= ranges.size()) {
-                continue;
-            }
+        // Add ALL ranges to the dataset - Filter only controls visibility, not existence
+        // This ensures all series exist in the chart, then updateChartVisibility() controls what's shown
+        for (int i = 0; i < ranges.size(); i++) {
 
             final Dataset.Key key = data.new Key(ykey, i, data);
             if(ranges.size()==1) key.hideRange();
