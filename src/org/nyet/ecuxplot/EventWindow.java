@@ -223,12 +223,20 @@ public class EventWindow extends JFrame {
 
         // Export button
         exportButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
+            // Get last save directory from preferences
+            final java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(org.nyet.ecuxplot.ECUxPlot.class);
+            final String lastDir = prefs.get("chooserDirSave",
+                System.getProperty("user.home"));
+
+            JFileChooser fileChooser = new JFileChooser(lastDir);
             fileChooser.setDialogTitle("Export Events");
             fileChooser.setSelectedFile(new java.io.File("events_" +
                 new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".txt"));
 
             if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                // Save last save directory to preferences
+                prefs.put("chooserDirSave", fileChooser.getCurrentDirectory().toString());
+
                 try (FileWriter writer = new FileWriter(fileChooser.getSelectedFile())) {
                     writer.write(logTextArea.getText());
                     logger.info("Events exported to: {}", fileChooser.getSelectedFile().getAbsolutePath());

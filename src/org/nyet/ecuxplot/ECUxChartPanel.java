@@ -85,7 +85,12 @@ public class ECUxChartPanel extends ChartPanel {
     }
 
     public void doSaveAs(String fname) throws IOException {
-        final JFileChooser fileChooser = new JFileChooser();
+        // Get last save directory from preferences
+        final java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(org.nyet.ecuxplot.ECUxPlot.class);
+        final String lastDir = prefs.get("chooserDirSave",
+            System.getProperty("user.home"));
+
+        final JFileChooser fileChooser = new JFileChooser(lastDir);
         fileChooser.setSelectedFile(new File(fname + ".png"));
         final ExtensionFileFilter filter = new ExtensionFileFilter(
                localizationResources.getString("PNG_Image_Files"), ".png");
@@ -93,6 +98,9 @@ public class ECUxChartPanel extends ChartPanel {
 
         final int option = fileChooser.showSaveDialog(this);
         if (option == JFileChooser.APPROVE_OPTION) {
+           // Save last save directory to preferences
+           prefs.put("chooserDirSave", fileChooser.getCurrentDirectory().toString());
+
            String filename = fileChooser.getSelectedFile().getPath();
            if (isEnforceFileExtensions()) {
                if (!filename.endsWith(".png")) {
