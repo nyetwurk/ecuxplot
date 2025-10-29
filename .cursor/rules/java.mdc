@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+---
+
+# Public API restrictions - NONE
+
+Project is standalone. None of the API is public or used by other projects. Remove all API methods, instances, classes, overloaded functions, and parameters/arguments that are not used in the project.
