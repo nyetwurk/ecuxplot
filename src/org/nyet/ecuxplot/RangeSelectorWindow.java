@@ -1365,7 +1365,9 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         int maxLength = 0;
 
         // Try different prefix lengths
-        for (int len = 4; len <= filename.length() / 2; len++) {
+        // Check all possible lengths up to the filename length itself
+        // (allow any length prefix that ends at a logical boundary)
+        for (int len = 3; len < filename.length(); len++) {
             String candidatePrefix = filename.substring(0, len);
 
             // Count how many unprocessed files share this prefix
@@ -1433,6 +1435,12 @@ public class RangeSelectorWindow extends JFrame implements FileDropHost {
         }
 
         // Add files that didn't fit into any sub-group
+        // Only split into individuals if we found at least one sub-group
+        if (subGroups.isEmpty()) {
+            // No sub-groups created - return empty to indicate no beneficial split
+            return subGroups;
+        }
+
         for (FileNode file : files) {
             boolean inSubGroup = false;
             for (List<FileNode> subGroup : subGroups.values()) {
