@@ -209,7 +209,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
         // Initialize filter with "show all" for each file that doesn't have selections yet
         // DO THIS FIRST so visibility is correct when series are added
-        // Note: addDataset() adds ALL ranges regardless of Filter, but Filter controls visibility
+        // Note: Series are added with all ranges, and visibility is automatically applied
+        // via addDataset() wrapper or updateChartVisibility() for bulk operations
         initializeFilterSelections();
 
         // Add all the data we just finished loading fom the files
@@ -955,6 +956,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         plot.getDomainAxis().setLabel(label);
     }
 
+    /**
+     * Add dataset with automatic filter visibility application.
+     * This is the primary method for adding series - it ensures visibility
+     * is correctly applied based on current filter state.
+     * @param axis The axis index to add the series to
+     * @param d The dataset to add series to
+     * @param ykey The key identifying the Y-variable and file
+     */
     private void addDataset(int axis, DefaultXYDataset d,
             Dataset.Key ykey) {
         // ugh. need an index for axis stroke, so we cant just do a get.
@@ -985,6 +994,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
             // Apply elided legend labels after paint/stroke settings
             ECUxChartFactory.applyElidedLegendLabels(this.chartPanel.getChart());
+
+            // Apply filter visibility rules to newly added series automatically
+            applyVisibilityToSeries(axis, d, series);
         }
     }
 
@@ -993,10 +1005,71 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     /**
+     * Calculate visibility for a series based on current filter state.
+     * Extracted for reuse by both incremental and bulk visibility updates.
+     * @param filename The filename of the series
+     * @param range The range index, or null for single-range files
+     * @return true if the series should be visible
+     */
+    private boolean calculateVisibility(String filename, Integer range) {
+        if (!this.filter.enabled()) {
+            // Filter disabled - Range Selector becomes file selector
+            // Check if this file is selected
+            return this.filter.isFileSelected(filename);
+        } else {
+            // Filter enabled - respect Range Selector range selections
+            Set<Integer> selectedRanges = this.filter.getSelectedRanges(filename);
+
+            if(range != null && range >= 0) {
+                // Multiple range file - check if specific range is selected
+                return selectedRanges.contains(range);
+            } else {
+                // Single range file - visible if any range for this file is selected
+                return !selectedRanges.isEmpty();
+            }
+        }
+    }
+
+    /**
+     * Apply filter visibility rules to specific newly-added series.
+     * More efficient than updateChartVisibility() which processes all series.
+     * Called automatically after adding series via addDataset().
+     * @param axis The axis index
+     * @param dataset The dataset containing the series
+     * @param seriesIndices Array of series indices to update
+     */
+    private void applyVisibilityToSeries(int axis, DefaultXYDataset dataset, Integer[] seriesIndices) {
+        if(this.chartPanel == null) {
+            return;
+        }
+
+        final XYPlot plot = this.chartPanel.getChart().getXYPlot();
+        final XYItemRenderer renderer = plot.getRenderer(axis);
+
+        for(int seriesIndex : seriesIndices) {
+            final Object seriesKey = dataset.getSeriesKey(seriesIndex);
+            if(seriesKey instanceof Dataset.Key) {
+                final Dataset.Key key = (Dataset.Key)seriesKey;
+                final String filename = key.getFilename();
+                final Integer range = key.getRange();
+
+                // Calculate and apply visibility
+                boolean shouldBeVisible = calculateVisibility(filename, range);
+                renderer.setSeriesVisible(seriesIndex, shouldBeVisible);
+            }
+        }
+
+        // Update axis ranges after visibility changes
+        ECUxChartFactory.applyCustomAxisRange(this.chartPanel.getChart(), axis, dataset);
+    }
+
+
+    /**
      * Update chart visibility based on current filter selections
      * Does NOT rebuild ranges or FATS - only toggles visibility of existing series
      *
      * Iterates chart datasets directly to determine visibility - no cache needed.
+     * For newly added series, visibility is applied automatically via applyVisibilityToSeries().
      */
     public void updateChartVisibility() {
         logger.debug(">>> updateChartVisibility() [Thread: {}] - isRebuilding={}",
@@ -1029,25 +1102,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     final String filename = key.getFilename();
                     final Integer range = key.getRange();
 
-                    // Check if this range should be visible
-                    boolean shouldBeVisible;
-
-                    if (!this.filter.enabled()) {
-                        // Filter disabled - Range Selector becomes file selector
-                        // Check if this file is selected
-                        shouldBeVisible = this.filter.isFileSelected(filename);
-                    } else {
-                        // Filter enabled - respect Range Selector range selections
-                        Set<Integer> selectedRanges = this.filter.getSelectedRanges(filename);
-
-                        if(range != null && range >= 0) {
-                            // Multiple range file - check if specific range is selected
-                            shouldBeVisible = selectedRanges.contains(range);
-                        } else {
-                            // Single range file - visible if any range for this file is selected
-                            shouldBeVisible = !selectedRanges.isEmpty();
-                        }
-                    }
+                    // Calculate visibility using shared method
+                    boolean shouldBeVisible = calculateVisibility(filename, range);
 
                     // Toggle visibility
                     renderer.setSeriesVisible(series, shouldBeVisible);
@@ -1176,21 +1232,26 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                                 final Dataset.Key baseKey = data.new Key(yvar, data);
                                 final Comparable<?> xkey = ECUxPlot.this.xkey();
 
-                                // addDataset adds ALL ranges - Filter controls visibility via updateChartVisibility()
+                                // addDataset adds ALL ranges - visibility will be applied after dataset is set
                                 ECUxChartFactory.addDataset(newdataset, data, xkey, baseKey);
                             }
                         }
 
                         plot.setDataset(axis, newdataset);
 
-                        // Apply custom axis range calculation for better padding with negative values
-                        ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
+                        // Apply visibility immediately to all series in new dataset (before axis range calculation)
+                        // This ensures filter is applied even if updateChartVisibility() gets deferred
+                        Integer[] allSeriesIndices = new Integer[newdataset.getSeriesCount()];
+                        for(int i = 0; i < newdataset.getSeriesCount(); i++) {
+                            allSeriesIndices[i] = i;
+                        }
+                        applyVisibilityToSeries(axis, newdataset, allSeriesIndices);
                     }
 
                     updateXAxisLabel(plot);
 
-                    // Update visibility based on filter state (filter disabled = show all, enabled = respect Range Selector)
-                    updateChartVisibility();
+                    // Visibility already applied via applyVisibilityToSeries() for each dataset
+                    // No need to call updateChartVisibility() here - it's already done
 
                     // Don't call updateOpenWindows() here - window updates are handled by callbacks
                     // This prevents Range Selector tree from being rebuilt when user changes selections
@@ -1251,6 +1312,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private void editChartY(Comparable<?> ykey, int axis, boolean add) {
         for(final ECUxDataset data : this.fileDatasets.values())
             editChartY(data, ykey, axis, add);
+
+        // Note: Visibility is now automatically applied when series are added via addDataset()
+        // No need to call updateChartVisibility() here - it's handled incrementally
     }
 
     private void editChartY(ECUxDataset data, Comparable<?> ykey, int axis,
