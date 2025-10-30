@@ -16,20 +16,32 @@ ECUxPlot uses a YAML-driven configuration system for detecting and parsing vario
 
 ### Detection Process
 
-- **Comment Detection**: Scan comment lines for regex patterns defined in `comment_signatures`
-- **Field Detection**: Scan CSV header lines for regex patterns defined in `field_signatures`
-- **Logger Selection**: Use detected logger type or fall back to DEFAULT
-- **Parsing**: Apply logger-specific parsing logic based on detected type
+The system uses a two-phase detection mechanism that scans comment lines first, then CSV header fields.
+
+**Process Flow** (See `ECUxDataset.java`):
+
+1. Check if logger type is already detected
+2. **Phase 1**: Scan comment lines for comment signatures (raw text, not CSV)
+   - Location: `DataLogger.detectComment(String comment)`
+   - Checks each comment line against regex patterns in `comment_signatures`
+   - Returns first logger name that matches
+3. **Phase 2**: Scan CSV header fields for field signatures (fallback)
+   - Location: `DataLogger.detectField(String[] fields)`
+   - Checks each field against regex patterns in `field_signatures`
+   - Supports any-column or specific-column matching via `column_index`
+4. Default to UNKNOWN if no match found
 
 ## YAML Configuration Structure
 
-### Field Categories (Shared)
+### Field Preferences (Shared)
+
+Field preferences define canonical field names for common categories. These are single canonical field names (not arrays) that logger-specific field variations are aliased to via `loggers.yaml`.
 
 ```yaml
-field_categories:
-  pedal: ["AcceleratorPedalPosition", "AccelPedalPosition", ...]
-  throttle: ["ThrottlePlateAngle", "Throttle Angle", ...]
-  gear: ["Gear", "SelectedGear", "Engaged Gear"]
+field_preferences:
+  pedal: "AccelPedalPosition"
+  throttle: "ThrottlePlateAngle"
+  gear: "Gear"
 ```
 
 ### Logger Definitions
@@ -124,9 +136,11 @@ header_format: "id2,id,u" # Custom order for specific loggers
 
 **Tokens**:
 
+- `g`: Group line (used by VCDS/VCDS_LEGACY for group markers)
 - `id`: Field names (original field names from CSV)
 - `u`: Units (units for each field)
 - `id2`: Secondary field information (varies by logger type)
+- `u2`: Secondary units line (used by VCDS_LEGACY)
 
 ### ID2 Field Processing
 
@@ -164,15 +178,64 @@ When `field_transformations` has `if_empty: true`, empty field names use the ori
 
 ### Field Aliases
 
-Map original field names to standardized names:
+Aliases map logger-specific field names to standardized canonical names. The system uses a multi-tier approach:
+
+**Processing Order** (Location: `DataLogger.HeaderData.processAliases()`):
+
+1. **ME7_ALIASES** - Fast O(1) hash map lookup for ME7L variable names (201 aliases)
+   - Exact string matches only
+   - Example: `"dwkrz_0"` → `"IgnitionRetardCyl1"`
+2. **Logger-Specific Aliases** - Regex patterns specific to detected logger type
+3. **DEFAULT Aliases** - Common aliases applied to all loggers
+
+**Configuration**:
 
 ```yaml
-aliases:
-  - ["^TimeStamp$", "TIME"]
-  - ["^N$", "RPM"]
-  - ["^MAP$", "BoostPressureActual"]
-  - ["^Engine [Ss]peed.*", "RPM"]  # Regex patterns supported
+ME7_ALIASES:
+  aliases:
+    - ["dwkrz_0", "IgnitionRetardCyl1"]
+    - ["nmot_w", "RPM"]
+    - ["wped_w", "AccelPedalPosition"]
+
+JB4:
+  aliases:
+    - ["timestamp", "TIME"]
+    - ["rpm", "RPM"]
+
+DEFAULT:
+  aliases:
+    - ["[Tt]ime", "TIME"]
+    - ["[Ee]ngine [Ss]peed", "RPM"]
 ```
+
+**Unique Column Handling**: The alias process ensures all columns have unique names by appending a number suffix if duplicates are detected.
+
+## Unit Determination
+
+Unit determination uses a multi-step fallback strategy to extract and normalize units from log files.
+
+### Unit Processing Order
+
+**Location**: `DataLogger.processHeaders()` - executed in this order:
+
+1. **Unit Regex Extraction** (`unit_regex`) - FIRST, before aliasing
+   - Extracts field names, units, and ME7L variables from complex formats
+   - Example: `"Boost Pressure(mBar) BoostPressure"` → `id: "Boost Pressure"`, `u: "mBar"`, `id2: "BoostPressure"`
+   - Used by VOLVOLOGGER
+2. **Apply Aliases** - Generate canonical field names
+3. **Logger-Specific Processing** - Custom logic (e.g., VCDS group handling)
+4. **Header Format Token Parsing** - Extract units from `header_format` tokens (`u`, `u2`)
+   - Triggered when logger has `header_format` with `u` token
+5. **General Unit Parsing** - Extract units from field names in format `"FieldName (unit)"`
+   - Triggered when logger doesn't have `header_format` with `u` token
+6. **Field Transformations** - Apply prepend/append
+7. **Unit Normalization** - Normalize unit strings (`Units.normalize()`)
+   - Removes parentheses: `"(sec)"` → `"sec"`
+   - Normalizes variations: `"rpm"` → `"RPM"`, `"degC"` → `"°C"`, `"hPa"` → `"mBar"`
+8. **Unit Inference** - Infer units from field names when normalization returns empty (`Units.find()`)
+9. **Ensure Unique Names** - Make columns unique LAST
+
+**Implementation**: See `DataLogger.java` and `Units.java` for full implementation details.
 
 ## Logger-Specific Parsing
 
@@ -388,11 +451,68 @@ case "NEW_LOGGER": {
 - More sophisticated field transformation patterns
 - Unit extraction patterns in YAML
 
+## Field Transformations
+
+Field transformations allow prepending or appending text to field names with optional conditional logic.
+
+### Processing Flow
+
+**Location**: `DataLogger.applyFieldTransformations()` - applied AFTER aliases but BEFORE final unit processing
+
+**Process Order**:
+
+1. Check exclusion list
+2. Check `if_empty` condition
+3. Apply prepend/append
+
+### Configuration
+
+```yaml
+field_transformations:
+  prepend: "PREFIX "         # Text to prepend
+  append: " SUFFIX"          # Text to append
+  if_empty: true             # Optional: only transform empty fields
+  exclude_fields:           # Optional: fields to skip
+    - "FIELD1"
+```
+
+### Use Cases
+
+- **ME7LOGGER**: Conditional prepend - `if_empty: true` prepends "ME7L " to empty fields using `id2` value
+- **ZEITRONIX**: Prepend "Zeitronix " to all fields except RPM (excluded)
+- **VCDS**: Group disambiguation handled in `VCDSHeaderProcessor.java`, not via field transformations
+
+**Important**: Transformations happen BEFORE final unit processing so unit inference can work with transformed field names.
+
+## Complete Processing Pipeline
+
+```text
+1. DETECTION
+   ├── Comment signatures → Logger type
+   └── Field signatures → Logger type (fallback)
+        ↓
+2. HEADER PARSING
+   ├── Skip lines/regex → Find header lines
+   ├── Parse header format → Extract id, u, id2, u2, g arrays
+        ↓
+3. FIELD PROCESSING
+   ├── Unit regex → Extract units from complex formats FIRST
+   ├── Aliases → Map to canonical names (ME7_ALIASES → Logger → DEFAULT)
+   ├── Logger-specific processing → Custom logic (VCDS in VCDSHeaderProcessor.java)
+   ├── General unit parsing → Extract from field names (if needed)
+   ├── Field transformations → Prepend/append
+   ├── Unit processing → Normalize → Infer
+   └── Ensure unique names → Make columns unique LAST
+        ↓
+4. FINAL RESULT
+   └── DatasetId[] → Ready for data loading
+```
+
 ## Key Design Principles
 
-- **YAML-Driven**: All configuration in YAML, minimal hardcoded logic
-- **All Fields Optional**: Every field has sensible defaults
-- **Hybrid Approach**: YAML for simple cases, case statements for complex logic
-- **Backward Compatible**: Existing functionality preserved
-- **Test-Driven**: All changes validated against comprehensive test suite
-- **Build Integration**: Automatic YAML-to-XML conversion during build
+- **YAML-Driven**: Most configuration in YAML, minimal hardcoded logic
+- **Multi-Tier Fallbacks**: Units and aliases use multiple fallback strategies
+- **Flexible Header Formats**: Universal `header_format` tokens handle any structure
+- **Conditional Transformations**: Smart prepend/append with exclusion and empty-field logic
+- **Performance Optimized**: ME7_ALIASES uses hash map for O(1) lookup
+- **Backward Compatible**: Defaults ensure existing files continue to work

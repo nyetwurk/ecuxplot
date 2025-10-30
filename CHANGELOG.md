@@ -3,6 +3,25 @@
 
 ## [Unreleased]
 
+### Added
+
+- VCDS legacy support with "g" and "u2" header columns
+- VCDSHeaderProcessor.java - separate file for all VCDS-specific header processing logic
+- Legacy VCDS test data files (vcds-002-031.csv, vcds-003-020-026.csv, vcds-003-114-020.csv, vcds-115-118.csv)
+
+### Changed
+
+- Re-ordered header parsing pipeline:
+  - Extract units from id FIRST via `unit_regex` (before aliasing)
+  - Apply aliases to generate canonical names
+  - Run logger-specific header processing (VCDS group handling, etc.)
+  - General unit parsing from header tokens
+  - Field transformations (prepend/append)
+  - Unit normalization and inference
+  - Ensure unique field names LAST
+- Moved all VCDS-specific parsing logic from DataLogger.java to VCDSHeaderProcessor.java
+- Updated filter column test cases to use column indices instead of field names
+
 ### Fixed
 
 - Restore filter reasons in FilterWindow data visualization table

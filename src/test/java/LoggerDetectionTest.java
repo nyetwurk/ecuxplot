@@ -237,7 +237,7 @@ public class LoggerDetectionTest {
     }
 
     private static void testExpectedCategories(Element testCase, ECUxDataset dataset, String fileName) {
-        NodeList expectedCategories = testCase.getElementsByTagName("expected_category_mappings");
+        NodeList expectedCategories = testCase.getElementsByTagName("expected_filter_columns");
         if (expectedCategories.getLength() == 0) return;
 
         Element categoriesElement = (Element) expectedCategories.item(0);
@@ -246,9 +246,9 @@ public class LoggerDetectionTest {
         for (int i = 0; i < categoryNodes.getLength(); i++) {
             Element categoryElement = (Element) categoryNodes.item(i);
             String categoryName = categoryElement.getAttribute("name");
-            String expectedField = categoryElement.getTextContent();
+            String expectedIndexStr = categoryElement.getTextContent();
 
-            // Get the actual field from the category
+            // Get the actual column from the category
             Dataset.Column actualColumn = null;
             if ("pedal".equals(categoryName)) {
                 actualColumn = dataset.get(org.nyet.ecuxplot.DataLogger.pedalField());
@@ -258,12 +258,30 @@ public class LoggerDetectionTest {
                 actualColumn = dataset.get(org.nyet.ecuxplot.DataLogger.gearField());
             }
 
-            String actualField = (actualColumn != null) ? actualColumn.getId() : null;
+            // Find the column index of the actual column
+            Integer actualIndex = null;
+            if (actualColumn != null) {
+                java.util.ArrayList<Dataset.Column> columns = dataset.getColumns();
+                for (int j = 0; j < columns.size(); j++) {
+                    if (columns.get(j) == actualColumn) {
+                        actualIndex = j;
+                        break;
+                    }
+                }
+            }
+
             // Handle "null" as string vs actual null
-            String expectedValue = "null".equals(expectedField) ? null : expectedField;
-            String actualValue = actualField == null ? null : actualField;
-            assertTest("Category[" + categoryName + "] for " + fileName + ": expected '" + (expectedValue == null ? "null" : expectedValue) + "', got '" + (actualValue == null ? "null" : actualValue) + "'",
-                (expectedValue == null && actualValue == null) || (expectedValue != null && expectedValue.equals(actualValue)));
+            Integer expectedIndex = null;
+            if (!"null".equals(expectedIndexStr) && !expectedIndexStr.trim().isEmpty()) {
+                try {
+                    expectedIndex = Integer.parseInt(expectedIndexStr.trim());
+                } catch (NumberFormatException e) {
+                    // Invalid index, will fail test
+                }
+            }
+
+            assertTest("Category[" + categoryName + "] for " + fileName + ": expected column index " + (expectedIndex == null ? "null" : expectedIndex.toString()) + ", got " + (actualIndex == null ? "null" : actualIndex.toString()),
+                (expectedIndex == null && actualIndex == null) || (expectedIndex != null && expectedIndex.equals(actualIndex)));
         }
     }
 
@@ -276,16 +294,41 @@ public class LoggerDetectionTest {
         int col = Integer.parseInt(sanityElement.getAttribute("col"));
         String expectedValue = sanityElement.getTextContent();
 
+        // Debug printing
+        System.out.println("DEBUG sanity check for " + fileName + ":");
+        System.out.println("  Expected: row=" + row + ", col=" + col + ", value='" + expectedValue + "'");
+        System.out.println("  Dataset has " + dataset.getColumns().size() + " columns");
+        if (dataset.getColumns().size() > 0) {
+            for (int i = 0; i < Math.min(dataset.getColumns().size(), 5); i++) {
+                Dataset.Column c = dataset.getColumns().get(i);
+                String colName = dataset.getIds()[i].id;
+                System.out.print("  Column " + i + ": name='" + colName + "', data size=" + c.data.size());
+                if (c.data.size() > 0) {
+                    System.out.println("    First value: " + c.data.get(0));
+                } else {
+                    System.out.println();
+                }
+            }
+        }
+
         try {
             if (dataset.getColumns().size() > col) {
                 Dataset.Column column = dataset.getColumns().get(col);
+                System.out.println("  Column " + col + " data size: " + column.data.size());
                 if (column.data.size() > row) {
                     String actualValue = String.valueOf(column.data.get(row));
+                    System.out.println("  Actual value at [" + row + "," + col + "]: '" + actualValue + "'");
                     assertTest("Sanity check [" + row + "," + col + "] for " + fileName + ": expected '" + expectedValue + "', got '" + actualValue + "'",
                         expectedValue.equals(actualValue));
+                } else {
+                    System.out.println("  ERROR: Column " + col + " only has " + column.data.size() + " rows, need row " + row);
                 }
+            } else {
+                System.out.println("  ERROR: Dataset only has " + dataset.getColumns().size() + " columns, need column " + col);
             }
         } catch (Exception e) {
+            System.out.println("  EXCEPTION: " + e.getMessage());
+            e.printStackTrace();
             assertTest("Sanity check for " + fileName, false);
         }
     }

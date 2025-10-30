@@ -64,7 +64,7 @@ public final class Units {
             // Note: .matches() requires entire string match, so ^ and $ are implicit
             // .* at start allows text before pattern, .* at end allows text after, overriding the implicit ^ and $
             {"AccelPedalPosition", UnitConstants.UNIT_PERCENT},  // Canonical name (after ECUX alias converts AcceleratorPedalPosition)
-            {"AirFuelRatioDesired", UnitConstants.UNIT_LAMBDA},
+            {"AirFuelRatioDesired", UnitConstants.UNIT_LAMBDA}, // Unfortunately, ME7L has AFR as an alias, but it is implcitly lambda
             {"EGTbank1OXS", UnitConstants.UNIT_CELSIUS},  // Fallback ONLY for ecux.csv EGTbank1OXS (no units in header - exact match)
             {"FuelInjectorOnTime", UnitConstants.UNIT_MS},
             {"FuelInjectorDutyCycle", UnitConstants.UNIT_PERCENT},
@@ -75,8 +75,8 @@ public final class Units {
             {"TPS", UnitConstants.UNIT_PERCENT},
 
             {"RPM", UnitConstants.UNIT_RPM},
-            {"TIME", UnitConstants.UNIT_SECONDS},
-            {"Time", UnitConstants.UNIT_SECONDS},
+            {"TIME.*", UnitConstants.UNIT_SECONDS},
+            {"Time.*", UnitConstants.UNIT_SECONDS},
 
             {"Zeitronix TPS", UnitConstants.UNIT_PERCENT},
             {"Zeitronix TIME.*", UnitConstants.UNIT_SECONDS},
@@ -159,7 +159,7 @@ public final class Units {
             {"sec\\.ms", UnitConstants.UNIT_SECONDS},  // ME7L time unit normalization
             {"sec", UnitConstants.UNIT_SECONDS},       // VOLVO time unit normalization
             {"rpm", UnitConstants.UNIT_RPM},
-            {"-|Marker|Markierung|STAMP", ""} // Random junk we don't need
+            {"-|Marker|Markierung|MARKE|STAMP", ""} // Random junk we don't need
         };
         for (final String[] element : map) {
             if(u.matches(element[0])) return element[1];

@@ -160,7 +160,7 @@ loggers:
       - ["rlsol_w", "EngineLoadRequested"]
       - ["rmslt", "SecondaryAirMass"]
       - ["rmslt2", "SecondaryAirMassBank2"]
-      - ["tabgbts_w", "EGTForPartProtection"]
+      - ["tabgbts_w", "EGTForPartPro"]
       - ["tabgm", "EGTModelBeforeCat8"] # 8-bit, seen in Winlog
       - ["tabgm_w", "EGTModelBeforeCat"]
       - ["tabgm2", "EGTModelBeforeCatBank2"]
@@ -264,8 +264,8 @@ loggers:
       - ["Current Gear.*", "Gear"]
       - ["Accel Pedal Position.*", "AccelPedalPosition"]
       - ["TPS.*", "ThrottlePlateAngle"]
+      - ["AFR Set Point.*", "AirFuelRatioDesired (AFR)"] # workaround for ME7L's AFR alias
       - ["AFR.*", "AirFuelRatio"]
-      - ["AFR Set Point.*", "AirFuelRatioDesired"]
       - ["Trgt\\. Boost Press\\..*", "BoostPressureDesired"]
       - ["Boost Press\\..*", "BoostPressureActual"]
       - ["Ambient Air Temp\\..*", "AmbientTemperature"]
@@ -321,8 +321,8 @@ loggers:
       - ["mph", "VehicleSpeed (mph)"]  # JB4 uses mph, ME7 uses kph
       - ["throttle", "ThrottlePlateAngle"]
       - ["ecu_psi", "ECUBoostPressureActual (PSI)"]  # JB4 uses PSI, ME7 uses mBar
-      - ["dme_bt", "ECUBoostPressureDesired (PSI)"]  # JB4 uses PSI, ME7 uses mBar
-      - ["target", "BoostPressureDesiredDelta (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["dme_bt", "BoostPressureDesiredDelta (PSI)"]  # JB4 uses PSI, ME7 uses mBar
+      - ["target", "BoostPressureDesired (PSI)"]  # JB4 uses PSI, ME7 uses mBar
       - ["boost", "BoostPressureActual (PSI)"]  # JB4 uses PSI, ME7 uses mBar
       - ["boost2", "BoostPressureActual2 (PSI)"]  # JB4 uses PSI, ME7 uses mBar
       - ["ff", "BoostFeedForward"]
@@ -421,14 +421,14 @@ loggers:
       - ["TOIL", "OilTemperature"]
       - ["Ambient air temperature", "AmbientTemperature"]
       - ["AMP", "BaroPressure"]
-      - ["MAP", "BoostPressureActual"]
-      - ["MAP_MES", "BoostPressureActual2"]
+      - ["MAP", "BoostPressure"]
+      - ["MAP_MES", "BoostPressureActual"]
       - ["MAP_SP", "BoostPressureDesired"]
       - ["FUP", "FuelPressureHigh"]
       - ["FUP_SP", "FuelPressureHighSP"]
       - ["FUP_EFP", "FuelPressureHighEFP"]
       - ["RFP_AV", "RailPressureActual"]
-      - ["MAF_THR", "MassAirFlow"]
+      - ["MAF_THR", "MassAirFlowAtThrottle"]
       - ["MAF", "MassAirFlow"]
       - ["PV_AV", "AccelPedalPosition"]
       - ["TPS_AV", "ThrottlePlateAngle"]
@@ -456,43 +456,49 @@ loggers:
       - ["EFPPWM", "WastegateDutyCycle2"]
       - ["FAC_LAM_CP", "LambdaControl"]
 
+  VCDS_LEGACY:
+    field_signatures:
+      - regex: ".*VCDS Version:.*"  # Match files with VCDS Version text
+      - regex: ".*(Group|Block) [A-Z]:.*"  # Format 1: Group A:, Group B: markers (alphabetic)
+
+    skip_lines: 10
+    skip_regex:
+      - regex: ".*(Group|Block) [A-Z]:.*"  # Format 1: Group A:, Group B: markers (separate line)
+
+    header_format: "g,id,u,u2"
+    aliases_from: "VCDS"
+
   VCDS:
     field_signatures:
-      - regex: ".*VCDS Version:.*"
-      - regex: ".*(Block|Group) [A-Z0-9]+.*"
+      - regex: ".*Group \\d+.*"  # Format 2: Group 23, Group 23 - Field 0 (numeric groups only)
 
-    # Skip up to 10 lines to find Groups line (skip_lines is now max when skip_regex is defined)
-    # skip_regex will find the line containing Groups within this range
     skip_lines: 10
-
-    # TEMPORARY: Use skip_regex to find line with Groups so VCDS case block can process them
-    # Normally skip_regex would skip directly to clean headers, but VCDS case block needs access to Groups
-    # to remove Group columns and convert field names. This will be removed when YAML field_transformations
-    # can handle Group skipping and field name conversion.
     skip_regex:
-      - regex: ".*(Block|Group) [A-Z0-9]+.*"
+      - regex: ".*Group \\d+ - Field.*"  # Format 2: Group 23 - Field 0 (in field names)
 
-    # Header structure configuration (Level 1 - ready for implementation)
-    # NOTE: VCDS files have varying header formats - some have the unit line on the 3rd, some on the 4th.
-    # ECUXDataset will refuse to accept the 4th line u if it has all numbers.
-    header_format: "id2,id,u,u"  # VCDS: Group line, field names, units line 1, units line 2 (4 header lines)
+    header_format: "g,id,u"
 
     # Proposed field transformations (Level 2 - may be needed later)
     # field_transformations:
-    #   append: " (G024)"       # VCDS adds group suffix to some fields
+    #   append: " [024]"       # VCDS adds group suffix to some fields
+    #   disambiguation: "2 [024]" # before group suffix
 
     aliases:
+      - ["(STAMP|Zeit)", "TIME"]
+      - ["Absolute Pres.", "BoostPressure"]
+      #- ["Accelerator [Pp]osition", "AccelPedalPosition"] // blacklist
       - ["Boost Pressure \\(actual\\)", "BoostPressureActual"]
       - ["Boost Pressure \\(specified\\)", "BoostPressureDesired"]
-      - ["Duty Cycle", "DutyCycle"]
-      - ["(Engine RPM|Engine [Ss]peed|Motordrehzahl).*", "RPM"]
-      - ["Engine load", "Load"]
+      - ["Duty Cycle", "WastegateDutyCycle"]
       - ["Engine speed; actual", "RPMActual"]
       - ["Engine speed; specified", "RPMSpecified"]
+      - ["(Engine RPM|Engine [Ss]peed|Motordrehzahl).*", "RPM"]
+      - ["(Engine load|Load)", "EngineLoad"]
+      - ["Idle (RPM|[Ss]peed).*", "Idle RPM"]
       - ["Ign timing.*", "IgnitionTimingAngle"]
       - ["Ign\\. Timing", "IgnitionTiming"]
-      - ["Idle (RPM|[Ss]peed).*", "Idle RPM"]
-      #- ["Knock Reg\\.", "KnockRegulation"] # Leave this as is, VCDS generate a lot of these, one per group, all the same name
+      - ["Inj\\. On Time.*", "FuelInjectorOnTime"]
+      - ["Knock Reg\\.", "IgnitionRetard"]
       - ["Mass [Aa]ir [Ff]low.*", "MassAirFlow"]
       - ["Mass [Aa]ir [Tt]aken [Ii]n.*", "MassAirFlow"]
       - ["Mass Flow", "MassAirFlow"]
@@ -502,17 +508,16 @@ loggers:
       - ["Throttle [Vv]alve [Aa]ngle.*", "ThrottleAngle"]
       - ["Vehicle speed; filtered", "VehicleSpeedFiltered"]
       - ["Vehicle speed", "VehicleSpeed"]
-      - ["Zeit", "TIME"]
       # German VCDS field name aliases
-      - ["angesaugte Luftmasse", "MassAirFlow"]
+      - ["angesaugte.*", "MassAirFlow"]
       - ["Einspritzzeit", "FuelInjectorOnTime"]
-      - ["Einspritzzeit \\(korrigiert\\)", "FuelInjectorOnTimeCorrected"]
-      - ["Lambda", "Lambda"]
-      - ["Lambda Korrekturfaktor", "LambdaCorrectionFactor"]
-      - ["Lambdasonden-Regler", "LambdaControl"]
-      - ["Lambdasonden-spannung", "O2SVoltageSensor1"]
-      - ["Motorlast", "EngineLoad"]
-      - ["Tastverhältnis Magnetventil 1", "WastegateDutyCycle"]
+      - ["Einspritzzeit.*\\(korrigiert\\)", "FuelInjectorOnTimeCorrected"]
+      - ["Lambda.*Korrekturfaktor", "LambdaCorrectionFactor"]
+      - ["Lambda.*Regler", "LambdaControl"]
+      - ["Lambdasonden-[Ss]pannung", "O2SVoltageSensor"] # spannung = voltage
+      - ["Lambdasonden-.*", "LambdaActual"] # sonden = sensor
+      - ["Motorlast", "EngineLoad"] # last == load
+      - ["Tastverh.ltnis.*", "WastegateDutyCycle"] # tastverhältnis == duty cycle
 
   VOLVOLOGGER:
     field_signatures:
@@ -558,4 +563,3 @@ loggers:
 
     aliases:
       - ["logtime", "TIME"]
-      - ["TimeStamp", "TIME 2"]

@@ -18,6 +18,7 @@ loggers:
     time_ticks_per_sec: 1000  # optional
     skip_lines: 2  # optional
     header_format: "id"  # optional (default: "id")
+    # Tokens: g (group), id (field names), u (units line 1), id2 (original), u2 (units line 2)
 ```
 
 ## Configuration Parameters
@@ -31,7 +32,8 @@ loggers:
 ### Field Processing
 
 - **`aliases`**: Array of [original_field_regex, standard_field_name] pairs
-- **`header_format`**: Header structure format ("id", "id,u", "id,u,id2")
+- **`header_format`**: Header structure format ("id", "id,u", "id,u,id2", "g,id,u,id2,u2")
+  - **Tokens**: `g` (group line), `id` (field names), `u` (units line 1), `id2` (original field names), `u2` (units line 2)
 - **`unit_regex`**: Regex pattern to extract field names and units from complex header formats
 - **`field_transformations`**: Apply prepend/append transformations to field names
 
