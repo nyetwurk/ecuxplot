@@ -55,8 +55,10 @@ public class LoggerDetectionTest {
 
         if (testsFailed == 0) {
             System.out.println("✅ All tests passed!");
+            System.exit(0);
         } else {
             System.out.println("❌ " + testsFailed + " tests failed!");
+            System.exit(1);
         }
     }
 
