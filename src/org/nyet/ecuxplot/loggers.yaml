@@ -375,6 +375,9 @@ loggers:
       - regex: "TimeStamp"
         column: 0
 
+    # Extract field name and unit using regex if there
+    unit_regex: "([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)"
+
     # Header structure configuration (Level 1 - ready for implementation)
     header_format: "id2,u,id"  # ME7LOGGER: raw names, units, canonical names (3 header lines)
 
