@@ -190,6 +190,7 @@ public class AxisMenu extends JMenu {
 
         } else if(id.matches("TIME")) {
             this.add(item, 2);  // always add time third!
+            addDirect("TIME - raw", 3);
 
         // goes before .*Load.* to catch CalcLoad
         } else if(id.matches(".*(MAF|Mass *Air|Air *Mass|Mass *Air *Flow).*")) {

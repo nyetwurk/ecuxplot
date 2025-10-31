@@ -1209,7 +1209,16 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 }
 
                 try {
-                    // Create FATSDataset if it doesn't exist
+                    // buildRanges() has completed - now invalidate constant-dependent columns
+                    // This marks columns for recreation with new constants on next access
+                    for (ECUxDataset dataset : ECUxPlot.this.fileDatasets.values()) {
+                        dataset.invalidateConstantDependentColumns();
+                    }
+
+                    // Rebuild FATSDataset AFTER column invalidation
+                    // This ensures FATS calculation uses columns recreated with new constants
+                    // Note: splines are built from base RPM/TIME columns (not constant-dependent),
+                    // so they remain valid after constant-dependent column invalidation
                     if (ECUxPlot.this.fatsDataset == null && !ECUxPlot.this.fileDatasets.isEmpty()) {
                         ECUxPlot.this.fatsDataset = new FATSDataset(ECUxPlot.this.fileDatasets, ECUxPlot.this.fats, ECUxPlot.this.filter);
 
@@ -1218,8 +1227,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                             ECUxPlot.this.rangeSelectorWindow.setFATSDataset(ECUxPlot.this.fatsDataset);
                         }
                     } else if (ECUxPlot.this.fatsDataset != null && !ECUxPlot.this.fileDatasets.isEmpty()) {
-                        // Rebuild existing FATS dataset when new files are loaded
-                        ECUxPlot.this.fatsDataset.rebuild();
+                        // Rebuild existing FATS dataset - clear cache and recalculate with new columns/constants
+                        ECUxPlot.this.fatsDataset.rebuildAll();
                     }
 
                     // FATS window will automatically show updated data since it uses the same FATSDataset instance
@@ -1573,6 +1582,39 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
             }
         }
+    }
+
+    /**
+     * Handle vehicle constants change by invalidating caches and updating all windows.
+     * Called from ConstantsEditor when constants are changed.
+     */
+    public void handleConstantsChange() {
+        // Rebuild charts with constant invalidation
+        // Column invalidation happens in rebuild()'s done() method:
+        // 1. buildRanges() completes (uses old columns to build splines)
+        // 2. Columns are invalidated (marked for recreation with new constants)
+        // 3. FATSDataset is rebuilt (accesses columns, triggering recreation with new constants)
+        // 4. Chart datasets are rebuilt (accesses columns, triggering recreation with new constants)
+        rebuild(() -> {
+            // Update all windows that display constant-dependent data
+            // Main chart is already updated by rebuild()
+
+            // Update FATS window if open
+            if (this.fatsFrame != null) {
+                this.fatsFrame.updateRpmFieldsFromConstants();
+                this.fatsFrame.refreshFromFATS();
+            }
+
+            // Update Filter Window if open
+            if (this.filterWindow != null) {
+                this.filterWindow.refreshVisualization();
+            }
+
+            // Update Range Selector Window if open - refresh tree nodes to show updated values
+            if (this.rangeSelectorWindow != null) {
+                this.rangeSelectorWindow.refreshTreeNodes();
+            }
+        });
     }
 
     /**

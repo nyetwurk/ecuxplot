@@ -413,7 +413,7 @@ loggers:
       - ["Ambient Press.*", "BaroPressure"]
       - ["Ambient Temp.*", "AmbientTemperature"]
       - ["Battery Volts.*", "BatteryVoltage"]
-      - ["Boost.*", "BoostPressure"]
+      - ["Boost.*", "BoostPressure"] # usually "Boost (psi)" - no Actual so it is not confused with MAP (kPa)
       #- ["Comb Mode.*", "CombustionMode"]
       - ["Coolant Temp.*", "CoolantTemperature"]
       - ["Current Gear.*", "Gear"]
@@ -448,8 +448,8 @@ loggers:
       - ["Lambda.*", "LambdaActual"]
       - ["LPFP DC.*", "Fuel LPFP DC"]
       - ["LTFT.*", "LTFT"]
-      - ["MAP SP.*", "BoostPressureDesired"]
-      - ["MAP.*", "BoostPressureActual"]
+      - ["MAP SP.*", "BoostPressureDesired"] # usually "MAP SP (kPa)"
+      - ["MAP.*", "BoostPressureActual"] # usually "MAP (kPa)"
       #- ["Misfire Cyl 1.*", "MisfireCyl1"]
       #- ["Misfire Cyl 2.*", "MisfireCyl2"]
       #- ["Misfire Cyl 3.*", "MisfireCyl3"]

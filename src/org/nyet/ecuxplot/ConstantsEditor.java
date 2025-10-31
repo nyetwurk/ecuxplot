@@ -30,10 +30,18 @@ public class ConstantsEditor extends PreferencesEditor {
 
     @Override
     protected void Process(ActionEvent event) {
+        // 1. Save new constants
         processPairs(this.c, pairs, Double.class);
         // override using string method
         this.c.driveline_loss_string(this.driveline_loss.getText());
-        super.Process(event);
+
+        // 2. Handle constants change - invalidates caches, rebuilds, and updates all windows
+        if (this.eplot != null) {
+            this.eplot.handleConstantsChange();
+        } else {
+            // No eplot reference - just do basic processing
+            super.Process(event);
+        }
     }
 
     public ConstantsEditor (Preferences prefs, Constants c) {

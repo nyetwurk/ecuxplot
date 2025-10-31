@@ -120,13 +120,11 @@ public class FATSDataset extends DefaultCategoryDataset {
         }
 
         // Populate chart with selected ranges only
-        int fileCount = 0;
         for(final ECUxDataset data : this.fileDatasets.values()) {
-            fileCount++;
             setValue(data);
         }
         logger.debug("<<< FATSDataset.rebuild() complete - processed {} files, fatsDataMap entries: {}",
-            fileCount, fatsDataMap.size());
+            this.fileDatasets.size(), fatsDataMap.size());
     }
 
     /**
@@ -142,7 +140,8 @@ public class FATSDataset extends DefaultCategoryDataset {
                 return data.calcFATS(series, this.start, this.end);
             }
         } catch (final Exception e) {
-            logger.debug("FATS calculation failed for {} run {}: {}", Files.stem(data.getFileId()), series, e.getMessage());
+            logger.error("    calculateFATS(): FATS calculation failed for {} run {}: {}",
+                Files.stem(data.getFileId()), series, e.getMessage());
             return Double.NaN;
         }
     }

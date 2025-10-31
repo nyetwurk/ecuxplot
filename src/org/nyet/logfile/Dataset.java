@@ -10,6 +10,14 @@ import com.opencsv.*;
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
+    public enum ColumnType {
+        CSV_NATIVE,                    // Native from CSV file
+        COMPILE_TIME_CONSTANTS,        // Calculated using only compile-time constants (UnitConstants)
+        VEHICLE_CONSTANTS,             // Calculated using vehicle constants (rpm_per_mph, mass, Cd, etc.)
+        PROCESSED_VARIANT,             // Processed versions of native columns (RPM smoothed, TIME converted, Sample index)
+        OTHER_RUNTIME                  // Calculated using other runtime parameters (fueling params, filter params)
+    }
+
     public static class DatasetId implements Comparable<Object> {
         public String id;
         public String id2;
@@ -36,7 +44,7 @@ public class Dataset {
     private DatasetId[] ids;
     private final String filePath; // Full file path for detection and other purposes
     private final String fileId; // This was never meant to be a filename. It is just a key used to identify the dataset. If you want path, use filePath instead.
-    private final ArrayList<Column> columns;
+    private final LinkedHashMap<String, Column> columns; // Use LinkedHashMap to prevent duplicates and maintain insertion order
     private ArrayList<Range> range_cache = new ArrayList<Range>();
     private int rows;
     protected ArrayList<String> lastFilterReasons = new ArrayList<String>();
@@ -58,25 +66,49 @@ public class Dataset {
     public class Column {
         private final DatasetId id;
         public DoubleArray data;
+        private ColumnType columnType;
 
+        // CSV parsing constructors - default to CSV_NATIVE
         public Column(Comparable<?> id, String units) {
-            this(id, null, units, new DoubleArray());
-        }
-        public Column(Comparable<?> id, String units, DoubleArray data) {
-            this(id, null, units, data);
+            this(id, null, units, new DoubleArray(), ColumnType.CSV_NATIVE);
         }
         public Column(Comparable<?> id, String id2, String units) {
-            this(id, id2, units, new DoubleArray());
+            this(id, id2, units, new DoubleArray(), ColumnType.CSV_NATIVE);
+        }
+
+        // Calculated column constructors - default to COMPILE_TIME_CONSTANTS (most common)
+        public Column(Comparable<?> id, String units, DoubleArray data) {
+            this(id, null, units, data, ColumnType.COMPILE_TIME_CONSTANTS);
+        }
+        public Column(Comparable<?> id, String units, DoubleArray data, ColumnType columnType) {
+            this(id, null, units, data, columnType);
         }
         public Column(Comparable<?> id, String id2, String units,
             DoubleArray data) {
+            this(id, id2, units, data, ColumnType.COMPILE_TIME_CONSTANTS);
+        }
+        public Column(Comparable<?> id, String id2, String units,
+            DoubleArray data, ColumnType columnType) {
             this.id = new DatasetId(id.toString(), id2, units);
             this.data = data;
+            this.columnType = columnType;
         }
 
         public Column(DatasetId id, DoubleArray data) {
+            this(id, data, ColumnType.COMPILE_TIME_CONSTANTS);
+        }
+        public Column(DatasetId id, DoubleArray data, ColumnType columnType) {
             this.id = id;
             this.data = data;
+            this.columnType = columnType;
+        }
+
+        public void setColumnType(ColumnType type) {
+            this.columnType = type;
+        }
+
+        public ColumnType getColumnType() {
+            return this.columnType;
         }
 
         public void add(String s) {
@@ -363,7 +395,7 @@ public class Dataset {
         this.filePath = filename; // Store full path for detection purposes
         this.fileId = org.nyet.util.Files.filename(filename); // This was never meant to be a filename. It is just a key used to identify the dataset.
         this.rows = 0;
-        this.columns = new ArrayList<Column>();
+        this.columns = new LinkedHashMap<String, Column>();
 
         // Read file and separate comments from CSV data
         StringBuilder csvContent = new StringBuilder();
@@ -389,10 +421,11 @@ public class Dataset {
             ParseHeaders(reader, verbose);
         });
 
-        for (final DatasetId id : this.ids)
-            this.columns.add(new Column(id.id,
-                id.id2,
-                id.unit));
+        for (final DatasetId id : this.ids) {
+            // Put column in map (will replace if duplicate ID exists, but shouldn't happen during CSV parsing)
+            Column col = new Column(id.id, id.id2, id.unit);
+            this.columns.put(id.id, col);
+        }
 
         String [] nextLine;
         while((nextLine = csvReader.readNext()) != null) {
@@ -400,10 +433,15 @@ public class Dataset {
                 boolean gotone=false;
                 for(int i=0;i<nextLine.length;i++) {
                     if (nextLine[i].trim().length()>0
-                        && this.columns.size() > i) {
-                        // Automatically trim all CSV data values at the source
-                        this.columns.get(i).add(nextLine[i].trim());
-                        gotone=true;
+                        && this.ids != null && i < this.ids.length) {
+                        // Use ids[] array to get column ID, then look up in map
+                        String columnId = this.ids[i].id;
+                        Column col = this.columns.get(columnId);
+                        if (col != null) {
+                            // Automatically trim all CSV data values at the source
+                            col.add(nextLine[i].trim());
+                            gotone=true;
+                        }
                     }
                 }
                 if (gotone) this.rows++;
@@ -412,7 +450,29 @@ public class Dataset {
         buildRanges();
     }
 
-    public ArrayList<Column> getColumns() {return this.columns;}
+    public ArrayList<Column> getColumns() {
+        // Return ordered list maintaining insertion order (from LinkedHashMap)
+        return new ArrayList<Column>(this.columns.values());
+    }
+
+    /**
+     * Add or replace a column in the dataset.
+     * If a column with the same ID already exists, it will be replaced.
+     * @param column The column to add or replace
+     */
+    protected void putColumn(Column column) {
+        this.columns.put(column.getId(), column);
+    }
+
+    /**
+     * Remove a column from the dataset by ID.
+     * @param columnId The ID of the column to remove
+     * @return The removed column, or null if not found
+     */
+    protected Column removeColumn(String columnId) {
+        return this.columns.remove(columnId);
+    }
+
     public ArrayList<String> getComments() {return this.comments;}
 
     // Default implementation - subclasses can override
@@ -433,7 +493,12 @@ public class Dataset {
     }
 
     public Column get(int id) {
-        return this.columns.get(id);
+        // Use ids[] array to map index to column ID, then look up in map
+        if (this.ids != null && id >= 0 && id < this.ids.length) {
+            String columnId = this.ids[id].id;
+            return this.columns.get(columnId);
+        }
+        return null;
     }
 
     public Column get(Dataset.Key key) {
@@ -445,11 +510,9 @@ public class Dataset {
     }
 
     public Column get(Comparable<?> id) {
-        for(final Column c : this.columns) {
-            if(id.equals(c.id.id))
-                return c;
-        }
-        return null;
+        // Direct map lookup - no duplicates possible with LinkedHashMap
+        String idStr = id.toString();
+        return this.columns.get(idStr);
     }
 
     public String units(Comparable<?> id) {

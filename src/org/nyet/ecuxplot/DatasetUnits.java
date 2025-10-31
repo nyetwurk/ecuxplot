@@ -133,10 +133,11 @@ public class DatasetUnits {
      * @param baseColumn The column to convert
      * @param targetUnit The target unit (from UnitConstants)
      * @param getAmbientPressure Function to get ambient pressure in mBar (for PSI conversions), or null to use standard
+     * @param columnType The type to assign to the converted column (inherits from base column type)
      * @return New Column with converted data, or original column if no conversion needed
      */
     public static Dataset.Column convertUnits(Dataset dataset, Dataset.Column baseColumn, String targetUnit,
-            Supplier<Double> getAmbientPressure) {
+            Supplier<Double> getAmbientPressure, Dataset.ColumnType columnType) {
         String baseUnit = baseColumn.getUnits();
 
         // Early return if no conversion needed
@@ -152,7 +153,7 @@ public class DatasetUnits {
             ConversionResult result = converter.convert(baseColumn.data, getAmbientPressure);
             // If data was modified, create new column
             if (result.data != baseColumn.data) {
-                return dataset.new Column(baseColumn.getId(), result.newUnit, result.data);
+                return dataset.new Column(baseColumn.getId(), result.newUnit, result.data, columnType);
             }
         }
 

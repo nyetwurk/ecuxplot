@@ -38,6 +38,10 @@ public class ECUxDataset extends Dataset {
     // Maps column name to smoothing window size (in samples)
     private final Map<String, Integer> smoothingWindows = new HashMap<>();
 
+    // Track range failure reasons per row index
+    // Used to explain why points "Not in valid range"
+    private final Map<Integer, ArrayList<String>> rangeFailureReasons = new HashMap<>();
+
     protected void detectLoggerType() throws Exception {
         // Only detect if not already detected
         if (!DataLogger.isUnknown(this.log_detected)) {
@@ -180,15 +184,57 @@ public class ECUxDataset extends Dataset {
         }
         */
         /* calculate smallest samples per second */
-        final Column time = get("TIME");
-        if (time!=null) {
-            for(int i=1;i<time.data.size();i++) {
-                final double delta=time.data.get(i)-time.data.get(i-1);
-                if(delta>0) {
-                    final double rate = 1/delta;
-                    if(rate>this.samples_per_sec) this.samples_per_sec=rate;
+        // Use raw CSV TIME data (before smoothing) to calculate sample rate
+        // This avoids circular dependency since TIME smoothing depends on samples_per_sec
+        final Column rawTime = super.get("TIME");
+        if (rawTime!=null) {
+            // Convert raw TIME ticks to seconds for calculation
+            final DoubleArray timeSeconds = rawTime.data.div(this.time_ticks_per_sec);
+
+            // Use first 5 seconds of data to calculate sample rate
+            // If log is shorter than 5 seconds, use total start/end
+            final double targetTimeWindow = 5.0; // seconds
+            final double startTime = timeSeconds.get(0);
+            final double endTimeTarget = startTime + targetTimeWindow;
+            final double totalTimeSpan = timeSeconds.get(timeSeconds.size() - 1) - startTime;
+
+            int endIndex = 0;
+            boolean useFullSpan = false;
+
+            if(totalTimeSpan < targetTimeWindow) {
+                // Log is shorter than 5 seconds, use full span
+                useFullSpan = true;
+                endIndex = timeSeconds.size() - 1;
+            } else {
+                // Find end index for first 5 seconds
+                for(int i=1; i<timeSeconds.size(); i++) {
+                    if(timeSeconds.get(i) >= endTimeTarget) {
+                        endIndex = i;
+                        break;
+                    }
+                }
+                // If we didn't find the target (shouldn't happen if totalTimeSpan >= targetTimeWindow), use full span
+                if(endIndex == 0) {
+                    useFullSpan = true;
+                    endIndex = timeSeconds.size() - 1;
                 }
             }
+
+            if(endIndex > 0) {
+                final double actualTimeSpan = timeSeconds.get(endIndex) - startTime;
+                if(actualTimeSpan > 0) {
+                    this.samples_per_sec = endIndex / actualTimeSpan;
+                    logger.debug("samples_per_sec={} (from {}, {} samples in {}s)",
+                        this.samples_per_sec, useFullSpan ? "full dataset" : "first 5 seconds",
+                        endIndex + 1, actualTimeSpan);
+                } else {
+                    logger.warn("TIME span is zero (endIndex={})", endIndex);
+                }
+            } else {
+                logger.warn("Not enough TIME data to calculate samples_per_sec (need at least 2 points)");
+            }
+        } else {
+            logger.warn("TIME column is null, cannot calculate samples_per_sec");
         }
 
         // check for 5120 logged without a 5120 template and double columns with unit of mBar if so
@@ -222,13 +268,135 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
+     * Create a raw version of a column before applying processing/smoothing.
+     * This ensures the original data is preserved before being replaced by processed versions.
+     * The raw column name is automatically derived as baseColumnName + " - raw".
+     *
+     * @param baseColumnName The name of the base CSV column (e.g., "TIME", "RPM")
+     * @param units The unit string for the raw column
+     * @param dataTransform Optional function to transform the data (e.g., convert ticks to seconds)
+     *                      If null, uses baseColumn.data directly
+     * @return The raw Column if created, or null if base column doesn't exist or raw already exists
+     */
+    private Column createRawColumn(String baseColumnName, String units,
+                                   java.util.function.Function<DoubleArray, DoubleArray> dataTransform) {
+        String rawColumnName = baseColumnName + " - raw";
+
+        // Check if raw column already exists
+        if (super.get(rawColumnName) != null) {
+            return null;
+        }
+
+        // Get base CSV column
+        Column baseColumn = super.get(baseColumnName);
+        if (baseColumn == null || baseColumn.getColumnType() != Dataset.ColumnType.CSV_NATIVE) {
+            return null;
+        }
+
+        // Transform data if needed
+        DoubleArray rawData = dataTransform != null ? dataTransform.apply(baseColumn.data) : baseColumn.data;
+
+        // Create and store raw column, preserving id2 (original name) from base column
+        String id2 = baseColumn.getId2();
+        Column rawColumn = new Column(rawColumnName, id2, units, rawData, Dataset.ColumnType.PROCESSED_VARIANT);
+        this.putColumn(rawColumn);
+
+        return rawColumn;
+    }
+
+    /**
+     * Get or create a raw column from a base CSV column.
+     * Used by handlers like "TIME - raw" and "RPM - raw".
+     * The raw column name is automatically derived as baseColumnName + " - raw".
+     *
+     * @param baseColumnName The name of the base CSV column (e.g., "TIME", "RPM")
+     * @param units The unit string for the raw column
+     * @param dataTransform Optional function to transform the data (e.g., convert ticks to seconds)
+     *                      If null, uses baseColumn.data directly
+     * @return The raw Column, or null if base column doesn't exist
+     */
+    private Column getOrCreateRawColumn(String baseColumnName, String units,
+                                        java.util.function.Function<DoubleArray, DoubleArray> dataTransform) {
+        String rawColumnName = baseColumnName + " - raw";
+
+        // Check if raw column already exists
+        Column existing = super.get(rawColumnName);
+        if (existing != null) {
+            return existing;
+        }
+
+        // Get base CSV column
+        Column baseColumn = super.get(baseColumnName);
+        if (baseColumn == null) {
+            logger.error("_get('{}'): Base CSV column '{}' not found! Cannot create {} column.",
+                rawColumnName, baseColumnName, rawColumnName);
+            return null;
+        }
+
+        // Transform data if needed
+        DoubleArray rawData = dataTransform != null ? dataTransform.apply(baseColumn.data) : baseColumn.data;
+
+        // Create and store raw column, preserving id2 (original name) from base column
+        String id2 = baseColumn.getId2();
+        Column rawColumn = new Column(rawColumnName, id2, units, rawData, Dataset.ColumnType.PROCESSED_VARIANT);
+        this.putColumn(rawColumn);
+
+        return rawColumn;
+    }
+
+    /**
+     * Helper to create a smoothed/processed column from a base CSV column.
+     * Handles the common pattern: get base column, null check, create raw, transform, smooth, create final column.
+     * The raw column name is automatically derived as baseColumnName + " - raw".
+     *
+     * @param baseColumnName The name of the base CSV column (e.g., "TIME", "RPM"), also used as the final column name
+     * @param units The unit string for the column
+     * @param dataTransform Optional function to transform base data (e.g., convert ticks to seconds)
+     *                      If null, uses baseColumn.data directly
+     * @param threshold Minimum samples_per_sec to apply Savitzky-Golay smoothing (0.0 = no smoothing)
+     * @param useInfoLog Whether to use INFO level logging (for RPM) or DEBUG (for TIME)
+     * @return The processed Column, or null if base column doesn't exist
+     */
+    private Column createSmoothedColumn(String baseColumnName, String units,
+                                         java.util.function.Function<DoubleArray, DoubleArray> dataTransform,
+                                         double threshold, boolean useInfoLog) {
+        // Get base CSV column
+        Column baseColumn = super.get(baseColumnName);
+        if (baseColumn == null) {
+            logger.error("_get('{}'): Base CSV column '{}' not found! Cannot create smoothed column.",
+                baseColumnName, baseColumnName);
+            return null;
+        }
+
+        // Save raw column BEFORE smoothing (needs access to CSV_NATIVE before it gets replaced)
+        createRawColumn(baseColumnName, units, dataTransform);
+
+        // Transform data if needed
+        DoubleArray processedData = dataTransform != null ? dataTransform.apply(baseColumn.data) : baseColumn.data;
+
+        // Apply smoothing if threshold is met
+        if (threshold > 0 && this.samples_per_sec >= threshold) {
+            // Apply Savitzky-Golay smoothing
+            if (useInfoLog) {
+                logger.info("_get('{}'): Applying Savitzky-Golay smoothing (samples_per_sec={})", baseColumnName, this.samples_per_sec);
+            }
+            processedData = processedData.smooth();
+        }
+
+        // Create and return final column, preserving id2 (original name) from base column
+        String id2 = baseColumn.getId2();
+        return new Column(baseColumnName, id2, units, processedData, Dataset.ColumnType.PROCESSED_VARIANT);
+    }
+
+    /**
      * Get a column in the specified unit, converting if necessary
      * @param columnName The name of the column to get
      * @param targetUnit The target unit (from UnitConstants) to convert to, or null to get in original unit
      * @return Column in the requested unit, or null if column doesn't exist
      */
-    private Column getColumnInUnits(String columnName, String targetUnit) {
-        Column column = this.get(columnName);
+    public Column getColumnInUnits(String columnName, String targetUnit) {
+        // Get base column - use _get() to allow calculation and go through recursion protection
+        Column column = _get(columnName);
         if(column == null || targetUnit == null || targetUnit.isEmpty()) {
             return column;
         }
@@ -241,13 +409,33 @@ public class ECUxDataset extends Dataset {
         // Convert to target unit using DatasetUnits helper
         // Provide ambient pressure supplier that gets BaroPressure normalized to mBar
         java.util.function.Supplier<Double> ambientSupplier = () -> {
-            Column baro = getColumnInUnits("BaroPressure", UnitConstants.UNIT_MBAR);
-            if (baro != null && baro.data != null && baro.data.size() > 0) {
-                return baro.data.get(0);
+            Column baro = super.get("BaroPressure");
+            if (baro != null) {
+                // Convert to mBar if needed (direct conversion, no recursion)
+                if (!UnitConstants.UNIT_MBAR.equals(baro.getUnits())) {
+                    Dataset.ColumnType colType = baro.getColumnType();
+                    if (colType == Dataset.ColumnType.CSV_NATIVE) {
+                        colType = Dataset.ColumnType.COMPILE_TIME_CONSTANTS;
+                    }
+                    baro = DatasetUnits.convertUnits(this, baro, UnitConstants.UNIT_MBAR, null, colType);
+                }
+                if (baro != null && baro.data != null && baro.data.size() > 0) {
+                    return baro.data.get(0);
+                }
             }
             return null;
         };
-        return DatasetUnits.convertUnits(this, column, targetUnit, ambientSupplier);
+        // Inherit type from base column for unit conversions
+        Dataset.ColumnType columnType = column.getColumnType();
+        if (columnType == Dataset.ColumnType.CSV_NATIVE) {
+            columnType = Dataset.ColumnType.COMPILE_TIME_CONSTANTS;
+        }
+        Column converted = DatasetUnits.convertUnits(this, column, targetUnit, ambientSupplier, columnType);
+        // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
+        if (converted != column) {
+            this.putColumn(converted);
+        }
+        return converted;
     }
 
     /**
@@ -331,11 +519,22 @@ public class ECUxDataset extends Dataset {
         try {
             return _get(id);
         } catch (final NullPointerException e) {
+            logger.warn("get('{}'): NullPointerException getting column: {}", id, e.getMessage());
             return null;
         }
     }
 
     private Column _get(Comparable<?> id) {
+        String idStr = id.toString();
+
+        // First check if a calculated column with this ID already exists
+        // This prevents memory leaks from creating duplicate calculated columns
+        // and breaks infinite recursion (once calculated, subsequent requests return cached version)
+        Column existing = super.get(idStr);
+        if (existing != null && existing.getColumnType() != Dataset.ColumnType.CSV_NATIVE) {
+            return existing;
+        }
+
         // ========== GENERIC UNIT CONVERSION HANDLER ==========
         // This handler parses "FieldName (unit)" pattern from menu items (e.g., "VehicleSpeed (mph)"),
         // retrieves the base field (e.g., "VehicleSpeed"), performs the unit conversion, and returns
@@ -345,36 +544,37 @@ public class ECUxDataset extends Dataset {
         // Flow:
         // 1. parseUnitConversion() extracts base field and target unit
         // 2. Retrieve base field from dataset
-        // 3. convertUnits() performs the actual conversion math
+        // 3. getColumnInUnits() performs the actual conversion
         // 4. Returns new Column with converted data
-        Units.ParsedUnitConversion parsed = Units.parseUnitConversion(id.toString());
+        Units.ParsedUnitConversion parsed = Units.parseUnitConversion(idStr);
         if (parsed != null) {
             Column baseColumn = super.get(parsed.baseField);
             if (baseColumn != null) {
-                return convertUnits(baseColumn, parsed.targetUnit);
+                return getColumnInUnits(parsed.baseField, parsed.targetUnit);
             }
         }
 
         Column c = null;
 
-        // ========== BASIC FIELDS ==========
+            // ========== BASIC FIELDS ==========
         if(id.equals("Sample")) {
             final double[] idx = new double[this.length()];
             for (int i=0;i<this.length();i++)
                 idx[i]=i;
             final DoubleArray a = new DoubleArray(idx);
-            c = new Column("Sample", "#", a);
+            c = new Column("Sample", "#", a, Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("TIME")) {
-            final DoubleArray a = super.get("TIME").data;
-            c = new Column("TIME", UnitConstants.UNIT_SECONDS, a.div(this.time_ticks_per_sec));
+            // Smooth TIME data to reduce jitter in sample rate calculations
+            c = createSmoothedColumn("TIME", UnitConstants.UNIT_SECONDS,
+                                    (data) -> data.div(this.time_ticks_per_sec), 5.0, false);
+        } else if(id.equals("TIME - raw")) {
+            c = getOrCreateRawColumn("TIME", UnitConstants.UNIT_SECONDS,
+                                    (data) -> data.div(this.time_ticks_per_sec));
         } else if(id.equals("RPM")) {
             // smooth sampling quantum noise/jitter, RPM is an integer!
-            if (this.samples_per_sec>10) {
-                final DoubleArray a = super.get("RPM").data.smooth();
-                c = new Column(id, UnitConstants.UNIT_RPM, a);
-            }
+            c = createSmoothedColumn("RPM", UnitConstants.UNIT_RPM, null, 5.0, true);
         } else if(id.equals("RPM - raw")) {
-            c = new Column(id, UnitConstants.UNIT_RPM, super.get("RPM").data);
+            c = getOrCreateRawColumn("RPM", UnitConstants.UNIT_RPM, null);
 
         // ========== CALCULATED MAF & FUEL FIELDS ==========
         } else if(id.equals("Sim Load")) {
@@ -395,7 +595,7 @@ public class ECUxDataset extends Dataset {
             // mass in g/sec
             final DoubleArray a = super.get("MassAirFlow").data.
                 mult(this.env.f.MAF_correction()).add(this.env.f.MAF_offset());
-            c = new Column(id, UnitConstants.UNIT_GPS, a);
+            c = new Column(id, UnitConstants.UNIT_GPS, a, Dataset.ColumnType.OTHER_RUNTIME);
         } else if(id.equals("MassAirFlow df/dt")) {
             // mass in g/sec
             final DoubleArray maf = super.get("MassAirFlow").data;
@@ -403,10 +603,10 @@ public class ECUxDataset extends Dataset {
             c = new Column(id, "g/sec^s", maf.derivative(time).max(0));
         } else if(id.equals("Turbo Flow")) {
             final DoubleArray a = this.get("Sim MAF").data;
-            c = new Column(id, "m^3/sec", a.div(1225*this.env.f.turbos()));
+            c = new Column(id, "m^3/sec", a.div(1225*this.env.f.turbos()), Dataset.ColumnType.OTHER_RUNTIME);
         } else if(id.equals("Turbo Flow (lb/min)")) {
             final DoubleArray a = this.get("Sim MAF").data;
-            c = new Column(id, "lb/min", a.div(7.55*this.env.f.turbos()));
+            c = new Column(id, "lb/min", a.div(7.55*this.env.f.turbos()), Dataset.ColumnType.OTHER_RUNTIME);
         } else if(id.equals("Sim Fuel Mass")) { // based on te
             final double gps = this.env.f.injector()*UnitConstants.GPS_PER_CCMIN;
             final double cylinders = this.env.f.cylinders();
@@ -416,7 +616,7 @@ public class ECUxDataset extends Dataset {
             /* average two duties for overall mass */
             if (bank2!=null) duty = duty.add(bank2.data).div(2);
             final DoubleArray a = duty.mult(cylinders*gps/100);
-            c = new Column(id, "g/sec", a);
+            c = new Column(id, "g/sec", a, Dataset.ColumnType.OTHER_RUNTIME);
 
         // ========== CALCULATED AIR-FUEL RATIO FIELDS ==========
         // Note: AFR conversions (lambda to AFR) are now handled by generic unit conversion handler
@@ -473,32 +673,49 @@ public class ECUxDataset extends Dataset {
             // Uses user-specified rpm_per_mph for calibration
             final DoubleArray rpm = this.get("RPM").data;
             c = new Column(id, UnitConstants.UNIT_MPS, rpm.div(this.env.c.rpm_per_mph()).
-                mult(UnitConstants.MPS_PER_MPH));
+                mult(UnitConstants.MPS_PER_MPH), Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("Acceleration (RPM/s)")) {
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
-            c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x, this.AccelMAW()).max(0));
+            c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x, this.AccelMAW()).max(0), Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("Acceleration - raw (RPM/s)")) {
             final DoubleArray y = this.get("RPM - raw").data;
             final DoubleArray x = this.get("TIME").data;
-            c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x));
+            c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x), Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("Acceleration (m/s^2)")) {
-            final DoubleArray y = this.get("Calc Velocity").data;
-            final DoubleArray x = this.get("TIME").data;
+            // Depends on Calc Velocity which uses RPM_PER_MPH
+            Column velocityCol = this.get("Calc Velocity");
+            Column timeCol = this.get("TIME");
+            if (velocityCol == null || timeCol == null) {
+                logger.warn("_get('Acceleration (m/s^2)'): Missing dependencies - Calc Velocity={}, TIME={}",
+                    velocityCol != null, timeCol != null);
+                return null;
+            }
+            final DoubleArray y = velocityCol.data;
+            final DoubleArray x = timeCol.data;
             final DoubleArray derivative = y.derivative(x, this.MAW()).max(0);
             // Store unsmoothed data and record smoothing requirement
-            c = new Column(id, "m/s^2", derivative);
+            c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
             this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("Acceleration (g)")) {
+            // Depends on Acceleration (m/s^2) which uses RPM_PER_MPH
             final DoubleArray a = this.get("Acceleration (m/s^2)").data;
-            c = new Column(id, UnitConstants.UNIT_G, a.div(UnitConstants.STANDARD_GRAVITY));
+            c = new Column(id, UnitConstants.UNIT_G, a.div(UnitConstants.STANDARD_GRAVITY), Dataset.ColumnType.VEHICLE_CONSTANTS);
 
         // ========== CALCULATED FIELDS: POWER ==========
         // WHP, WTQ, HP, TQ, Drag
         // See MenuHandlerRegistry.REGISTRY["WHP"], etc.
         } else if(id.equals("WHP")) {
-            final DoubleArray a = this.get("Acceleration (m/s^2)").data;
-            final DoubleArray v = this.get("Calc Velocity").data;
+            // Uses: mass, Cd, FA, rolling_drag (via drag()), rpm_per_mph (via Calc Velocity)
+            Column accelCol = this.get("Acceleration (m/s^2)");
+            Column velocityCol = this.get("Calc Velocity");
+            if (accelCol == null || velocityCol == null) {
+                logger.warn("_get('WHP'): Missing dependencies - Acceleration (m/s^2)={}, Calc Velocity={}",
+                    accelCol != null, velocityCol != null);
+                return null;
+            }
+            final DoubleArray a = accelCol.data;
+            final DoubleArray v = velocityCol.data;
             final DoubleArray whp = a.mult(v).mult(this.env.c.mass()).
                 add(this.drag(v));      // in watts
 
@@ -509,45 +726,65 @@ public class ECUxDataset extends Dataset {
                 l += " (SAE)";
             }
             // Store unsmoothed data and record smoothing requirement
-            c = new Column(id, l, value);
+            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
             this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("HP")) {
-            final DoubleArray whp = this.get("WHP").data;
+            // Uses: driveline_loss, static_loss, plus all WHP dependencies
+            Column whpCol = this.get("WHP");
+            if (whpCol == null) {
+                logger.warn("_get('HP'): Missing dependency - WHP");
+                return null;
+            }
+            final DoubleArray whp = whpCol.data;
             final DoubleArray value = whp.div((1-this.env.c.driveline_loss())).
                     add(this.env.c.static_loss());
             String l = UnitConstants.UNIT_HP;
             if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value);
+            // Store unsmoothed data and record smoothing requirement
+            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("WTQ")) {
-            final DoubleArray whp = this.get("WHP").data;
-            final DoubleArray rpm = this.get("RPM").data;
+            // Depends on WHP (which uses all WHP constants)
+            Column whpCol = this.get("WHP");
+            Column rpmCol = this.get("RPM");
+            if (whpCol == null || rpmCol == null) {
+                logger.warn("_get('WTQ'): Missing dependencies - WHP={}, RPM={}",
+                    whpCol != null, rpmCol != null);
+                return null;
+            }
+            final DoubleArray whp = whpCol.data;
+            final DoubleArray rpm = rpmCol.data;
             final DoubleArray value = whp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
             String l = UnitConstants.UNIT_FTLB;
             if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value);
+            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.toString().equals(idWithUnit("WTQ", UnitConstants.UNIT_NM))) {
+            // Depends on WTQ (which uses WHP constants)
             final DoubleArray wtq = this.get("WTQ").data;
             final DoubleArray value = wtq.mult(UnitConstants.FTLB_PER_NM); // ft-lb to Nm
             String l = UnitConstants.UNIT_NM;
             if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value);
+            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("TQ")) {
+            // Depends on HP (which uses all HP/WHP constants)
             final DoubleArray hp = this.get("HP").data;
             final DoubleArray rpm = this.get("RPM").data;
             final DoubleArray value = hp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
             String l = UnitConstants.UNIT_FTLB;
             if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value);
+            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.toString().equals(idWithUnit("TQ", UnitConstants.UNIT_NM))) {
+            // Depends on TQ (which uses all HP/WHP constants)
             final DoubleArray tq = this.get("TQ").data;
             final DoubleArray value = tq.mult(UnitConstants.FTLB_PER_NM); // ft-lb to Nm
             String l = UnitConstants.UNIT_NM;
             if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value);
+            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("Drag")) {
+            // Uses: Cd, FA, rolling_drag, mass (via drag()), rpm_per_mph (via Calc Velocity)
             final DoubleArray v = this.get("Calc Velocity").data;
             final DoubleArray drag = this.drag(v);
-            c = new Column(id, "HP", drag.mult(1.0 / UnitConstants.HP_PER_WATT));
+            c = new Column(id, "HP", drag.mult(1.0 / UnitConstants.HP_PER_WATT), Dataset.ColumnType.VEHICLE_CONSTANTS);
 
         // ========== BOOST PRESSURE & ZEITRONIX HANDLERS ==========
         // BoostPressureDesired, Zeitronix Boost, Zeitronix AFR, Zeitronix Lambda
@@ -568,7 +805,26 @@ public class ECUxDataset extends Dataset {
             int smoothingWindow = (int)Math.floor(this.samples_per_sec * this.filter.ZeitMAW());
             this.smoothingWindows.put(id.toString(), smoothingWindow);
         } else if(id.equals("Zeitronix Boost")) {
-            final DoubleArray boost = this.get(idWithUnit("Zeitronix Boost", UnitConstants.UNIT_PSI)).data;
+            // Get base column directly from map (no calculations) and convert units directly
+            Column baseCol = super.get("Zeitronix Boost");
+            if (baseCol == null) {
+                logger.warn("_get('Zeitronix Boost'): Base column not found in map");
+                return null;
+            }
+            // Convert to PSI using DatasetUnits (bypasses getColumnInUnits to avoid recursion)
+            java.util.function.Supplier<Double> ambientSupplier = () -> {
+                Column baro = super.get("BaroPressure");
+                if (baro != null && baro.data != null && baro.data.size() > 0) {
+                    return baro.data.get(0);
+                }
+                return null;
+            };
+            Dataset.ColumnType colType = baseCol.getColumnType();
+            if (colType == Dataset.ColumnType.CSV_NATIVE) {
+                colType = Dataset.ColumnType.COMPILE_TIME_CONSTANTS;
+            }
+            Column psiCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_PSI, ambientSupplier, colType);
+            final DoubleArray boost = psiCol.data;
             c = new Column(id, UnitConstants.UNIT_MBAR, boost.mult(UnitConstants.MBAR_PER_PSI).add(UnitConstants.MBAR_PER_ATM));
         } else if(id.toString().equals(idWithUnit("Zeitronix AFR", UnitConstants.UNIT_LAMBDA))) {
             final DoubleArray abs = super.get("Zeitronix AFR").data;
@@ -600,7 +856,14 @@ public class ECUxDataset extends Dataset {
                     c = new Column(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
             }
         } else if(id.equals("Sim evtmod")) {
-            final DoubleArray tans = this.get(idWithUnit("IntakeAirTemperature", UnitConstants.UNIT_CELSIUS)).data;
+            // Get base column directly from map and convert units directly (avoid recursion)
+            Column baseCol = super.get("IntakeAirTemperature");
+            if (baseCol == null) {
+                logger.warn("_get('Sim evtmod'): IntakeAirTemperature not found in map");
+                return null;
+            }
+            Column celsiusCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_CELSIUS, null, baseCol.getColumnType());
+            final DoubleArray tans = celsiusCol.data;
             DoubleArray tmot = tans.ident(95);
             try {
                 tmot = this.get("CoolantTemperature").data;
@@ -611,7 +874,14 @@ public class ECUxDataset extends Dataset {
             final DoubleArray evtmod = tans.add((tmot.sub(tans)).mult(0.02));
             c = new Column(id, "\u00B0C", evtmod);
         } else if(id.equals("Sim ftbr")) {
-            final DoubleArray tans = this.get(idWithUnit("IntakeAirTemperature", UnitConstants.UNIT_CELSIUS)).data;
+            // Get base column directly from map and convert units directly (avoid recursion)
+            Column baseCol = super.get("IntakeAirTemperature");
+            if (baseCol == null) {
+                logger.warn("_get('Sim ftbr'): IntakeAirTemperature not found in map");
+                return null;
+            }
+            Column celsiusCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_CELSIUS, null, baseCol.getColumnType());
+            final DoubleArray tans = celsiusCol.data;
             final DoubleArray evtmod = this.get("Sim evtmod").data;
             // linear fit to stock FWFTBRTA
             // fwtf = (tans+637.425)/731.334
@@ -702,7 +972,25 @@ public class ECUxDataset extends Dataset {
             // Note: RPM smoothing handled in getData(), but we need to mark RPM column
             // This is complex because RPM is used in derivative - needs special handling
         } else if(id.equals("Boost Spool Rate (time)")) {
-            final DoubleArray abs = this.get(idWithUnit("BoostPressureActual", UnitConstants.UNIT_PSI)).data.smooth();
+            // Get base column directly from map and convert units directly (avoid recursion)
+            Column baseCol = super.get("BoostPressureActual");
+            if (baseCol == null) {
+                logger.warn("_get('Boost Spool Rate (time)'): BoostPressureActual not found in map");
+                return null;
+            }
+            java.util.function.Supplier<Double> ambientSupplier = () -> {
+                Column baro = super.get("BaroPressure");
+                if (baro != null && baro.data != null && baro.data.size() > 0) {
+                    return baro.data.get(0);
+                }
+                return null;
+            };
+            Dataset.ColumnType colType = baseCol.getColumnType();
+            if (colType == Dataset.ColumnType.CSV_NATIVE) {
+                colType = Dataset.ColumnType.COMPILE_TIME_CONSTANTS;
+            }
+            Column psiCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_PSI, ambientSupplier, colType);
+            final DoubleArray abs = psiCol.data.smooth();
             final DoubleArray time = this.get("TIME").data;
             final DoubleArray derivative = abs.derivative(time, this.MAW()).max(0);
             // Store unsmoothed data and record smoothing requirement
@@ -784,26 +1072,15 @@ public class ECUxDataset extends Dataset {
             final DoubleArray s = super.get("EngineLoadSpecified").data;
             c = new Column(id, "K", cs.div(s));
 /*****************************************************************************/
-        }
-
-        if(c==null) {
-            /* Calc True Timing */
-            if (id.toString().endsWith(" (ms)")) {
-                String s = id.toString();
-                s = s.substring(0, s.length()-5);
-                final Column t = this.get(s);
-                if (t!=null) {
-                    final DoubleArray r = this.get("RPM").data;
-                    c = new Column(id, "(ms)", t.data.div(r.mult(.006)));
-                }
             }
-        }
 
-        if(c!=null) {
-            this.getColumns().add(c);
-            return c;
-        }
-        return super.get(id);
+            if(c!=null) {
+                // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
+                // This ensures CSV_NATIVE columns are replaced by calculated versions (TIME/RPM, BoostPressureActual/Desired, etc.)
+                this.putColumn(c);
+                return c;
+            }
+            return super.get(id);
     }
 
     @Override
@@ -929,6 +1206,22 @@ public class ECUxDataset extends Dataset {
         return new ArrayList<String>(this.getLastFilterReasons());
     }
 
+    /**
+     * Get range failure reasons for a row that is not in any valid range
+     * @param rowIndex The row index to check
+     * @return Range failure reasons (empty if row is in a valid range or has no stored reasons)
+     */
+    public ArrayList<String> getRangeFailureReasons(int rowIndex) {
+        if(rowIndex < 0 || rowIndex >= this.length()) {
+            return new ArrayList<String>();
+        }
+        if (this.rangeFailureReasons == null) {
+            return new ArrayList<String>();
+        }
+        ArrayList<String> reasons = this.rangeFailureReasons.get(rowIndex);
+        return reasons != null ? new ArrayList<String>(reasons) : new ArrayList<String>();
+    }
+
     @Override
     protected boolean rangeValid(Range r) {
         boolean ret = true;
@@ -951,6 +1244,13 @@ public class ECUxDataset extends Dataset {
 
         if (!ret) {
             this.lastFilterReasons = reasons;
+            // Store failure reasons for all points in this failed range (only if initialized)
+            if (this.rangeFailureReasons != null) {
+                ArrayList<String> failureReasons = new ArrayList<String>(reasons);
+                for(int rowIdx = r.start; rowIdx <= r.end; rowIdx++) {
+                    this.rangeFailureReasons.put(rowIdx, failureReasons);
+                }
+            }
             logger.trace("Filter rejected range {}: {}", r, String.join(", ", reasons));
         }
 
@@ -983,14 +1283,25 @@ public class ECUxDataset extends Dataset {
         final String columnName = id.toString();
         Integer smoothingWindow = this.smoothingWindows.get(columnName);
 
+        // Recalculate window size dynamically if column is registered for smoothing
+        // This ensures we always use the current HPTQMAW/accelMAW values, not stale cached window sizes
         if (smoothingWindow != null && smoothingWindow > 0) {
-            // Apply moving average smoothing using only data within the range
-            // This prevents interference from filtered data outside the range
-            logger.trace("Applying range-aware smoothing to '{}' with window {} over range {}",
-                columnName, smoothingWindow, r);
-
+            // Recalculate to get current window size (HPTQMAW may have changed)
+            smoothingWindow = this.MAW();  // Update to current value
             // Extract the raw data for this range
             final double[] rawData = c.data.toArray(r.start, r.end);
+
+            // Check if range is large enough for smoothing window
+            // MovingAverageSmoothing requires at least (window-1)/2 samples on each side
+            // So we need rawData.length >= window
+            if (rawData.length < smoothingWindow) {
+                logger.warn("getData('{}'): Skipping smoothing - range size {} is smaller than window {}",
+                    columnName, rawData.length, smoothingWindow);
+                return rawData;
+            }
+
+            // Apply moving average smoothing using only data within the range
+            // This prevents interference from filtered data outside the range
 
             // Apply smoothing using a window that doesn't extend beyond range bounds
             final org.nyet.util.MovingAverageSmoothing s = new org.nyet.util.MovingAverageSmoothing(smoothingWindow);
@@ -1008,6 +1319,13 @@ public class ECUxDataset extends Dataset {
 
     @Override
     public void buildRanges() {
+        // Clear previous range failure reasons (only if initialized)
+        // Note: field should always be initialized, but check for safety
+        if (this.rangeFailureReasons != null) {
+            this.rangeFailureReasons.clear();
+        }
+
+        // Build ranges - parent method will call rangeValid() which tracks failures
         super.buildRanges();
 
         // Handle filter null case (timing issue during construction)
@@ -1034,12 +1352,22 @@ public class ECUxDataset extends Dataset {
         for(int i=0;i<ranges.size();i++) {
             this.splines[i] = null;
             final Dataset.Range r=ranges.get(i);
+            logger.debug("  buildRanges(): Creating spline for range {}: start={}, end={}", i, r.start, r.end);
             final double [] rpm = this.getData("RPM", r);
             final double [] time = this.getData("TIME", r);
 
+            logger.debug("  buildRanges(): Range {} - RPM data: {}, TIME data: {}",
+                i, rpm != null ? "present (length=" + rpm.length + ")" : "null",
+                time != null ? "present (length=" + time.length + ")" : "null");
+
             // Need three points for a spline
-            if(rpm == null || time == null || time.length != rpm.length || rpm.length<3)
+            if(rpm == null || time == null || time.length != rpm.length || rpm.length<3) {
+                logger.debug("  buildRanges(): Range {} - Skipping spline creation (rpm={}, time={}, lengths match={}, min points={})",
+                    i, rpm != null, time != null,
+                    (rpm != null && time != null) ? (rpm.length == time.length) : false,
+                    (rpm != null && time != null) ? rpm.length >= 3 : false);
                 continue;
+            }
 
             PrintStream original = null;
             try {
@@ -1047,10 +1375,11 @@ public class ECUxDataset extends Dataset {
                 this.splines[i] = new CubicSpline(rpm, time);
                 System.setOut(original);
                 original = null;
+                logger.debug("  buildRanges(): Successfully created spline for range {}", i);
             } catch (final Exception e) {
                 // restore stdout if we caught something
                 if(original != null) System.setOut(original);
-                logger.warn("CubicSpline:", e);
+                logger.warn("  buildRanges(): Failed to create spline for range {}: {}", i, e.getMessage());
             }
         }
     }
@@ -1080,11 +1409,24 @@ public class ECUxDataset extends Dataset {
         }
 
         final ArrayList<Dataset.Range> ranges = this.getRanges();
+        logger.debug("      calcFATS(): Checking run {} - ranges.size()={}, splines.length={}",
+            run, ranges.size(), this.splines != null ? this.splines.length : 0);
         if(run<0 || run>=ranges.size())
             throw new Exception("FATS run " + run + " not found (available: 0-" + (ranges.size()-1) + ")");
 
-        if(this.splines[run]==null)
+        if(this.splines == null) {
+            logger.debug("      calcFATS(): splines array is null for run {}", run);
+            throw new Exception("FATS run " + run + " interpolation failed - splines array is null");
+        }
+        if(this.splines.length <= run) {
+            logger.debug("      calcFATS(): splines array length {} is too small for run {}", this.splines.length, run);
+            throw new Exception("FATS run " + run + " interpolation failed - splines array length mismatch");
+        }
+        if(this.splines[run]==null) {
+            logger.debug("      calcFATS(): spline[{}] is null - spline was not created during buildRanges()", run);
             throw new Exception("FATS run " + run + " interpolation failed - check filter settings");
+        }
+        logger.debug("      calcFATS(): Spline exists for run {}", run);
 
         final Dataset.Range r=ranges.get(run);
         logger.trace("FATS {} calculation: run={}, range={}-{}", speedUnit.getDisplayName(), run, r.start, r.end);
@@ -1231,26 +1573,6 @@ public class ECUxDataset extends Dataset {
     public boolean useId2() { return this.env.prefs.getBoolean("altnames", false); }
 
     /**
-     * Generic unit conversion method.
-     * Delegates to DatasetUnits for actual conversion logic.
-     *
-     * @param baseColumn The base column to convert from
-     * @param targetUnit The target unit to convert to (from UnitConstants)
-     * @return A new Column with converted data, or the base column if no conversion needed
-     */
-    private Column convertUnits(Column baseColumn, String targetUnit) {
-        // Provide ambient pressure supplier that gets BaroPressure normalized to mBar
-        java.util.function.Supplier<Double> ambientSupplier = () -> {
-            Column baro = getColumnInUnits("BaroPressure", UnitConstants.UNIT_MBAR);
-            if (baro != null && baro.data != null && baro.data.size() > 0) {
-                return baro.data.get(0);
-            }
-            return null;
-        };
-        return DatasetUnits.convertUnits(this, baseColumn, targetUnit, ambientSupplier);
-    }
-
-    /**
      * Helper method to construct a unit-converted column ID.
      * @param originalId The original column ID (e.g., "IntakeAirTemperature")
      * @param unit The target unit constant (e.g., UnitConstants.UNIT_CELSIUS)
@@ -1260,6 +1582,30 @@ public class ECUxDataset extends Dataset {
         return String.format("%s (%s)", originalId, unit);
     }
 
+    /**
+     * Invalidate columns that depend on vehicle constants.
+     * Called when vehicle constants change to force recalculation on next access.
+     * Removes all columns with VEHICLE_CONSTANTS type.
+     */
+    public void invalidateConstantDependentColumns() {
+        java.util.ArrayList<Column> columns = this.getColumns();
+        int removedCount = 0;
+        java.util.List<String> idsToRemove = new java.util.ArrayList<>();
+        for (Column col : columns) {
+            if (col.getColumnType() == Dataset.ColumnType.VEHICLE_CONSTANTS) {
+                idsToRemove.add(col.getId());
+            }
+        }
+        // Remove from the actual map (getColumns() returns a snapshot, so remove from map directly)
+        for (String colId : idsToRemove) {
+            if (this.removeColumn(colId) != null) {
+                removedCount++;
+            }
+        }
+        logger.debug("invalidateConstantDependentColumns(): Removed {} vehicle constant columns", removedCount);
+    }
+
 }
 
 // vim: set sw=4 ts=8 expandtab:
+

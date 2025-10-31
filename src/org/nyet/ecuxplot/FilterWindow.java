@@ -720,7 +720,7 @@ public class FilterWindow extends ECUxPlotWindow {
         refreshVisualization();
     }
 
-    private void refreshVisualization() {
+    public void refreshVisualization() {
         if (dataset == null) return;
 
         try {
@@ -732,12 +732,15 @@ public class FilterWindow extends ECUxPlotWindow {
             boolean showRPMData = showRPMDataCheckBox.isSelected();
             boolean showOnlyValid = showOnlyValidDataCheckBox.isSelected();
 
-            // Get data columns
+            // Get data columns - these will trigger recreation if invalidated
             Dataset.Column timeCol = dataset.get("TIME");
             Dataset.Column rpmCol = dataset.get("RPM");
             // Get both native velocity (if available) and calculated velocity
             // Native velocity may not be available in all logs
-            Dataset.Column nativeMphCol = dataset.get("VehicleSpeed (mph)");
+            Dataset.Column nativeMphCol = null;
+            if (dataset instanceof ECUxDataset) {
+                nativeMphCol = ((ECUxDataset)dataset).getColumnInUnits("VehicleSpeed", UnitConstants.UNIT_MPH);
+            }
             Dataset.Column calcMphCol = dataset.get("Calc Velocity");
             // Get the same acceleration column that the filter checks (smoothed with moving average)
             Dataset.Column accelCol = dataset.get("Acceleration (RPM/s)");
@@ -773,11 +776,12 @@ public class FilterWindow extends ECUxPlotWindow {
             }
 
             // Update column visibility based on RPM data setting and data availability
-            boolean hasVelocityData = (nativeMphCol != null || calcMphCol != null) && showRPMData;
             boolean hasNativeVelocity = nativeMphCol != null;
-            updateColumnVisibility(hasVelocityData, hasNativeVelocity, pedalCol, throttleCol, gearCol);
+            boolean hasCalcVelocity = calcMphCol != null;
+            updateColumnVisibility(showRPMData, hasNativeVelocity, hasCalcVelocity, pedalCol, throttleCol, gearCol);
 
             // Populate table
+            boolean hasVelocityData = (nativeMphCol != null || calcMphCol != null) && showRPMData;
             for (int rowIndex : rowsToShow) {
                 rowIndexMapping.add(rowIndex);
                 Object[] rowData = createRowData(rowIndex, timeCol, rpmCol, nativeMphCol, calcMphCol, accelCol, pedalCol, throttleCol, gearCol, ranges, hasVelocityData, hasNativeVelocity);
@@ -788,6 +792,13 @@ public class FilterWindow extends ECUxPlotWindow {
                 statusLabel.setText(String.format("Showing %d/%d rows", validCount, totalRows));
             } else {
                 statusLabel.setText(String.format("Showing %d/%d rows", rowsToShow.size(), totalRows));
+            }
+
+            // Force table update and repaint to ensure UI reflects changes
+            tableModel.fireTableDataChanged();
+            if (dataTable != null) {
+                dataTable.revalidate();
+                dataTable.repaint();
             }
 
         } catch (Exception e) {
@@ -803,15 +814,18 @@ public class FilterWindow extends ECUxPlotWindow {
         dataTable.getColumnModel().getColumn(columnIndex).setPreferredWidth(visible ? column.getWidth() : 0);
     }
 
-    private void updateColumnVisibility(boolean showRPMData, boolean hasNativeVelocity, Dataset.Column pedalCol, Dataset.Column throttleCol, Dataset.Column gearCol) {
-        // Hide/show columns based on RPM data setting and native velocity availability
+    private void updateColumnVisibility(boolean showRPMData, boolean hasNativeVelocity, boolean hasCalcVelocity, Dataset.Column pedalCol, Dataset.Column throttleCol, Dataset.Column gearCol) {
+        // Hide/show columns based on RPM data setting and data availability
         for (Column col : Column.values()) {
             if (col.requiresRPMData()) {
                 // Check if this column also requires native velocity
                 boolean shouldShow = showRPMData;
                 if (col.requiresNativeVelocity()) {
+                    // Columns like RAW_MPH and MPH_DIFF_PERCENT require native velocity
                     shouldShow = showRPMData && hasNativeVelocity;
                 }
+                // Columns that don't require native velocity (like CALC_MPH, DELTA_MPH) show when showRPMData is true
+                // They don't need to check hasCalcVelocity because the column will be calculated when needed
                 setColumnVisibility(col, shouldShow);
             }
         }
@@ -937,11 +951,24 @@ public class FilterWindow extends ECUxPlotWindow {
             }
             row[Column.idx(Column.RANGE)] = rangeValue;
 
-            // Show filter reasons if point failed individual checks
+            // Show filter reasons - prioritize actual filter failure reasons over range status
             if (!filterReasons.isEmpty()) {
+                // Point failed dataValid() checks - show the actual reasons
                 row[Column.idx(Column.FILTER_REASONS)] = String.join(", ", filterReasons);
-            } else if (!isInRange && pointValid) {
-                row[Column.idx(Column.FILTER_REASONS)] = "Not in valid range";
+            } else if (!isInRange) {
+                // Point passed dataValid() but is not in any valid range
+                // Try to get the actual range failure reason
+                ArrayList<String> rangeFailureReasons = new ArrayList<String>();
+                if (dataset instanceof ECUxDataset) {
+                    rangeFailureReasons = ((ECUxDataset) dataset).getRangeFailureReasons(rowIndex);
+                }
+                if (!rangeFailureReasons.isEmpty()) {
+                    // Show why the range failed (e.g., "pts 10 < 15", "rpm 3500 < 3000+2000")
+                    row[Column.idx(Column.FILTER_REASONS)] = String.join(", ", rangeFailureReasons);
+                } else {
+                    // No specific reason available, show generic message
+                    row[Column.idx(Column.FILTER_REASONS)] = "Not in valid range";
+                }
             } else {
                 row[Column.idx(Column.FILTER_REASONS)] = "";
             }

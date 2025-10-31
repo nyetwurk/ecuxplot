@@ -285,12 +285,25 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
             }
 
             // Update rpm conversion fields if visible
+            boolean rpmPerMphChanged = false;
             if (this.rpmPerMphField != null && this.rpmPerMphField.isVisible()) {
-                this.plotFrame.env.c.rpm_per_mph(Double.valueOf(this.rpmPerMphField.getText()));
+                double newRpmPerMph = Double.valueOf(this.rpmPerMphField.getText());
+                double oldRpmPerMph = this.plotFrame.env.c.rpm_per_mph();
+                if (Math.abs(newRpmPerMph - oldRpmPerMph) > 0.001) {
+                    rpmPerMphChanged = true;
+                }
+                this.plotFrame.env.c.rpm_per_mph(newRpmPerMph);
             }
 
-            this.dataset.refreshFromFATS();
-            notifyRangeSelector();
+            // If rpm_per_mph changed, invalidate column caches and rebuild charts
+            // This ensures Calc Velocity, WHP, HP, etc. are recalculated with new constant
+            if (rpmPerMphChanged) {
+                this.plotFrame.handleConstantsChange();
+            } else {
+                // Only FATS parameters changed (start/end/speed unit), just refresh FATS
+                this.dataset.refreshFromFATS();
+                notifyRangeSelector();
+            }
         } else if(event.getActionCommand().equals("Defaults")) {
             this.fats.speedUnit(FATS.SpeedUnit.RPM);
             this.fats.start(4200);

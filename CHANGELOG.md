@@ -1,6 +1,23 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Tooltips for menu options (Enable filter, Scatter plot, Original names, Apply SAE, Filter, SAE constants, Edit PID)
+
+### Changed
+- Renamed "Alt column names" menu option to "Original names" for clarity (preference key unchanged for backward compatibility)
+- RPM and Time smoothing revamped for high data rate logs and logs with excessive jitter ([Issue #86](https://github.com/nyetwurk/ecuxplot/issues/86))
+
+### Fixed
+- Changing vehicle constants now updates all dependent visualizations ([Issue #95](https://github.com/nyetwurk/ecuxplot/issues/95))
+  - Main chart display updates with recalculated values when constants change
+  - FATS window recalculates FATS times with new constants
+  - Filter data visualization table shows updated calculated values (e.g., Calc Velocity, Calc MPH)
+  - Range Selector window tooltips and node labels update with new power values
+- Main chart display uses original column names instead of aliases when "Original names" preference is enabled
+
 ## [1.1.5] - 2025-10-31
 
 ### Added
