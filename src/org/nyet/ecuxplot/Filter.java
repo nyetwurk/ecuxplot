@@ -17,7 +17,7 @@ public class Filter {
     private static final boolean defaultEnabled = true;
     private static final boolean defaultShowAllRanges = true;
     private static final boolean defaultMonotonicRPM = true;
-    private static final int defaultMonotonicRPMfuzz = 100;
+    private static final double defaultMonotonicRPMfuzz = 500.0;  // RPM/s (was 100 RPM at 10 Hz = 500 RPM/s)
     private static final int defaultMinRPM = 2000;
     private static final int defaultMaxRPM = 8000;
     private static final int defaultMinRPMRange = 1200;
@@ -74,6 +74,21 @@ public class Filter {
                 double newValue = oldZeitMAW;
                 this.prefs.putDouble("ZeitMAW_sec", newValue);
                 this.prefs.remove("ZeitMAW");
+            }
+        } catch (Exception e) {
+            // ignore and use defaults
+        }
+
+        try {
+            // Migrate old RPM fuzz tolerance from absolute RPM to RPM/sec
+            int oldMonotonicRPMfuzz = this.prefs.getInt("monotonicRPMfuzz", -1);
+            if (oldMonotonicRPMfuzz > 0) {
+                // Old system: 100 RPM default was calibrated for 10 Hz logger
+                // At 10 Hz: 2 samples = 0.2s between samples i-1 and i+1
+                // Conversion: rpm_value / 0.2 = rpm_per_sec
+                double newValue = oldMonotonicRPMfuzz / 0.2;
+                this.prefs.putDouble("monotonicRPMfuzz_rpm_per_sec", newValue);
+                this.prefs.remove("monotonicRPMfuzz");
             }
         } catch (Exception e) {
             // ignore and use defaults
@@ -202,11 +217,12 @@ public class Filter {
         this.prefs.putBoolean("monotonicRPM", val);
     }
 
-    public int monotonicRPMfuzz() {
-        return this.prefs.getInt("monotonicRPMfuzz", defaultMonotonicRPMfuzz);
+    public double monotonicRPMfuzz() {
+        // Use new key name to avoid type mismatch with old int values
+        return this.prefs.getDouble("monotonicRPMfuzz_rpm_per_sec", defaultMonotonicRPMfuzz);
     }
-    public void monotonicRPMfuzz(Integer val) {
-        this.prefs.putInt("monotonicRPMfuzz", val);
+    public void monotonicRPMfuzz(Double val) {
+        this.prefs.putDouble("monotonicRPMfuzz_rpm_per_sec", val);
     }
 
     public int minRPM() {
@@ -297,10 +313,10 @@ public class Filter {
         this.minPedal(defaultMinPedal);
         this.minThrottle(defaultMinThrottle);
         this.minAcceleration(defaultMinAcceleration);
-        this.accelMAW(1.5);
+        this.accelMAW(defaultAccelMAW);
         this.minPoints(defaultMinPoints);
-        this.HPTQMAW(1.5);
-        this.ZeitMAW(1.5);
+        this.HPTQMAW(defaultHPTQMAW);
+        this.ZeitMAW(defaultZeitMAW);
     }
 }
 

@@ -96,21 +96,60 @@ public class FilterWindow extends ECUxPlotWindow {
         public static int idx(Column col) { return col.getIndex(); }
     }
 
+    // Filter parameter definitions with metadata
+    private enum FilterParameter {
+        GEAR(0, "Gear"),
+        MIN_RPM(1, "Min RPM"),
+        MAX_RPM(2, "Max RPM"),
+        MIN_RPM_RANGE(3, "Min RPM Range"),
+        MONOTONIC_RPM_FUZZ(4, "RPM Fuzz Tolerance (RPM/s)"),
+        MIN_PEDAL(5, "Min Pedal (%)"),
+        MIN_THROTTLE(6, "Min Throttle (%)"),
+        MIN_ACCEL(7, "Min Accel (RPM/s)"),
+        MIN_POINTS(8, "Min Points"),
+        ACCEL_MAW(9, "Accel Smoothing (s)"),
+        HPTQ_MAW(10, "HP/TQ Smoothing (s)"),
+        ZEIT_MAW(11, "Zeitronix Smoothing (s)");
 
-    private static final String [][] pairs = {
-        {"Gear", "gear"},
-        {"Min RPM", "minRPM"},
-        {"Max RPM", "maxRPM"},
-        {"Min RPM Range", "minRPMRange"},
-        {"RPM Fuzz Tolerance", "monotonicRPMfuzz"},
-        {"Min Pedal (%)", "minPedal"},
-        {"Min Throttle (%)", "minThrottle"},
-        {"Min Accel (RPM/s)", "minAcceleration"},
-        {"Min Points", "minPoints"},
-        {"Accel Smoothing (s)", "accelMAW"},
-        {"HP/TQ Smoothing (s)", "HPTQMAW"},
-        {"Zeitronix Smoothing (s)", "ZeitMAW"},
+        private final int index;
+        private final String label;
+
+        FilterParameter(int index, String label) {
+            this.index = index;
+            this.label = label;
+        }
+
+        public int getIndex() { return index; }
+        public String getLabel() { return label; }
+
+        public static FilterParameter fromIndex(int index) {
+            for (FilterParameter param : values()) {
+                if (param.index == index) {
+                    return param;
+                }
+            }
+            return null;
+        }
+    }
+
+    // Tooltips for filter parameters (indexed by FilterParameter index)
+    private static final String[] FILTER_PARAMETER_TOOLTIPS = {
+        "Filter data to specific gear (or 'Any' for all gears)",  // GEAR (0)
+        "Minimum RPM threshold. Data points below this RPM are filtered out.",  // MIN_RPM (1)
+        "Maximum RPM threshold. Data points above this RPM are filtered out.",  // MAX_RPM (2)
+        "Minimum RPM range required for a valid run. Range must span at least this many RPM.",  // MIN_RPM_RANGE (3)
+        "Maximum allowed RPM drop rate in RPM per second. Detects severe RPM swings/deceleration. " +
+        "Lower values = stricter filtering (fewer false positives).",  // MONOTONIC_RPM_FUZZ (4)
+        "Minimum pedal position threshold (%). Data points below this pedal position are filtered out.",  // MIN_PEDAL (5)
+        "Minimum throttle position threshold (%). Data points below this throttle position are filtered out. " +
+        "Lower values allow for throttle cut scenarios.",  // MIN_THROTTLE (6)
+        "Minimum acceleration threshold in RPM per second. Data points with acceleration below this are filtered out.",  // MIN_ACCEL (7)
+        "Minimum number of data points required for a valid run. Ranges with fewer points are filtered out.",  // MIN_POINTS (8)
+        "Acceleration moving average window in seconds. Used for smoothing acceleration calculations.",  // ACCEL_MAW (9)
+        "HP/Torque moving average window in seconds. Used for smoothing power and torque calculations.",  // HPTQ_MAW (10)
+        "Zeitronix data moving average window in seconds. Used for smoothing Zeitronix boost and AFR data.",  // ZEIT_MAW (11)
     };
+
 
     @Override
     public void setVisible(boolean visible) {
@@ -308,17 +347,19 @@ public class FilterWindow extends ECUxPlotWindow {
 
         // Engine Panel
         JPanel enginePanel = createParameterPanel("Engine",
-            new int[]{0, 1, 2, 3, 4, 7}, fields);  // gear, minRPM, maxRPM, minRPMRange, monotonicRPMfuzz, minAcceleration
+            new int[]{FilterParameter.GEAR.getIndex(), FilterParameter.MIN_RPM.getIndex(), FilterParameter.MAX_RPM.getIndex(),
+                     FilterParameter.MIN_RPM_RANGE.getIndex(), FilterParameter.MONOTONIC_RPM_FUZZ.getIndex(), FilterParameter.MIN_ACCEL.getIndex()}, fields);
         formPanel.add(enginePanel);
 
         // Throttle/Pedal Panel
         JPanel throttlePanel = createParameterPanel("Throttle/Pedal",
-            new int[]{5, 6}, fields);
+            new int[]{FilterParameter.MIN_PEDAL.getIndex(), FilterParameter.MIN_THROTTLE.getIndex()}, fields);
         formPanel.add(throttlePanel);
 
         // Data Quality Panel (including smoothing parameters)
         JPanel qualityPanel = createParameterPanel("Data Quality",
-            new int[]{8, 9, 10, 11}, fields);  // minPoints, accelMAW, HPTQMAW, ZeitMAW
+            new int[]{FilterParameter.MIN_POINTS.getIndex(), FilterParameter.ACCEL_MAW.getIndex(),
+                     FilterParameter.HPTQ_MAW.getIndex(), FilterParameter.ZEIT_MAW.getIndex()}, fields);
         formPanel.add(qualityPanel);
 
         // Add scroll pane to handle overflow
@@ -439,7 +480,11 @@ public class FilterWindow extends ECUxPlotWindow {
             gbc.weightx = 1.0; // Allow labels column to expand
             gbc.fill = GridBagConstraints.NONE; // Don't fill horizontally
             gbc.anchor = GridBagConstraints.EAST; // Right-align labels
-            JLabel label = new JLabel(pairs[fieldIndex][0] + ":");
+            FilterParameter param = FilterParameter.fromIndex(fieldIndex);
+            if (param == null) {
+                continue; // Skip invalid indices
+            }
+            JLabel label = new JLabel(param.getLabel() + ":");
             formPanel.add(label, gbc);
 
             gbc.gridx = 1; gbc.gridy = i;
@@ -449,14 +494,22 @@ public class FilterWindow extends ECUxPlotWindow {
 
             // Handle gear field specially (it's a JSpinner, not JTextField)
             // Widths tuned to windows rendering
-            if (fieldIndex == 0) { // gear is at index 0 in pairs array
+            if (param == FilterParameter.GEAR) {
                 gear.setPreferredSize(new Dimension(60, gear.getPreferredSize().height));
+                gear.setToolTipText("Filter data to specific gear (or 'Any' for all gears)");
                 formPanel.add(gear, gbc);
             } else {
                 // Map pairs index to fields array index
                 // pairs: [0:gear(not in fields), 1:minRPM(0), 2:maxRPM(1), ... 8:accelMAW(7), 9:minPoints(8), 10:HPTQMAW(9), 11:ZeitMAW(10)]
                 int fieldsIndex = fieldIndex - 1; // Subtract 1 because gear is not in fields array
                 fields[fieldsIndex].setColumns(5);
+
+                // Set tooltips based on field type
+                String tooltip = getTooltipForField(param);
+                if (tooltip != null) {
+                    fields[fieldsIndex].setToolTipText(tooltip);
+                }
+
                 formPanel.add(fields[fieldsIndex], gbc);
             }
         }
@@ -464,6 +517,22 @@ public class FilterWindow extends ECUxPlotWindow {
         panel.add(formPanel, BorderLayout.CENTER);
 
         return panel;
+    }
+
+    /**
+     * Get tooltip text for a filter parameter field
+     * @param param The FilterParameter enum value
+     * @return Tooltip text, or null if no tooltip available
+     */
+    private String getTooltipForField(FilterParameter param) {
+        if (param == null) {
+            return null;
+        }
+        int index = param.getIndex();
+        if (index >= 0 && index < FILTER_PARAMETER_TOOLTIPS.length) {
+            return FILTER_PARAMETER_TOOLTIPS[index];
+        }
+        return null;
     }
 
     private JPanel createVisualizationPanel() {
@@ -519,7 +588,7 @@ public class FilterWindow extends ECUxPlotWindow {
 
     private void processFilterChanges() {
         // Process filter parameter changes
-        processPairs(this.filter, pairs, Integer.class);
+        processPairs(this.filter);
 
         // Enable the filter when settings are applied
         this.filter.enabled(true);
@@ -559,30 +628,28 @@ public class FilterWindow extends ECUxPlotWindow {
         setter.accept(value);
     }
 
-    private void processPairs(Filter filter, String[][] pairs, Class<?> clazz) {
-        if (clazz == Integer.class) {
-            setFilterValueFromSpinner(gear, filter::gear);
-            setFilterIntValueFromTextField(minRPM, filter::minRPM);
-            setFilterIntValueFromTextField(maxRPM, filter::maxRPM);
-            setFilterIntValueFromTextField(minRPMRange, filter::minRPMRange);
-            setFilterIntValueFromTextField(monotonicRPMfuzz, filter::monotonicRPMfuzz);
-            setFilterIntValueFromTextField(minPedal, filter::minPedal);
-            setFilterIntValueFromTextField(minThrottle, filter::minThrottle);
-            setFilterIntValueFromTextField(minAcceleration, filter::minAcceleration);
-            setFilterIntValueFromTextField(minPoints, filter::minPoints);
+    private void processPairs(Filter filter) {
+        setFilterValueFromSpinner(gear, filter::gear);
+        setFilterIntValueFromTextField(minRPM, filter::minRPM);
+        setFilterIntValueFromTextField(maxRPM, filter::maxRPM);
+        setFilterIntValueFromTextField(minRPMRange, filter::minRPMRange);
+        setFilterIntValueFromTextField(minPedal, filter::minPedal);
+        setFilterIntValueFromTextField(minThrottle, filter::minThrottle);
+        setFilterIntValueFromTextField(minAcceleration, filter::minAcceleration);
+        setFilterIntValueFromTextField(minPoints, filter::minPoints);
 
         // Double fields
+        setFilterDoubleValueFromTextField(monotonicRPMfuzz, filter::monotonicRPMfuzz);
         setFilterDoubleValueFromTextField(accelMAW, filter::accelMAW);
         setFilterDoubleValueFromTextField(HPTQMAW, filter::HPTQMAW);
         setFilterDoubleValueFromTextField(ZeitMAW, filter::ZeitMAW);
-        }
     }
 
     private void updateDialog() {
-        updateDialog(this.filter, pairs);
+        updateDialog(this.filter);
     }
 
-    private void updateDialog(Filter filter, String[][] pairs) {
+    private void updateDialog(Filter filter) {
         // Set gear spinner value
         int gearValue = filter.gear();
         if (gearValue == -1) {
@@ -593,7 +660,7 @@ public class FilterWindow extends ECUxPlotWindow {
         minRPM.setText(String.valueOf(filter.minRPM()));
         maxRPM.setText(String.valueOf(filter.maxRPM()));
         minRPMRange.setText(String.valueOf(filter.minRPMRange()));
-        monotonicRPMfuzz.setText(String.valueOf(filter.monotonicRPMfuzz()));
+        monotonicRPMfuzz.setText(String.format("%.0f", filter.monotonicRPMfuzz()));
         minPedal.setText(String.valueOf(filter.minPedal()));
         minThrottle.setText(String.valueOf(filter.minThrottle()));
         minAcceleration.setText(String.valueOf(filter.minAcceleration()));

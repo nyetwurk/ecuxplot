@@ -11,6 +11,13 @@
 
 ### Changed
 
+- Changed RPM fuzz tolerance from absolute RPM to RPM/sec for consistency across logger rates ([Issue #93](https://github.com/nyetwurk/ecuxplot/issues/93))
+  - Default changed from 100 RPM to 500 RPM/s (maintains same effective tolerance at 10 Hz)
+  - Automatically migrates existing preferences (100 RPM → 500 RPM/s)
+  - FilterWindow UI now shows "(RPM/s)" units and displays values as integers
+  - Refactored RPM monotonicity check into helper function `checkRPMMonotonicity()`
+  - Added FilterParameter enum (similar to Column enum) for better maintainability
+  - Added tooltips to all filter parameter fields in FilterWindow
 - Re-ordered header parsing pipeline:
   - Extract units from id FIRST via `unit_regex` (before aliasing)
   - Apply aliases to generate canonical names

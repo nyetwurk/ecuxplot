@@ -221,6 +221,43 @@ public class ECUxDataset extends Dataset {
         return (int)Math.floor(this.samples_per_sec * this.filter.accelMAW());
     }
 
+    /**
+     * Check if RPM shows a severe swing (non-monotonic behavior) by comparing
+     * the RPM at point i-1 and i+1, converting the delta to RPM/sec for consistency
+     * across different logger sample rates.
+     *
+     * @param i The current point index to check
+     * @return The RPM drop rate in RPM/s if it exceeds threshold, or 0.0 if valid
+     */
+    private double checkRPMMonotonicity(int i) {
+        if (this.rpm == null || i <= 0 || this.rpm.data.size() <= i + 2) {
+            return 0.0;
+        }
+
+        double delta = this.rpm.data.get(i-1) - this.rpm.data.get(i+1);
+        // Convert delta (RPM over 2 samples) to RPM/sec
+        // Time between samples: 1.0 / samples_per_sec
+        // Time over 2 samples: 2.0 / samples_per_sec
+        if (this.samples_per_sec > 0) {
+            double timeDelta = 2.0 / this.samples_per_sec;
+            double deltaRPMPerSec = delta / timeDelta;
+            if (deltaRPMPerSec > this.filter.monotonicRPMfuzz()) {
+                return deltaRPMPerSec;
+            }
+        } else {
+            // Fallback: if samples_per_sec is invalid, use conservative check
+            // Assume worst case (low sample rate) - use original delta check with converted threshold
+            // For safety, convert threshold assuming 10 Hz (most common logger rate)
+            double conservativeThreshold = this.filter.monotonicRPMfuzz() * 0.2;  // 500 RPM/s * 0.2s = 100 RPM
+            if (delta > conservativeThreshold) {
+                // Return a value indicating failure, but we don't have RPM/s to report
+                return Double.MAX_VALUE;
+            }
+        }
+        return 0.0;
+    }
+
+
 
     @Override
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
@@ -784,18 +821,22 @@ public class ECUxDataset extends Dataset {
                 ret=false;
             }
         }
+        // Not user configurable
         if(this.zboost!=null && this.zboost.data.get(i)<0) {
             reasons.add("zboost " + String.format("%.1f", this.zboost.data.get(i)) +
                     "<0");
             ret=false;
         }
         // Check for negative boost pressure (wheel spin detection)
+        // Not user configurable
         final Column boostActual = this.get("BoostPressureActual");
         if(boostActual!=null && boostActual.data.get(i)<1000) {
             reasons.add("boost" + String.format("%.0f", boostActual.data.get(i)) +
                     "<1000");
             ret=false;
         }
+        // Check for off throttle boost desired
+        // Not user configurable
         final Column boostDesired = this.get("BoostPressureDesired");
         if(boostDesired!=null && boostDesired.data.get(i)<1000) {
             reasons.add("boost req " + String.format("%.0f", boostDesired.data.get(i)) +
@@ -814,10 +855,15 @@ public class ECUxDataset extends Dataset {
                 ret=false;
             }
             if(i>0 && this.rpm.data.size()>i+2) {
-                double delta = this.rpm.data.get(i-1)-this.rpm.data.get(i+1);
-                if(delta > this.filter.monotonicRPMfuzz()) {
-                    reasons.add("rpmΔ " + String.format("%.0f", delta) + ">" +
-                        this.filter.monotonicRPMfuzz());
+                double dropRate = checkRPMMonotonicity(i);
+                if(dropRate > 0.0) {
+                    if(dropRate == Double.MAX_VALUE) {
+                        // Fallback case: samples_per_sec invalid
+                        reasons.add("Δrpm > threshold (samples_per_sec invalid)");
+                    } else {
+                        reasons.add("Δrpm " + String.format("%.1f", dropRate) + " RPM/s >" +
+                            String.format("%.1f", this.filter.monotonicRPMfuzz()) + " RPM/s");
+                    }
                     ret=false;
                 }
             }
