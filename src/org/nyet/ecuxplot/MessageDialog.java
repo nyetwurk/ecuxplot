@@ -43,26 +43,30 @@ public class MessageDialog {
      */
     public static void showMessageDialog(Component parentComponent, Object message,
                                        String title, int messageType) {
+        // Always log messages for debugging, regardless of GUI mode
+        String level = getLogLevel(messageType);
+        switch (level) {
+            case "ERROR":
+                logger.error("{}: {}", title, message);
+                break;
+            case "WARN":
+                logger.warn("{}: {}", title, message);
+                break;
+            default:
+                logger.info("{}: {}", title, message);
+                break;
+        }
+
         if (nogui) {
-            String level = getLogLevel(messageType);
-            switch (level) {
-                case "ERROR":
-                    logger.error("{}: {}", title, message);
-                    break;
-                case "WARN":
-                    logger.warn("{}: {}", title, message);
-                    break;
-                default:
-                    logger.info("{}: {}", title, message);
-                    break;
-            }
+            // Already logged above, nothing else to do
+            return;
+        }
+
+        // Use custom dialog for error messages, JOptionPane for others
+        if (messageType == JOptionPane.ERROR_MESSAGE) {
+            CustomExceptionDialog.showDialog(parentComponent, title, message.toString());
         } else {
-            // Use custom dialog for error messages, JOptionPane for others
-            if (messageType == JOptionPane.ERROR_MESSAGE) {
-                CustomExceptionDialog.showDialog(parentComponent, title, message.toString());
-            } else {
-                JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
-            }
+            JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
         }
     }
 
