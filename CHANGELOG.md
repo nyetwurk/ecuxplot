@@ -17,6 +17,7 @@
   - Filter data visualization table shows updated calculated values (e.g., Calc Velocity, Calc MPH)
   - Range Selector window tooltips and node labels update with new power values
 - Main chart display uses original column names instead of aliases when "Original names" preference is enabled
+- FATS restore defaults now restores mph/kph range defaults as well ([Issue #97](https://github.com/nyetwurk/ecuxplot/issues/97))
 
 ## [1.1.5] - 2025-10-31
 

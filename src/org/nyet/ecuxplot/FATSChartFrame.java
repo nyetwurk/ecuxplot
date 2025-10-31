@@ -305,9 +305,14 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
                 notifyRangeSelector();
             }
         } else if(event.getActionCommand().equals("Defaults")) {
+            // Restore all defaults: RPM, mph, and kph
             this.fats.speedUnit(FATS.SpeedUnit.RPM);
             this.fats.start(4200);
             this.fats.end(6500);
+            this.fats.startMph(60.0);
+            this.fats.endMph(90.0);
+            this.fats.startKph(100.0);
+            this.fats.endKph(150.0);
             this.dataset.refreshFromFATS();
             // Update text fields to show defaults
             this.start.setText("4200");
