@@ -106,6 +106,8 @@ The `header_format` field provides a universal way to describe any CSV header st
 header_format: "id"        # Default: single header line with field names
 header_format: "id,u"      # Field names + units (2 header lines)
 header_format: "id,u,id2"  # Field names + units + aliases (3 header lines)
+header_format: "g,id,u"    # Group line + field names + units (VCDS format)
+header_format: "g,id,u,u2" # Group line + field names + units + secondary units (VCDS_LEGACY format)
 ```
 
 #### Header Format Field Descriptions
@@ -114,14 +116,18 @@ header_format: "id,u,id2"  # Field names + units + aliases (3 header lines)
   - **Default**: `"id"` (single header line with field names)
   - **`"id,u"`**: Field names + units (2 header lines)
   - **`"id,u,id2"`**: Field names + units + aliases (3 header lines)
+  - **`"g,id,u"`**: Group line + field names + units (VCDS format)
+  - **`"g,id,u,u2"`**: Group line + field names + units + secondary units (VCDS_LEGACY format)
   - **Required**: No (defaults to `"id"` if not specified)
   - **Implementation**: Default value set during XML parsing/construction phase
 
 #### Header Format Tokens
 
+- **`g`**: Group line (used by VCDS/VCDS_LEGACY for group markers, e.g., "Group A:", "Group 115")
 - **`id`**: Field names (original field names from CSV)
-- **`u`**: Units (units for each field)
-- **`id2`**: Aliases (processed/standardized field names)
+- **`u`**: Units (units for each field, first units line)
+- **`u2`**: Secondary units line (used by VCDS_LEGACY for second units line)
+- **`id2`**: Secondary field information (aliases, ME7L variable names, or group lines depending on logger type)
 
 #### How Header Format Works
 

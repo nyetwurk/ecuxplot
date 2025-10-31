@@ -188,6 +188,8 @@ Aliases map logger-specific field names to standardized canonical names. The sys
 2. **Logger-Specific Aliases** - Regex patterns specific to detected logger type
 3. **DEFAULT Aliases** - Common aliases applied to all loggers
 
+**Note**: Aliases are applied after unit regex extraction but before logger-specific header processing (e.g., VCDS group handling).
+
 **Configuration**:
 
 ```yaml
@@ -216,24 +218,29 @@ Unit determination uses a multi-step fallback strategy to extract and normalize 
 
 ### Unit Processing Order
 
-**Location**: `DataLogger.processHeaders()` - executed in this order:
+**Location**: `DataLogger.processHeaders()` - executed in this order (as of 1.1.4):
 
-1. **Unit Regex Extraction** (`unit_regex`) - FIRST, before aliasing
+1. **Parse Header Format** - Extract header lines based on `header_format` tokens (`g`, `id`, `u`, `u2`, `id2`)
+   - Units from `header_format` tokens (`u`, `u2`) are populated into the `u` array during parsing
+   - This happens before unit processing steps below
+2. **Unit Regex Extraction** (`unit_regex`) - Extract units from complex field formats BEFORE aliasing
    - Extracts field names, units, and ME7L variables from complex formats
    - Example: `"Boost Pressure(mBar) BoostPressure"` → `id: "Boost Pressure"`, `u: "mBar"`, `id2: "BoostPressure"`
    - Used by VOLVOLOGGER
-2. **Apply Aliases** - Generate canonical field names
-3. **Logger-Specific Processing** - Custom logic (e.g., VCDS group handling)
-4. **Header Format Token Parsing** - Extract units from `header_format` tokens (`u`, `u2`)
-   - Triggered when logger has `header_format` with `u` token
+3. **Apply Aliases** - Generate canonical field names
+   - ME7_ALIASES → Logger-specific aliases → DEFAULT aliases
+4. **Logger-Specific Processing** - Custom logic (e.g., VCDS group handling via `VCDSHeaderProcessor.java`)
+   - Runs after aliasing but before general unit parsing
+   - For VCDS/VCDS_LEGACY: Handles group disambiguation, STAMP→TIME conversion
 5. **General Unit Parsing** - Extract units from field names in format `"FieldName (unit)"`
-   - Triggered when logger doesn't have `header_format` with `u` token
-6. **Field Transformations** - Apply prepend/append
-7. **Unit Normalization** - Normalize unit strings (`Units.normalize()`)
-   - Removes parentheses: `"(sec)"` → `"sec"`
-   - Normalizes variations: `"rpm"` → `"RPM"`, `"degC"` → `"°C"`, `"hPa"` → `"mBar"`
-8. **Unit Inference** - Infer units from field names when normalization returns empty (`Units.find()`)
-9. **Ensure Unique Names** - Make columns unique LAST
+   - Only triggered when logger doesn't have `header_format` with `u` token
+   - If logger has `u` token, units were already extracted during header format parsing
+6. **Field Transformations** - Apply prepend/append (must happen BEFORE unit processing)
+   - Applied after general unit parsing so transformed field names can be used for unit inference
+7. **Unit Normalization and Inference** - Process and normalize units (`Units.normalize()` and `Units.find()`)
+   - Normalizes unit strings: `"(sec)"` → `"sec"`, `"rpm"` → `"RPM"`, `"degC"` → `"°C"`, `"hPa"` → `"mBar"`
+   - Infers units from field names when normalization returns empty
+8. **Ensure Unique Names** - Make columns unique LAST (after all processing complete)
 
 **Implementation**: See `DataLogger.java` and `Units.java` for full implementation details.
 
@@ -304,7 +311,7 @@ case "VCDS": {
 
 **🔄 Partially Migrated**:
 
-- VCDS: Detection, aliases, and basic parsing in YAML; complex header processing remains in Java
+- **VCDS/VCDS_LEGACY**: Detection, aliases, and basic parsing in YAML; complex header processing (group disambiguation, STAMP→TIME conversion) handled by `VCDSHeaderProcessor.java` (separated from `DataLogger.java` in 1.1.4)
 
 #### Other Logger-Specific Conditionals
 
@@ -433,7 +440,8 @@ case "NEW_LOGGER": {
 
 ## ✅ Supported Logger Types
 
-- **VCDS**: German and English variants with complex header processing
+- **VCDS**: German and English variants with complex header processing (uses `VCDSHeaderProcessor.java`)
+- **VCDS_LEGACY**: Legacy VCDS format with "g" and "u2" header columns (uses `VCDSHeaderProcessor.java`)
 - **ME7LOGGER**: Dynamic header finding with VARS/UNITS/ALIASES
 - **JB4**: Fixed line skipping with field aliases
 - **COBB_AP**: Single header with unit extraction from field names
@@ -443,6 +451,8 @@ case "NEW_LOGGER": {
 - **VOLVOLOGGER**: Regex unit extraction with field transformations
 - **ZEITRONIX**: Field prefixing for overlay compatibility
 - **SWCOMM**: Multi-header with complex field processing
+- **SIMOSTOOLS**: SimosTools Android app format (extensive support added in 1.1.4)
+- **WINLOG**: Winlog logger format (added in 1.1.4)
 
 ## 🔄 Future Enhancements
 
