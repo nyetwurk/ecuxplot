@@ -270,11 +270,12 @@ public class LoggerDetectionTest {
                 }
             }
 
-            // Handle "null" as string vs actual null
+            // Handle "null", empty strings, and null (from self-closing XML tags) as equivalent
             Integer expectedIndex = null;
-            if (!"null".equals(expectedIndexStr) && !expectedIndexStr.trim().isEmpty()) {
+            String trimmed = (expectedIndexStr != null ? expectedIndexStr.trim() : "");
+            if (!"null".equalsIgnoreCase(trimmed) && !trimmed.isEmpty()) {
                 try {
-                    expectedIndex = Integer.parseInt(expectedIndexStr.trim());
+                    expectedIndex = Integer.parseInt(trimmed);
                 } catch (NumberFormatException e) {
                     // Invalid index, will fail test
                 }

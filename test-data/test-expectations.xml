@@ -176,7 +176,7 @@
         <expected_filter_columns>
             <category name="pedal">9</category>
             <category name="throttle">2</category>
-            <category name="gear">null</category>
+            <category name="gear"></category>
         </expected_filter_columns>
         <sanity_check row="0" col="0">91.0</sanity_check>
     </test_case>
@@ -211,7 +211,7 @@
         <expected_filter_columns>
             <category name="pedal">4</category>
             <category name="throttle">3</category>
-            <category name="gear">null</category>
+            <category name="gear"></category>
         </expected_filter_columns>
         <sanity_check row="0" col="0">1.0</sanity_check>
     </test_case>
@@ -336,6 +336,12 @@
             <unit index="35">%</unit>
             <unit index="36">mph</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal">5</category>
+            <category name="throttle">9</category>
+            <category name="gear">19</category>
+        </expected_filter_columns>
         <sanity_check row="0" col="0">57.25</sanity_check>
     </test_case>
 
@@ -366,6 +372,12 @@
             <unit index="4">PSI</unit>
             <unit index="5">PSI</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="0">0.0</sanity_check>
     </test_case>
 
@@ -420,6 +432,12 @@
             <unit index="12">°C</unit>
             <unit index="13">mBar</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle">11</category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="0">0.254</sanity_check>
     </test_case>
 
@@ -483,6 +501,12 @@
             <unit index="15">°</unit>
             <unit index="16">km/h</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="0">0.29</sanity_check>
     </test_case>
 
@@ -1698,6 +1722,12 @@
             <unit index="9">%</unit>
             <unit index="10">lambda</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="1">0.25</sanity_check>
     </test_case>
 
@@ -1746,6 +1776,12 @@
             <unit index="10">V</unit>
             <unit index="11">s</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="1">0.58</sanity_check>
     </test_case>
 
@@ -1806,6 +1842,12 @@
             <unit index="14">V</unit>
             <unit index="15">V</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="1">0.6</sanity_check>
     </test_case>
 
@@ -1866,6 +1908,12 @@
             <unit index="14">°</unit>
             <unit index="15">°</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="1">0.0</sanity_check>
     </test_case>
 
@@ -1914,6 +1962,12 @@
             <unit index="10">mBar</unit>
             <unit index="11">s</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="1">0.25</sanity_check>
     </test_case>
 
@@ -2001,6 +2055,12 @@
             <unit index="23">s</unit>
             <unit index="24">km/h</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="1">0.39</sanity_check>
     </test_case>
 
@@ -2028,6 +2088,12 @@
             <unit index="3">%</unit>
             <unit index="4">km/h</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle">3</category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="0">0.0</sanity_check>
     </test_case>
 
@@ -2222,6 +2288,12 @@
             <unit index="8">PSI</unit>
             <unit index="9">AFR</unit>
         </expected_units>
+
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
         <sanity_check row="0" col="0">37155.004</sanity_check>
     </test_case>
 </test_expectations>
