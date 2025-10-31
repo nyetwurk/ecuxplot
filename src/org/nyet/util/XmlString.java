@@ -5,11 +5,7 @@ import java.lang.CharSequence;
 import java.lang.String;
 import java.lang.StringBuffer;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.text.StringEscapeUtils;
-import org.apache.commons.text.translate.LookupTranslator;
 
 public class XmlString implements CharSequence, Appendable {
     // Members
@@ -17,24 +13,9 @@ public class XmlString implements CharSequence, Appendable {
     private int ShiftWidth=2;
     private int Indent=0;
     private static final String EOL="\n";
-    private final LookupTranslator lt;
 
     // Constructors
     public XmlString() {
-        final Map<CharSequence, CharSequence> sb = new HashMap<CharSequence, CharSequence>()
-        {
-            /**
-             *
-             */
-            private static final long serialVersionUID = 1L;
-
-            {
-                for(char i=0; i<128; i++) {
-                    put(String.format("%c", i+128), "&#" + (i+128) + ";");
-                }
-            }
-        };
-        this.lt = new LookupTranslator(sb);
     }
     public XmlString(int i) { this(); this.indent(i); }
     public XmlString(String s) { this(); this.append(s); }
@@ -53,12 +34,18 @@ public class XmlString implements CharSequence, Appendable {
     }
 
     // Methods
+    /**
+     * Escape XML special characters. Standard XML escaping for the 5 special characters.
+     * Note: Must escape '&' first to avoid double-escaping.
+     */
     private String escape(String s)
     {
-        return this.lt.translate(StringEscapeUtils.escapeXml11(s.trim()))
-            .replaceAll("\r","&#013;").replaceAll("\n","&#010;");
-        //return StringEscapeUtils.escapeHtml3(s);
-        //return StringEscapeUtils.escapeHtml4(s);
+        s = s.trim();
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
     }
     /*
     private Appendable tagIt(String tag, int value)

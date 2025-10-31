@@ -172,7 +172,7 @@ public class DataLogger {
                 if (me7AliasesMap != null && this.id[i] != null) {
                     String target = me7AliasesMap.get(this.id[i]);
                     if (target != null) {
-                        if (!org.apache.commons.lang3.ArrayUtils.contains(this.id, target)) {
+                        if (!java.util.Arrays.asList(this.id).contains(target)) {
                             logger.debug("{}: ME7 alias '{}'->'{}'", i, this.id[i], target);
                             this.id[i] = target;
                             continue;
@@ -207,7 +207,7 @@ public class DataLogger {
                     String[] prev = java.util.Arrays.copyOfRange(this.id, 0, i);
                     String renamed = this.id[i];
                     boolean rename = false;
-                    for (int j = 2; org.apache.commons.lang3.ArrayUtils.contains(prev, renamed); j++)  {
+                    for (int j = 2; java.util.Arrays.asList(prev).contains(renamed); j++)  {
                         renamed = this.id[i] + " " + Integer.toString(j);
                         // logger.debug("{}: renamed to '{}'", i, renamed);
                         rename = true;

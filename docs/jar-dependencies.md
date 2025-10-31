@@ -26,8 +26,7 @@ Shared dependencies used by both main application and utilities:
 
 - `opencsv-*.jar` - CSV parsing
 - `commons-cli-*.jar` - Command line interface
-- `commons-lang3-*.jar` - Apache Commons utilities
-- `commons-text-*.jar` - Text processing utilities
+- `commons-lang3-*.jar` - Apache Commons utilities (required by OpenCSV)
 
 ## Files That Must Be Modified
 
@@ -93,7 +92,6 @@ File "lib\jfreechart-${JFREECHART_VER}.jar"
 File "lib\opencsv-${OPENCSV_VER}.jar"
 File "lib\commons-cli-${COMMONS_CLI_VER}.jar"
 File "lib\commons-lang3-${COMMONS_LANG3_VER}.jar"
-File "lib\commons-text-${COMMONS_TEXT_VER}.jar"
 File "lib\slf4j-api-${SLF4J_API_VER}.jar"
 File "lib\logback-classic-${LOGBACK_CLASSIC_VER}.jar"
 File "lib\logback-core-${LOGBACK_CORE_VER}.jar"
@@ -139,7 +137,6 @@ public Version () {
     this.add("OpenCSV " + Version.OpenCSV);
     this.add("commons-cli " + Version.CommonsCLI);
     this.add("commons-lang3 " + Version.CommonsLang3);
-    this.add("commons-text " + Version.CommonsText);
     this.add("newlib " + Version.NewLib);  // Add new JAR here
     this.add("Java compiler " + Version.JavacMajor);
     this.add("Java runtime "+ System.getProperty("java.version"));

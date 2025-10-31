@@ -42,8 +42,7 @@ ECUXPLOT_JARS := \
 COMMON_JARS := \
     opencsv-$(OPENCSV_VER).jar \
     commons-cli-$(COMMONS_CLI_VER).jar \
-    commons-lang3-$(COMMONS_LANG3_VER).jar \
-    commons-text-$(COMMONS_TEXT_VER).jar
+    commons-lang3-$(COMMONS_LANG3_VER).jar
 
 JARS:=$(addprefix lib/,$(ECUXPLOT_JARS) $(COMMON_JARS))
 
@@ -177,7 +176,6 @@ vars:
 	@echo 'OPENCSV_VER=$(OPENCSV_VER)'
 	@echo 'COMMONS_CLI_VER=$(COMMONS_CLI_VER)'
 	@echo 'COMMONS_LANG3_VER=$(COMMONS_LANG3_VER)'
-	@echo 'COMMONS_TEXT_VER=$(COMMONS_TEXT_VER)'
 	@echo 'SLF4J_API_VER=$(SLF4J_API_VER)'
 	@echo 'LOGBACK_CLASSIC_VER=$(LOGBACK_CLASSIC_VER)'
 	@echo 'LOGBACK_CORE_VER=$(LOGBACK_CORE_VER)'
@@ -202,7 +200,6 @@ GEN:=	sed -e 's/%VERSION/$(SEM_VER)/g' \
 	-e 's/%JCOMMON_VER/$(JCOMMON_VER)/g' \
 	-e 's/%OPENCSV_VER/$(OPENCSV_VER)/g' \
 	-e 's/%COMMONS_LANG3_VER/$(COMMONS_LANG3_VER)/g' \
-	-e 's/%COMMONS_TEXT_VER/$(COMMONS_TEXT_VER)/g' \
 	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g' \
 	-e 's/%SLF4J_API_VER/$(SLF4J_API_VER)/g' \
 	-e 's/%LOGBACK_CLASSIC_VER/$(LOGBACK_CLASSIC_VER)/g' \

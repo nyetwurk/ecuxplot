@@ -132,7 +132,7 @@ def main():
     # Get JAR versions
     jar_names = [
         "jcommon", "jfreechart", "opencsv", "commons-cli",
-        "commons-lang3", "commons-text", "slf4j-api",
+        "commons-lang3", "slf4j-api",
         "logback-classic", "logback-core"
     ]
 

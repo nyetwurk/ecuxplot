@@ -11,7 +11,6 @@ public class Version extends ArrayList<Object> {
     public static final String JavacMajor = "%JAVAC_MAJOR_VER";
     public static final String CommonsCLI = "%COMMONS_CLI_VER";
     public static final String CommonsLang3 = "%COMMONS_LANG3_VER";
-    public static final String CommonsText = "%COMMONS_TEXT_VER";
     public static final String SLF4J_API = "%SLF4J_API_VER";
     public static final String LogbackClassic = "%LOGBACK_CLASSIC_VER";
     public static final String LogbackCore = "%LOGBACK_CORE_VER";
@@ -23,7 +22,6 @@ public class Version extends ArrayList<Object> {
 	this.add("OpenCSV " + Version.OpenCSV);
 	this.add("commons-cli " + Version.CommonsCLI);
 	this.add("commons-lang3 " + Version.CommonsLang3);
-	this.add("commons-text " + Version.CommonsText);
 	this.add("slf4j-api " + Version.SLF4J_API);
 	this.add("logback-classic " + Version.LogbackClassic);
 	this.add("logback-core " + Version.LogbackCore);

@@ -109,7 +109,6 @@ Section "install" InstallationInfo
   File "lib\opencsv-${OPENCSV_VER}.jar"
   File "lib\commons-cli-${COMMONS_CLI_VER}.jar"
   File "lib\commons-lang3-${COMMONS_LANG3_VER}.jar"
-  File "lib\commons-text-${COMMONS_TEXT_VER}.jar"
   File "lib\slf4j-api-${SLF4J_API_VER}.jar"
   File "lib\logback-classic-${LOGBACK_CLASSIC_VER}.jar"
   File "lib\logback-core-${LOGBACK_CORE_VER}.jar"
