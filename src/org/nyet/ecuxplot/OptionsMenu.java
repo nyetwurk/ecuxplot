@@ -99,6 +99,8 @@ public final class OptionsMenu extends JMenu {
                 this.filterCheckBox.setSelected(filterEnabled);
             }
         }
+        // Also update FATS availability when filter state changes
+        updateFATSAvailability();
     }
 
     /**
