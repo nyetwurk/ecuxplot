@@ -222,6 +222,35 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
+     * Get a column in the specified unit, converting if necessary
+     * @param columnName The name of the column to get
+     * @param targetUnit The target unit (from UnitConstants) to convert to, or null to get in original unit
+     * @return Column in the requested unit, or null if column doesn't exist
+     */
+    private Column getColumnInUnits(String columnName, String targetUnit) {
+        Column column = this.get(columnName);
+        if(column == null || targetUnit == null || targetUnit.isEmpty()) {
+            return column;
+        }
+
+        String currentUnit = column.getUnits();
+        if(currentUnit == null || currentUnit.isEmpty() || currentUnit.equals(targetUnit)) {
+            return column;
+        }
+
+        // Convert to target unit using DatasetUnits helper
+        // Provide ambient pressure supplier that gets BaroPressure normalized to mBar
+        java.util.function.Supplier<Double> ambientSupplier = () -> {
+            Column baro = getColumnInUnits("BaroPressure", UnitConstants.UNIT_MBAR);
+            if (baro != null && baro.data != null && baro.data.size() > 0) {
+                return baro.data.get(0);
+            }
+            return null;
+        };
+        return DatasetUnits.convertUnits(this, column, targetUnit, ambientSupplier);
+    }
+
+    /**
      * Check if RPM shows a severe swing (non-monotonic behavior) by comparing
      * the RPM at point i-1 and i+1, converting the delta to RPM/sec for consistency
      * across different logger sample rates.
@@ -296,19 +325,6 @@ public class ECUxDataset extends Dataset {
         return windDrag.add(rollingDrag);
     }
 
-    private DoubleArray toPSI(DoubleArray abs) {
-        final Column ambient = this.get("BaroPressure");
-        if(ambient==null) return abs.add(-UnitConstants.MBAR_PER_ATM).div(UnitConstants.MBAR_PER_PSI);
-        return abs.sub(ambient.data).div(UnitConstants.MBAR_PER_PSI);
-    }
-
-    private static DoubleArray toCelcius(DoubleArray f) {
-        return f.add(-UnitConstants.CELSIUS_TO_FAHRENHEIT_OFFSET).mult(1.0/UnitConstants.CELSIUS_TO_FAHRENHEIT_FACTOR);
-    }
-
-    private static DoubleArray toFahrenheit(DoubleArray c) {
-        return c.mult(UnitConstants.CELSIUS_TO_FAHRENHEIT_FACTOR).add(UnitConstants.CELSIUS_TO_FAHRENHEIT_OFFSET);
-    }
 
     @Override
     public Column get(Comparable<?> id) {
@@ -829,19 +845,27 @@ public class ECUxDataset extends Dataset {
         }
         // Check for negative boost pressure (wheel spin detection)
         // Not user configurable
-        final Column boostActual = this.get("BoostPressureActual");
-        if(boostActual!=null && boostActual.data.get(i)<1000) {
-            reasons.add("boost" + String.format("%.0f", boostActual.data.get(i)) +
-                    "<1000");
-            ret=false;
+        // Threshold: 1000 mBar (atmospheric pressure) - work in mBar for consistency
+        final Column boostActual = getColumnInUnits("BoostPressureActual", UnitConstants.UNIT_MBAR);
+        if(boostActual!=null && i < boostActual.data.size()) {
+            double threshold = 1000.0; // 1000 mBar absolute
+            if(boostActual.data.get(i) < threshold) {
+                reasons.add("boost " + String.format("%.0f", boostActual.data.get(i)) +
+                        " mBar <" + String.format("%.0f", threshold) + " mBar");
+                ret=false;
+            }
         }
         // Check for off throttle boost desired
         // Not user configurable
-        final Column boostDesired = this.get("BoostPressureDesired");
-        if(boostDesired!=null && boostDesired.data.get(i)<1000) {
-            reasons.add("boost req " + String.format("%.0f", boostDesired.data.get(i)) +
-                    "<1000");
-            ret=false;
+        // Threshold: 1000 mBar (atmospheric pressure) - work in mBar for consistency
+        final Column boostDesired = getColumnInUnits("BoostPressureDesired", UnitConstants.UNIT_MBAR);
+        if(boostDesired!=null && i < boostDesired.data.size()) {
+            double threshold = 1000.0; // 1000 mBar absolute
+            if(boostDesired.data.get(i) < threshold) {
+                reasons.add("boost req " + String.format("%.0f", boostDesired.data.get(i)) +
+                        " mBar <" + String.format("%.0f", threshold) + " mBar");
+                ret=false;
+            }
         }
         if(this.rpm!=null) {
             if(this.rpm.data.get(i)<this.filter.minRPM()) {
@@ -1208,99 +1232,22 @@ public class ECUxDataset extends Dataset {
 
     /**
      * Generic unit conversion method.
-     * Converts data from one unit to another using conversion factors from UnitConstants.
-     *
-     * Supported conversions:
-     * - Air-Fuel Ratio: lambda ↔ AFR (stoichiometric factor)
-     * - Temperature: Celsius ↔ Fahrenheit (temperature conversion)
-     * - Pressure: mBar ↔ PSI (with ambient pressure handling)
-     * - Speed: mph ↔ km/h (speed conversion)
-     * - Mass flow: g/sec ↔ kg/hr (mass flow conversion)
-     * - Torque: ft-lb ↔ Nm (torque conversion)
+     * Delegates to DatasetUnits for actual conversion logic.
      *
      * @param baseColumn The base column to convert from
      * @param targetUnit The target unit to convert to (from UnitConstants)
      * @return A new Column with converted data, or the base column if no conversion needed
      */
     private Column convertUnits(Column baseColumn, String targetUnit) {
-        String baseUnit = baseColumn.getUnits();
-        DoubleArray data = baseColumn.data;
-        String newUnit = targetUnit;
-
-        // Air-Fuel Ratio: lambda <-> AFR
-        if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_AFR, UnitConstants.UNIT_LAMBDA)) {
-            data = data.mult(UnitConstants.STOICHIOMETRIC_AFR);
-            newUnit = UnitConstants.UNIT_AFR;
-        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_LAMBDA, UnitConstants.UNIT_AFR)) {
-            data = data.mult(UnitConstants.LAMBDA_PER_AFR);
-            newUnit = UnitConstants.UNIT_LAMBDA;
-        }
-
-        // Temperature: Celsius <-> Fahrenheit
-        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_FAHRENHEIT, UnitConstants.UNIT_CELSIUS)) {
-            data = toFahrenheit(data);
-            newUnit = UnitConstants.UNIT_FAHRENHEIT;
-        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_CELSIUS, UnitConstants.UNIT_FAHRENHEIT)) {
-            data = toCelcius(data);
-            newUnit = UnitConstants.UNIT_CELSIUS;
-        }
-
-        // Pressure: mBar <-> PSI
-        // Note: PSI is typically gauge pressure, mBar is absolute pressure
-        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_PSI, UnitConstants.UNIT_MBAR)) {
-            data = toPSI(data);
-            newUnit = UnitConstants.UNIT_PSI;
-        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI)) {
-            // PSI gauge to mBar absolute
-            // Get ambient pressure from dataset or use standard
-            double ambient = UnitConstants.MBAR_PER_ATM; // 1013 mBar standard
-            try {
-                Column baro = super.get("BaroPressure");
-                if (baro != null && baro.data != null) {
-                    ambient = baro.data.get(0); // Use first value as ambient
-                }
-            } catch (Exception e) {
-                // Use standard atmospheric pressure
+        // Provide ambient pressure supplier that gets BaroPressure normalized to mBar
+        java.util.function.Supplier<Double> ambientSupplier = () -> {
+            Column baro = getColumnInUnits("BaroPressure", UnitConstants.UNIT_MBAR);
+            if (baro != null && baro.data != null && baro.data.size() > 0) {
+                return baro.data.get(0);
             }
-            data = data.mult(UnitConstants.MBAR_PER_PSI).add(ambient);
-            newUnit = UnitConstants.UNIT_MBAR;
-        }
-
-        // Speed: mph <-> km/h
-        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_MPH, UnitConstants.UNIT_KMH)) {
-            data = data.mult(UnitConstants.MPH_PER_KPH);
-            newUnit = UnitConstants.UNIT_MPH;
-        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_KMH, UnitConstants.UNIT_MPH)) {
-            data = data.mult(UnitConstants.KMH_PER_MPH);
-            newUnit = UnitConstants.UNIT_KMH;
-        }
-
-        // Mass flow: g/sec <-> kg/hr
-        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_KGH, UnitConstants.UNIT_GPS)) {
-            data = data.mult(UnitConstants.KGH_PER_GPS);
-            newUnit = UnitConstants.UNIT_KGH;
-        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_GPS, UnitConstants.UNIT_KGH)) {
-            data = data.mult(UnitConstants.GPS_PER_KGH);
-            newUnit = UnitConstants.UNIT_GPS;
-        }
-
-        // Torque: ft-lb <-> Nm
-        else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_NM, UnitConstants.UNIT_FTLB)) {
-            data = data.mult(UnitConstants.FTLB_PER_NM);
-            newUnit = UnitConstants.UNIT_NM;
-        } else if (tryConversion(targetUnit, baseUnit, UnitConstants.UNIT_FTLB, UnitConstants.UNIT_NM)) {
-            data = data.mult(UnitConstants.NM_PER_FTLB);
-            newUnit = UnitConstants.UNIT_FTLB;
-        }
-
-        // If no conversion matched, return base column as-is
-        // (This handles cases where units are already correct or not in our conversion list)
-        if (data == baseColumn.data) {
-            return baseColumn;
-        }
-
-        String baseId = baseColumn.getId();
-        return new Column(baseId, newUnit, data);
+            return null;
+        };
+        return DatasetUnits.convertUnits(this, baseColumn, targetUnit, ambientSupplier);
     }
 
     /**
@@ -1311,13 +1258,6 @@ public class ECUxDataset extends Dataset {
      */
     private static String idWithUnit(String originalId, String unit) {
         return String.format("%s (%s)", originalId, unit);
-    }
-
-    /**
-     * Helper method to check if a unit conversion should be applied.
-     */
-    private static boolean tryConversion(String targetUnit, String baseUnit, String expectedTarget, String expectedBase) {
-        return expectedTarget.equals(targetUnit) && expectedBase.equals(baseUnit);
     }
 
 }

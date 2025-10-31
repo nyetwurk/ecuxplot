@@ -5,6 +5,7 @@
 
 ### Added
 
+- Extensive SimosTools support ([Issue #92](https://github.com/nyetwurk/ecuxplot/issues/92))
 - VCDS legacy support with "g" and "u2" header columns
 - VCDSHeaderProcessor.java - separate file for all VCDS-specific header processing logic
 - Legacy VCDS test data files (vcds-002-031.csv, vcds-003-020-026.csv, vcds-003-114-020.csv, vcds-115-118.csv)
@@ -34,10 +35,6 @@
 - Restore filter reasons in FilterWindow data visualization table
 - Fix bug where which window was on top was confusing
 - Fix bug where ranges that should not be visible are visible on startup and when enabling filter ([Issue #86](https://github.com/nyetwurk/ecuxplot/issues/86))
-
-### Added
-
-- SimosTools support ([Issue #92](https://github.com/nyetwurk/ecuxplot/issues/92))
 
 ## [1.1.4] - 2025-10-29
 

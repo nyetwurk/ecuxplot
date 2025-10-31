@@ -149,8 +149,10 @@ public final class Units {
             {"degC", UnitConstants.UNIT_CELSIUS},
             {"C", UnitConstants.UNIT_CELSIUS},
             {"F", UnitConstants.UNIT_FAHRENHEIT},
+            {"lambda", UnitConstants.UNIT_LAMBDA},
             {"mbar", UnitConstants.UNIT_MBAR},
             {"hPa", UnitConstants.UNIT_MBAR},  // Convert hPa to mBar (1 hPa = 1 mBar)
+            {"k[Pp]a", UnitConstants.UNIT_KPA},
             {"km/h", UnitConstants.UNIT_KMH},  // Keep km/h as km/h
             {"KPH", UnitConstants.UNIT_KMH},   // Convert KPH to km/h
             {"kph", UnitConstants.UNIT_KMH},   // Convert kph to km/h
@@ -177,7 +179,8 @@ public final class Units {
         conversions.put("AirFuelRatioCurrent", List.of(UnitConstants.UNIT_LAMBDA, UnitConstants.UNIT_AFR));
 
         // Pressure conversions
-        conversions.put("BoostPressureActual", List.of(UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI));
+        conversions.put("BoostPressureActual", List.of(UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI, UnitConstants.UNIT_KPA));
+        conversions.put("BoostPressure", List.of(UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI, UnitConstants.UNIT_KPA));
 
         // Temperature conversions (applies to all temperature fields)
         conversions.put("Temperature", List.of(UnitConstants.UNIT_CELSIUS, UnitConstants.UNIT_FAHRENHEIT));
@@ -210,8 +213,10 @@ public final class Units {
         for (Map.Entry<String, List<String>> entry : CONVERSIONS.entrySet()) {
             if (entry.getValue().contains(unit)) {
                 // Return all units in the category except the current one
+                // Blacklist: Don't show kPa as a conversion option (users can convert FROM kPa but not TO kPa)
                 return entry.getValue().stream()
                     .filter(u -> !u.equals(unit))
+                    .filter(u -> !u.equals(UnitConstants.UNIT_KPA))  // Blacklist converting TO kPa
                     .collect(java.util.stream.Collectors.toList());
             }
         }

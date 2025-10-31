@@ -225,6 +225,7 @@ ECUxPlot automatically detects and parses the following automotive ECU logging f
 - **LogWorks** - [Innovate Motorsports LogWorks](https://www.innovatemotorsports.com/)
 - **VolvoLogger** - [VolvoTools](https://github.com/prometey1982/VolvoTools)
 - **M-Tuner** - [M-Engineering M-Tuner](https://www.m-engineering.us/collections/m-tuner)
+- **SimosTools** - [SimosTools Android app](https://play.google.com/store/apps/details?id=com.app.simostools) ([GitHub](https://github.com/Switchleg1/SimosTools))
 
 All formats are automatically mapped to standardized field names (based on ECUx, for better or for worse). If your format isn't supported, ECUxPlot will attempt to parse it using basic field mapping.
 

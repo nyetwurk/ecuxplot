@@ -26,6 +26,10 @@ public class UnitConstants {
     public static final double MBAR_PER_PSI = 1000.0/PSI_PER_BAR;
     /** Standard atmospheric pressure in millibar */
     public static final double MBAR_PER_ATM = 1013.25;
+    /** Conversion factor from kilopascal to millibar (1 kPa = 10 mBar) */
+    public static final double MBAR_PER_KPA = 10.0;
+    /** Conversion factor from millibar to kilopascal */
+    public static final double KPA_PER_MBAR = 1.0 / MBAR_PER_KPA;
 
     // Temperature conversions
     /** Multiplication factor for Celsius to Fahrenheit conversion */
@@ -73,11 +77,13 @@ public class UnitConstants {
     /** Unit string for air-fuel ratio */
     public static final String UNIT_AFR = "AFR";
     /** Unit string for lambda */
-    public static final String UNIT_LAMBDA = "lambda";
+    public static final String UNIT_LAMBDA = "\u03BB";
     /** Unit string for pounds per square inch */
     public static final String UNIT_PSI = "PSI";
     /** Unit string for millibar */
     public static final String UNIT_MBAR = "mBar";
+    /** Unit string for kilopascal */
+    public static final String UNIT_KPA = "kPa";
     /** Unit string for miles per hour */
     public static final String UNIT_MPH = "mph";
     /** Unit string for kilometers per hour */

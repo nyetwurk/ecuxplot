@@ -1337,13 +1337,24 @@ public class DataLogger {
 
 
     /**
-     * Copy and trim string array elements
+     * Copy and trim string array elements.
+     * Also removes trailing " ()" or "()" patterns from column names, which can occur
+     * when loggers include empty unit information in headers (e.g., "FieldName ()").
      */
     private static String[] copyAndTrim(String[] input) {
         if (input == null) return null;
         String[] result = new String[input.length];
         for (int i = 0; i < input.length; i++) {
-            result[i] = (input[i] != null) ? input[i].trim() : null;
+            if (input[i] != null) {
+                String trimmed = input[i].trim();
+                // Remove trailing " ()" or "()" patterns
+                while (trimmed.endsWith(" ()") || trimmed.endsWith("()")) {
+                    trimmed = trimmed.replaceAll("\\s*\\(\\)$", "");
+                }
+                result[i] = trimmed;
+            } else {
+                result[i] = null;
+            }
         }
         return result;
     }

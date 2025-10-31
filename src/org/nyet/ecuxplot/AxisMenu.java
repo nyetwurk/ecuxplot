@@ -45,7 +45,8 @@ public class AxisMenu extends JMenu {
     private void addToSubmenu(String submenu, JComponent item, boolean autoadd) {
         JMenu sub = this.subMenus.get(submenu);
         if(sub==null) {
-            sub = new AxisMenu(submenu + "...", this);
+            // Don't add "..." here - the AxisMenu(String, AxisMenu) constructor will add it
+            sub = new AxisMenu(submenu, this);
             this.subMenus.put(submenu, sub);
             if(autoadd) this.add(sub);
         }
