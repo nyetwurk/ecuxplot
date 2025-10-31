@@ -736,7 +736,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 this.prefs.put("chooserDir",
                     this.fc.getCurrentDirectory().toString());
             }
-        } else if(source.getText().equals("Alt column names")) {
+        } else if(source.getText().equals("Original names")) {
             final boolean s = source.isSelected();
             this.prefs.putBoolean("altnames", s);
             // rebuild title and labels
@@ -900,7 +900,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                     if(key instanceof Dataset.Key) {
                         final Dataset.Key k = (Dataset.Key)key;
-                        s = this.prefs.getBoolean("altnames", false)?k.getId2():k.getString();
+                        boolean altnames = this.prefs.getBoolean("altnames", false);
+                        // Iterate through fileDatasets like X axis for consistency
+                        // This reads from current Column instead of cached id_cache, ensuring
+                        // we get the correct id2 even if Column was replaced after Key was created
+                        if (altnames) {
+                            s = k.getString(); // fallback
+                            for (final ECUxDataset data : this.fileDatasets.values()) {
+                                if(data.get(k.getString()) != null) {
+                                    s = data.getLabel(k.getString(), true);
+                                    break;
+                                }
+                            }
+                        } else {
+                            s = k.getString();
+                        }
                     } else
                         s = key.toString();
 

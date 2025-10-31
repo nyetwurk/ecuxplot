@@ -25,21 +25,25 @@ public final class OptionsMenu extends JMenu {
         final Preferences prefs = ECUxPlot.getPreferences();
 
         jcb = new JCheckBox("Enable filter", Filter.enabled(prefs));
+        jcb.setToolTipText("Enable filter to apply range detection and other filters. Required for FATS and Ranges windows.");
         jcb.addActionListener(plotFrame);
         this.add(jcb);
         this.filterCheckBox = jcb;
 
         jcb = new JCheckBox("Scatter plot", ECUxPlot.scatter(prefs));
+        jcb.setToolTipText("Show scatter plot instead of line plot.");
         jcb.addActionListener(plotFrame);
         this.add(jcb);
         this.scatterCheckBox = jcb;
 
-        jcb = new JCheckBox("Alt column names",
+        jcb = new JCheckBox("Original names",
                 prefs.getBoolean("altnames", false));
+        jcb.setToolTipText("Show original field names from logger (before aliasing to canonical names)");
         jcb.addActionListener(plotFrame);
         this.add(jcb);
 
         jcb = new JCheckBox("Apply SAE", SAE.enabled(prefs));
+        jcb.setToolTipText("Apply SAE constants to HP and TQ calculations");
         jcb.addActionListener(plotFrame);
         this.add(jcb);
 
@@ -56,6 +60,7 @@ public final class OptionsMenu extends JMenu {
 
         // Filter tools
         item = new JMenuItem("Filter...");
+        item.setToolTipText("Adjust filter parameters for range start/end detection");
         item.addActionListener(plotFrame);
         this.add(item);
 
@@ -68,10 +73,12 @@ public final class OptionsMenu extends JMenu {
 
         // Editors
         item = new JMenuItem("SAE constants...");
+        item.setToolTipText("Adjust SAE constants for HP and TQ calculations");
         item.addActionListener(plotFrame);
         this.add(item);
 
         item = new JMenuItem("Edit PID...");
+        item.setToolTipText("Adjust PID parameters for PID simulaton");
         item.addActionListener(plotFrame);
         this.add(item);
 
