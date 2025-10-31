@@ -7,6 +7,39 @@ field_preferences:
   gear: "Gear"
 
 loggers:
+  DEFAULT:
+    # Extract field name and unit using regex
+    unit_regex: "([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)"
+
+    # Note: .matches() requires entire string match, so ^ and $ are implicit
+    # .* at start allows text before pattern, .* at end allows text after, overriding the implicit ^ and $
+    aliases:
+      - ["[Tt]ime", "TIME"]
+      - ["[Ee]ngine [Ss]peed", "RPM"]
+      - ["[Mm]ass air flow", "MassAirFlow"]
+      # We now assume the default IntakeAirTemperature is C
+      - ["Intake air temperature", "IntakeAirTemperature"]
+      # M-Tuner Logger mappings - no easy way to detect an M-Tuner logger, so we have to hardcode these in DEFAULT_aliases
+      - ["Actual Ignition Angle", "IgnitionTimingAngleOverall"]
+      - ["Ignition Angle Actual", "IgnitionTimingAngleOverall"]
+      # Don't let ecuxplot change the lamda units to AFR, this column is always lambda
+      #- ["Lambda Bank 1", "AirFuelRatioCurrent"]
+      #- ["Lambda Bank 2", "AirFuelRatioCurrentBank2"]
+      - ["Manifold Absolute Pressure", "BoostPressureActual"]
+      - ["Manifold Pressure", "BoostPressureActual"]
+      - ["Relative Load", "EngineLoad"]
+      - ["Relative Load Setpoint", "EngineLoadDesired"]
+      - ["Target Position Throttle", "ThrottlePlateAngle"]
+      - ["Throttle Inlet Pressure", "ThrottleInletPressure"]
+      - ["Vehicle Speed", "VehicleSpeed"]
+      # Additional M-Tuner cylinder-specific aliases
+      - ["Cylinder 1 Ignition Retard", "IgnitionRetardCyl1"]
+      - ["Cylinder 2 Ignition Retard", "IgnitionRetardCyl2"]
+      - ["Cylinder 3 Ignition Retard", "IgnitionRetardCyl3"]
+      - ["Cylinder 4 Ignition Retard", "IgnitionRetardCyl4"]
+      - ["Cylinder 5 Ignition Retard", "IgnitionRetardCyl5"]
+      - ["Cylinder 6 Ignition Retard", "IgnitionRetardCyl6"]
+
   ME7_ALIASES:
     # ME7L field name aliases loaded from me7_alias.map
     # These aliases are checked before DEFAULT for all loggers
@@ -217,40 +250,12 @@ loggers:
       - ["S_fgrsv", "TipSetDecCruiseControl"]
       - ["S_fgrwb", "TipResetAccCruiseControl"]
 
-  DEFAULT:
-    # Note: .matches() requires entire string match, so ^ and $ are implicit
-    # .* at start allows text before pattern, .* at end allows text after, overriding the implicit ^ and $
-    aliases:
-      - ["[Tt]ime", "TIME"]
-      - ["[Ee]ngine [Ss]peed", "RPM"]
-      - ["[Mm]ass air flow", "MassAirFlow"]
-      # We now assume the default IntakeAirTemperature is C
-      - ["Intake air temperature", "IntakeAirTemperature"]
-      # M-Tuner Logger mappings - no easy way to detect an M-Tuner logger, so we have to hardcode these in DEFAULT_aliases
-      - ["Actual Ignition Angle", "IgnitionTimingAngleOverall"]
-      - ["Engine Speed", "RPM"]
-      - ["Ignition Angle Actual", "IgnitionTimingAngleOverall"]
-      # Don't let ecuxplot change the lamda units to AFR, this column is always lambda
-      #- ["Lambda Bank 1", "AirFuelRatioCurrent"]
-      #- ["Lambda Bank 2", "AirFuelRatioCurrentBank2"]
-      - ["Manifold Absolute Pressure", "BoostPressureActual"]
-      - ["Manifold Pressure", "BoostPressureActual"]
-      - ["Relative Load", "EngineLoad"]
-      - ["Relative Load Setpoint", "EngineLoadDesired"]
-      - ["Target Position Throttle", "ThrottlePlateAngle"]
-      - ["Throttle Inlet Pressure", "ThrottleInletPressure"]
-      - ["Vehicle Speed", "VehicleSpeed"]
-      # Additional M-Tuner cylinder-specific aliases
-      - ["Cylinder 1 Ignition Retard", "IgnitionRetardCyl1"]
-      - ["Cylinder 2 Ignition Retard", "IgnitionRetardCyl2"]
-      - ["Cylinder 3 Ignition Retard", "IgnitionRetardCyl3"]
-      - ["Cylinder 4 Ignition Retard", "IgnitionRetardCyl4"]
-      - ["Cylinder 5 Ignition Retard", "IgnitionRetardCyl5"]
-      - ["Cylinder 6 Ignition Retard", "IgnitionRetardCyl6"]
-
   COBB_AP:
     field_signatures:
       - regex: "AP Info:.*"
+
+    # Extract field name and unit using regex
+    unit_regex: "([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)"
 
     aliases:
       - ["AP Info:.*", ""]
@@ -263,10 +268,10 @@ loggers:
       - ["AFR Set Point.*", "AirFuelRatioDesired"]
       - ["Trgt\\. Boost Press\\..*", "BoostPressureDesired"]
       - ["Boost Press\\..*", "BoostPressureActual"]
-      - ["Ambient Air Temp\\..*", "AmbientTemperature (°F)"]
-      - ["Coolant Temp\\..*", "WaterTemperature (°F)"]
-      - ["Engine Oil Temp\\..*", "OilTemperature (°F)"]
-      - ["IAT.*", "IntakeAirTemperature (°F)"]
+      - ["Ambient Air Temp\\..*", "AmbientTemperature"]
+      - ["Coolant Temp\\..*", "WaterTemperature"]
+      - ["Engine Oil Temp\\..*", "OilTemperature"]
+      - ["IAT.*", "IntakeAirTemperature"]
       - ["Ignition Timing Final.*", "IgnitionTimingAngle"]
       - ["Knock Retard Cylinder 1.*", "IgnitionRetardCyl1"]
       - ["Knock Retard Cylinder 2.*", "IgnitionRetardCyl2"]
@@ -308,6 +313,7 @@ loggers:
     time_ticks_per_sec: 10
     skip_lines: 4
 
+    # Note that we alias to the canonical name with the unit in parentheses for unit extraction to override the units
     aliases:
       - ["timestamp", "TIME"]
       - ["rpm", "RPM"]
@@ -386,6 +392,18 @@ loggers:
       - ["AirFuelRatioRequired", "AirFuelRatioDesired"]
       - ["InjectionTime", "EffInjectionTime"]
       - ["InjectionTimeBank2", "EffInjectionTimeBank2"]
+
+  SIMOS_TOOLS:
+    field_signatures:
+      - regex: ".*SimosTools.*"
+
+    # Extract field name and unit using regex
+    unit_regex: "([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)"
+
+    aliases:
+      - ["Current Gear.*", "Gear"]
+      - ["Pedal Pos.*", "AccelPedalPosition"]
+      - ["TPS.*", "ThrottlePlateAngle"]
 
   SWCOMM:
     comment_signatures:

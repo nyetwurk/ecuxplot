@@ -8,6 +8,10 @@
 - Fix bug where which window was on top was confusing
 - Fix bug where ranges that should not be visible are visible on startup and when enabling filter ([Issue #86](https://github.com/nyetwurk/ecuxplot/issues/86))
 
+### Added
+
+- SimosTools support ([Issue #92](https://github.com/nyetwurk/ecuxplot/issues/92))
+
 ## [1.1.4] - 2025-10-29
 
 ### Added

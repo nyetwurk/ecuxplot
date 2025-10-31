@@ -104,16 +104,36 @@ public class DataLogger {
                 return this;
             }
 
-            this.u = new String[this.id.length];
+            // Preserve existing units if they've already been extracted (e.g., by unit_regex)
+            // Only create new array if units haven't been initialized OR if the array is empty
+            // (parseHeaderFormat initializes u as new String[0] which is not null but empty)
+            if (this.u == null || this.u.length == 0) {
+                this.u = new String[this.id.length];
+            } else {
+                // Ensure array is the right length
+                if (this.u.length < this.id.length) {
+                    this.u = java.util.Arrays.copyOf(this.u, this.id.length);
+                }
+            }
+
             for (int i = 0; i < this.id.length; i++) {
+                // Check if field name still contains units in parentheses (e.g., from alias targets like "AirFuelRatioDesired (AFR)")
                 final java.util.regex.Pattern unitsRegEx =
                     java.util.regex.Pattern.compile("([\\S\\s]+)\\(([\\S\\s].*)\\)");
                 final java.util.regex.Matcher matcher = unitsRegEx.matcher(this.id[i]);
                 if (matcher.find()) {
+                    // Extract unit from field name even if unit was already set (e.g., from unit_regex)
+                    // This handles alias targets that include units: "FieldName (unit)" -> "FieldName" + unit
                     // Trim needed: Regex groups contain untrimmed content from regex extraction
-                    // Example: "Time (sec)" -> id[i]="Time", u[i]="sec"
+                    // Example: "AirFuelRatioDesired (AFR)" -> id[i]="AirFuelRatioDesired", u[i]="AFR"
                     this.id[i] = matcher.group(1).trim();
                     this.u[i] = matcher.group(2).trim();
+                } else {
+                    // No unit pattern in field name - only try to extract if unit is missing
+                    if (this.u[i] != null && this.u[i].length() > 0) {
+                        continue; // Skip - units already extracted and field name has no unit pattern
+                    }
+                    // If unit is missing and no pattern found, processUnits() will try Units.find() later
                 }
             }
             for (int i = 0; i < this.id.length; i++)
@@ -663,19 +683,35 @@ public class DataLogger {
 
             for (int i = 0; i < id.length; i++) {
                 if (id[i] != null) {
+                    // Always preserve original field name in id2 before any processing
+                    String originalField = id[i];
+                    if (id2[i] == null) {
+                        id2[i] = originalField;
+                    }
+
                     java.util.regex.Matcher matcher = unitRegexPattern.matcher(id[i]);
                     if (matcher.find()) {
-                        // Group 1 -> field name, Group 2 -> unit, Group 3 -> ME7L variable
-                        String originalField = id[i];
+                        // Group 1 -> field name, Group 2 -> unit, Group 3 -> additional info (optional, e.g., id2 for VOLVOLOGGER)
                         id[i] = matcher.group(1).trim();
                         u[i] = matcher.group(2).trim();
-                        // Store ME7L variable in id2 if available
+                        // Use Group 3 for id2 ONLY if it's non-empty AND looks like a valid field name
+                        // (e.g., VOLVOLOGGER's short field names like "RPM", "BoostPressure")
+                        // Don't use Group 3 if it's just punctuation (e.g., "]" from incorrectly matched nested parens)
+                        // If Group 3 is empty or invalid, keep the original field name in id2 (for alias mechanism to work)
                         if (matcher.groupCount() >= 3 && matcher.group(3) != null) {
-                            id2[i] = matcher.group(3).trim();
+                            String group3 = matcher.group(3).trim();
+                            // Only use Group 3 if it looks like a field name (not just punctuation/short garbage)
+                            if (!group3.isEmpty() && group3.length() > 2 && !group3.matches("^[\\]\\[\\)\\(,\\.]+$")) {
+                                id2[i] = group3;
+                            }
+                            // If group3 is empty or invalid, do nothing - id2 already has original field name from line 685
                         }
+                        // Otherwise, id2 already has the original field name from line 685
                         logger.debug("Unit regex matched field {}: '{}' -> id='{}', unit='{}', id2='{}'", i, originalField, id[i], u[i], id2[i]);
                     } else {
-                        logger.debug("Unit regex did not match field {}: '{}'", i, id[i]);
+                        // No regex match - keep original field name in both id and id2
+                        // id2 already has the original field name
+                        logger.debug("Unit regex did not match field {}: '{}', preserving in id2", i, id[i]);
                     }
                 }
             }
@@ -1175,8 +1211,15 @@ public class DataLogger {
         DataLoggerConfig config = loggerConfigs.get(type);
         if (config == null) {
             // Return a default config for unknown logger types
+            // Inherit unit_regex from DEFAULT if available
+            DataLoggerConfig defaultConfig = loggerConfigs.get("DEFAULT");
+            String inheritedUnitRegex = null;
+            if (defaultConfig != null && defaultConfig.parser.unitRegex != null) {
+                inheritedUnitRegex = defaultConfig.parser.unitRegex;
+            }
+
             DetectionConfig defaultDetection = new DetectionConfig(UNKNOWN, new CommentSignature[0], new FieldSignature[0]);
-            ParserConfig defaultParser = new ParserConfig(new String[0][0], 1.0, 0, new String[]{"id"}, new SkipRegex[0], new FieldTransformation(null, null, new String[0], false), null);
+            ParserConfig defaultParser = new ParserConfig(new String[0][0], 1.0, 0, new String[]{"id"}, new SkipRegex[0], new FieldTransformation(null, null, new String[0], false), inheritedUnitRegex);
             return new DataLoggerConfig(UNKNOWN, defaultDetection, defaultParser);
         }
         return config;
