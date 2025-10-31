@@ -308,7 +308,7 @@ public class FilterWindow extends ECUxPlotWindow {
 
         // Engine Panel
         JPanel enginePanel = createParameterPanel("Engine",
-            new int[]{0, 1, 2, 3, 4}, fields);
+            new int[]{0, 1, 2, 3, 4, 7}, fields);  // gear, minRPM, maxRPM, minRPMRange, monotonicRPMfuzz, minAcceleration
         formPanel.add(enginePanel);
 
         // Throttle/Pedal Panel
@@ -672,6 +672,8 @@ public class FilterWindow extends ECUxPlotWindow {
             // Native velocity may not be available in all logs
             Dataset.Column nativeMphCol = dataset.get("VehicleSpeed (mph)");
             Dataset.Column calcMphCol = dataset.get("Calc Velocity");
+            // Get the same acceleration column that the filter checks (smoothed with moving average)
+            Dataset.Column accelCol = dataset.get("Acceleration (RPM/s)");
             Dataset.Column pedalCol = dataset.get(DataLogger.pedalField());
             Dataset.Column throttleCol = dataset.get(DataLogger.throttleField());
             Dataset.Column gearCol = dataset.get(DataLogger.gearField());
@@ -711,7 +713,7 @@ public class FilterWindow extends ECUxPlotWindow {
             // Populate table
             for (int rowIndex : rowsToShow) {
                 rowIndexMapping.add(rowIndex);
-                Object[] rowData = createRowData(rowIndex, timeCol, rpmCol, nativeMphCol, calcMphCol, pedalCol, throttleCol, gearCol, ranges, hasVelocityData, hasNativeVelocity);
+                Object[] rowData = createRowData(rowIndex, timeCol, rpmCol, nativeMphCol, calcMphCol, accelCol, pedalCol, throttleCol, gearCol, ranges, hasVelocityData, hasNativeVelocity);
                 tableModel.addRow(rowData);
             }
 
@@ -758,8 +760,8 @@ public class FilterWindow extends ECUxPlotWindow {
     }
 
     private Object[] createRowData(int rowIndex, Dataset.Column timeCol, Dataset.Column rpmCol,
-                                 Dataset.Column nativeMphCol, Dataset.Column calcMphCol, Dataset.Column pedalCol,
-                                 Dataset.Column throttleCol, Dataset.Column gearCol,
+                                 Dataset.Column nativeMphCol, Dataset.Column calcMphCol, Dataset.Column accelCol,
+                                 Dataset.Column pedalCol, Dataset.Column throttleCol, Dataset.Column gearCol,
                                  ArrayList<Dataset.Range> ranges, boolean showRPMData, boolean hasNativeVelocity) {
         Object[] row = new Object[Column.getColumnCount()];
 
@@ -779,14 +781,10 @@ public class FilterWindow extends ECUxPlotWindow {
             }
             row[Column.idx(Column.DELTA_RPM)] = String.format("%.1f", deltaRPM);
 
-            // Acceleration (always show)
+            // Acceleration (always show) - use the same smoothed acceleration that the filter checks
             double acceleration = 0;
-            if (rpmCol != null && rowIndex > 0 && rowIndex < rpmCol.data.size() &&
-                timeCol != null && rowIndex < timeCol.data.size()) {
-                double deltaTime = timeCol.data.get(rowIndex) - timeCol.data.get(rowIndex - 1);
-                if (deltaTime > 0) {
-                    acceleration = deltaRPM / deltaTime;
-                }
+            if (accelCol != null && rowIndex < accelCol.data.size()) {
+                acceleration = accelCol.data.get(rowIndex);
             }
             row[Column.idx(Column.ACCELERATION)] = String.format("%.1f", acceleration);
 
