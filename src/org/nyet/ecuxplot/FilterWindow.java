@@ -66,7 +66,7 @@ public class FilterWindow extends ECUxPlotWindow {
         GEAR(10, 50, false),
         FILTER_STATUS(11, 80, false),
         RANGE(12, 50, false),
-        FILTER_REASONS(13, 250, false);
+        FILTER_REASONS(13, 400, false);
 
         private final int index;
         private final int width;
@@ -206,8 +206,8 @@ public class FilterWindow extends ECUxPlotWindow {
     private void initializeVisualizationComponents() {
         // Create table model with columns
         String[] columnNames = {
-            "Time", "RPM", "Δ RPM", "Native MPH", "Calc MPH", "Diff %", "Δ MPH", "Accel (RPM/s)", "Pedal", "Throttle", "Gear",
-            "Filter Status", "Range", "Filter Reasons"
+            "Time", "RPM", "Δ RPM", "MPH", "Calc MPH", "Calc Err %", "Δ MPH", "Accel (RPM/s)", "Pedal", "Throttle", "Gear",
+            "Status", "Range", "Filter Reasons"
         };
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -850,18 +850,36 @@ public class FilterWindow extends ECUxPlotWindow {
                 String.format("%.0f", gearCol.data.get(rowIndex)) : "";
 
             // Filter status and reasons
-            boolean isValid = isRowInRange(rowIndex, ranges);
+            // Check if individual point passes filter (not just if it's in a range)
+            boolean pointValid = false;
+            ArrayList<String> filterReasons = new ArrayList<String>();
+            if (dataset instanceof ECUxDataset) {
+                filterReasons = ((ECUxDataset) dataset).getFilterReasonsForRow(rowIndex);
+                pointValid = filterReasons.isEmpty();
+            } else {
+                pointValid = isRowInRange(rowIndex, ranges);
+            }
+
+            boolean isInRange = isRowInRange(rowIndex, ranges);
+            boolean isValid = pointValid && isInRange;
             row[Column.idx(Column.FILTER_STATUS)] = isValid ? "PASS" : "FAIL";
 
             // Range number only
             String rangeValue = "";
-            if (isValid) {
+            if (isInRange) {
                 int rangeNumber = getRangeNumber(rowIndex, ranges);
                 rangeValue = String.valueOf(rangeNumber);
             }
             row[Column.idx(Column.RANGE)] = rangeValue;
 
-            row[Column.idx(Column.FILTER_REASONS)] = isValid ? "" : "Not in valid range";
+            // Show filter reasons if point failed individual checks
+            if (!filterReasons.isEmpty()) {
+                row[Column.idx(Column.FILTER_REASONS)] = String.join(", ", filterReasons);
+            } else if (!isInRange && pointValid) {
+                row[Column.idx(Column.FILTER_REASONS)] = "Not in valid range";
+            } else {
+                row[Column.idx(Column.FILTER_REASONS)] = "";
+            }
 
         } catch (Exception e) {
             // Fill with N/A if data is not available

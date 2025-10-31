@@ -767,67 +767,96 @@ public class ECUxDataset extends Dataset {
             ret=false;
         }
         if(this.pedal!=null && this.pedal.data.get(i)<this.filter.minPedal()) {
-            reasons.add("pedal " + this.pedal.data.get(i) +
+            reasons.add("ped " + String.format("%.1f", this.pedal.data.get(i)) +
                     "<" + this.filter.minPedal());
             ret=false;
         }
         if(this.throttle!=null && this.throttle.data.get(i)<this.filter.minThrottle()) {
-            reasons.add("throttle " + this.throttle.data.get(i) +
+            reasons.add("throt " + String.format("%.1f", this.throttle.data.get(i)) +
                     "<" + this.filter.minThrottle());
             ret=false;
         }
         if(this.filter.minAcceleration()>0) {
             final Column accel = this.get("Acceleration (RPM/s)");
             if(accel!=null && accel.data.get(i)<this.filter.minAcceleration()) {
-                reasons.add("acceleration " + accel.data.get(i) +
-                    "<" + this.filter.minAcceleration() + " RPM/s");
+                reasons.add("accel " + String.format("%.0f", accel.data.get(i)) +
+                    "<" + this.filter.minAcceleration());
                 ret=false;
             }
         }
         if(this.zboost!=null && this.zboost.data.get(i)<0) {
-            reasons.add("zboost " + this.zboost.data.get(i) +
+            reasons.add("zboost " + String.format("%.1f", this.zboost.data.get(i)) +
                     "<0");
             ret=false;
         }
         // Check for negative boost pressure (wheel spin detection)
         final Column boostActual = this.get("BoostPressureActual");
         if(boostActual!=null && boostActual.data.get(i)<1000) {
-            reasons.add("boost actual " + boostActual.data.get(i) +
-                    "<1000 mBar (vacuum)");
+            reasons.add("boost" + String.format("%.0f", boostActual.data.get(i)) +
+                    "<1000");
             ret=false;
         }
         final Column boostDesired = this.get("BoostPressureDesired");
         if(boostDesired!=null && boostDesired.data.get(i)<1000) {
-            reasons.add("boost desired " + boostDesired.data.get(i) +
-                    "<1000 mBar (vacuum)");
+            reasons.add("boost req " + String.format("%.0f", boostDesired.data.get(i)) +
+                    "<1000");
             ret=false;
         }
         if(this.rpm!=null) {
             if(this.rpm.data.get(i)<this.filter.minRPM()) {
-                reasons.add("rpm " + this.rpm.data.get(i) +
+                reasons.add("rpm " + String.format("%.0f", this.rpm.data.get(i)) +
                     "<" + this.filter.minRPM());
                 ret=false;
             }
             if(this.rpm.data.get(i)>this.filter.maxRPM()) {
-                reasons.add("rpm " + this.rpm.data.get(i) +
+                reasons.add("rpm " + String.format("%.0f", this.rpm.data.get(i)) +
                     ">" + this.filter.maxRPM());
                 ret=false;
             }
-            if(i>0 && this.rpm.data.size()>i+2 &&
-                this.rpm.data.get(i-1)-this.rpm.data.get(i+1)>this.filter.monotonicRPMfuzz()) {
-                reasons.add("rpm delta " +
-                    this.rpm.data.get(i-1) + "-" + this.rpm.data.get(i+1) + ">" +
-                    this.filter.monotonicRPMfuzz());
-                ret=false;
+            if(i>0 && this.rpm.data.size()>i+2) {
+                double delta = this.rpm.data.get(i-1)-this.rpm.data.get(i+1);
+                if(delta > this.filter.monotonicRPMfuzz()) {
+                    reasons.add("rpmΔ " + String.format("%.0f", delta) + ">" +
+                        this.filter.monotonicRPMfuzz());
+                    ret=false;
+                }
             }
         }
 
+        // Always update lastFilterReasons - clear it if valid, set it if invalid
         if (!ret) {
             this.lastFilterReasons = reasons;
             logger.trace("Filter rejected data point {}: {}", i, String.join(", ", reasons));
+        } else {
+            this.lastFilterReasons = new ArrayList<String>();
         }
 
         return ret;
+    }
+
+    /**
+     * Get filter reasons for a row by calling the existing dataValid() logic
+     * @param rowIndex The row index to check
+     * @return Filter reasons (empty if valid)
+     *
+     * Note: Potential race condition/cache coherency issue:
+     * This method calls dataValid() which modifies the shared instance variable
+     * lastFilterReasons. If another thread calls dataValid() (e.g., during buildRanges())
+     * between our dataValid() call and copying getLastFilterReasons(), we could get
+     * reasons for the wrong row. In practice, this is unlikely because:
+     * - FilterWindow runs on EDT (single-threaded)
+     * - Each dataset instance has its own lastFilterReasons
+     * - The copy happens immediately after dataValid() with minimal race window
+     * However, if buildRanges() or other operations call dataValid() concurrently
+     * on the same dataset, incorrect reasons could be returned.
+     */
+    public ArrayList<String> getFilterReasonsForRow(int rowIndex) {
+        if(rowIndex < 0 || rowIndex >= this.length()) {
+            return new ArrayList<String>();
+        }
+        // Use existing dataValid() logic which populates lastFilterReasons
+        dataValid(rowIndex);
+        return new ArrayList<String>(this.getLastFilterReasons());
     }
 
     @Override
@@ -839,14 +868,13 @@ public class ECUxDataset extends Dataset {
         final ArrayList<String> reasons = new ArrayList<String>();
 
         if(r.size()<this.filter.minPoints()) {
-            reasons.add("points " + r.size() + "<" +
-                this.filter.minPoints());
+            reasons.add("pts " + r.size() + "<" + this.filter.minPoints());
             ret=false;
         }
         if(this.rpm!=null) {
             if(this.rpm.data.get(r.end)<this.rpm.data.get(r.start)+this.filter.minRPMRange()) {
-                reasons.add("RPM Range " + this.rpm.data.get(r.end) +
-                    "<" + this.rpm.data.get(r.start) + "+" +this.filter.minRPMRange());
+                reasons.add("rpm " + String.format("%.0f", this.rpm.data.get(r.end)) +
+                    "<" + String.format("%.0f", this.rpm.data.get(r.start)) + "+" +this.filter.minRPMRange());
                 ret=false;
             }
         }

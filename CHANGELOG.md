@@ -5,6 +5,7 @@
 
 ### Fixed
 
+- Restore filter reasons in FilterWindow data visualization table
 - Fix bug where which window was on top was confusing
 - Fix bug where ranges that should not be visible are visible on startup and when enabling filter ([Issue #86](https://github.com/nyetwurk/ecuxplot/issues/86))
 
