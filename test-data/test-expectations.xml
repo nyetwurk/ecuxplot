@@ -5,7 +5,7 @@
         <expected_type>COBB_AP</expected_type>
         <expected_ids>
             <id index="0">TIME</id>
-            <id index="1">AirFuelRatio</id>
+            <id index="1">AirFuelRatioActual</id>
             <id index="2">AirFuelRatioDesired</id>
             <id index="3">AccelPedalPosition</id>
             <id index="4">Air Mass IM Per Stroke</id>
@@ -445,7 +445,7 @@
         <expected_type>LOGWORKS</expected_type>
         <expected_ids>
             <id index="0">TIME</id>
-            <id index="1">AirFuelRatioCurrent</id>
+            <id index="1">AirFuelRatioActual</id>
             <id index="2">RPM</id>
             <id index="3">EGT</id>
             <id index="4">Oil_Press</id>
@@ -1353,7 +1353,7 @@
             <id index="1">Accel Long</id>
             <id index="2">AirFuelRatioActual</id>
             <id index="3">AirFuelRatioDesired</id>
-            <id index="4">MAF</id>
+            <id index="4">MassAirFlow</id>
             <id index="5">MAFDesired</id>
             <id index="6">BaroPressure</id>
             <id index="7">AmbientTemperature</id>
@@ -2229,8 +2229,8 @@
             <id index="33">LambdaPartProtection</id>
             <id index="34">FuelInjectorOnTime</id>
             <id index="35">LambdaControl</id>
-            <id index="36">AirFuelRatioCurrent</id>
-            <id index="37">AirFuelRatioCurrentBank2</id>
+            <id index="36">AirFuelRatioActual</id>
+            <id index="37">AirFuelRatioActualBank2</id>
             <id index="38">IgnitionTimingAngleOverall</id>
             <id index="39">AvgIgnitionRetardKnockControl</id>
             <id index="40">zwgru</id>

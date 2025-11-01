@@ -74,8 +74,8 @@ loggers:
       - ["Actual Ignition Angle", "IgnitionTimingAngleOverall"]
       - ["Ignition Angle Actual", "IgnitionTimingAngleOverall"]
       # Don't let ecuxplot change the lamda units to AFR, this column is always lambda
-      #- ["Lambda Bank 1", "AirFuelRatioCurrent"]
-      #- ["Lambda Bank 2", "AirFuelRatioCurrentBank2"]
+      #- ["Lambda Bank 1", "AirFuelRatioActual"]
+      #- ["Lambda Bank 2", "AirFuelRatioActualBank2"]
       - ["Manifold Absolute Pressure", "BoostPressureActual"]
       - ["Manifold Pressure", "BoostPressureActual"]
       - ["Relative Load", "EngineLoad"]
@@ -139,8 +139,8 @@ loggers:
       - ["fzabg_w_10", "CountMisfireCyl_11"]
       - ["fzabg_w_11", "CountMisfireCyl_12"]
       - ["fzabgs_w", "CountMisfireTotal"]
-      #- ["gangi", "SelectedGear"]
-      - ["gangi", "Gear"] # our local convention
+      #- ["gangi", "SelectedGear"]  # me7_alias.map maps to SelectedGear
+      - ["gangi", "Gear"] # Intentional deviation from me7_alias.map: our local convention uses "Gear" instead of "SelectedGear"
       - ["ksta0", "ColdStartEnrichmentRange0"]
       - ["ksta1", "ColdStartEnrichmentRange1"]
       - ["ksta2", "ColdStartEnrichmentRange2"]
@@ -148,8 +148,8 @@ loggers:
       - ["lamfa_w", "TargetAFRDriverRequest"]
       - ["lamsbg_w", "AirFuelRatioDesired"]
       - ["lamsbg2_w", "AirFuelRatioDesiredBank2"]
-      - ["lamsoni_w", "AirFuelRatioCurrent"]
-      - ["lamsoni2_w", "AirFuelRatioCurrentBank2"]
+      - ["lamsoni_w", "AirFuelRatioActual"] # Intentional deviation from me7_alias.map: me7_alias.map maps to AirFuelRatioCurrent, we use AirFuelRatioActual for consistency
+      - ["lamsoni2_w", "AirFuelRatioActualBank2"] # Intentional deviation from me7_alias.map: me7_alias.map maps to AirFuelRatioCurrentBank2, we use AirFuelRatioActualBank2 for consistency
       - ["lbz", "BatteryChargeBalance"]
       - ["ldimn_w", "BoostPID-I-Min"]
       - ["ldimx_w", "BoostPID-I-Max"]
@@ -175,8 +175,8 @@ loggers:
       - ["msdk_w", "MassAirFlowAtThrottlePlate"]
       - ["mshfm_w", "MassAirFlow"]
       # - ["nmot", "EngineSpeed"] # 8-bit, skip
-      # - ["nmot_w", "EngineSpeed"]
-      - ["nmot_w", "RPM"] # our local convention
+      # - ["nmot_w", "EngineSpeed"]  # me7_alias.map maps to EngineSpeed
+      - ["nmot_w", "RPM"] # Intentional deviation from me7_alias.map: our local convention uses "RPM" instead of "EngineSpeed"
       - ["nmotll", "EngineIdlingSpeed"]
       - ["nsol", "RequestedEngineIdlingSpeed"]
       - ["perffilt_w", "CPU-Load"]
@@ -316,7 +316,7 @@ loggers:
       - ["Accel Pedal Position.*", "AccelPedalPosition"]
       - ["TPS.*", "ThrottlePlateAngle"]
       - ["AFR Set Point.*", "AirFuelRatioDesired (AFR)"] # workaround for ME7L's AFR alias
-      - ["AFR.*", "AirFuelRatio"]
+      - ["AFR.*", "AirFuelRatioActual"]
       - ["Trgt\\. Boost Press\\..*", "BoostPressureDesired"]
       - ["Boost Press\\..*", "BoostPressureActual"]
       - ["Ambient Air Temp\\..*", "AmbientTemperature"]
@@ -414,7 +414,7 @@ loggers:
     aliases:
       - ["time", "TIME"]
       - ["Boost", "BoostPressureActual"]
-      - ["LC1_O2WB", "AirFuelRatioCurrent"]  # Use ME7 canonical name, Units.java has AFR pattern
+      - ["LC1_O2WB", "AirFuelRatioActual"]  # Use ME7 modified canonical name, Units.java has AFR pattern
 
   ME7LOGGER:
     field_signatures:
@@ -460,7 +460,7 @@ loggers:
       - ["AFR SP.*", "AirFuelRatioDesired"]
       - ["AFR.*", "AirFuelRatioActual"]
       - ["Airmass SP.*", "MAFDesired"]
-      - ["Airmass.*", "MAF"]
+      - ["Airmass.*", "MassAirFlow"]
       - ["Ambient Press.*", "BaroPressure"]
       - ["Ambient Temp.*", "AmbientTemperature"]
       - ["Battery Volts.*", "BatteryVoltage"]

@@ -176,7 +176,7 @@ public final class Units {
         Map<String, List<String>> conversions = new HashMap<>();
 
         // Air-Fuel Ratio conversions
-        conversions.put("AirFuelRatioCurrent", List.of(UnitConstants.UNIT_LAMBDA, UnitConstants.UNIT_AFR));
+        conversions.put("AirFuelRatioActual", List.of(UnitConstants.UNIT_LAMBDA, UnitConstants.UNIT_AFR));
 
         // Pressure conversions
         conversions.put("BoostPressureActual", List.of(UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI, UnitConstants.UNIT_KPA));
