@@ -1034,11 +1034,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             // Filter enabled - respect Range Selector range selections
             Set<Integer> selectedRanges = this.filter.getSelectedRanges(filename);
 
+            // If no ranges are explicitly selected for this file, default to showing all ranges
+            // (empty selection set means "not yet set", not "explicitly empty")
+            // This matches the behavior of isFileSelected() which defaults to true
+            if (selectedRanges.isEmpty() && !this.filter.hasAnyRangeSelections()) {
+                // No explicit selections anywhere - default to showing all ranges
+                return true;
+            }
+
             if(range != null && range >= 0) {
                 // Multiple range file - check if specific range is selected
                 return selectedRanges.contains(range);
             } else {
                 // Single range file - visible if any range for this file is selected
+                // If selectedRanges is empty but hasAnyRangeSelections is true, another file has selections
+                // so this file should be hidden (empty selection is explicit)
                 return !selectedRanges.isEmpty();
             }
         }

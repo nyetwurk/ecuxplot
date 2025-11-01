@@ -254,11 +254,20 @@ public class ECUxChartFactory {
         if(ranges.size() == 0) {
             // No ranges could mean:
             // 1. Filter is disabled (no ranges detected, but data exists) - show all data
-            // 2. Data is truly empty - don't add any series
+            // 2. Filter is enabled but no ranges pass - don't show any data
+            // 3. Data is truly empty - don't add any series
             if(data.length() > 0) {
-                final Dataset.Key key = data.new Key(ykey, data);
-                key.hideRange();
-                addSeriesWithData.accept(key, null); // null range = full dataset
+                // Check if filter is enabled - if enabled and no ranges, don't show data
+                // (filter rejected all data points/ranges)
+                Filter filter = data.getFilter();
+                if(filter == null || !filter.enabled()) {
+                    // Filter disabled - show all data as single series
+                    final Dataset.Key key = data.new Key(ykey, data);
+                    key.hideRange();
+                    addSeriesWithData.accept(key, null); // null range = full dataset
+                }
+                // If filter is enabled and ranges.size() == 0, all data was filtered out
+                // Don't add any series - return empty array
             }
             // If data is truly empty (data.length() == 0), don't add any series - return empty array
             return ret.toArray(new Integer[0]);

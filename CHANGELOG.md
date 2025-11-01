@@ -4,13 +4,17 @@
 ## [Unreleased]
 
 ### Added
+
 - Tooltips for menu options (Enable filter, Scatter plot, Original names, Apply SAE, Filter, SAE constants, Edit PID)
 
 ### Changed
+
 - Renamed "Alt column names" menu option to "Original names" for clarity (preference key unchanged for backward compatibility)
 - RPM and Time smoothing revamped for high data rate logs and logs with excessive jitter ([Issue #86](https://github.com/nyetwurk/ecuxplot/issues/86))
 
 ### Fixed
+
+- Fix filter behavior when ranges are empty or selections missing
 - Changing vehicle constants now updates all dependent visualizations ([Issue #95](https://github.com/nyetwurk/ecuxplot/issues/95))
   - Main chart display updates with recalculated values when constants change
   - FATS window recalculates FATS times with new constants
