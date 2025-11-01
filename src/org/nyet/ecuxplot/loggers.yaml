@@ -26,7 +26,7 @@ preset_defaults:
     ykeys1: ["BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]
   Timing:
     xkey: "RPM"
-    ykeys0: ["EngineLoad"]
+    ykeys0: [EngineLoad, MassAirFlowPerStroke] # Not all ECUs are load based, they may only have MAF per stroke (COBB_AP)
     ykeys1: ["IgnitionTimingAngleOverall", "IgnitionTimingAngleOverallDesired"]
     scatter: true
   Fueling:
@@ -287,14 +287,16 @@ loggers:
       - ["vziel_w", "TargetSpeedCruiseControl"]
       - ["wdkba", "ThrottlePlateAngle"]
       - ["wdks", "ThrottlePlateAngleRequested"]
-      - ["wkr_0", "IgnRetardKnockControlCyl_1"]
-      - ["wkr_1", "IgnRetardKnockControlCyl_2"]
-      - ["wkr_2", "IgnRetardKnockControlCyl_3"]
-      - ["wkr_3", "IgnRetardKnockControlCyl_4"]
-      - ["wkr_4", "IgnRetardKnockControlCyl_5"]
-      - ["wkr_5", "IgnRetardKnockControlCyl_6"]
-      - ["wkr_6", "IgnRetardKnockControlCyl_7"]
-      - ["wkr_7", "IgnRetardKnockControlCyl_8"]
+      # Intentional deviation from me7_alias.map: wkr_* maps to IgnRetardKnockControlCyl_* in me7_alias.map,
+      # but we map directly to IgnitionRetardCyl* because the calculation code (ECUxDataset.java) expects IgnitionRetardCyl* fields
+      - ["wkr_0", "IgnitionRetardCyl1"]
+      - ["wkr_1", "IgnitionRetardCyl2"]
+      - ["wkr_2", "IgnitionRetardCyl3"]
+      - ["wkr_3", "IgnitionRetardCyl4"]
+      - ["wkr_4", "IgnitionRetardCyl5"]
+      - ["wkr_5", "IgnitionRetardCyl6"]
+      - ["wkr_6", "IgnitionRetardCyl7"]
+      - ["wkr_7", "IgnitionRetardCyl8"]
       - ["wkrdya_0", "AdaptedIgnitionAngleDynRange1"]
       - ["wkrdya_1", "AdaptedIgnitionAngleDynRange2"]
       - ["wkrdya_2", "AdaptedIgnitionAngleDynRange3"]
@@ -346,6 +348,8 @@ loggers:
       - ["AFR.*", "AirFuelRatioActual"]
       - ["Trgt\\. Boost Press\\..*", "BoostPressureDesired"]
       - ["Boost Press\\..*", "BoostPressureActual"]
+      - ["Air Mass IM Per Stroke.*", "MassAirFlowPerStroke"]
+      - ["Air Mass Per Stroke SP.*", "MassAirFlowPerStrokeDesired"]
       - ["Ambient Air Temp\\..*", "AmbientTemperature"]
       - ["Coolant Temp\\..*", "WaterTemperature"]
       - ["Engine Oil Temp\\..*", "OilTemperature"]

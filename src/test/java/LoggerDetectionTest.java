@@ -438,6 +438,24 @@ public class LoggerDetectionTest {
                     }
                 }
             }
+
+            // Check for pattern matches (patterns are prefixed with "pattern:" in expectedColumns)
+            // Patterns are used when a preset needs ANY column matching a pattern (e.g., IgnitionRetardCyl.*)
+            for (String expectedColumn : expectedColumns) {
+                if (expectedColumn.startsWith("pattern:")) {
+                    String pattern = expectedColumn.substring(8); // Remove "pattern:" prefix
+                    // Check if any column in dataset matches the pattern
+                    boolean found = false;
+                    for (Dataset.DatasetId datasetId : dataset.getIds()) {
+                        if (datasetId != null && datasetId.id != null && datasetId.id.matches(pattern)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    assertTest("Preset[" + presetName + "] pattern for " + fileName + ": pattern '" + pattern + "' should match at least one column",
+                            found);
+                }
+            }
         }
     }
 

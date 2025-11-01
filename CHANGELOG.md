@@ -6,9 +6,12 @@
 ### Added
 
 - Tooltips for menu options (Enable filter, Scatter plot, Original names, Apply SAE, Filter, SAE constants, Edit PID)
+- Improved axis preset support for more logger types (Timing preset now works with additional loggers)
 
 ### Changed
 
+- Default axis presets now consistently use canonical column names
+- Boost pressure automatically converts to PSI regardless of logger's native units (kPa or mBar)
 - Renamed "Alt column names" menu option to "Original names" for clarity (preference key unchanged for backward compatibility)
 - RPM and Time smoothing revamped for high data rate logs and logs with excessive jitter ([Issue #86](https://github.com/nyetwurk/ecuxplot/issues/86))
 

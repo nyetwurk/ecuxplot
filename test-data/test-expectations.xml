@@ -8,8 +8,8 @@
             <id index="1">AirFuelRatioActual</id>
             <id index="2">AirFuelRatioDesired</id>
             <id index="3">AccelPedalPosition</id>
-            <id index="4">Air Mass IM Per Stroke</id>
-            <id index="5">Air Mass Per Stroke SP</id>
+            <id index="4">MassAirFlowPerStroke</id>
+            <id index="5">MassAirFlowPerStrokeDesired</id>
             <id index="6">AmbientTemperature</id>
             <id index="7">Ambient Pressure</id>
             <id index="8">BoostPressureActual</id>
@@ -156,6 +156,11 @@
             <unit index="47"></unit>
             <unit index="48">mph</unit>
         </expected_units>
+        <expected_preset_columns>
+            <preset name="Timing">
+                <profile_ref name="full_timing"/>
+            </preset>
+        </expected_preset_columns>
         <expected_filter_columns>
             <category name="pedal">3</category>
             <category name="throttle">39</category>
@@ -443,6 +448,11 @@
             <unit index="35">%</unit>
             <unit index="36">mph</unit>
         </expected_units>
+        <expected_preset_columns>
+            <preset name="Timing">
+                <profile_ref name="full_timing"/>
+            </preset>
+        </expected_preset_columns>
         <expected_filter_columns>
             <category name="pedal">5</category>
             <category name="throttle">9</category>
@@ -1921,6 +1931,9 @@
     </test_case>
 
     <!-- VCDS Multi-Group Test: Groups 3, 20, and 26 -->
+    <!-- Note: Group 020 has "Idle Stabilization" fields, NOT "Knock Reg." fields, so no IgnitionRetardCyl* aliases are created.
+         Group 026 has "Voltage" fields (KnockVoltageSensor1-4) but these are voltage sensors, not ignition retard.
+         Therefore, this file does NOT support Timing preset. -->
     <test_case file="vcds-003-020-026.csv">
         <expected_type>VCDS_LEGACY</expected_type>
         <expected_ids>
@@ -2043,7 +2056,11 @@
             <unit index="14">°</unit>
             <unit index="15">°</unit>
         </expected_units>
-
+        <expected_preset_columns>
+            <preset name="Timing">
+                <profile_ref name="full_timing"/>
+            </preset>
+        </expected_preset_columns>
         <expected_filter_columns>
             <category name="pedal"></category>
             <category name="throttle"></category>
