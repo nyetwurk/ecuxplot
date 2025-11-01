@@ -57,6 +57,34 @@ axis_preset_categories:
   compressor_map_base:
     - "BaroPressure"
 
+# Preset support profiles - reusable preset column expectations
+preset_support_profiles:
+  full_timing:
+    Timing:
+      - category: "timing_all"
+  partial_timing:
+    Timing:
+      - column: "IgnitionTimingAngleOverall"
+  full_fueling:
+    Fueling:
+      - category: "boost_both"
+      - category: "maf"
+      - column: "EffInjectorDutyCycle"
+      - column: "AirFuelRatioActual"
+  partial_fueling:
+    Fueling:
+      - column: "AirFuelRatioActual"
+  boost_presets:
+    Power:
+      - category: "boost_both"
+    "Spool Rate":
+      - category: "boost_actual"
+  compressor_map:
+    "Compressor Map":
+      - category: "boost_actual"
+      - category: "maf"
+      - category: "compressor_map_base"
+
 loggers:
   DEFAULT:
     # Extract field name and unit using regex
