@@ -25,7 +25,7 @@ def yaml_to_xml(yaml_file, xml_file):
         if isinstance(value, dict):
             # Dictionary becomes a sub-element
             sub_elem = ET.SubElement(root, key)
-            process_dict(sub_elem, value)
+            process_dict(sub_elem, value, key)
         elif isinstance(value, list):
             # List becomes a sub-element with items
             list_elem = ET.SubElement(root, key)
@@ -77,20 +77,39 @@ def yaml_to_xml(yaml_file, xml_file):
 
     print(f"Converted {yaml_file} to {xml_file}")
 
-def process_dict(parent_elem, data_dict):
+def create_xml_element(parent_elem, key):
+    """
+    Create an XML sub-element with proper name sanitization.
+    XML element names cannot contain spaces, so we sanitize by replacing spaces with underscores.
+    The original name is preserved in a "name" attribute if sanitization occurred.
+
+    Args:
+        parent_elem: Parent XML element
+        key: Key name (may contain spaces)
+
+    Returns:
+        Created XML element with sanitized tag name and optional name attribute
+    """
+    xml_key = key.replace(' ', '_') if ' ' in key else key
+    sub_elem = ET.SubElement(parent_elem, xml_key)
+    if ' ' in key:
+        sub_elem.set("name", key)
+    return sub_elem
+
+def process_dict(parent_elem, data_dict, parent_key=None):
     """Recursively process dictionary data into XML elements."""
     for key, value in data_dict.items():
         if isinstance(value, dict):
             # Dictionary becomes a sub-element
-            sub_elem = ET.SubElement(parent_elem, key)
-            process_dict(sub_elem, value)
+            sub_elem = create_xml_element(parent_elem, key)
+            process_dict(sub_elem, value, key)
         elif isinstance(value, list):
             # List becomes a sub-element with items
-            list_elem = ET.SubElement(parent_elem, key)
+            list_elem = create_xml_element(parent_elem, key)
             for item in value:
                 if isinstance(item, dict):
                     item_elem = ET.SubElement(list_elem, 'item')
-                    process_dict(item_elem, item)
+                    process_dict(item_elem, item, None)
                 elif isinstance(item, list) and len(item) == 2:
                     # List of 2 items becomes pattern/target (common for aliases)
                     item_elem = ET.SubElement(list_elem, 'item')

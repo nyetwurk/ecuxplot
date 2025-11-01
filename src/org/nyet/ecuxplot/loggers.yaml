@@ -1,10 +1,40 @@
-# Field preferences - canonical field names for common categories
-field_preferences:
+# Filter associations - canonical field names for common filter categories
+filter_associations:
   # Note: These are single canonical field names, not arrays
   # All logger-specific field variations are aliased to these via loggers.yaml
   pedal: "AccelPedalPosition"
   throttle: "ThrottlePlateAngle"
   gear: "Gear"
+
+# Preset defaults - canonical column names for default axis presets
+preset_defaults:
+  # Note: These are canonical field names used in default presets
+  # All presets should use these names to ensure consistency across log formats
+  # Format: preset_name:
+  #   xkey: "canonical_column_name"
+  #   ykeys0: ["canonical_name1", "canonical_name2", ...]
+  #   ykeys1: ["canonical_name1", "canonical_name2", ...]  # optional second Y-axis
+  #   scatter: false  # optional scatter plot flag
+  Power:
+    xkey: "RPM"
+    ykeys0: ["WHP", "WTQ", "HP", "TQ"]
+    ykeys1: ["BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]
+  Timing:
+    xkey: "RPM"
+    ykeys0: ["EngineLoad"]
+    ykeys1: ["IgnitionTimingAngleOverall", "IgnitionTimingAngleOverallDesired"]
+    scatter: true
+  Fueling:
+    xkey: "RPM"
+    ykeys0: ["Zeitronix AFR", "Sim AFR"]
+    ykeys1: ["Zeitronix Boost (PSI)", "BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]
+  "Compressor Map":
+    xkey: "Turbo Flow"
+    ykeys0: ["BoostActual PR"]
+  "Spool Rate":
+    xkey: "BoostPressureActual (PSI)"
+    ykeys0: ["Boost Spool Rate (RPM)"]
+    ykeys1: ["Boost Spool Rate (time)"]
 
 loggers:
   DEFAULT:

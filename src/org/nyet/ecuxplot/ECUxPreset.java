@@ -39,25 +39,37 @@ public class ECUxPreset extends Preset {
     }
 
     public static void createDefaultECUxPresets() {
-        new ECUxPreset("Power", "RPM",
-            new String[] { "WHP","WTQ","HP","TQ" },
-            new String[] {"BoostPressureDesired (PSI)","BoostPressureActual (PSI)"});
+        // Load preset defaults from loggers.yaml (canonical column names)
+        String[] presetNames = DataLogger.getPresetDefaultNames();
+        for (String presetName : presetNames) {
+            DataLogger.PresetDefault presetDefault = DataLogger.getPresetDefault(presetName);
+            if (presetDefault != null) {
+                // Convert String[] to Comparable<?>[] for ykeys
+                Comparable<?>[] ykeys0 = new Comparable[presetDefault.ykeys0.length];
+                for (int i = 0; i < presetDefault.ykeys0.length; i++) {
+                    ykeys0[i] = presetDefault.ykeys0[i];
+                }
+                Comparable<?>[] ykeys1 = new Comparable[presetDefault.ykeys1.length];
+                for (int i = 0; i < presetDefault.ykeys1.length; i++) {
+                    ykeys1[i] = presetDefault.ykeys1[i];
+                }
 
-        new ECUxPreset("Timing", "RPM",
-            new String[] { "EngineLoad" },
-            new String[] { "IgnitionTimingAngleOverall", "IgnitionTimingAngleOverallDesired"},
-            true);
-
-        new ECUxPreset("Fueling", "RPM",
-            new String[] { "Zeitronix AFR", "Sim AFR" },
-            new String[] { "Zeitronix Boost (PSI)" ,
-                "BoostPressureDesired (PSI)" , "BoostPressureActual (PSI)"});
-
-        new ECUxPreset("Compressor Map", "Turbo Flow", "BoostActual PR");
-
-        new ECUxPreset("Spool Rate", "BoostPressureActual (PSI)",
-            "Boost Spool Rate (RPM)",
-            "Boost Spool Rate (time)");
+                // Use appropriate constructor based on array lengths
+                if (ykeys0.length == 0 && ykeys1.length == 0) {
+                    // No Y keys - just X key (shouldn't happen, but handle gracefully)
+                    new ECUxPreset(presetName, presetDefault.xkey, new Comparable<?>[0]);
+                } else if (ykeys0.length == 1 && ykeys1.length == 0) {
+                    // Single Y key - use single ykey constructor
+                    new ECUxPreset(presetName, presetDefault.xkey, ykeys0[0]);
+                } else if (ykeys0.length == 1 && ykeys1.length == 1) {
+                    // Two single Y keys - use ykey, ykey2 constructor
+                    new ECUxPreset(presetName, presetDefault.xkey, ykeys0[0], ykeys1[0]);
+                } else {
+                    // Arrays - use array constructors with scatter
+                    new ECUxPreset(presetName, presetDefault.xkey, ykeys0, ykeys1, presetDefault.scatter);
+                }
+            }
+        }
     }
 
     public ECUxPreset(Comparable<?> name) { super(name);}

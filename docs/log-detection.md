@@ -33,16 +33,47 @@ The system uses a two-phase detection mechanism that scans comment lines first, 
 
 ## YAML Configuration Structure
 
-### Field Preferences (Shared)
+### Filter Associations (Shared)
 
-Field preferences define canonical field names for common categories. These are single canonical field names (not arrays) that logger-specific field variations are aliased to via `loggers.yaml`.
+Filter associations define canonical field names for common filter categories. These are single canonical field names (not arrays) that logger-specific field variations are aliased to via `loggers.yaml`.
 
 ```yaml
-field_preferences:
+filter_associations:
   pedal: "AccelPedalPosition"
   throttle: "ThrottlePlateAngle"
   gear: "Gear"
 ```
+
+**Usage**: The Filter uses these via `DataLogger.pedalField()`, `DataLogger.throttleField()`, and `DataLogger.gearField()` to ensure consistent column access across all log formats.
+
+### Preset Defaults (Shared)
+
+Preset defaults define canonical column names for default axis presets. These ensure consistency between default axis presets and canonical column names across all log formats.
+
+```yaml
+preset_defaults:
+  Power:
+    xkey: "RPM"
+    ykeys0: ["WHP", "WTQ", "HP", "TQ"]
+    ykeys1: ["BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]
+  Timing:
+    xkey: "RPM"
+    ykeys0: ["EngineLoad"]
+    ykeys1: ["IgnitionTimingAngleOverall", "IgnitionTimingAngleOverallDesired"]
+    scatter: true
+```
+
+**Preset Default Fields**:
+- **`xkey`** (string, required): Canonical column name for the X-axis
+- **`ykeys0`** (array, optional): Array of canonical column names for the first Y-axis
+- **`ykeys1`** (array, optional): Array of canonical column names for the second Y-axis
+- **`scatter`** (boolean, optional): Whether this preset should use scatter plot mode (default: `false`)
+
+**Separation of Concerns**:
+- **Preset defaults** (in `loggers.yaml`): Define which canonical columns each preset uses
+- **Test expectations** (in `test-data/test-expectations.xml`): Define which preset columns are available in each log format via `<expected_preset_columns>` sections
+
+**Usage**: Default presets are created by `ECUxPreset.createDefaultECUxPresets()` using these canonical names via `DataLogger.getPresetDefault()` and `DataLogger.getPresetDefaultNames()`. Unit tests verify that preset columns exist in each log format based on the expectations in `test-expectations.xml`, keeping preset configuration separate from format-specific test expectations.
 
 ### Logger Definitions
 

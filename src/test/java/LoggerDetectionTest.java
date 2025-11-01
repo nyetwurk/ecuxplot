@@ -136,6 +136,9 @@ public class LoggerDetectionTest {
                         // Test category mappings
                         testExpectedCategories(testCase, dataset, fileName);
 
+                        // Test preset defaults (verify canonical preset columns exist per log format expectations)
+                        testExpectedPresets(testCase, dataset, fileName);
+
                         // Test sanity check (first data cell)
                         testSanityCheck(testCase, dataset, fileName);
                     }
@@ -285,6 +288,85 @@ public class LoggerDetectionTest {
 
             assertTest("Category[" + categoryName + "] for " + fileName + ": expected column index " + (expectedIndex == null ? "null" : expectedIndex.toString()) + ", got " + (actualIndex == null ? "null" : actualIndex.toString()),
                 (expectedIndex == null && actualIndex == null) || (expectedIndex != null && expectedIndex.equals(actualIndex)));
+        }
+    }
+
+    private static void testExpectedPresets(Element testCase, ECUxDataset dataset, String fileName) {
+        // Get all preset defaults from DataLogger
+        String[] presetNames = org.nyet.ecuxplot.DataLogger.getPresetDefaultNames();
+        if (presetNames.length == 0) {
+            // No preset defaults defined, skip test
+            return;
+        }
+
+        // Check if test expectations define which preset columns should exist for this log format
+        NodeList expectedPresets = testCase.getElementsByTagName("expected_preset_columns");
+        if (expectedPresets.getLength() == 0) {
+            // No preset expectations defined for this log format, skip test
+            return;
+        }
+
+        Element expectedPresetsElement = (Element) expectedPresets.item(0);
+        NodeList presetNodes = expectedPresetsElement.getElementsByTagName("preset");
+
+        // Build map of expected columns per preset
+        java.util.Map<String, java.util.Set<String>> expectedColumnsByPreset = new java.util.HashMap<>();
+        for (int i = 0; i < presetNodes.getLength(); i++) {
+            Element presetElement = (Element) presetNodes.item(i);
+            String presetName = presetElement.getAttribute("name");
+            java.util.Set<String> expectedColumns = new java.util.HashSet<>();
+            NodeList columnNodes = presetElement.getElementsByTagName("column");
+            for (int j = 0; j < columnNodes.getLength(); j++) {
+                String columnName = columnNodes.item(j).getTextContent().trim();
+                expectedColumns.add(columnName);
+            }
+            expectedColumnsByPreset.put(presetName, expectedColumns);
+        }
+
+        // Test presets against expectations
+        for (String presetName : presetNames) {
+            org.nyet.ecuxplot.DataLogger.PresetDefault presetDefault = org.nyet.ecuxplot.DataLogger.getPresetDefault(presetName);
+            if (presetDefault == null) {
+                continue;
+            }
+
+            java.util.Set<String> expectedColumns = expectedColumnsByPreset.get(presetName);
+            if (expectedColumns == null) {
+                // No expectations for this preset in this log format, skip
+                continue;
+            }
+
+            // Check xkey exists if expected
+            if (expectedColumns.contains(presetDefault.xkey)) {
+                Dataset.Column xkeyColumn = dataset.get(presetDefault.xkey);
+                assertTest("Preset[" + presetName + "] xkey for " + fileName + ": '" + presetDefault.xkey + "' should exist",
+                        xkeyColumn != null);
+            }
+
+            // Check ykeys0 exist if expected
+            for (String ykey : presetDefault.ykeys0) {
+                if (expectedColumns.contains(ykey)) {
+                    Dataset.Column ykeyColumn = dataset.get(ykey);
+                    // Skip test for calculated columns (HP, TQ, WHP, WTQ are calculated from RPM/Boost)
+                    boolean isCalculated = ykey.matches("^(HP|TQ|WHP|WTQ|Sim .*|Calc .*|Boost Spool Rate .*)$");
+                    if (!isCalculated) {
+                        assertTest("Preset[" + presetName + "] ykeys0 for " + fileName + ": '" + ykey + "' should exist",
+                                ykeyColumn != null);
+                    }
+                }
+            }
+
+            // Check ykeys1 exist if expected
+            for (String ykey : presetDefault.ykeys1) {
+                if (expectedColumns.contains(ykey)) {
+                    Dataset.Column ykeyColumn = dataset.get(ykey);
+                    boolean isCalculated = ykey.matches("^(HP|TQ|WHP|WTQ|Sim .*|Calc .*|Boost Spool Rate .*)$");
+                    if (!isCalculated) {
+                        assertTest("Preset[" + presetName + "] ykeys1 for " + fileName + ": '" + ykey + "' should exist",
+                                ykeyColumn != null);
+                    }
+                }
+            }
         }
     }
 

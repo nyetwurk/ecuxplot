@@ -31,9 +31,31 @@ public class DataLogger {
     private static Map<String, DataLoggerConfig> loggerConfigs = new HashMap<>();
 
     // ============================================================================
-    // FIELD PREFERENCES - LOADED FROM YAML/XML (GLOBAL)
+    // FILTER ASSOCIATIONS - LOADED FROM YAML/XML (GLOBAL)
     // ============================================================================
-    private static Map<String, String> fieldPreferences = new HashMap<>();
+    private static Map<String, String> filterAssociations = new HashMap<>();
+
+    // ============================================================================
+    // PRESET DEFAULTS - LOADED FROM YAML/XML (GLOBAL)
+    // ============================================================================
+    /**
+     * Holds default preset configuration (xkey, ykeys0, ykeys1, scatter)
+     */
+    public static class PresetDefault {
+        public final String xkey;
+        public final String[] ykeys0;
+        public final String[] ykeys1;
+        public final boolean scatter;
+
+        public PresetDefault(String xkey, String[] ykeys0, String[] ykeys1, boolean scatter) {
+            this.xkey = xkey;
+            this.ykeys0 = ykeys0 != null ? ykeys0 : new String[0];
+            this.ykeys1 = ykeys1 != null ? ykeys1 : new String[0];
+            this.scatter = scatter;
+        }
+    }
+
+    private static Map<String, PresetDefault> presetDefaults = new HashMap<>();
 
     // ============================================================================
     // HEADER DATA CLASS
@@ -964,30 +986,101 @@ public class DataLogger {
             Document document = builder.parse(is);
             is.close();
 
-            // Parse field preferences if present
-            NodeList fieldPreferencesNodes = document.getElementsByTagName("field_preferences");
-            if (fieldPreferencesNodes.getLength() > 0) {
-                Element fieldPreferencesElement = (Element) fieldPreferencesNodes.item(0);
-                // Check if field preferences are stored as attributes (YAML converts single values to attributes)
-                if (fieldPreferencesElement.hasAttributes()) {
-                    var attributes = fieldPreferencesElement.getAttributes();
+            // Parse filter associations if present
+            NodeList filterAssociationsNodes = document.getElementsByTagName("filter_associations");
+            if (filterAssociationsNodes.getLength() > 0) {
+                Element filterAssociationsElement = (Element) filterAssociationsNodes.item(0);
+                // Check if filter associations are stored as attributes (YAML converts single values to attributes)
+                if (filterAssociationsElement.hasAttributes()) {
+                    var attributes = filterAssociationsElement.getAttributes();
                     for (int i = 0; i < attributes.getLength(); i++) {
                         var attr = attributes.item(i);
-                        String preferenceName = attr.getNodeName();
+                        String associationName = attr.getNodeName();
                         String fieldName = attr.getNodeValue();
-                        fieldPreferences.put(preferenceName, fieldName);
-                        logger.debug("Loaded field preference '{}' = '{}'", preferenceName, fieldName);
+                        filterAssociations.put(associationName, fieldName);
+                        logger.debug("Loaded filter association '{}' = '{}'", associationName, fieldName);
                     }
                 } else {
                     // Legacy: check for child elements
-                    NodeList childNodes = fieldPreferencesElement.getChildNodes();
+                    NodeList childNodes = filterAssociationsElement.getChildNodes();
                     for (int i = 0; i < childNodes.getLength(); i++) {
                         if (childNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                            Element preferenceElement = (Element) childNodes.item(i);
-                            String preferenceName = preferenceElement.getTagName();
-                            String fieldName = preferenceElement.getTextContent().trim();
-                            fieldPreferences.put(preferenceName, fieldName);
-                            logger.debug("Loaded field preference '{}' = '{}'", preferenceName, fieldName);
+                            Element associationElement = (Element) childNodes.item(i);
+                            String associationName = associationElement.getTagName();
+                            String fieldName = associationElement.getTextContent().trim();
+                            filterAssociations.put(associationName, fieldName);
+                            logger.debug("Loaded filter association '{}' = '{}'", associationName, fieldName);
+                        }
+                    }
+                }
+            }
+
+            // Parse preset defaults if present
+            NodeList presetDefaultsNodes = document.getElementsByTagName("preset_defaults");
+            if (presetDefaultsNodes.getLength() > 0) {
+                Element presetDefaultsElement = (Element) presetDefaultsNodes.item(0);
+                NodeList presetNodes = presetDefaultsElement.getChildNodes();
+                for (int i = 0; i < presetNodes.getLength(); i++) {
+                    if (presetNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        Element presetElement = (Element) presetNodes.item(i);
+                        // Get preset name from "name" attribute if present (for names with spaces),
+                        // otherwise use tag name
+                        String presetName = presetElement.hasAttribute("name") ?
+                            presetElement.getAttribute("name") : presetElement.getTagName();
+                        String xkey = null;
+                        String[] ykeys0 = new String[0];
+                        String[] ykeys1 = new String[0];
+                        boolean scatter = false;
+
+                        // Parse xkey - check attribute first, then child element
+                        if (presetElement.hasAttribute("xkey")) {
+                            xkey = presetElement.getAttribute("xkey");
+                        } else {
+                            NodeList xkeyNodes = presetElement.getElementsByTagName("xkey");
+                            if (xkeyNodes.getLength() > 0) {
+                                xkey = xkeyNodes.item(0).getTextContent().trim();
+                            }
+                        }
+
+                        // Parse ykeys0
+                        NodeList ykeys0Nodes = presetElement.getElementsByTagName("ykeys0");
+                        if (ykeys0Nodes.getLength() > 0) {
+                            Element ykeys0Element = (Element) ykeys0Nodes.item(0);
+                            NodeList itemNodes = ykeys0Element.getElementsByTagName("item");
+                            ykeys0 = new String[itemNodes.getLength()];
+                            for (int j = 0; j < itemNodes.getLength(); j++) {
+                                ykeys0[j] = itemNodes.item(j).getTextContent().trim();
+                            }
+                        }
+
+                        // Parse ykeys1
+                        NodeList ykeys1Nodes = presetElement.getElementsByTagName("ykeys1");
+                        if (ykeys1Nodes.getLength() > 0) {
+                            Element ykeys1Element = (Element) ykeys1Nodes.item(0);
+                            NodeList itemNodes = ykeys1Element.getElementsByTagName("item");
+                            ykeys1 = new String[itemNodes.getLength()];
+                            for (int j = 0; j < itemNodes.getLength(); j++) {
+                                ykeys1[j] = itemNodes.item(j).getTextContent().trim();
+                            }
+                        }
+
+                        // Parse scatter - check attribute first, then child element
+                        if (presetElement.hasAttribute("scatter")) {
+                            String scatterValue = presetElement.getAttribute("scatter");
+                            scatter = Boolean.parseBoolean(scatterValue);
+                        } else {
+                            NodeList scatterNodes = presetElement.getElementsByTagName("scatter");
+                            if (scatterNodes.getLength() > 0) {
+                                String scatterValue = scatterNodes.item(0).getTextContent().trim();
+                                scatter = Boolean.parseBoolean(scatterValue);
+                            }
+                        }
+
+                        if (xkey != null) {
+                            PresetDefault presetDefault = new PresetDefault(xkey, ykeys0, ykeys1, scatter);
+                            presetDefaults.put(presetName, presetDefault);
+                            logger.debug("Loaded preset default '{}' with xkey='{}', {} ykeys0, {} ykeys1, scatter={}",
+                                    presetName, xkey, ykeys0.length, ykeys1.length, scatter);
                         }
                     }
                 }
@@ -1005,8 +1098,8 @@ public class DataLogger {
                         Element childElement = (Element) childNodes.item(i);
                         String childTagName = childElement.getTagName();
 
-                        // Skip field_preferences - already processed
-                        if ("field_preferences".equals(childTagName)) {
+                        // Skip filter_associations - already processed
+                        if ("filter_associations".equals(childTagName)) {
                             continue;
                         }
 
@@ -1283,36 +1376,57 @@ public class DataLogger {
     }
 
     // ============================================================================
-    // FIELD CATEGORY ENUM AND ACCESS METHODS
+    // FILTER ASSOCIATION ENUM AND ACCESS METHODS
     // ============================================================================
 
-    public enum FieldPreference {
+    public enum FilterAssociation {
         PEDAL("pedal"),
         THROTTLE("throttle"),
         GEAR("gear");
 
-        private final String preferenceName;
+        private final String associationName;
 
-        FieldPreference(String preferenceName) {
-            this.preferenceName = preferenceName;
+        FilterAssociation(String associationName) {
+            this.associationName = associationName;
         }
 
         public String field() {
-            return fieldPreferences.getOrDefault(preferenceName, "");
+            return filterAssociations.getOrDefault(associationName, "");
         }
     }
 
-    // Concise wrapper methods for common field preferences
+    // Concise wrapper methods for common filter associations
     public static String pedalField() {
-        return FieldPreference.PEDAL.field();
+        return FilterAssociation.PEDAL.field();
     }
 
     public static String throttleField() {
-        return FieldPreference.THROTTLE.field();
+        return FilterAssociation.THROTTLE.field();
     }
 
     public static String gearField() {
-        return FieldPreference.GEAR.field();
+        return FilterAssociation.GEAR.field();
+    }
+
+    // ============================================================================
+    // PRESET DEFAULTS - ACCESS METHODS
+    // ============================================================================
+
+    /**
+     * Get preset default configuration by preset name.
+     * @param presetName Name of the preset (e.g., "Power", "Timing")
+     * @return PresetDefault object or null if not found
+     */
+    public static PresetDefault getPresetDefault(String presetName) {
+        return presetDefaults.get(presetName);
+    }
+
+    /**
+     * Get all available preset default names.
+     * @return Array of preset names
+     */
+    public static String[] getPresetDefaultNames() {
+        return presetDefaults.keySet().toArray(new String[0]);
     }
 
     // ============================================================================

@@ -6,6 +6,46 @@ This document describes the complete YAML schema for ECUxPlot's logger configura
 
 ## Schema Description
 
+### Filter Associations (Shared)
+
+Filter associations define canonical field names for common filter categories. These are single canonical field names (not arrays) that logger-specific field variations are aliased to via `loggers.yaml`.
+
+```yaml
+filter_associations:
+  pedal: "AccelPedalPosition"
+  throttle: "ThrottlePlateAngle"
+  gear: "Gear"
+```
+
+### Preset Defaults (Shared)
+
+Preset defaults define canonical column names for default axis presets. These ensure consistency between default axis presets and canonical column names across all log formats.
+
+```yaml
+preset_defaults:
+  Power:
+    xkey: "RPM"
+    ykeys0: ["WHP", "WTQ", "HP", "TQ"]
+    ykeys1: ["BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]
+  Timing:
+    xkey: "RPM"
+    ykeys0: ["EngineLoad"]
+    ykeys1: ["IgnitionTimingAngleOverall", "IgnitionTimingAngleOverallDesired"]
+    scatter: true
+  Fueling:
+    xkey: "RPM"
+    ykeys0: ["Zeitronix AFR", "Sim AFR"]
+    ykeys1: ["Zeitronix Boost (PSI)", "BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]
+```
+
+**Preset Default Fields**:
+- **`xkey`** (string, required): Canonical column name for the X-axis
+- **`ykeys0`** (array, optional): Array of canonical column names for the first Y-axis
+- **`ykeys1`** (array, optional): Array of canonical column names for the second Y-axis
+- **`scatter`** (boolean, optional): Whether this preset should use scatter plot mode (default: `false`)
+
+**Note**: Preset defaults define which columns presets use, but don't define which log formats support which columns. That information is defined in `test-data/test-expectations.xml` via `<expected_preset_columns>` sections per log format. This separation keeps preset configuration clean while allowing test expectations to specify format-specific availability.
+
 ### Logger Definition Structure
 
 ```yaml
