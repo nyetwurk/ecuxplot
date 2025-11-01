@@ -410,18 +410,18 @@ public class ECUxDataset extends Dataset {
         // Provide ambient pressure supplier that gets BaroPressure normalized to mBar
         java.util.function.Supplier<Double> ambientSupplier = () -> {
             Column baro = super.get("BaroPressure");
-            if (baro != null) {
-                // Convert to mBar if needed (direct conversion, no recursion)
-                if (!UnitConstants.UNIT_MBAR.equals(baro.getUnits())) {
-                    Dataset.ColumnType colType = baro.getColumnType();
-                    if (colType == Dataset.ColumnType.CSV_NATIVE) {
-                        colType = Dataset.ColumnType.COMPILE_TIME_CONSTANTS;
-                    }
-                    baro = DatasetUnits.convertUnits(this, baro, UnitConstants.UNIT_MBAR, null, colType);
+            if (baro != null && baro.data != null && baro.data.size() > 0) {
+                double ambient = baro.data.get(0);
+                // Normalize to mBar if needed (inline conversion, no recursion risk)
+                String baroUnit = baro.getUnits();
+                if (baroUnit != null && baroUnit.equals(UnitConstants.UNIT_KPA)) {
+                    ambient = ambient * UnitConstants.MBAR_PER_KPA;
+                } else if (baroUnit != null && baroUnit.equals(UnitConstants.UNIT_PSI)) {
+                    // PSI gauge to mBar absolute (BaroPressure should never be PSI, but handle it)
+                    ambient = ambient * UnitConstants.MBAR_PER_PSI + UnitConstants.MBAR_PER_ATM;
                 }
-                if (baro != null && baro.data != null && baro.data.size() > 0) {
-                    return baro.data.get(0);
-                }
+                // If mBar or null, use as-is
+                return ambient;
             }
             return null;
         };
