@@ -29,7 +29,9 @@ ECUxPlot works with log files from ME7Logger, VCDS, JB4, Cobb Accessport, Zeitro
 ### 1. Download & Install
 
 **macOS**: Download the `.dmg` file → See [INSTALL.md](INSTALL.md) for macOS security steps
+
 **Windows**: Download `ECUxPlot-*-setup.exe` → Run the installer
+
 **Linux**: Download `.tar.gz` → Extract and run `./ECUxPlot.sh`
 
 📝 **New to ECUxPlot?** Start with [INSTALL.md](INSTALL.md) for detailed setup instructions.
@@ -86,6 +88,8 @@ The `rpm_per_mph` constant in your vehicle profile determines the RPM-to-speed c
 
 For accurate performance comparisons between different vehicles, adjust the FATS range based on each vehicle's `rpm_per_mph` to ensure all vehicles are measured over the same speed range.
 
+> **Note**: Vehicle speed data in logs is often not accurate. FATS exclusively uses RPM data to calculate FATS time for this reason!
+
 **Examples**:
 
 **B5S4 (Audi S4)** - `rpm_per_mph = 72.1`:
@@ -104,7 +108,7 @@ For accurate performance comparisons between different vehicles, adjust the FATS
 
 1. **Load Data**: Import your ECU log file
 2. **Configure Filter**: Set minimum acceleration threshold (default: 100 RPM/s)
-3. **Open FATS**: Use "Options → Show FATS" menu
+3. **Open FATS**: Use **"Options → Show FATS"** menu
 4. **Set Range**: Configure RPM or MPH range for measurement
 5. **Analyze**: View FATS results with detailed logging
 
@@ -122,7 +126,7 @@ The Range Selector provides a convenient interface for selecting which files and
 #### Using the Range Selector
 
 1. **Load Data**: Import multiple log files (or a single file with multiple ranges)
-2. **Open Range Selector**: Use "Options → Ranges..." menu
+2. **Open Range Selector**: Use **"Options → Ranges..."** menu
 3. **Select Items**: Check the files/ranges you want to display
 4. **Apply**: Click "OK" or "Apply" to update the chart
 5. **Compare**: Use "Select All" or "Select None" for quick comparisons
@@ -145,7 +149,7 @@ ECUxPlot includes comprehensive tools to help refine and tune filter parameters 
 
 #### Filter Configuration
 
-Access via "Options → Filter" to:
+Access via **"Options → Filter"** to:
 
 - **Real-time Filter Refinement Analysis**: View filtered data points with detailed filtering information, as you make changes to the filter parameters
 - **Data Validation**: See which data points pass/fail filter criteria
@@ -155,7 +159,7 @@ Access via "Options → Filter" to:
 
 #### Event Window
 
-Access via "Options → Show Events" to:
+Access via **"Options → Show Events"** to:
 
 - **Live Events**: Real-time display of application events
 - **Level Filtering**: Filter by event level (TRACE, DEBUG, INFO, WARN, ERROR)
@@ -179,11 +183,10 @@ Access via "Options → Show Events" to:
 - Adjust values in **"Vehicle Profiles → Edit Constants"**
 - The vehicle profile settings directly affect calculations
 
-#### MAF (Mass Air Flow) readings are off
+### My HP/TQ graphs are all super wiggly
 
-- Adjust the MAF parameter in your vehicle profile
-- Check the correction value shown under the MAF parameter
-- Non-stock intakes may need diameter adjustments
+- This is often caused by excessive jitter in the data. You can try increasing the smoothing window(s) in the **"Options → Filter"** menu.
+- If all else fails, report the issue on the [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues) tracker **with a sample of your log file**.
 
 #### FATS calculation shows no results
 
@@ -210,6 +213,8 @@ Access via "Options → Show Events" to:
 - 🐛 **Found a bug?** Open an issue on [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues)
 - ❓ **Need help?** Check the [troubleshooting section in INSTALL.md](INSTALL.md#troubleshooting-installation)
 
+> **Note**: Issues without a sample log file may be closed without investigation.
+
 ## Supported Log Formats
 
 ECUxPlot automatically detects and parses the following automotive ECU logging formats:
@@ -227,7 +232,9 @@ ECUxPlot automatically detects and parses the following automotive ECU logging f
 - **M-Tuner** - [M-Engineering M-Tuner](https://www.m-engineering.us/collections/m-tuner)
 - **SimosTools** - [SimosTools Android app](https://play.google.com/store/apps/details?id=com.app.simostools) ([GitHub](https://github.com/Switchleg1/SimosTools))
 
-All formats are automatically mapped to standardized field names (based on ECUx, for better or for worse). If your format isn't supported, ECUxPlot will attempt to parse it using basic field mapping.
+All formats are automatically mapped to standardized field names (based on ECUx, for better or for worse).
+
+> **Note**: If your format isn't supported, ECUxPlot will attempt to parse it using basic field mapping. If you want to see the original field names in your graph, you can enable the **"Options → Original names"** option.
 
 ## Data Sources
 
