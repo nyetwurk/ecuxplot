@@ -308,6 +308,33 @@ public class LoggerDetectionTest {
         }
     }
 
+    private static void expandProfileReferences(Element expectedPresetsElement, java.util.Map<String, java.util.Set<String>> expectedColumnsByPreset) {
+        // Find profile references
+        NodeList profileRefs = expectedPresetsElement.getElementsByTagName("profile_ref");
+        for (int i = 0; i < profileRefs.getLength(); i++) {
+            Element profileRef = (Element) profileRefs.item(i);
+            String profileName = profileRef.getAttribute("name");
+
+            // Get profile from DataLogger
+            java.util.Map<String, java.util.List<org.nyet.ecuxplot.DataLogger.ProfileItem>> profile =
+                org.nyet.ecuxplot.DataLogger.getPresetSupportProfile(profileName);
+            if (profile == null) {
+                continue;
+            }
+
+            // For each preset in the profile, expand it and add to expected columns
+            for (java.util.Map.Entry<String, java.util.List<org.nyet.ecuxplot.DataLogger.ProfileItem>> entry : profile.entrySet()) {
+                String presetName = entry.getKey();
+                java.util.Set<String> columns = org.nyet.ecuxplot.DataLogger.expandProfilePreset(profileName, presetName);
+
+                // Merge with existing expected columns for this preset
+                java.util.Set<String> existing = expectedColumnsByPreset.getOrDefault(presetName, new java.util.HashSet<>());
+                existing.addAll(columns);
+                expectedColumnsByPreset.put(presetName, existing);
+            }
+        }
+    }
+
     private static void expandCategories(Element presetElement, java.util.Set<String> expectedColumns) {
         // Find category references in preset
         NodeList categoryRefs = presetElement.getElementsByTagName("category");
@@ -341,14 +368,19 @@ public class LoggerDetectionTest {
         }
 
         Element expectedPresetsElement = (Element) expectedPresets.item(0);
-        NodeList presetNodes = expectedPresetsElement.getElementsByTagName("preset");
 
-        // Build map of expected columns per preset (expanding categories)
+        // Build map of expected columns per preset
         java.util.Map<String, java.util.Set<String>> expectedColumnsByPreset = new java.util.HashMap<>();
+
+        // First, expand profile references
+        expandProfileReferences(expectedPresetsElement, expectedColumnsByPreset);
+
+        // Then, expand preset elements with categories and direct columns
+        NodeList presetNodes = expectedPresetsElement.getElementsByTagName("preset");
         for (int i = 0; i < presetNodes.getLength(); i++) {
             Element presetElement = (Element) presetNodes.item(i);
             String presetName = presetElement.getAttribute("name");
-            java.util.Set<String> expectedColumns = new java.util.HashSet<>();
+            java.util.Set<String> expectedColumns = expectedColumnsByPreset.getOrDefault(presetName, new java.util.HashSet<>());
 
             // Expand categories first
             expandCategories(presetElement, expectedColumns);

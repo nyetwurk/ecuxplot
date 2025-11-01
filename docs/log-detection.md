@@ -46,6 +46,41 @@ filter_associations:
 
 **Usage**: The Filter uses these via `DataLogger.pedalField()`, `DataLogger.throttleField()`, and `DataLogger.gearField()` to ensure consistent column access across all log formats.
 
+### Global Required Columns (Shared)
+
+Global required columns define fundamental columns that should exist in all log formats. These columns are used across multiple presets and calculations.
+
+```yaml
+global_required_columns:
+  - "RPM"
+  - "TIME"
+```
+
+**Usage**: Accessible via `DataLogger.getGlobalRequiredColumns()`. Unit tests verify these columns exist in each log format.
+
+### Axis Preset Categories (Shared)
+
+Axis preset categories define reusable groups of columns for preset testing. Categories prevent duplication when defining preset expectations.
+
+```yaml
+axis_preset_categories:
+  boost_both:
+    - "BoostPressureDesired (PSI)"
+    - "BoostPressureActual (PSI)"
+  boost_actual:
+    - "BoostPressureActual (PSI)"
+  maf:
+    - "MassAirFlow"
+  timing_all:
+    - "EngineLoad"
+    - "IgnitionTimingAngleOverall"
+    - "IgnitionTimingAngleOverallDesired"
+  compressor_map_base:
+    - "BaroPressure"
+```
+
+**Usage**: Accessible via `DataLogger.getAxisPresetCategory(categoryName)`. Categories are referenced by preset support profiles to build reusable preset expectation patterns.
+
 ### Preset Defaults (Shared)
 
 Preset defaults define canonical column names for default axis presets. These ensure consistency between default axis presets and canonical column names across all log formats.
@@ -61,6 +96,10 @@ preset_defaults:
     ykeys0: ["EngineLoad"]
     ykeys1: ["IgnitionTimingAngleOverall", "IgnitionTimingAngleOverallDesired"]
     scatter: true
+  Fueling:
+    xkey: "RPM"
+    ykeys0: ["Zeitronix AFR", "Sim AFR"]
+    ykeys1: ["Zeitronix Boost (PSI)", "BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]
 ```
 
 **Preset Default Fields**:
@@ -74,6 +113,37 @@ preset_defaults:
 - **Test expectations** (in `test-data/test-expectations.xml`): Define which preset columns are available in each log format via `<expected_preset_columns>` sections
 
 **Usage**: Default presets are created by `ECUxPreset.createDefaultECUxPresets()` using these canonical names via `DataLogger.getPresetDefault()` and `DataLogger.getPresetDefaultNames()`. Unit tests verify that preset columns exist in each log format based on the expectations in `test-expectations.xml`, keeping preset configuration separate from format-specific test expectations.
+
+### Preset Support Profiles (Shared)
+
+Preset support profiles define reusable preset column expectations that can be referenced in test expectations. Profiles group common patterns to reduce duplication.
+
+```yaml
+preset_support_profiles:
+  full_timing:
+    Timing:
+      - category: timing_all
+  partial_timing:
+    Timing:
+      - column: IgnitionTimingAngleOverall
+  full_fueling:
+    Fueling:
+      - category: boost_both
+      - category: maf
+      - column: EffInjectorDutyCycle
+      - column: AirFuelRatioActual
+  boost_presets:
+    Power:
+      - category: boost_both
+    "Spool Rate":
+      - category: boost_actual
+```
+
+**Profile Items**:
+- **`category: "category_name"`**: References an `axis_preset_categories` entry (expands to multiple columns)
+- **`column: "ColumnName"`**: Direct column reference
+
+**Usage**: Profiles are referenced in `test-expectations.xml` via `<profile_ref name="profile_name"/>`. The test framework expands profiles using `DataLogger.expandProfilePreset()`. This approach reduces duplication when many loggers share similar preset support patterns.
 
 ### Logger Definitions
 

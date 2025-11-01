@@ -17,6 +17,41 @@ filter_associations:
   gear: "Gear"
 ```
 
+### Global Required Columns (Shared)
+
+Global required columns define fundamental columns that should exist in all log formats. These are columns used across multiple presets and calculations.
+
+```yaml
+global_required_columns:
+  - "RPM"
+  - "TIME"
+```
+
+**Usage**: These columns are verified during testing to ensure all log formats provide the fundamental data needed for preset functionality and calculations.
+
+### Axis Preset Categories (Shared)
+
+Axis preset categories define reusable groups of columns for preset testing. Categories prevent duplication when defining preset expectations and support profiles.
+
+```yaml
+axis_preset_categories:
+  boost_both:
+    - "BoostPressureDesired (PSI)"
+    - "BoostPressureActual (PSI)"
+  boost_actual:
+    - "BoostPressureActual (PSI)"
+  maf:
+    - "MassAirFlow"
+  timing_all:
+    - "EngineLoad"
+    - "IgnitionTimingAngleOverall"
+    - "IgnitionTimingAngleOverallDesired"
+  compressor_map_base:
+    - "BaroPressure"
+```
+
+**Usage**: Categories are referenced by preset support profiles and test expectations to reduce duplication. They serve as reusable building blocks for defining preset column requirements.
+
 ### Preset Defaults (Shared)
 
 Preset defaults define canonical column names for default axis presets. These ensure consistency between default axis presets and canonical column names across all log formats.
@@ -45,6 +80,89 @@ preset_defaults:
 - **`scatter`** (boolean, optional): Whether this preset should use scatter plot mode (default: `false`)
 
 **Note**: Preset defaults define which columns presets use, but don't define which log formats support which columns. That information is defined in `test-data/test-expectations.xml` via `<expected_preset_columns>` sections per log format. This separation keeps preset configuration clean while allowing test expectations to specify format-specific availability.
+
+### Preset Support Profiles (Shared)
+
+Preset support profiles define reusable preset column expectations that can be referenced in test expectations. Profiles group common patterns to reduce duplication when defining which presets each logger supports.
+
+```yaml
+preset_support_profiles:
+  full_timing:
+    Timing:
+      - column: IgnitionTimingAngleOverall
+      - pattern: "IgnitionRetardCyl.*|AverageIgnitionRetard"
+  full_fueling:
+    Fueling:
+      - category: boost_both
+      - category: maf
+      - column: EffInjectorDutyCycle
+      - column: AirFuelRatioActual
+  partial_fueling:
+    Fueling:
+      - column: AirFuelRatioActual
+  boost_presets:
+    Power:
+      - category: boost_both
+    "Spool Rate":
+      - category: boost_actual
+  compressor_map:
+    "Compressor Map":
+      - category: boost_actual
+      - category: maf
+      - category: compressor_map_base
+```
+
+**Profile Structure**:
+- **Profile name** (e.g., `full_timing`): Key identifying the profile
+- **Preset name** (e.g., `Timing`): Name of the preset this profile defines expectations for
+- **Profile items**: List of items that define column requirements. Each item can be one of three types:
+  - **`category`**: Reference to an `axis_preset_category` (e.g., `category: boost_both`)
+  - **`column`**: Direct column name (e.g., `column: IgnitionTimingAngleOverall`)
+  - **`pattern`**: Regex pattern that matches column names (e.g., `pattern: "IgnitionRetardCyl.*|AverageIgnitionRetard"`)
+
+**Profile Item Types**:
+
+1. **Category Reference** (`category: <category_name>`):
+   - References a predefined category from `axis_preset_categories`
+   - Expands to all columns in that category
+   - Example: `category: boost_both` expands to `["BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]`
+
+2. **Direct Column** (`column: <column_name>`):
+   - Directly specifies a canonical column name that must exist
+   - Example: `column: IgnitionTimingAngleOverall`
+
+3. **Pattern Match** (`pattern: <regex_pattern>`):
+   - Regex pattern that must match at least one column name in the dataset
+   - Uses Java regex syntax (`.matches()` method)
+   - Example: `pattern: "IgnitionRetardCyl.*|AverageIgnitionRetard"` matches:
+     - Any column starting with `IgnitionRetardCyl` (e.g., `IgnitionRetardCyl1`, `IgnitionRetardCyl2`, etc.)
+     - OR the exact column `AverageIgnitionRetard`
+   - **Use case**: When a preset needs any one of several related columns, or when column names follow a pattern
+   - **Note**: Pattern matching is verified at test time - at least one column in the dataset must match the pattern
+
+**Usage**: Profiles are referenced in `test-expectations.xml` via `<profile_ref name="profile_name"/>` elements. The test framework expands profile references to actual column lists using `DataLogger.expandProfilePreset()`.
+
+**Profile Expansion**:
+- **Categories**: Expanded to all columns defined in the referenced category
+- **Columns**: Added directly to the expected column set
+- **Patterns**: Tested at runtime - verifies that at least one column in the dataset matches the pattern
+
+**Pattern Matching Details**:
+- Patterns use Java regex syntax and must match entire column names (`.matches()` method)
+- Example pattern `"IgnitionRetardCyl.*"` matches columns like:
+  - `IgnitionRetardCyl1`
+  - `IgnitionRetardCyl2`
+  - `IgnitionRetardCyl10`
+  - etc.
+- Multiple alternatives can be combined with `|`: `"IgnitionRetardCyl.*|AverageIgnitionRetard"`
+- If a pattern matches at least one column, the test passes
+- Useful for loggers that may have different numbers of cylinders or varying field availability
+
+**Benefits**:
+- Reduces duplication when multiple loggers support the same preset columns
+- Single source of truth for preset column requirements
+- Easier to maintain and update preset expectations
+- Patterns provide flexibility for variable column availability (e.g., different cylinder counts)
 
 ### Logger Definition Structure
 
@@ -207,6 +325,43 @@ field_transformations:
   - Required: No
 
 ## Complete Schema
+
+### Top-Level Global Sections
+
+```yaml
+# Filter associations (shared across all loggers)
+filter_associations:
+  pedal: "AccelPedalPosition"
+  throttle: "ThrottlePlateAngle"
+  gear: "Gear"
+
+# Global required columns (fundamental columns for all loggers)
+global_required_columns:
+  - "RPM"
+  - "TIME"
+
+# Axis preset categories (reusable column groups)
+axis_preset_categories:
+  boost_both:
+    - "BoostPressureDesired (PSI)"
+    - "BoostPressureActual (PSI)"
+
+# Preset defaults (canonical column names for default presets)
+preset_defaults:
+  Power:
+    xkey: "RPM"
+    ykeys0: ["WHP", "WTQ", "HP", "TQ"]
+    ykeys1: ["BoostPressureDesired (PSI)", "BoostPressureActual (PSI)"]
+
+# Preset support profiles (reusable preset expectations)
+preset_support_profiles:
+  full_timing:
+    Timing:
+      - column: IgnitionTimingAngleOverall
+      - pattern: "IgnitionRetardCyl.*|AverageIgnitionRetard"
+```
+
+### Logger Definitions
 
 ```yaml
 loggers:

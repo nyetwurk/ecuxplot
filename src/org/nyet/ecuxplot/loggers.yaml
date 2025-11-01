@@ -61,10 +61,9 @@ axis_preset_categories:
 preset_support_profiles:
   full_timing:
     Timing:
-      - category: "timing_all"
-  partial_timing:
-    Timing:
-      - column: "IgnitionTimingAngleOverall"
+      - column: "RPM"  # xkey (global required, but explicit for clarity)
+      - column: "IgnitionTimingAngleOverall"  # ykeys1
+      - pattern: "IgnitionRetardCyl.*|AverageIgnitionRetard"  # for IgnitionTimingAngleOverallDesired calculation
   full_fueling:
     Fueling:
       - category: "boost_both"

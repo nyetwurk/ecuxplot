@@ -71,11 +71,11 @@ public class DataLogger {
     // PRESET SUPPORT PROFILES - LOADED FROM YAML/XML (GLOBAL)
     // ============================================================================
     /**
-     * Represents a single profile item (either a category reference or direct column).
+     * Represents a single profile item (either a category reference, direct column, or pattern).
      */
     public static class ProfileItem {
-        public final String type;  // "category" or "column"
-        public final String value; // category name or column name
+        public final String type;  // "category", "column", or "pattern"
+        public final String value; // category name, column name, or regex pattern
 
         public ProfileItem(String type, String value) {
             this.type = type;
@@ -1189,7 +1189,7 @@ public class DataLogger {
                                 String presetName = getElementName(presetElement);
                                 java.util.List<ProfileItem> items = new java.util.ArrayList<>();
 
-                                // Parse items (category or column references)
+                                // Parse items (category, column, or pattern references)
                                 NodeList itemNodes = presetElement.getElementsByTagName("item");
                                 for (int k = 0; k < itemNodes.getLength(); k++) {
                                     Element itemElement = (Element) itemNodes.item(k);
@@ -1197,6 +1197,8 @@ public class DataLogger {
                                         items.add(new ProfileItem("category", itemElement.getAttribute("category")));
                                     } else if (itemElement.hasAttribute("column")) {
                                         items.add(new ProfileItem("column", itemElement.getAttribute("column")));
+                                    } else if (itemElement.hasAttribute("pattern")) {
+                                        items.add(new ProfileItem("pattern", itemElement.getAttribute("pattern")));
                                     }
                                 }
 
@@ -1606,9 +1608,10 @@ public class DataLogger {
     /**
      * Expand a profile's preset items into a set of canonical column names.
      * Categories are expanded using axis_preset_categories, columns are added directly.
+     * Patterns are added as-is (with pattern prefix) and must be matched at test time.
      * @param profileName Name of the profile
      * @param presetName Name of the preset within the profile
-     * @return Set of canonical column names, or empty set if profile/preset not found
+     * @return Set of canonical column names or patterns (patterns prefixed with "pattern:"), or empty set if profile/preset not found
      */
     public static java.util.Set<String> expandProfilePreset(String profileName, String presetName) {
         java.util.Set<String> columns = new java.util.HashSet<>();
@@ -1632,6 +1635,9 @@ public class DataLogger {
             } else if ("column".equals(item.type)) {
                 // Add column directly
                 columns.add(item.value);
+            } else if ("pattern".equals(item.type)) {
+                // Add pattern with prefix for later matching
+                columns.add("pattern:" + item.value);
             }
         }
 
