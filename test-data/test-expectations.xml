@@ -201,6 +201,17 @@
             <id index="30">IgnitionTimingCyl5</id>
             <id index="31">IgnitionTimingCyl6</id>
         </expected_ids>
+        <expected_preset_columns>
+            <preset name="Fueling">
+                <category name="boost_both"/>
+                <category name="maf"/>
+                <column>FuelInjectorOnTime</column>
+                <column>AirFuelRatioActual</column>
+            </preset>
+            <preset name="Timing">
+                <profile_ref name="full_timing"/>
+            </preset>
+        </expected_preset_columns>
         <expected_id2s>
             <id2 index="0">TIME</id2>
             <id2 index="1">RPM</id2>
@@ -605,6 +616,14 @@
     <!-- ME7L Logger Test Expectations -->
     <test_case file="me7l.csv">
         <expected_type>ME7LOGGER</expected_type>
+        <expected_preset_columns>
+            <preset name="Fueling">
+                <profile_ref name="full_fueling"/>
+            </preset>
+            <preset name="Timing">
+                <profile_ref name="full_timing"/>
+            </preset>
+        </expected_preset_columns>
         <expected_ids>
             <id index="0">TIME</id>
             <id index="1">IgnitionRetardCyl1</id>
@@ -860,6 +879,14 @@
     </test_case>
     <test_case file="me7l-1.csv">
         <expected_type>ME7LOGGER</expected_type>
+        <expected_preset_columns>
+            <preset name="Fueling">
+                <profile_ref name="full_fueling"/>
+            </preset>
+            <preset name="Timing">
+                <profile_ref name="full_timing"/>
+            </preset>
+        </expected_preset_columns>
         <expected_ids>
             <id index="0">TIME</id>
             <id index="1">IgnitionRetardCyl1</id>
@@ -1103,6 +1130,14 @@
     </test_case>
     <test_case file="me7l-semicolons.csv">
         <expected_type>ME7LOGGER</expected_type>
+        <expected_preset_columns>
+            <preset name="Fueling">
+                <profile_ref name="full_fueling"/>
+            </preset>
+            <preset name="Timing">
+                <profile_ref name="full_timing"/>
+            </preset>
+        </expected_preset_columns>
         <expected_ids>
             <id index="0">TIME</id>
             <id index="1">IgnitionRetardCyl1</id>
@@ -1678,6 +1713,14 @@
             <id index="39">IGA_ADJ_KNK[5]</id>
             <id index="40">FuelPressureHighEFP</id>
         </expected_ids>
+        <expected_preset_columns>
+            <preset name="Fueling">
+                <category name="boost_both"/>
+                <category name="maf"/>
+                <column>FuelInjectorOnTime</column>
+                <column>AirFuelRatioActual</column>
+            </preset>
+        </expected_preset_columns>
         <expected_id2s>
             <id2 index="0">TimeStamp</id2>
             <id2 index="1">TIA</id2>
@@ -2192,6 +2235,15 @@
     <!-- WinLog Logger Test Expectations -->
     <test_case file="winlog.csv">
         <expected_type>WINLOG</expected_type>
+        <expected_preset_columns>
+            <preset name="Fueling">
+                <category name="boost_both"/>
+                <category name="maf"/>
+                <column>FuelInjectorOnTime</column>
+                <column>AirFuelRatioActual</column>
+            </preset>
+            <!-- Timing preset not supported: only has AvgIgnitionRetardKnockControl, not per-cylinder IgnitionRetardCyl* fields -->
+        </expected_preset_columns>
         <expected_ids>
             <id index="0">TIME</id>
             <id index="1">TimeStamp</id>
