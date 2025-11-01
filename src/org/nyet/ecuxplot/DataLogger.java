@@ -68,6 +68,27 @@ public class DataLogger {
     private static Map<String, PresetDefault> presetDefaults = new HashMap<>();
 
     // ============================================================================
+    // PRESET SUPPORT PROFILES - LOADED FROM YAML/XML (GLOBAL)
+    // ============================================================================
+    /**
+     * Represents a single profile item (either a category reference or direct column).
+     */
+    public static class ProfileItem {
+        public final String type;  // "category" or "column"
+        public final String value; // category name or column name
+
+        public ProfileItem(String type, String value) {
+            this.type = type;
+            this.value = value;
+        }
+    }
+
+    /**
+     * Map structure: profileName -> presetName -> List<ProfileItem>
+     */
+    private static Map<String, Map<String, java.util.List<ProfileItem>>> presetSupportProfiles = new HashMap<>();
+
+    // ============================================================================
     // HEADER DATA CLASS
     // ============================================================================
 
@@ -339,6 +360,77 @@ public class DataLogger {
             } catch (NumberFormatException e) {
                 return defaultValue;
             }
+        }
+        return defaultValue;
+    }
+
+    // ============================================================================
+    // GENERIC XML PARSING HELPERS - REDUCE DUPLICATION
+    // ============================================================================
+
+    /**
+     * Get element name - checks "name" attribute first (for sanitized names with spaces),
+     * otherwise uses tag name.
+     */
+    private static String getElementName(Element element) {
+        return element.hasAttribute("name") ? element.getAttribute("name") : element.getTagName();
+    }
+
+    /**
+     * Parse array of strings from <item> elements under a parent element.
+     */
+    private static String[] parseStringArrayFromItems(Element parentElement) {
+        NodeList itemNodes = parentElement.getElementsByTagName("item");
+        String[] result = new String[itemNodes.getLength()];
+        for (int i = 0; i < itemNodes.getLength(); i++) {
+            result[i] = itemNodes.item(i).getTextContent().trim();
+        }
+        return result;
+    }
+
+    /**
+     * Parse map of string arrays from child elements (e.g., axis_preset_categories).
+     * Each child element is a key, its <item> children are the array values.
+     */
+    private static Map<String, String[]> parseMapOfStringArrays(Element parentElement) {
+        Map<String, String[]> result = new HashMap<>();
+        NodeList childNodes = parentElement.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            if (childNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                Element childElement = (Element) childNodes.item(i);
+                String key = getElementName(childElement);
+                String[] values = parseStringArrayFromItems(childElement);
+                result.put(key, values);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get attribute value or child element text content.
+     * Checks attribute first, then child element with same name.
+     */
+    private static String getAttributeOrElementText(Element element, String name, String defaultValue) {
+        if (element.hasAttribute(name)) {
+            return element.getAttribute(name);
+        }
+        NodeList nodes = element.getElementsByTagName(name);
+        if (nodes.getLength() > 0) {
+            return nodes.item(0).getTextContent().trim();
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Get boolean from attribute or child element.
+     */
+    private static boolean getAttributeOrElementBoolean(Element element, String name, boolean defaultValue) {
+        if (element.hasAttribute(name)) {
+            return Boolean.parseBoolean(element.getAttribute(name));
+        }
+        NodeList nodes = element.getElementsByTagName(name);
+        if (nodes.getLength() > 0) {
+            return Boolean.parseBoolean(nodes.item(0).getTextContent().trim());
         }
         return defaultValue;
     }
@@ -1029,11 +1121,7 @@ public class DataLogger {
             NodeList globalColumnsNodes = document.getElementsByTagName("global_required_columns");
             if (globalColumnsNodes.getLength() > 0) {
                 Element globalColumnsElement = (Element) globalColumnsNodes.item(0);
-                NodeList columnNodes = globalColumnsElement.getElementsByTagName("item");
-                globalRequiredColumns = new String[columnNodes.getLength()];
-                for (int i = 0; i < columnNodes.getLength(); i++) {
-                    globalRequiredColumns[i] = columnNodes.item(i).getTextContent().trim();
-                }
+                globalRequiredColumns = parseStringArrayFromItems(globalColumnsElement);
                 logger.debug("Loaded {} global required columns", globalRequiredColumns.length);
             }
 
@@ -1041,20 +1129,8 @@ public class DataLogger {
             NodeList categoriesNodes = document.getElementsByTagName("axis_preset_categories");
             if (categoriesNodes.getLength() > 0) {
                 Element categoriesElement = (Element) categoriesNodes.item(0);
-                NodeList categoryNodes = categoriesElement.getChildNodes();
-                for (int i = 0; i < categoryNodes.getLength(); i++) {
-                    if (categoryNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                        Element categoryElement = (Element) categoryNodes.item(i);
-                        String categoryName = categoryElement.getTagName();
-                        NodeList itemNodes = categoryElement.getElementsByTagName("item");
-                        String[] columns = new String[itemNodes.getLength()];
-                        for (int j = 0; j < itemNodes.getLength(); j++) {
-                            columns[j] = itemNodes.item(j).getTextContent().trim();
-                        }
-                        axisPresetCategories.put(categoryName, columns);
-                        logger.debug("Loaded axis preset category '{}' with {} columns", categoryName, columns.length);
-                    }
-                }
+                axisPresetCategories = parseMapOfStringArrays(categoriesElement);
+                logger.debug("Loaded {} axis preset categories", axisPresetCategories.size());
             }
 
             // Parse preset defaults if present
@@ -1065,57 +1141,23 @@ public class DataLogger {
                 for (int i = 0; i < presetNodes.getLength(); i++) {
                     if (presetNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                         Element presetElement = (Element) presetNodes.item(i);
-                        // Get preset name from "name" attribute if present (for names with spaces),
-                        // otherwise use tag name
-                        String presetName = presetElement.hasAttribute("name") ?
-                            presetElement.getAttribute("name") : presetElement.getTagName();
-                        String xkey = null;
+                        String presetName = getElementName(presetElement);
+
+                        String xkey = getAttributeOrElementText(presetElement, "xkey", null);
                         String[] ykeys0 = new String[0];
                         String[] ykeys1 = new String[0];
-                        boolean scatter = false;
-
-                        // Parse xkey - check attribute first, then child element
-                        if (presetElement.hasAttribute("xkey")) {
-                            xkey = presetElement.getAttribute("xkey");
-                        } else {
-                            NodeList xkeyNodes = presetElement.getElementsByTagName("xkey");
-                            if (xkeyNodes.getLength() > 0) {
-                                xkey = xkeyNodes.item(0).getTextContent().trim();
-                            }
-                        }
+                        boolean scatter = getAttributeOrElementBoolean(presetElement, "scatter", false);
 
                         // Parse ykeys0
                         NodeList ykeys0Nodes = presetElement.getElementsByTagName("ykeys0");
                         if (ykeys0Nodes.getLength() > 0) {
-                            Element ykeys0Element = (Element) ykeys0Nodes.item(0);
-                            NodeList itemNodes = ykeys0Element.getElementsByTagName("item");
-                            ykeys0 = new String[itemNodes.getLength()];
-                            for (int j = 0; j < itemNodes.getLength(); j++) {
-                                ykeys0[j] = itemNodes.item(j).getTextContent().trim();
-                            }
+                            ykeys0 = parseStringArrayFromItems((Element) ykeys0Nodes.item(0));
                         }
 
                         // Parse ykeys1
                         NodeList ykeys1Nodes = presetElement.getElementsByTagName("ykeys1");
                         if (ykeys1Nodes.getLength() > 0) {
-                            Element ykeys1Element = (Element) ykeys1Nodes.item(0);
-                            NodeList itemNodes = ykeys1Element.getElementsByTagName("item");
-                            ykeys1 = new String[itemNodes.getLength()];
-                            for (int j = 0; j < itemNodes.getLength(); j++) {
-                                ykeys1[j] = itemNodes.item(j).getTextContent().trim();
-                            }
-                        }
-
-                        // Parse scatter - check attribute first, then child element
-                        if (presetElement.hasAttribute("scatter")) {
-                            String scatterValue = presetElement.getAttribute("scatter");
-                            scatter = Boolean.parseBoolean(scatterValue);
-                        } else {
-                            NodeList scatterNodes = presetElement.getElementsByTagName("scatter");
-                            if (scatterNodes.getLength() > 0) {
-                                String scatterValue = scatterNodes.item(0).getTextContent().trim();
-                                scatter = Boolean.parseBoolean(scatterValue);
-                            }
+                            ykeys1 = parseStringArrayFromItems((Element) ykeys1Nodes.item(0));
                         }
 
                         if (xkey != null) {
@@ -1123,6 +1165,50 @@ public class DataLogger {
                             presetDefaults.put(presetName, presetDefault);
                             logger.debug("Loaded preset default '{}' with xkey='{}', {} ykeys0, {} ykeys1, scatter={}",
                                     presetName, xkey, ykeys0.length, ykeys1.length, scatter);
+                        }
+                    }
+                }
+            }
+
+            // Parse preset support profiles if present
+            NodeList presetSupportProfilesNodes = document.getElementsByTagName("preset_support_profiles");
+            if (presetSupportProfilesNodes.getLength() > 0) {
+                Element profilesElement = (Element) presetSupportProfilesNodes.item(0);
+                NodeList profileNodes = profilesElement.getChildNodes();
+                for (int i = 0; i < profileNodes.getLength(); i++) {
+                    if (profileNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        Element profileElement = (Element) profileNodes.item(i);
+                        String profileName = getElementName(profileElement);
+                        Map<String, java.util.List<ProfileItem>> profilePresets = new HashMap<>();
+
+                        // Iterate through preset elements (e.g., Timing, Fueling, Power)
+                        NodeList presetNodes = profileElement.getChildNodes();
+                        for (int j = 0; j < presetNodes.getLength(); j++) {
+                            if (presetNodes.item(j).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                                Element presetElement = (Element) presetNodes.item(j);
+                                String presetName = getElementName(presetElement);
+                                java.util.List<ProfileItem> items = new java.util.ArrayList<>();
+
+                                // Parse items (category or column references)
+                                NodeList itemNodes = presetElement.getElementsByTagName("item");
+                                for (int k = 0; k < itemNodes.getLength(); k++) {
+                                    Element itemElement = (Element) itemNodes.item(k);
+                                    if (itemElement.hasAttribute("category")) {
+                                        items.add(new ProfileItem("category", itemElement.getAttribute("category")));
+                                    } else if (itemElement.hasAttribute("column")) {
+                                        items.add(new ProfileItem("column", itemElement.getAttribute("column")));
+                                    }
+                                }
+
+                                if (!items.isEmpty()) {
+                                    profilePresets.put(presetName, items);
+                                }
+                            }
+                        }
+
+                        if (!profilePresets.isEmpty()) {
+                            presetSupportProfiles.put(profileName, profilePresets);
+                            logger.debug("Loaded preset support profile '{}' with {} presets", profileName, profilePresets.size());
                         }
                     }
                 }
@@ -1494,6 +1580,62 @@ public class DataLogger {
      */
     public static java.util.Set<String> getAxisPresetCategoryNames() {
         return axisPresetCategories.keySet();
+    }
+
+    // ============================================================================
+    // PRESET SUPPORT PROFILES - ACCESS METHODS
+    // ============================================================================
+
+    /**
+     * Get preset support profile by profile name.
+     * @param profileName Name of the profile (e.g., "full_timing", "partial_timing")
+     * @return Map of preset name to list of ProfileItems, or null if profile not found
+     */
+    public static Map<String, java.util.List<ProfileItem>> getPresetSupportProfile(String profileName) {
+        return presetSupportProfiles.get(profileName);
+    }
+
+    /**
+     * Get all available preset support profile names.
+     * @return Set of profile names
+     */
+    public static java.util.Set<String> getPresetSupportProfileNames() {
+        return presetSupportProfiles.keySet();
+    }
+
+    /**
+     * Expand a profile's preset items into a set of canonical column names.
+     * Categories are expanded using axis_preset_categories, columns are added directly.
+     * @param profileName Name of the profile
+     * @param presetName Name of the preset within the profile
+     * @return Set of canonical column names, or empty set if profile/preset not found
+     */
+    public static java.util.Set<String> expandProfilePreset(String profileName, String presetName) {
+        java.util.Set<String> columns = new java.util.HashSet<>();
+        Map<String, java.util.List<ProfileItem>> profile = presetSupportProfiles.get(profileName);
+        if (profile == null) {
+            return columns;
+        }
+
+        java.util.List<ProfileItem> items = profile.get(presetName);
+        if (items == null) {
+            return columns;
+        }
+
+        for (ProfileItem item : items) {
+            if ("category".equals(item.type)) {
+                // Expand category
+                String[] categoryColumns = getAxisPresetCategory(item.value);
+                for (String column : categoryColumns) {
+                    columns.add(column);
+                }
+            } else if ("column".equals(item.type)) {
+                // Add column directly
+                columns.add(item.value);
+            }
+        }
+
+        return columns;
     }
 
     // ============================================================================
