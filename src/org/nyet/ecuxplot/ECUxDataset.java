@@ -42,6 +42,26 @@ public class ECUxDataset extends Dataset {
     // Used to explain why points "Not in valid range"
     private final Map<Integer, ArrayList<String>> rangeFailureReasons = new HashMap<>();
 
+    // Track whether this dataset was loaded from preferences (auto-loaded on startup)
+    // Used by Desktop handler to determine REPLACE vs ADD behavior
+    private boolean loadedFromPrefs = false;
+
+    /**
+     * Mark this dataset as having been loaded from preferences.
+     * Used to determine if Desktop handler should REPLACE (all prefs) or ADD (mixed/manual).
+     */
+    public void setLoadedFromPrefs(boolean value) {
+        this.loadedFromPrefs = value;
+    }
+
+    /**
+     * Check if this dataset was loaded from preferences.
+     * @return true if this dataset was auto-loaded from preferences, false otherwise
+     */
+    public boolean isLoadedFromPrefs() {
+        return this.loadedFromPrefs;
+    }
+
     protected void detectLoggerType() throws Exception {
         // Only detect if not already detected
         if (!DataLogger.isUnknown(this.log_detected)) {

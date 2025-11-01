@@ -40,6 +40,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private SwingWorker<Void, Void> currentRebuildWorker = null;
     private volatile boolean isRebuilding = false;
 
+    // Track if files are being auto-loaded from preferences during startup.
+    // Used to mark datasets as loadedFromPrefs when loading from prefs.
+    // The actual REPLACE vs ADD decision in openFiles() uses dataset metadata, not this flag.
+    private boolean filesAutoLoadedFromPrefs = false;
+
     private static final long serialVersionUID = 1L;
     // each file loaded has an associated dataset
     private ArrayList<String> files = new ArrayList<String>();
@@ -377,13 +382,31 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     public void loadFiles(ArrayList<String> files) {
         WaitCursor.startWaitCursor(this);
+        final boolean markAsFromPrefs = this.filesAutoLoadedFromPrefs;
         for(final String s : files) {
-            if(s.length()>0) _loadFile(new File(s), false);
+            if(s.length()>0) {
+                _loadFile(new File(s), false, markAsFromPrefs);
+            }
         }
         fileDatasetsChanged();
         WaitCursor.stopWaitCursor(this);
     }
 
+    /**
+     * Drag-and-drop multiple file loading handler (FileDropHost interface).
+     * This handler is independent of the Desktop handler (openFiles()) and menu handlers
+     * ("Open File" / "Add File" menu items).
+     *
+     * Behavior:
+     * - Always uses replace=false → ADD mode (appends to existing files)
+     * - Called by FileDropListener when multiple files are dragged and dropped onto the window
+     *
+     * This handler does NOT check or modify the filesAutoLoadedFromPrefs flag,
+     * which is only used by the Desktop handler. See openFiles() for Desktop handler
+     * behavior and actionPerformed() for menu handler behavior.
+     *
+     * @param files The list of files to load
+     */
     @Override
     public void loadFiles(List<File> files) {
         if (files == null || files.isEmpty()) {
@@ -408,6 +431,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         }
     }
 
+    /**
+     * Drag-and-drop file loading handler (FileDropHost interface).
+     * This handler is independent of the Desktop handler (openFiles()) and menu handlers
+     * ("Open File" / "Add File" menu items).
+     *
+     * Behavior:
+     * - Always uses replace=false → ADD mode (appends to existing files)
+     * - Called by FileDropListener when files are dragged and dropped onto the window
+     *
+     * This handler does NOT check or modify the filesAutoLoadedFromPrefs flag,
+     * which is only used by the Desktop handler. See openFiles() for Desktop handler
+     * behavior and actionPerformed() for menu handler behavior.
+     *
+     * @param file The file to load
+     */
     @Override
     public void loadFile(File file) { loadFile(file, false); }
     private void loadFile(File file, boolean replace) {
@@ -417,6 +455,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         WaitCursor.stopWaitCursor(this);
     }
     private void _loadFile(File file, boolean replace) {
+        _loadFile(file, replace, false);
+    }
+
+    private void _loadFile(File file, boolean replace, boolean loadedFromPrefs) {
         try {
             // replacing, nuke all the currently loaded datasets
             if(replace) this.nuke();
@@ -431,6 +473,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
             final ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
                     this.env, this.filter, this.options.verbose);
+
+            // Mark dataset as loaded from preferences if applicable
+            if(loadedFromPrefs) {
+                data.setLoadedFromPrefs(true);
+            }
 
             this.fileDatasets.put(file.getName(), data);
             this.files.add(file.getAbsolutePath());
@@ -705,6 +752,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.newChart();
         } else if(source.getText().equals("Open File") ||
                   source.getText().equals("Add File") ) {
+            /**
+             * Menu-based file loading handler ("Open File" and "Add File" menu items).
+             * This handler is independent of the Desktop handler (openFiles()) and
+             * drag-and-drop handler (FileDropHost methods).
+             *
+             * Behavior:
+             * - "Open File": Uses explicit replace=true → REPLACE mode (clears all existing files)
+             * - "Add File": Uses explicit replace=false → ADD mode (appends to existing files)
+             *
+             * This handler does NOT check or modify the filesAutoLoadedFromPrefs flag,
+             * which is only used by the Desktop handler. See openFiles() for Desktop handler
+             * behavior and loadFile()/loadFiles() for drag-and-drop behavior.
+             */
             if(this.fc==null) {
                 // current working dir
                 // String dir  = System.getProperty("user.dir"));
@@ -1844,9 +1904,54 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
     */
 
+    /**
+     * Handle files opened via OS file association (Desktop handler).
+     * This method is called when files are opened using "Open with" from the OS,
+     * either when ECUxPlot is already running or when it's launched for the first time.
+     *
+     * This handler is independent of the menu handlers ("Open File" / "Add File" menu items)
+     * and drag-and-drop handler (FileDropHost methods). Each handler uses its own logic:
+     * - Menu handlers: Use explicit replace parameter (true for "Open File", false for "Add File")
+     * - Drag-and-drop: Always uses replace=false (ADD mode)
+     * - Desktop handler (this method): Uses dataset metadata to determine behavior
+     *
+     * Behavior by scenario:
+     * - Scenario A: ECUxPlot NOT running (fresh startup) with all files from prefs
+     *   → REPLACE: Clear auto-loaded preference files first, then load new files
+     *   This handles the case where:
+     *   1. ECUxPlot starts and auto-loads files from preferences
+     *   2. OS then sends the "Open with" file via Desktop handler
+     *   3. User expects only the "Open with" file, not prefs + new file
+     *
+     * - Scenario B: ECUxPlot already running with manually loaded files (or mix of prefs + manual)
+     *   → ADD: Append new files to existing files (preserve user's manual file choices)
+     *
+     * The decision uses dataset metadata (ECUxDataset.isLoadedFromPrefs()) to check if ALL
+     * currently loaded datasets came from preferences. If all are from prefs → REPLACE.
+     * If any were manually loaded → ADD (to preserve user's work).
+     * This is more robust than flags because metadata travels with each dataset.
+     *
+     * See actionPerformed() for menu handler behavior and loadFile()/loadFiles() for drag-and-drop behavior.
+     *
+     * @param e The OpenFilesEvent containing the files to open
+     */
     // we implement OpenFilesHandler
     public void openFiles(OpenFilesEvent e)
     {
+        // Check if all currently loaded datasets came from preferences.
+        // If all are from prefs (no user manual additions), REPLACE them.
+        // If any were manually loaded, ADD to preserve user's work.
+        boolean allFromPrefs = !this.fileDatasets.isEmpty() &&
+            this.fileDatasets.values().stream()
+                .allMatch(ECUxDataset::isLoadedFromPrefs);
+
+        if (allFromPrefs) {
+            // All files are from prefs, user hasn't made manual choices → REPLACE
+            this.nuke();
+        }
+        // Otherwise → ADD (preserve user's manually loaded files)
+
+        // Load the files (ADD mode if mixed/manual, REPLACE already done if all prefs)
         this.loadFiles(e.getFiles());
     }
 
@@ -1928,6 +2033,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                     final ArrayList<String> lastFiles = loadLastLoadedFiles();
                     if (!lastFiles.isEmpty()) {
                         ecuxLogger.info("Auto-loading {} files from last session", lastFiles.size());
+                        plot.filesAutoLoadedFromPrefs = true;
                         plot.loadFiles(lastFiles);
                     }
                 }

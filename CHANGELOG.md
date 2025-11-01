@@ -15,6 +15,7 @@
 ### Fixed
 
 - Fix filter behavior when ranges are empty or selections missing
+- OS "Open with" now replaces auto-loaded preference files instead of adding to them ([Issue #99](https://github.com/nyetwurk/ecuxplot/issues/99))
 - Changing vehicle constants now updates all dependent visualizations ([Issue #95](https://github.com/nyetwurk/ecuxplot/issues/95))
   - Main chart display updates with recalculated values when constants change
   - FATS window recalculates FATS times with new constants
