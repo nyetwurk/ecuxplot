@@ -136,6 +136,9 @@ public class LoggerDetectionTest {
                         // Test category mappings
                         testExpectedCategories(testCase, dataset, fileName);
 
+                        // Test global required columns (tested once per logger, not per preset)
+                        testGlobalRequiredColumns(dataset, fileName);
+
                         // Test preset defaults (verify canonical preset columns exist per log format expectations)
                         testExpectedPresets(testCase, dataset, fileName);
 
@@ -291,6 +294,37 @@ public class LoggerDetectionTest {
         }
     }
 
+    private static void testGlobalRequiredColumns(ECUxDataset dataset, String fileName) {
+        // Read from DataLogger, not test-expectations.xml
+        String[] globalColumns = org.nyet.ecuxplot.DataLogger.getGlobalRequiredColumns();
+        if (globalColumns.length == 0) {
+            return;
+        }
+
+        for (String columnName : globalColumns) {
+            Dataset.Column column = dataset.get(columnName);
+            assertTest("Global required column for " + fileName + ": '" + columnName + "' should exist",
+                    column != null);
+        }
+    }
+
+    private static void expandCategories(Element presetElement, java.util.Set<String> expectedColumns) {
+        // Find category references in preset
+        NodeList categoryRefs = presetElement.getElementsByTagName("category");
+        for (int i = 0; i < categoryRefs.getLength(); i++) {
+            Element categoryRef = (Element) categoryRefs.item(i);
+            String categoryName = categoryRef.getAttribute("name");
+
+            // Read from DataLogger, not test-expectations.xml
+            String[] categoryColumns = org.nyet.ecuxplot.DataLogger.getAxisPresetCategory(categoryName);
+            if (categoryColumns.length > 0) {
+                for (String column : categoryColumns) {
+                    expectedColumns.add(column);
+                }
+            }
+        }
+    }
+
     private static void testExpectedPresets(Element testCase, ECUxDataset dataset, String fileName) {
         // Get all preset defaults from DataLogger
         String[] presetNames = org.nyet.ecuxplot.DataLogger.getPresetDefaultNames();
@@ -309,12 +343,17 @@ public class LoggerDetectionTest {
         Element expectedPresetsElement = (Element) expectedPresets.item(0);
         NodeList presetNodes = expectedPresetsElement.getElementsByTagName("preset");
 
-        // Build map of expected columns per preset
+        // Build map of expected columns per preset (expanding categories)
         java.util.Map<String, java.util.Set<String>> expectedColumnsByPreset = new java.util.HashMap<>();
         for (int i = 0; i < presetNodes.getLength(); i++) {
             Element presetElement = (Element) presetNodes.item(i);
             String presetName = presetElement.getAttribute("name");
             java.util.Set<String> expectedColumns = new java.util.HashSet<>();
+
+            // Expand categories first
+            expandCategories(presetElement, expectedColumns);
+
+            // Then add direct columns
             NodeList columnNodes = presetElement.getElementsByTagName("column");
             for (int j = 0; j < columnNodes.getLength(); j++) {
                 String columnName = columnNodes.item(j).getTextContent().trim();

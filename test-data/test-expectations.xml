@@ -28,7 +28,7 @@
             <id index="21">HPFP Effective Pump Vol</id>
             <id index="22">IntakeAirTemperature</id>
             <id index="23">Ignition Table Output</id>
-            <id index="24">IgnitionTimingAngle</id>
+            <id index="24">IgnitionTimingAngleOverall</id>
             <id index="25">Intake Cam Position</id>
             <id index="26">Intake Press Flow Factor</id>
             <id index="27">IgnitionRetardCyl1</id>
@@ -274,7 +274,7 @@
             <category name="throttle">2</category>
             <category name="gear"></category>
         </expected_filter_columns>
-        <sanity_check row="0" col="0">91.0</sanity_check>
+        <sanity_check row="0" col="0">0.091</sanity_check> <!-- converted to seconds via loggers.yaml time_ticks_per_sec -->
     </test_case>
 
     <!-- Evoscan Logger Test Expectations -->
@@ -437,7 +437,7 @@
             <category name="throttle">9</category>
             <category name="gear">19</category>
         </expected_filter_columns>
-        <sanity_check row="0" col="0">57.25</sanity_check>
+        <sanity_check row="0" col="0">5.725</sanity_check> <!-- converted to seconds via loggers.yaml time_ticks_per_sec -->
     </test_case>
 
     <!-- Logworks Logger Test Expectations -->
@@ -1380,7 +1380,7 @@
             <id index="28">Fuel HPFP Eff Volume</id>
             <id index="29">IntakeAirTemperature</id>
             <id index="30">IgnitionTableValue</id>
-            <id index="31">IgnitionTimingAngle</id>
+            <id index="31">IgnitionTimingAngleOverall</id>
             <id index="32">FuelInj PW DI</id>
             <id index="33">FuelInj PW MPI</id>
             <id index="34">Intake Cam</id>
@@ -1646,7 +1646,7 @@
             <id index="7">FuelPressureHigh</id>
             <id index="8">FuelPressureHighDesired</id>
             <id index="9">WastegateDutyCycle2</id>
-            <id index="10">IgnitionTimingAngle</id>
+            <id index="10">IgnitionTimingAngleOverall</id>
             <id index="11">IGA_IGC[0]</id>
             <id index="12">IGA_IGC[4]</id>
             <id index="13">TI_1_HOM[2]</id>
@@ -1886,7 +1886,7 @@
             <id index="2">RPM</id>
             <id index="3">MassAirFlow</id>
             <id index="4">EngineLoad</id>
-            <id index="5">IgnitionTiming</id>
+            <id index="5">IgnitionTimingAngleOverall</id>
             <id index="6">TIME [020]</id>
             <id index="7">Idle Stabilization1</id>
             <id index="8">Idle Stabilization2</id>
@@ -1952,7 +1952,7 @@
             <id index="2">RPM</id>
             <id index="3">MassAirFlow</id>
             <id index="4">ThrottleAngle</id>
-            <id index="5">IgnitionTiming</id>
+            <id index="5">IgnitionTimingAngleOverall</id>
             <id index="6">TIME1</id> <!-- 114 --> <!-- oddity, this actually time in 114, but there are 4 times in the group -->
             <id index="7">WastegateOnTime</id> <!-- 114 -->
             <id index="8">EGROnTime</id> <!-- 114 -->
@@ -2345,7 +2345,7 @@
     <test_case file="zeitronix.csv">
         <expected_type>ZEITRONIX</expected_type>
         <expected_ids>
-            <id index="0">Zeitronix TIME</id>
+            <id index="0">TIME</id>
             <id index="1">Zeitronix IAT</id>
             <id index="2">Zeitronix SPARKADV</id>
             <id index="3">Zeitronix ThrottlePlateAngle</id>

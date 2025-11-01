@@ -6,6 +6,11 @@ filter_associations:
   throttle: "ThrottlePlateAngle"
   gear: "Gear"
 
+# Global required columns - fundamental columns that should exist in all log formats
+global_required_columns:
+  - "RPM"
+  - "TIME"
+
 # Preset defaults - canonical column names for default axis presets
 preset_defaults:
   # Note: These are canonical field names used in default presets
@@ -35,6 +40,22 @@ preset_defaults:
     xkey: "BoostPressureActual (PSI)"
     ykeys0: ["Boost Spool Rate (RPM)"]
     ykeys1: ["Boost Spool Rate (time)"]
+
+# Axis preset categories - reusable groups of columns for preset testing
+axis_preset_categories:
+  boost_both:
+    - "BoostPressureDesired (PSI)"
+    - "BoostPressureActual (PSI)"
+  boost_actual:
+    - "BoostPressureActual (PSI)"
+  maf:
+    - "MassAirFlow"
+  timing_all:
+    - "EngineLoad"
+    - "IgnitionTimingAngleOverall"
+    - "IgnitionTimingAngleOverallDesired"
+  compressor_map_base:
+    - "BaroPressure"
 
 loggers:
   DEFAULT:
@@ -302,7 +323,7 @@ loggers:
       - ["Coolant Temp\\..*", "WaterTemperature"]
       - ["Engine Oil Temp\\..*", "OilTemperature"]
       - ["IAT.*", "IntakeAirTemperature"]
-      - ["Ignition Timing Final.*", "IgnitionTimingAngle"]
+      - ["Ignition Timing Final.*", "IgnitionTimingAngleOverall"]
       - ["Knock Retard Cylinder 1.*", "IgnitionRetardCyl1"]
       - ["Knock Retard Cylinder 2.*", "IgnitionRetardCyl2"]
       - ["Knock Retard Cylinder 3.*", "IgnitionRetardCyl3"]
@@ -465,7 +486,7 @@ loggers:
       - ["HPFP Eff Vol.*", "Fuel HPFP Eff Volume"]
       - ["IAT.*", "IntakeAirTemperature"]
       - ["Ign Table Value.*", "IgnitionTableValue"]
-      - ["Ign Timing Avg.*", "IgnitionTimingAngle"]
+      - ["Ign Timing Avg.*", "IgnitionTimingAngleOverall"]
       - ["Inj PW DI.*", "FuelInj PW DI"]
       - ["Inj PW MPI.*", "FuelInj PW MPI"]
       #- ["Intake Cam.*", "IntakeCamPosition"]
@@ -550,7 +571,7 @@ loggers:
       - ["PV_AV", "AccelPedalPosition"]
       - ["TPS_AV", "ThrottlePlateAngle"]
       - ["TQI_AV", "TorqueActual"]
-      - ["IGA_AV_MV", "IgnitionTimingAngle"]
+      - ["IGA_AV_MV", "IgnitionTimingAngleOverall"]
       - ['IGA_IGC\\[0\\]', "IgnitionTimingAngle1"]
       - ['IGA_IGC\\[4\\]', "IgnitionTimingAngle5"]
       - ['IGA_ADJ_KNK\\[0\\]', "IgnitionRetardCyl1"]
@@ -612,8 +633,7 @@ loggers:
       - ["(Engine RPM|Engine [Ss]peed|Motordrehzahl).*", "RPM"]
       - ["(Engine load|Load)", "EngineLoad"]
       - ["Idle (RPM|[Ss]peed).*", "Idle RPM"]
-      - ["Ign timing.*", "IgnitionTimingAngle"]
-      - ["Ign\\. Timing", "IgnitionTiming"]
+      - ["Ign.*[Tt]iming.*", "IgnitionTimingAngleOverall"]
       - ["Inj\\. On Time.*", "FuelInjectorOnTime"]
       - ["Knock Reg\\.", "IgnitionRetard"]
       - ["Mass [Aa]ir [Ff]low.*", "MassAirFlow"]
@@ -664,7 +684,7 @@ loggers:
     # Field transformations for Zeitronix overlay compatibility
     field_transformations:
       prepend: "Zeitronix "     # Add Zeitronix prefix with space to field names for overlay compatibility
-      exclude_fields: ["RPM"]  # Don't prefix RPM field
+      exclude_fields: ["RPM", "TIME"]  # Don't prefix RPM and TIME fields
 
     aliases:
       - [".*RPM$", "RPM"]

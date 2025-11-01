@@ -36,6 +36,16 @@ public class DataLogger {
     private static Map<String, String> filterAssociations = new HashMap<>();
 
     // ============================================================================
+    // GLOBAL REQUIRED COLUMNS - LOADED FROM YAML/XML (GLOBAL)
+    // ============================================================================
+    private static String[] globalRequiredColumns = new String[0];
+
+    // ============================================================================
+    // AXIS PRESET CATEGORIES - LOADED FROM YAML/XML (GLOBAL)
+    // ============================================================================
+    private static Map<String, String[]> axisPresetCategories = new HashMap<>();
+
+    // ============================================================================
     // PRESET DEFAULTS - LOADED FROM YAML/XML (GLOBAL)
     // ============================================================================
     /**
@@ -1015,6 +1025,38 @@ public class DataLogger {
                 }
             }
 
+            // Parse global required columns if present
+            NodeList globalColumnsNodes = document.getElementsByTagName("global_required_columns");
+            if (globalColumnsNodes.getLength() > 0) {
+                Element globalColumnsElement = (Element) globalColumnsNodes.item(0);
+                NodeList columnNodes = globalColumnsElement.getElementsByTagName("item");
+                globalRequiredColumns = new String[columnNodes.getLength()];
+                for (int i = 0; i < columnNodes.getLength(); i++) {
+                    globalRequiredColumns[i] = columnNodes.item(i).getTextContent().trim();
+                }
+                logger.debug("Loaded {} global required columns", globalRequiredColumns.length);
+            }
+
+            // Parse axis preset categories if present
+            NodeList categoriesNodes = document.getElementsByTagName("axis_preset_categories");
+            if (categoriesNodes.getLength() > 0) {
+                Element categoriesElement = (Element) categoriesNodes.item(0);
+                NodeList categoryNodes = categoriesElement.getChildNodes();
+                for (int i = 0; i < categoryNodes.getLength(); i++) {
+                    if (categoryNodes.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        Element categoryElement = (Element) categoryNodes.item(i);
+                        String categoryName = categoryElement.getTagName();
+                        NodeList itemNodes = categoryElement.getElementsByTagName("item");
+                        String[] columns = new String[itemNodes.getLength()];
+                        for (int j = 0; j < itemNodes.getLength(); j++) {
+                            columns[j] = itemNodes.item(j).getTextContent().trim();
+                        }
+                        axisPresetCategories.put(categoryName, columns);
+                        logger.debug("Loaded axis preset category '{}' with {} columns", categoryName, columns.length);
+                    }
+                }
+            }
+
             // Parse preset defaults if present
             NodeList presetDefaultsNodes = document.getElementsByTagName("preset_defaults");
             if (presetDefaultsNodes.getLength() > 0) {
@@ -1427,6 +1469,31 @@ public class DataLogger {
      */
     public static String[] getPresetDefaultNames() {
         return presetDefaults.keySet().toArray(new String[0]);
+    }
+
+    /**
+     * Get global required columns.
+     * @return Array of canonical column names that should exist in all log formats
+     */
+    public static String[] getGlobalRequiredColumns() {
+        return globalRequiredColumns;
+    }
+
+    /**
+     * Get columns for a specific axis preset category.
+     * @param categoryName Name of the category
+     * @return Array of column names in the category, or empty array if category not found
+     */
+    public static String[] getAxisPresetCategory(String categoryName) {
+        return axisPresetCategories.getOrDefault(categoryName, new String[0]);
+    }
+
+    /**
+     * Get all available axis preset category names.
+     * @return Set of category names
+     */
+    public static java.util.Set<String> getAxisPresetCategoryNames() {
+        return axisPresetCategories.keySet();
     }
 
     // ============================================================================
