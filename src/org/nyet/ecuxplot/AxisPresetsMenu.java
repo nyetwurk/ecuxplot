@@ -41,6 +41,10 @@ public final class AxisPresetsMenu extends JMenu {
         this.add(this.deletePresetsMenu);
         this.add(new JSeparator());
         this.add(this.loadAllPresetsItem);
+        this.add(new JSeparator());
+        final JMenuItem restoreDefaultsItem = new JMenuItem("Restore Defaults");
+        restoreDefaultsItem.addActionListener(new RestoreDefaultsAction());
+        this.add(restoreDefaultsItem);
     }
 
     private void updatePresets() {
@@ -88,11 +92,6 @@ public final class AxisPresetsMenu extends JMenu {
         jmi = new JMenuItem("New Preset...");
         jmi.addActionListener(spa);
         this.savePresetsMenu.add(jmi);
-
-        this.savePresetsMenu.add(new JSeparator());
-        jmi = new JMenuItem("Restore Defaults");
-        jmi.addActionListener(spa);
-        this.savePresetsMenu.add(jmi);
     }
 
     private class LoadPresetAction implements ActionListener {
@@ -123,34 +122,37 @@ public final class AxisPresetsMenu extends JMenu {
         private final List<String> blacklist = Arrays.asList(
             "Undo",
             "New Preset...",
-            "Restore Defaults",
             ""
         );
 
         @Override
         public void actionPerformed(ActionEvent event) {
             String s = event.getActionCommand();
-            if(s.equals("Restore Defaults")) {
-                ECUxPreset.createDefaultECUxPresets();
-            } else {
-                if(s.equals("New Preset...")) {
-                    s = ECUxPlot.showInputDialog("Enter preset name");
-                    if (s==null) return;
+            if(s.equals("New Preset...")) {
+                s = ECUxPlot.showInputDialog("Enter preset name");
+                if (s==null) return;
 
-                    if (this.blacklist.contains(s)) {
-                        JOptionPane.showMessageDialog(null, "Illegal name");
+                if (this.blacklist.contains(s)) {
+                    JOptionPane.showMessageDialog(null, "Illegal name");
+                    return;
+                }
+
+                for(final String k : ECUxPreset.getPresets()) {
+                    if (s.equals(k)) {
+                        JOptionPane.showMessageDialog(null, "Name in use");
                         return;
                     }
-
-                    for(final String k : ECUxPreset.getPresets()) {
-                        if (s.equals(k)) {
-                            JOptionPane.showMessageDialog(null, "Name in use");
-                            return;
-                        }
-                    }
                 }
-                AxisPresetsMenu.this.plotFrame.savePreset(s);
             }
+            AxisPresetsMenu.this.plotFrame.savePreset(s);
+            updatePresets();
+        }
+    }
+
+    private class RestoreDefaultsAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            ECUxPreset.createDefaultECUxPresets();
             updatePresets();
         }
     }
