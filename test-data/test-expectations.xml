@@ -336,7 +336,6 @@
             <unit index="35">%</unit>
             <unit index="36">mph</unit>
         </expected_units>
-
         <expected_filter_columns>
             <category name="pedal">5</category>
             <category name="throttle">9</category>
@@ -372,7 +371,6 @@
             <unit index="4">PSI</unit>
             <unit index="5">PSI</unit>
         </expected_units>
-
         <expected_filter_columns>
             <category name="pedal"></category>
             <category name="throttle"></category>
@@ -432,7 +430,6 @@
             <unit index="12">°C</unit>
             <unit index="13">mBar</unit>
         </expected_units>
-
         <expected_filter_columns>
             <category name="pedal"></category>
             <category name="throttle">11</category>
@@ -501,7 +498,6 @@
             <unit index="15">°</unit>
             <unit index="16">km/h</unit>
         </expected_units>
-
         <expected_filter_columns>
             <category name="pedal"></category>
             <category name="throttle"></category>

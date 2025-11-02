@@ -1068,6 +1068,30 @@ public class ECUxDataset extends Dataset {
             final DoubleArray pvdkds = super.get("BoostPressureActual").data;
             c = new Column(id,"",ps_w.div(pvdkds));
 /*****************************************************************************/
+        } else if(id.equals("IgnitionTimingAngleOverall")) {
+            // Calculate from per-cylinder timing angles if Overall not directly available
+            // This supports loggers like JB4 that only log per-cylinder timing, not overall timing
+            // Note: _get() already handles recursion protection - if calculated version exists, it returns early
+            final Column overall = super.get("IgnitionTimingAngleOverall");
+            if(overall != null && overall.getColumnType() == Dataset.ColumnType.CSV_NATIVE) {
+                // Exists as CSV column, use it directly
+                c = overall;
+            } else {
+                // Calculate average of available per-cylinder timing angles
+                DoubleArray avetiming = null;
+                int count = 0;
+                for(int i=1; i<=8; i++) {
+                    final Column timing = this.get("IgnitionTimingAngle" + i);
+                    if(timing != null) {
+                        if(avetiming == null) avetiming = timing.data;
+                        else avetiming = avetiming.add(timing.data);
+                        count++;
+                    }
+                }
+                if(count > 0) {
+                    c = new Column(id, "\u00B0", avetiming.div(count));
+                }
+            }
         } else if(id.equals("IgnitionTimingAngleOverallDesired")) {
             DoubleArray averetard = null;
             int count=0;
@@ -1077,6 +1101,14 @@ public class ECUxDataset extends Dataset {
                     if(averetard==null) averetard = retard.data;
                     else averetard = averetard.add(retard.data);
                     count++;
+                }
+            }
+            // Fallback to AverageIgnitionRetard if no per-cylinder retard fields found
+            if(count == 0) {
+                final Column avgRetard = this.get("AverageIgnitionRetard");
+                if(avgRetard != null) {
+                    averetard = avgRetard.data;
+                    count = 1; // Use count=1 to indicate we have average retard
                 }
             }
             DoubleArray out = this.get("IgnitionTimingAngleOverall").data;
