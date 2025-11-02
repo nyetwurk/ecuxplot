@@ -150,6 +150,37 @@ public class DataLogger {
         }
 
         /**
+         * Validate if an extracted unit string is actually a valid unit or descriptive text.
+         * Uses Units.normalize() to check if the unit is recognized.
+         *
+         * @param unit The unit string to validate
+         * @return true if unit appears valid, false if it looks like descriptive text
+         */
+        private static boolean isValidUnit(String unit) {
+            if (unit == null || unit.trim().isEmpty()) {
+                return false;
+            }
+
+            String normalized = Units.normalize(unit.trim());
+
+            // If normalize() returns empty, it was recognized as invalid
+            if (normalized.isEmpty()) {
+                return false;
+            }
+
+            // If normalize() returns unchanged AND string looks like descriptive text, it's invalid
+            if (normalized.equals(unit.trim())) {
+                // Heuristic: descriptive text usually has spaces or is very long
+                // Valid units are typically short without spaces (e.g., "V", "PSI", "AFR", "λ")
+                if (normalized.contains(" ") || normalized.length() > 15) {
+                    return false;  // Looks like descriptive text
+                }
+            }
+
+            return true;  // Valid unit
+        }
+
+        /**
          * Parse units from field names using regex pattern.
          * Extracts units from field names in format "FieldName (unit)".
          * Modifies the field names to remove the unit part and populates the units array.
@@ -175,24 +206,43 @@ public class DataLogger {
             }
 
             for (int i = 0; i < this.id.length; i++) {
+                // If unit was already extracted (e.g., by unit_regex), validate it first
+                if (this.u[i] != null && this.u[i].length() > 0) {
+                    if (!isValidUnit(this.u[i])) {
+                        // Invalid unit (looks like descriptive text) - clear it for inference
+                        logger.debug("{}: Extracted unit '{}' appears to be descriptive text, clearing for inference",
+                                    i, this.u[i]);
+                        this.u[i] = null;
+                    }
+                    // Note: Don't continue here - alias targets may add units to field names
+                }
+
                 // Check if field name still contains units in parentheses (e.g., from alias targets like "AirFuelRatioDesired (AFR)")
                 final java.util.regex.Pattern unitsRegEx =
                     java.util.regex.Pattern.compile("([\\S\\s]+)\\(([\\S\\s].*)\\)");
                 final java.util.regex.Matcher matcher = unitsRegEx.matcher(this.id[i]);
                 if (matcher.find()) {
-                    // Extract unit from field name even if unit was already set (e.g., from unit_regex)
-                    // This handles alias targets that include units: "FieldName (unit)" -> "FieldName" + unit
-                    // Trim needed: Regex groups contain untrimmed content from regex extraction
-                    // Example: "AirFuelRatioDesired (AFR)" -> id[i]="AirFuelRatioDesired", u[i]="AFR"
-                    this.id[i] = matcher.group(1).trim();
-                    this.u[i] = matcher.group(2).trim();
-                } else {
-                    // No unit pattern in field name - only try to extract if unit is missing
-                    if (this.u[i] != null && this.u[i].length() > 0) {
-                        continue; // Skip - units already extracted and field name has no unit pattern
+                    // Extract unit from field name
+                    String extractedUnit = matcher.group(2).trim();
+
+                    // Validate the extracted unit
+                    if (isValidUnit(extractedUnit)) {
+                        // Always extract unit from field name (even if unit was already set)
+                        // This handles alias targets that include units: "FieldName (unit)" -> "FieldName" + unit
+                        this.id[i] = matcher.group(1).trim();
+                        this.u[i] = extractedUnit;
+                        logger.debug("{}: Extracted and validated unit '{}' from '{}'", i, extractedUnit, this.id[i]);
+                    } else {
+                        // Invalid unit - don't extract, leave unit null for inference
+                        logger.debug("{}: Extracted unit '{}' appears to be descriptive text, leaving null for inference",
+                                    i, extractedUnit);
+                        // Don't modify id[i] or u[i] - let processUnits() infer from field name
                     }
-                    // If unit is missing and no pattern found, processUnits() will try Units.find() later
+                } else if (this.u[i] != null && this.u[i].length() > 0) {
+                    // Field name has no unit pattern but unit is already set - keep it
+                    logger.debug("{}: Keeping valid extracted unit '{}'", i, this.u[i]);
                 }
+                // If no unit pattern found and unit is missing, processUnits() will try Units.find() later
             }
             for (int i = 0; i < this.id.length; i++)
                 logger.trace("pu: '{}' [{}]", this.id[i], this.u[i]);
@@ -219,7 +269,7 @@ public class DataLogger {
             java.util.Map<String, String> me7AliasesMap = getMe7AliasesMap();
 
             for(int i = 0; i < this.id.length; i++) {
-                // logger.debug("{}: '{}'", i, this.id[i]);
+                logger.trace("{}: Checking alias for '{}'", i, this.id[i]);
 
                 // First check ME7_ALIASES map for exact match (O(1))
                 if (me7AliasesMap != null && this.id[i] != null) {
@@ -234,11 +284,26 @@ public class DataLogger {
                 }
 
                 // Then check regex-based aliases (logger-specific and DEFAULT)
+                // First try matching against id (field name after unit extraction)
+                boolean matched = false;
                 for (final String [] s: aliasesToUse) {
                     if (this.id[i] != null && this.id[i].matches(s[0])) {
                         logger.debug("{}: alias '{}'->'{}'", i, this.id[i], s[1]);
                         this.id[i] = s[1];
+                        matched = true;
                         break; // Stop after first matching alias
+                    }
+                }
+                // If no match against id, try matching against id2 (original field name)
+                // This handles cases where unit_regex removed info needed for aliasing
+                if (!matched && this.id2 != null && i < this.id2.length && this.id2[i] != null) {
+                    for (final String [] s: aliasesToUse) {
+                        if (this.id2[i].matches(s[0])) {
+                            logger.debug("{}: alias (using id2) '{}'->'{}'", i, this.id2[i], s[1]);
+                            this.id[i] = s[1];
+                            matched = true;
+                            break; // Stop after first matching alias
+                        }
                     }
                 }
             }

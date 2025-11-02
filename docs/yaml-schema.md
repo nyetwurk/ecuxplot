@@ -443,6 +443,28 @@ VCDS:
     - ["^Engine [Ss]peed.*", "RPM"]
 ```
 
+### OBDLINK Logger (Unit Regex Validation)
+
+```yaml
+OBDLINK:
+  comment_signatures:
+    - regex: ".*StartTime.*"
+  unit_regex: "^(.+)\\s+\\(([^)]+)\\)$"  # Extracts last parentheses as unit
+  aliases:
+    - ["[Ss]hort term fuel.*trim.*[Bb]ank 1", "STFT"]
+    - ["[Ss]hort term fuel.*trim.*[Bb]ank 2", "STFTBank2"]
+    - ["[Ll]ong term fuel.*trim.*[Bb]ank 1", "LTFT"]
+    - ["[Ll]ong term fuel.*trim.*[Bb]ank 2", "LTFTBank2"]
+    - [".*[Oo]2 voltage.*[Bb]ank 1.*[Ss]ensor 1.*", "O2SVoltageSensor1"]
+    - [".*[Oo]2 voltage.*[Bb]ank 1.*[Ss]ensor 2.*", "O2SVoltageSensor2"]
+    - [".*[Oo]2 sensor lambda.*[Bb]ank 1.*", "LambdaActual"]
+    - [".*[Oo]2 sensor lambda.*[Bb]ank 2.*", "LambdaActualBank2"]
+```
+
+**Example field names**: `"Time (sec)"`, `"Short term fuel % trim - Bank 1 (%)"`, `"O2 voltage (Bank 1  Sensor 1) (V)"`, `"O2 sensor lambda wide range (current probe)  (Bank 1  Sensor 1)"`
+
+Unit validation automatically rejects invalid units (e.g., `"Bank 1  Sensor 1"` → cleared → inferred as `"λ"`). Aliases match against original field names (`id2`) when unit extraction removes required information.
+
 ### ME7LOGGER (Multi-Header with Units and Aliases)
 
 ```yaml

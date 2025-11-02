@@ -93,10 +93,15 @@ loggers:
     # .* at start allows text before pattern, .* at end allows text after, overriding the implicit ^ and $
     aliases:
       - ["[Tt]ime", "TIME"]
+      - ["[Ee]ngine RPM", "RPM"]
       - ["[Ee]ngine [Ss]peed", "RPM"]
-      - ["[Mm]ass air flow", "MassAirFlow"]
+      - ["[Mm]ass [Aa]ir [Ff]low.*", "MassAirFlow"]
+      - ["Battery [Vv]oltage.*", "BatteryVoltage"]
       # We now assume the default IntakeAirTemperature is C
-      - ["Intake air temperature", "IntakeAirTemperature"]
+      - ["[Ii]ntake [Aa]ir [Tt]emperature", "IntakeAirTemperature"]
+      - ["[Ee]ngine [Cc]oolant [Tt]emperature", "CoolantTemperature"]
+      - ["[Cc]alculated [Ll]oad.*", "EngineLoad"]
+      - ["[Aa]bsolute throttle.*position", "ThrottlePlateAngle"]
       # M-Tuner Logger mappings - no easy way to detect an M-Tuner logger, so we have to hardcode these in DEFAULT_aliases
       - ["Actual Ignition Angle", "IgnitionTimingAngleOverall"]
       - ["Ignition Angle Actual", "IgnitionTimingAngleOverall"]
@@ -109,7 +114,7 @@ loggers:
       - ["Relative Load Setpoint", "EngineLoadDesired"]
       - ["Target Position Throttle", "ThrottlePlateAngle"]
       - ["Throttle Inlet Pressure", "ThrottleInletPressure"]
-      - ["Vehicle Speed", "VehicleSpeed"]
+      - ["Vehicle [Ss]peed", "VehicleSpeed"]  # Matches "Vehicle Speed" and "Vehicle speed"
       # Additional M-Tuner cylinder-specific aliases
       - ["Cylinder 1 Ignition Retard", "IgnitionRetardCyl1"]
       - ["Cylinder 2 Ignition Retard", "IgnitionRetardCyl2"]
@@ -447,6 +452,37 @@ loggers:
       - ["Boost", "BoostPressureActual"]
       - ["LC1_O2WB", "AirFuelRatioActual"]  # Use ME7 modified canonical name, Units.java has AFR pattern
 
+  OBDLINK:
+    comment_signatures:
+      - regex: ".*StartTime.*"
+    # Match pattern: "field (desc) (unit)" or "field (unit)"
+    # Use greedy match to capture everything up to last parentheses
+    # This preserves bank/sensor info in field name for alias matching
+    # Group 1 = field name (with desc if present), Group 2 = unit (from last paren)
+    unit_regex: "^(.+)\\s+\\(([^)]+)\\)$"
+    aliases:
+      # OBD-II scan tool specific field patterns
+      - ["[Ss]hort term fuel.*trim.*[Bb]ank 1", "STFT"]
+      - ["[Ss]hort term fuel.*trim.*[Bb]ank 2", "STFTBank2"]
+      - ["[Ll]ong term fuel.*trim.*[Bb]ank 1", "LTFT"]
+      - ["[Ll]ong term fuel.*trim.*[Bb]ank 2", "LTFTBank2"]
+      - ["[Ii]gnition timing.*advance.*1.*", "IgnitionRetardCyl1"]
+      - ["[Ii]gnition timing.*advance.*2.*", "IgnitionRetardCyl2"]
+      - ["[Ii]gnition timing.*advance.*3.*", "IgnitionRetardCyl3"]
+      - ["[Ii]gnition timing.*advance.*4.*", "IgnitionRetardCyl4"]
+      - ["[Ii]gnition timing.*advance.*5.*", "IgnitionRetardCyl5"]
+      - ["[Ii]gnition timing.*advance.*6.*", "IgnitionRetardCyl6"]
+      - ["[Ii]gnition timing.*advance.*7.*", "IgnitionRetardCyl7"]
+      - ["[Ii]gnition timing.*advance.*8.*", "IgnitionRetardCyl8"]
+      - [".*[Oo]2 voltage.*[Bb]ank 1.*[Ss]ensor 1.*", "O2SVoltageSensor1"]
+      - [".*[Oo]2 voltage.*[Bb]ank 1.*[Ss]ensor 2.*", "O2SVoltageSensor2"]
+      - [".*[Oo]2 voltage.*[Bb]ank 2.*[Ss]ensor 1.*", "O2SVoltageSensor1Bank2"]
+      - [".*[Oo]2 voltage.*[Bb]ank 2.*[Ss]ensor 2.*", "O2SVoltageSensor2Bank2"]
+      - [".*[Oo]2 sensor lambda.*[Bb]ank 1.*", "LambdaActual"]
+      - [".*[Oo]2 sensor lambda.*[Bb]ank 2.*", "LambdaActualBank2"]
+      - ["[Ii]nput voltage.*scan tool", "BatteryVoltage"]
+      - ["Commanded secondary air status", "SecondaryAirStatusDesired"]
+
   ME7LOGGER:
     field_signatures:
       - regex: ".*ME7-Logger.*"
@@ -688,8 +724,9 @@ loggers:
       - ["Tastverh.ltnis.*", "WastegateDutyCycle"] # tastverhältnis == duty cycle
 
   VOLVOLOGGER:
-    field_signatures:
-      - regex: "Time \\(sec\\)"
+    comment_signatures:
+      - regex: ".*VolvoTools.*"
+      - regex: ".*VOLVO logger.*"
 
     # Extract field name and unit using regex
     unit_regex: "([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)"

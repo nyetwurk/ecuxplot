@@ -319,7 +319,7 @@ Unit determination uses a multi-step fallback strategy to extract and normalize 
 
 ### Unit Processing Order
 
-**Location**: `DataLogger.processHeaders()` - executed in this order (as of 1.1.4):
+**Location**: `DataLogger.processHeaders()` - executed in this order:
 
 1. **Parse Header Format** - Extract header lines based on `header_format` tokens (`g`, `id`, `u`, `u2`, `id2`)
    - Units from `header_format` tokens (`u`, `u2`) are populated into the `u` array during parsing
@@ -344,6 +344,42 @@ Unit determination uses a multi-step fallback strategy to extract and normalize 
 8. **Ensure Unique Names** - Make columns unique LAST (after all processing complete)
 
 **Implementation**: See `DataLogger.java` and `Units.java` for full implementation details.
+
+### Unit Validation
+
+All extracted units are validated globally to prevent descriptive text from being incorrectly treated as units.
+
+**Validation Process**:
+
+1. **Initial Validation** - Units extracted via `unit_regex` are validated immediately after extraction
+2. **Unit Extraction Validation** - Units extracted from parentheses in field names (e.g., `"FieldName (unit)"`) are validated before being applied
+3. **Validation Criteria**:
+   - Uses `Units.normalize()` to check if the unit is recognized
+   - Rejects units that normalize to empty (invalid units)
+   - Rejects units that contain spaces or are longer than 15 characters (descriptive text)
+   - Accepts short, recognized units (e.g., `"V"`, `"PSI"`, `"AFR"`, `"λ"`)
+
+**Invalid Unit Handling**:
+
+- Invalid units are cleared (set to `null`) and passed to `Units.find()` for inference
+- This allows the system to infer correct units from field names (e.g., lambda fields → `"λ"`)
+
+**Benefits**:
+
+- No logger-specific configuration needed - validation applies globally
+- Handles complex field formats with descriptive metadata (e.g., `"O2 voltage (Bank 1  Sensor 1) (V)"`)
+- Prevents descriptive text from overwriting valid units
+- Improves unit accuracy across all logger types
+
+**Example**:
+
+```text
+Field: "O2 sensor lambda wide range (current probe)  (Bank 1  Sensor 1)"
+unit_regex extracts: unit = "Bank 1  Sensor 1"
+Validation: "Bank 1  Sensor 1" contains spaces → invalid → cleared
+processUnits() infers: "lambda" field name → unit = "λ"
+Result: Correct unit "λ" instead of descriptive text
+```
 
 ## Logger-Specific Parsing
 

@@ -1,0 +1,9 @@
+﻿# StartTime = 05/05/2023 04:17:36.1827 PM
+Time (sec), Vehicle speed (MPH), Fuel system 1 status, Fuel system 2 status, Calculated load value (%), Engine coolant temperature (°F), Short term fuel % trim - Bank 1 (%), Short term fuel % trim - Bank 2 (%), Long term fuel % trim - Bank 1 (%), Long term fuel % trim - Bank 2 (%), Engine RPM (RPM), Ignition timing advance for #1 cylinder (deg), Intake air temperature (°F), Mass air flow rate (g/s), Absolute throttle position (%), Commanded secondary air status, O2 voltage (Bank 1  Sensor 1) (V), O2 voltage (Bank 1  Sensor 2) (V), O2 voltage (Bank 2  Sensor 1) (V), O2 voltage (Bank 2  Sensor 2) (V), O2 sensor lambda wide range (current probe)  (Bank 1  Sensor 1), O2 sensor lambda wide range (current probe)  (Bank 2  Sensor 1), Input voltage read by the scan tool (V)
+0.000,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+5.786,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,3.27,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+10.287,0.00,2.00,2.00,1.18,158.00,1.56,1.56,13.28,10.16,711.00,8.00,86.00,3.30,10.20,4.00,0.00,0.68,0.00,0.75,1.01,1.01,13.80
+14.811,0.00,2.00,2.00,1.96,158.00,1.56,0.00,12.50,10.16,724.00,-1.00,86.00,3.29,10.20,4.00,0.00,0.63,0.00,0.77,0.85,0.83,13.80
+19.128,1.24,2.00,2.00,23.14,158.00,0.00,0.00,12.50,10.16,705.00,-3.00,86.00,4.58,10.20,4.00,0.00,0.81,0.00,0.85,1.02,1.04,13.90
+23.877,1.24,2.00,2.00,16.86,158.00,0.00,0.00,11.72,10.16,829.00,-9.50,86.00,4.52,10.20,4.00,0.00,0.84,0.00,0.88,1.04,1.05,13.90
+28.490,1.86,2.00,2.00,31.76,158.00,-7.03,-7.03,12.50,10.16,758.00,10.50,86.00,6.53,10.20,4.00,0.00,0.77,0.00,0.83,1.05,1.04,13.90

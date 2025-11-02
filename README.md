@@ -221,6 +221,7 @@ ECUxPlot automatically detects and parses the following automotive ECU logging f
 
 - **VCDS** - [Ross-Tech VAG-COM Diagnostic System](https://www.ross-tech.com/)
 - **ME7-Logger** - [ME7Logger](http://nefariousmotorsports.com/forum/index.php/topic,837.0title,.html)
+- **OBDLINK** - [OBDLink/OBD-II scan tools](https://www.obdlink.com/) (OBD-II PID data from scan tools)
 - **SWComm/ECUTools** - [SWComm ECUTools](https://www.ecutools.com/)
 - **JB4** - [Burger Motorsports JB4](https://burgertuning.com/)
 - **Cobb Accessport** - [Cobb Tuning Accessport](https://www.cobbtuning.com/)

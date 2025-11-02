@@ -1390,6 +1390,99 @@
         <sanity_check row="0" col="0">0.0</sanity_check>
     </test_case>
 
+    <!-- OBDLink Logger Test Expectations -->
+    <test_case file="obdlink.csv">
+        <expected_type>OBDLINK</expected_type>
+        <expected_preset_columns>
+            <!-- Timing: Cannot use full_timing profile - OBDLINK lacks IgnitionTimingAngleOverall -->
+            <preset name="Timing">
+                <column>RPM</column>
+                <column>IgnitionRetardCyl1</column>
+            </preset>
+        </expected_preset_columns>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">VehicleSpeed</id>
+            <id index="2">Fuel system 1 status</id>
+            <id index="3">Fuel system 2 status</id>
+            <id index="4">EngineLoad</id>
+            <id index="5">CoolantTemperature</id>
+            <id index="6">STFT</id>
+            <id index="7">STFTBank2</id>
+            <id index="8">LTFT</id>
+            <id index="9">LTFTBank2</id>
+            <id index="10">RPM</id>
+            <id index="11">IgnitionRetardCyl1</id>
+            <id index="12">IntakeAirTemperature</id>
+            <id index="13">MassAirFlow</id>
+            <id index="14">ThrottlePlateAngle</id>
+            <id index="15">SecondaryAirStatusDesired</id>
+            <id index="16">O2SVoltageSensor1</id>
+            <id index="17">O2SVoltageSensor2</id>
+            <id index="18">O2SVoltageSensor1Bank2</id>
+            <id index="19">O2SVoltageSensor2Bank2</id>
+            <id index="20">LambdaActual</id>
+            <id index="21">LambdaActualBank2</id>
+            <id index="22">BatteryVoltage</id>
+        </expected_ids>
+        <expected_id2s>
+            <id2 index="0">Time (sec)</id2>
+            <id2 index="1">Vehicle speed (MPH)</id2>
+            <id2 index="2">Fuel system 1 status</id2>
+            <id2 index="3">Fuel system 2 status</id2>
+            <id2 index="4">Calculated load value (%)</id2>
+            <id2 index="5">Engine coolant temperature (°F)</id2>
+            <id2 index="6">Short term fuel % trim - Bank 1 (%)</id2>
+            <id2 index="7">Short term fuel % trim - Bank 2 (%)</id2>
+            <id2 index="8">Long term fuel % trim - Bank 1 (%)</id2>
+            <id2 index="9">Long term fuel % trim - Bank 2 (%)</id2>
+            <id2 index="10">Engine RPM (RPM)</id2>
+            <id2 index="11">Ignition timing advance for #1 cylinder (deg)</id2>
+            <id2 index="12">Intake air temperature (°F)</id2>
+            <id2 index="13">Mass air flow rate (g/s)</id2>
+            <id2 index="14">Absolute throttle position (%)</id2>
+            <id2 index="15">Commanded secondary air status</id2>
+            <id2 index="16">O2 voltage (Bank 1  Sensor 1) (V)</id2>
+            <id2 index="17">O2 voltage (Bank 1  Sensor 2) (V)</id2>
+            <id2 index="18">O2 voltage (Bank 2  Sensor 1) (V)</id2>
+            <id2 index="19">O2 voltage (Bank 2  Sensor 2) (V)</id2>
+            <id2 index="20">O2 sensor lambda wide range (current probe)  (Bank 1  Sensor 1)</id2>
+            <id2 index="21">O2 sensor lambda wide range (current probe)  (Bank 2  Sensor 1)</id2>
+            <id2 index="22">Input voltage read by the scan tool (V)</id2>
+        </expected_id2s>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">MPH</unit>
+            <unit index="2"></unit>
+            <unit index="3"></unit>
+            <unit index="4">%</unit>
+            <unit index="5">°F</unit>
+            <unit index="6">%</unit>
+            <unit index="7">%</unit>
+            <unit index="8">%</unit>
+            <unit index="9">%</unit>
+            <unit index="10">RPM</unit>
+            <unit index="11">deg</unit>
+            <unit index="12">°F</unit>
+            <unit index="13">g/sec</unit>
+            <unit index="14">%</unit>
+            <unit index="15"></unit>
+            <unit index="16">V</unit>
+            <unit index="17">V</unit>
+            <unit index="18">V</unit>
+            <unit index="19">V</unit>
+            <unit index="20">λ</unit>
+            <unit index="21">λ</unit>
+            <unit index="22">V</unit>
+        </expected_units>
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle">14</category>
+            <category name="gear"></category>
+        </expected_filter_columns>
+        <sanity_check row="0" col="0">0.0</sanity_check>
+    </test_case>
+
     <!-- SimosTools Logger Test Expectations -->
     <test_case file="simostools.csv">
         <expected_type>SIMOS_TOOLS</expected_type>
@@ -1667,7 +1760,7 @@
             <unit index="86">V</unit>
             <unit index="87">V</unit>
             <unit index="88">V</unit>
-            <unit index="89">IS48_FF_925MPI_HPAHPFP_RS3LPFP_4BPUT_5BMAP_FBO_V5) - SC800S5000000</unit>
+            <unit index="89"></unit>
         </expected_units>
         <expected_filter_columns>
             <category name="pedal">55</category>

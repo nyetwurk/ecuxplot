@@ -5,11 +5,16 @@
 
 ### Added
 
+- **OBDLINK Logger Support**: Added detection and parsing support for OBDLink/OBD-II scan tool CSV files
 - Tooltips for menu options (Enable filter, Scatter plot, Original names, Apply SAE, Filter, SAE constants, Edit PID)
 - Improved axis preset support for more logger types (Timing preset now works with additional loggers)
 
 ### Changed
 
+- **Global Unit Validation**: All extracted units are now validated to prevent descriptive text from being treated as units
+  - Uses `Units.normalize()` to validate extracted units
+  - Invalid units (descriptive text with spaces/long strings) are cleared and inferred from field names
+- Enhanced alias matching to support fallback to original field names (`id2`) when unit extraction removes information needed for aliasing
 - Default axis presets now consistently use canonical column names
 - Boost pressure automatically converts to PSI regardless of logger's native units (kPa or mBar)
 - Renamed "Alt column names" menu option to "Original names" for clarity (preference key unchanged for backward compatibility)
@@ -17,6 +22,9 @@
 
 ### Fixed
 
+- Unit extraction now correctly handles fields with descriptive metadata in parentheses
+  - Lambda fields now correctly show `"λ"` unit instead of descriptive text
+  - Units from alias targets (e.g., `"AirFuelRatioDesired (AFR)"`) are now properly extracted
 - Fix filter behavior when ranges are empty or selections missing
 - OS "Open with" now replaces auto-loaded preference files instead of adding to them ([Issue #99](https://github.com/nyetwurk/ecuxplot/issues/99))
 - Changing vehicle constants now updates all dependent visualizations ([Issue #95](https://github.com/nyetwurk/ecuxplot/issues/95))

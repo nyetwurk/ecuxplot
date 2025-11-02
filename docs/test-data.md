@@ -60,28 +60,28 @@ The test framework validates:
 
 Test files for various logger formats:
 
-- `swcomm.csv` - SWComm ECUTools format
 - `cobb-ap.csv` - Cobb Accessport format
+- `ecux.csv` - ECUx format
+- `evoscan.csv` - Evoscan format (speculative CSV, not actual data)
 - `jb4.csv` - JB4 format
-- `me7l.csv` - ME7-Logger format
+- `logworks.csv` - LogWorks format
+- `m-tuner-speed.csv` - M-Tuner format with vehicle speed
+- `m-tuner.csv` - M-Tuner format
+- `me7l-1.csv` - ME7-Logger format variant
 - `me7l-semicolons.csv` - ME7-Logger format with semicolon separators
-- `vcds.csv` - VCDS format (English)
-- `vcds-1.csv` - VCDS format variant 1
-- `vcds-2.csv` - VCDS format variant 2
-- `vcds-german.csv` - VCDS format (German)
+- `me7l.csv` - ME7-Logger format
+- `obdlink.csv` - OBDLink/OBD-II scan tool format
+- `simostools.csv` - SimosTools Android app format
+- `swcomm.csv` - SWComm ECUTools format
+- `vcds-002-007-german.csv` - VCDS legacy format (German)
 - `vcds-002-031.csv` - VCDS legacy format with "g" and "u2" header columns
 - `vcds-003-020-026.csv` - VCDS legacy format with "g" and "u2" header columns
 - `vcds-003-114-020.csv` - VCDS legacy format with "g" and "u2" header columns
 - `vcds-115-118.csv` - VCDS legacy format with multiple groups (Group 115, Group 118)
-- `m-tuner.csv` - M-Tuner format
-- `m-tuner-speed.csv` - M-Tuner format with vehicle speed
-- `zeitronix.csv` - Zeitronix format
-- `ecux.csv` - ECUx format
-- `logworks.csv` - LogWorks format
-- `evoscan.csv` - Evoscan format (speculative CSV, not actual data)
+- `vcds.csv` - VCDS format (English)
 - `volvologger.csv` - Volvologger format (speculative CSV, not actual data)
-- `simostools.csv` - SimosTools Android app format
 - `winlog.csv` - Winlog logger format
+- `zeitronix.csv` - Zeitronix format
 
 **Note**: Both `evoscan.csv` and `volvologger.csv` are speculative CSVs created for testing purposes and do not contain actual logger data.
 

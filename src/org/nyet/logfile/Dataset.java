@@ -338,6 +338,14 @@ public class Dataset {
     public static boolean IsLineComment(String line) {
         line = line.trim();
         if (line.length() == 0) return false; // technically and empty line is not a comment
+
+        // Remove BOM (Byte Order Mark) characters if present
+        // UTF-8 BOM: \uFEFF, UTF-16 BOMs can be \uFEFF, \uFFFE, or byte sequences
+        if (line.length() > 0 && line.charAt(0) == '\uFEFF') {
+            line = line.substring(1).trim();
+        }
+
+        if (line.length() == 0) return false;
         return line.startsWith("#") ||
             line.startsWith("*") ||
             line.startsWith("//");
