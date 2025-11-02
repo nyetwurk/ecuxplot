@@ -691,7 +691,8 @@ loggers:
     aliases:
       - ["(STAMP|Zeit)", "TIME"]
       - ["Absolute Pres.", "BoostPressure"]
-      #- ["Accelerator [Pp]osition", "AccelPedalPosition"] // blacklist
+      - ["Charge pressure control; charge press\\.before throttle valve", "BoostPressureRelative (mBar[gauge])"]  # Unit in parentheses with [gauge] modifier
+      - ["Accelerator [Pp]osition", "AccelPedalPosition"]
       - ["Boost Pressure \\(actual\\)", "BoostPressureActual"]
       - ["Boost Pressure \\(specified\\)", "BoostPressureDesired"]
       - ["Duty Cycle", "WastegateDutyCycle"]
@@ -711,7 +712,8 @@ loggers:
       - ["Throttle [Aa]ngle.*", "ThrottleAngle"]
       - ["Throttle [Vv]alve [Aa]ngle.*", "ThrottleAngle"]
       - ["Vehicle speed; filtered", "VehicleSpeedFiltered"]
-      - ["Vehicle speed", "VehicleSpeed"]
+      - ["Vehicle speed.*", "VehicleSpeed"]
+      - ["Engine torque", "TorqueActual"]
       # German VCDS field name aliases
       - ["angesaugte.*", "MassAirFlow"]
       - ["Einspritzzeit", "FuelInjectorOnTime"]

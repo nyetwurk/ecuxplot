@@ -89,6 +89,7 @@ public final class Units {
             {"KnockVolt.*", UnitConstants.UNIT_VOLTS},
             {"OXSVolt.*", UnitConstants.UNIT_VOLTS},
 
+            {"BoostPressureRelative", UnitConstants.UNIT_MBAR_GAUGE}, // Must come before .*BoostPressure.*
             {".*BoostPressure.*", UnitConstants.UNIT_MBAR},
             {".*Duty.*Cycle.*", UnitConstants.UNIT_PERCENT},
             {".*Angle.*", UnitConstants.UNIT_DEGREES},
@@ -169,14 +170,14 @@ public final class Units {
             {"mbar", UnitConstants.UNIT_MBAR},
             {"hPa", UnitConstants.UNIT_MBAR},  // Convert hPa to mBar (1 hPa = 1 mBar)
             {"k[Pp]a", UnitConstants.UNIT_KPA},
-            {"km/h", UnitConstants.UNIT_KMH},  // Keep km/h as km/h
+            // "km/h" matches UNIT_KMH exactly, handled by early return
             {"KPH", UnitConstants.UNIT_KMH},   // Convert KPH to km/h
             {"kph", UnitConstants.UNIT_KMH},   // Convert kph to km/h
             {"psi", UnitConstants.UNIT_PSI},
             {"PSI/.*", UnitConstants.UNIT_PSI},
             {"sec\\.ms", UnitConstants.UNIT_SECONDS},  // ME7L time unit normalization
-            {"sec", UnitConstants.UNIT_SECONDS},       // VOLVO time unit normalization
-            {"rpm", UnitConstants.UNIT_RPM},
+            {"sec", UnitConstants.UNIT_SECONDS},       // VOLVO time unit normalization ("sec" != "s", so keep)
+            {"rpm", UnitConstants.UNIT_RPM},  // "rpm" != "RPM", so keep
             {"-|Marker|Markierung|MARKE|STAMP", ""} // Random junk we don't need
         };
         for (final String[] element : map) {
@@ -196,6 +197,7 @@ public final class Units {
 
         // Pressure conversions
         conversions.put("BoostPressureActual", List.of(UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI, UnitConstants.UNIT_KPA));
+        conversions.put("BoostPressureRelative", List.of(UnitConstants.UNIT_MBAR_GAUGE, UnitConstants.UNIT_PSI));
         conversions.put("BoostPressure", List.of(UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI, UnitConstants.UNIT_KPA));
 
         // Temperature conversions (applies to all temperature fields)

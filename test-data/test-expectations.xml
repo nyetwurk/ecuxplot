@@ -1928,11 +1928,12 @@
             <id index="3">EngineLoad</id> <!-- block 002 -->
             <id index="4">FuelInjectorOnTimeCorrected</id> <!-- block 002 -->
             <id index="5">MassAirFlow</id> <!-- block 002 -->
-            <id index="6">TIME 2</id> <!-- block 007 -->
+            <id index="6"></id> <!-- block 007 -->
             <id index="7">LambdaControl</id> <!-- block 007 -->
             <id index="8">O2SVoltageSensor</id> <!-- block 007 -->
             <id index="9">WastegateDutyCycle</id> <!-- block 007 -->
             <id index="10">LambdaCorrectionFactor</id> <!-- block 007 -->
+            <id index="11"></id> <!-- block C (Läuft nicht) -->
         </expected_ids>
         <expected_id2s>
             <id2 index="0"></id2>
@@ -1946,6 +1947,7 @@
             <id2 index="8">Lambdasonden-</id2>
             <id2 index="9">Tastverh�ltnis</id2>
             <id2 index="10">Lambda</id2>
+            <id2 index="11"></id2>
         </expected_id2s>
         <expected_units>
             <unit index="0"></unit>
@@ -1954,11 +1956,12 @@
             <unit index="3">ms</unit>
             <unit index="4">ms</unit>
             <unit index="5">g/sec</unit>
-            <unit index="6">s</unit>
+            <unit index="6"></unit>
             <unit index="7">%</unit>
             <unit index="8">V</unit>
             <unit index="9">%</unit>
             <unit index="10">λ</unit>
+            <unit index="11"></unit>
         </expected_units>
 
         <expected_filter_columns>
@@ -1979,12 +1982,12 @@
             <id index="3">EngineLoad</id>
             <id index="4">FuelInjectorOnTime</id>
             <id index="5">MassAirFlow</id>
-            <id index="6">TIME [031]</id>
+            <id index="6"></id>
             <id index="7">O2SVoltageSensor1Bank1</id> <!-- 031 -->
             <id index="8">O2SVoltageSensor2Bank1</id> <!-- 031 -->
             <id index="9">O2SVoltageSensor1Bank2</id> <!-- 031 -->
             <id index="10">O2SVoltageSensor2Bank2</id> <!-- 031 -->
-            <id index="11">TIME [Not Running]</id>
+            <id index="11"></id>
         </expected_ids>
         <expected_id2s>
             <id2 index="0"></id2>
@@ -2007,12 +2010,12 @@
             <unit index="3">%</unit>
             <unit index="4">ms</unit>
             <unit index="5">g/sec</unit>
-            <unit index="6">s</unit>
+            <unit index="6"></unit>
             <unit index="7">V</unit>
             <unit index="8">V</unit>
             <unit index="9">V</unit>
             <unit index="10">V</unit>
-            <unit index="11">s</unit>
+            <unit index="11"></unit>
         </expected_units>
 
         <expected_filter_columns>
@@ -2036,12 +2039,12 @@
             <id index="3">MassAirFlow</id>
             <id index="4">EngineLoad</id>
             <id index="5">IgnitionTimingAngleOverall</id>
-            <id index="6">TIME [020]</id>
+            <id index="6"></id>
             <id index="7">Idle Stabilization1</id>
             <id index="8">Idle Stabilization2</id>
             <id index="9">Idle Stabilization3</id>
             <id index="10">Idle Stabilization4</id>
-            <id index="11">TIME [026]</id>
+            <id index="11"></id>
             <id index="12">KnockVoltageSensor1</id> <!-- 026 -->
             <id index="13">KnockVoltageSensor2</id> <!-- 026 -->
             <id index="14">KnockVoltageSensor3</id> <!-- 026 -->
@@ -2072,12 +2075,12 @@
             <unit index="3">g/sec</unit>
             <unit index="4">%</unit>
             <unit index="5">°</unit>
-            <unit index="6">s</unit>
+            <unit index="6"></unit>
             <unit index="7">CF</unit>
             <unit index="8">CF</unit>
             <unit index="9">CF</unit>
             <unit index="10">CF</unit>
-            <unit index="11">s</unit>
+            <unit index="11"></unit>
             <unit index="12">V</unit>
             <unit index="13">V</unit>
             <unit index="14">V</unit>
@@ -2102,12 +2105,12 @@
             <id index="3">MassAirFlow</id>
             <id index="4">ThrottleAngle</id>
             <id index="5">IgnitionTimingAngleOverall</id>
-            <id index="6">TIME1</id> <!-- 114 --> <!-- oddity, this actually time in 114, but there are 4 times in the group -->
+            <id index="6"></id> <!-- 114 --> <!-- oddity, this actually time in 114, but there are 4 times in the group -->
             <id index="7">WastegateOnTime</id> <!-- 114 -->
             <id index="8">EGROnTime</id> <!-- 114 -->
             <id index="9">DiverterOnTime</id> <!-- 114 -->
             <id index="10">WastegateDutyCycle</id> <!-- 114 -->
-            <id index="11">TIME [020]</id>
+            <id index="11"></id>
             <id index="12">IgnitionRetardCyl1</id> <!-- 020 -->
             <id index="13">IgnitionRetardCyl2</id> <!-- 020 -->
             <id index="14">IgnitionRetardCyl3</id> <!-- 020 -->
@@ -2138,12 +2141,12 @@
             <unit index="3">g/sec</unit>
             <unit index="4">°</unit>
             <unit index="5">°</unit>
-            <unit index="6">s</unit>
+            <unit index="6"></unit>
             <unit index="7">ms</unit>
             <unit index="8">ms</unit>
             <unit index="9">ms</unit>
             <unit index="10">%</unit>
-            <unit index="11">s</unit>
+            <unit index="11"></unit>
             <unit index="12">°</unit>
             <unit index="13">°</unit>
             <unit index="14">°</unit>
@@ -2172,12 +2175,12 @@
             <id index="3">EngineLoad</id>
             <id index="4">BoostPressureDesired</id> <!-- 115 -->
             <id index="5">BoostPressureActual</id> <!-- 115 -->
-            <id index="6">TIME [118]</id>
+            <id index="6"></id>
             <id index="7">RPM [118]</id>
             <id index="8">IntakeAirTemperature</id> <!-- 118 -->
             <id index="9">WastegateDutyCycle</id> <!-- 118 -->
             <id index="10">BoostPressureBeforeThrottle</id> <!-- 118 -->
-            <id index="11">TIME [Not Running]</id>
+            <id index="11"></id>
         </expected_ids>
         <expected_id2s>
             <id2 index="0"></id2>
@@ -2200,12 +2203,12 @@
             <unit index="3">%</unit>
             <unit index="4">mBar</unit>
             <unit index="5">mBar</unit>
-            <unit index="6">s</unit>
+            <unit index="6"></unit>
             <unit index="7">RPM</unit>
             <unit index="8">°C</unit>
             <unit index="9">%</unit>
             <unit index="10">mBar</unit>
-            <unit index="11">s</unit>
+            <unit index="11"></unit>
         </expected_units>
 
         <expected_filter_columns>
@@ -2223,27 +2226,27 @@
             <id index="0"></id>
             <id index="1">TIME</id>
             <id index="2">VehicleSpeed</id>
-            <id index="3">TIME [24]</id>
-            <id index="4">Accelerator position [24]</id> <!-- 24 --> <!-- blacklist -->
-            <id index="5">TIME [35]</id>
+            <id index="3"></id>
+            <id index="4">AccelPedalPosition</id>
+            <id index="5"></id>
             <id index="6">RPM</id> <!-- 35 -->
-            <id index="7">TIME [332]</id>
+            <id index="7"></id>
             <id index="8">EngineLoad</id> <!-- 332 -->
-            <id index="9">TIME [485]</id>
+            <id index="9"></id>
             <id index="10">RPMActual</id> <!-- 485 -->
-            <id index="11">TIME [487]</id>
+            <id index="11"></id>
             <id index="12">RPMSpecified</id> <!-- 487 -->
-            <id index="13">TIME [500]</id>
+            <id index="13"></id>
             <id index="14">Intake air change-over; pressure</id> <!-- 500 -->
-            <id index="15">TIME [501]</id>
-            <id index="16">Charge pressure control; charge press.before throttle valve</id> <!-- 501 -->
-            <id index="17">TIME [508]</id>
-            <id index="18">Accelerator position [508]</id> <!-- 508 --> <!-- blacklist -->
-            <id index="19">TIME [652]</id>
-            <id index="20">Engine torque</id> <!-- 652 -->
-            <id index="21">TIME [693]</id>
-            <id index="22">Vehicle speed; actual</id> <!-- 693 -->
-            <id index="23">TIME [694]</id>
+            <id index="15"></id>
+            <id index="16">BoostPressureRelative</id> <!-- 501 -->
+            <id index="17"></id>
+            <id index="18">AccelPedalPosition [508]</id>
+            <id index="19"></id>
+            <id index="20">TorqueActual</id> <!-- 652 -->
+            <id index="21"></id>
+            <id index="22">VehicleSpeed [693]</id> <!-- 693 -->
+            <id index="23"></id>
             <id index="24">VehicleSpeedFiltered</id> <!-- 694 -->
         </expected_ids>
         <expected_id2s>
@@ -2277,32 +2280,31 @@
             <unit index="0"></unit>
             <unit index="1">s</unit>
             <unit index="2">km/h</unit>
-            <unit index="3">s</unit>
+            <unit index="3"></unit>
             <unit index="4">%</unit>
-            <unit index="5">s</unit>
+            <unit index="5"></unit>
             <unit index="6">RPM</unit>
-            <unit index="7">s</unit>
+            <unit index="7"></unit>
             <unit index="8">%</unit>
-            <unit index="9">s</unit>
+            <unit index="9"></unit>
             <unit index="10">RPM</unit>
-            <unit index="11">s</unit>
+            <unit index="11"></unit>
             <unit index="12">RPM</unit>
-            <unit index="13">s</unit>
+            <unit index="13"></unit>
             <unit index="14">mBar</unit>
-            <unit index="15">s</unit>
-            <unit index="16">mBar</unit>
-            <unit index="17">s</unit>
+            <unit index="15"></unit>
+            <unit index="16">mBar[gauge]</unit>
+            <unit index="17"></unit>
             <unit index="18">%</unit>
-            <unit index="19">s</unit>
+            <unit index="19"></unit>
             <unit index="20">Nm</unit>
-            <unit index="21">s</unit>
+            <unit index="21"></unit>
             <unit index="22">km/h</unit>
-            <unit index="23">s</unit>
+            <unit index="23"></unit>
             <unit index="24">km/h</unit>
         </expected_units>
-
         <expected_filter_columns>
-            <category name="pedal"></category>
+            <category name="pedal">3</category>
             <category name="throttle"></category>
             <category name="gear"></category>
         </expected_filter_columns>

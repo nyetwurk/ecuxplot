@@ -324,13 +324,41 @@ public class VCDSHeaderProcessor {
             // Pass 3b: Handle cross-group duplicates - add group ID suffix if not first occurrence
             // Note: Now using aliased names from h.id for duplicate detection
             for (ColumnInfo col : columns) {
-                if (col.fieldName == null || col.groupId == null) {
-                    continue;
-                }
-
+                // For TIME columns, allow processing even if groupId is null (may happen for edge cases)
                 String currentFieldName = h.id[col.index];
                 if (currentFieldName == null || currentFieldName.isEmpty()) {
                     continue;
+                }
+
+                boolean isTimeColumn = currentFieldName.matches("^TIME\\s*\\d*$");
+
+                // Skip non-TIME columns with null fieldName or groupId
+                if (!isTimeColumn && (col.fieldName == null || col.groupId == null)) {
+                    continue;
+                }
+
+                // Compute isFirstGlobally regardless of appearsInOtherGroups
+                // For TIME columns: check against any TIME variant; for others: check exact match
+		// This is required because all columns are disambiguated before this step.
+                boolean isFirstGlobally = true;
+                for (int j = 0; j < col.index; j++) {
+                    String prevFieldName = h.id[j];
+                    if (prevFieldName != null) {
+                        boolean matches = isTimeColumn
+                            ? prevFieldName.matches("^TIME\\s*\\d*$")
+                            : currentFieldName.equals(prevFieldName);
+                        if (matches) {
+                            isFirstGlobally = false;
+                            break;
+                        }
+                    }
+                }
+
+                // Blacklist TIME columns that aren't first globally (regardless of appearsInOtherGroups)
+                if (isTimeColumn && !isFirstGlobally) {
+                    h.id[col.index] = "";
+                    logger.debug("Blacklisting excess TIME column at index {} (group: {}, field: '{}')", col.index, col.groupId, currentFieldName);
+                    continue; // Skip the appearsInOtherGroups check for blacklisted columns
                 }
 
                 // Check if this field (now aliased) appears in other groups
@@ -348,23 +376,11 @@ public class VCDSHeaderProcessor {
                     }
                 }
 
-                if (appearsInOtherGroups) {
-                    // RULE 2: Check if this is the first global occurrence (compare aliased field names)
-                    boolean isFirstGlobally = true;
-                    for (int j = 0; j < col.index; j++) {
-                        String prevFieldName = h.id[j];
-                        if (prevFieldName != null && currentFieldName.equals(prevFieldName)) {
-                            isFirstGlobally = false;
-                            break;
-                        }
-                    }
-
-                    if (!isFirstGlobally) {
-                        // Not first occurrence - add group ID suffix to aliased name
-                        h.id[col.index] = currentFieldName + " [" + col.groupId + "]";
-                    }
-                    // Otherwise leave as-is (first occurrence, keeps aliased name from pass 3.5)
+                if (appearsInOtherGroups && !isFirstGlobally) {
+                    // Not first occurrence - add group ID suffix
+                    h.id[col.index] = currentFieldName + " [" + col.groupId + "]";
                 }
+                // Otherwise leave as-is (first occurrence, keeps aliased name from pass 3.5)
             }
         }
     }
