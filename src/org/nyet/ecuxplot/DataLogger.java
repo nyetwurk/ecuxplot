@@ -217,31 +217,8 @@ public class DataLogger {
                     // Note: Don't continue here - alias targets may add units to field names
                 }
 
-                // Check if field name still contains units in parentheses (e.g., from alias targets like "AirFuelRatioDesired (AFR)")
-                final java.util.regex.Pattern unitsRegEx =
-                    java.util.regex.Pattern.compile("([\\S\\s]+)\\(([\\S\\s].*)\\)");
-                final java.util.regex.Matcher matcher = unitsRegEx.matcher(this.id[i]);
-                if (matcher.find()) {
-                    // Extract unit from field name
-                    String extractedUnit = matcher.group(2).trim();
-
-                    // Validate the extracted unit
-                    if (isValidUnit(extractedUnit)) {
-                        // Always extract unit from field name (even if unit was already set)
-                        // This handles alias targets that include units: "FieldName (unit)" -> "FieldName" + unit
-                        this.id[i] = matcher.group(1).trim();
-                        this.u[i] = extractedUnit;
-                        logger.debug("{}: Extracted and validated unit '{}' from '{}'", i, extractedUnit, this.id[i]);
-                    } else {
-                        // Invalid unit - don't extract, leave unit null for inference
-                        logger.debug("{}: Extracted unit '{}' appears to be descriptive text, leaving null for inference",
-                                    i, extractedUnit);
-                        // Don't modify id[i] or u[i] - let processUnits() infer from field name
-                    }
-                } else if (this.u[i] != null && this.u[i].length() > 0) {
-                    // Field name has no unit pattern but unit is already set - keep it
-                    logger.debug("{}: Keeping valid extracted unit '{}'", i, this.u[i]);
-                }
+                // Note: Unit extraction from parentheses is handled by extractUnitsFromParentheses()
+                // which is called after aliases are applied, so no need to do it here
                 // If no unit pattern found and unit is missing, processUnits() will try Units.find() later
             }
             for (int i = 0; i < this.id.length; i++)
@@ -308,6 +285,51 @@ public class DataLogger {
                 }
             }
 
+            // Extract units from parentheses in aliased field names (e.g., "FieldName (unit)")
+            // This handles alias targets that include units (e.g., "BoostPressureRelative (mBar[gauge])")
+            this.extractUnitsFromParentheses();
+
+            return this;
+        }
+
+        /**
+         * Extract units from parentheses in field names (e.g., "FieldName (unit)").
+         * This is called after aliases are applied to handle alias targets that include units.
+         *
+         * @return This HeaderData object for method chaining
+         */
+        private HeaderData extractUnitsFromParentheses() {
+            if (this.id == null) {
+                return this;
+            }
+
+            for (int i = 0; i < this.id.length; i++) {
+                if (this.id[i] == null) {
+                    continue;
+                }
+
+                final java.util.regex.Pattern unitsRegEx =
+                    java.util.regex.Pattern.compile("([\\S\\s]+)\\(([\\S\\s].*)\\)");
+                final java.util.regex.Matcher matcher = unitsRegEx.matcher(this.id[i]);
+                if (matcher.find()) {
+                    String extractedUnit = matcher.group(2).trim();
+                    logger.debug("{}: Extracted unit from parentheses: '{}'", i, extractedUnit);
+
+                    if (isValidUnit(extractedUnit)) {
+                        this.id[i] = matcher.group(1).trim();
+                        // Ensure units array exists and is large enough
+                        if (this.u == null) {
+                            this.u = new String[this.id.length];
+                        } else if (this.u.length < this.id.length) {
+                            this.u = java.util.Arrays.copyOf(this.u, this.id.length);
+                        }
+                        this.u[i] = extractedUnit;
+                        logger.debug("{}: Extracted and validated unit '{}' from '{}'", i, extractedUnit, this.id[i]);
+                    } else {
+                        logger.debug("{}: Extracted unit '{}' appears to be descriptive text, leaving as is", i, extractedUnit);
+                    }
+                }
+            }
             return this;
         }
 
