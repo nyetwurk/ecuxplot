@@ -128,6 +128,22 @@ public final class Units {
         if (u.matches("\\(.+\\)")) {
             u = u.replaceAll("\\((.+)\\)", "$1");
         }
+
+        // FIXME: make nicer
+        // Early return: if input is already a known constant, return it directly
+        if (u.equals(UnitConstants.UNIT_MBAR) || u.equals(UnitConstants.UNIT_MBAR_GAUGE) ||
+            u.equals(UnitConstants.UNIT_PSI) || u.equals(UnitConstants.UNIT_KPA) ||
+            u.equals(UnitConstants.UNIT_RPM) || u.equals(UnitConstants.UNIT_SECONDS) ||
+            u.equals(UnitConstants.UNIT_KMH) || u.equals(UnitConstants.UNIT_MPH) ||
+            u.equals(UnitConstants.UNIT_CELSIUS) || u.equals(UnitConstants.UNIT_FAHRENHEIT) ||
+            u.equals(UnitConstants.UNIT_LAMBDA) || u.equals(UnitConstants.UNIT_AFR) ||
+            u.equals(UnitConstants.UNIT_GPS) || u.equals(UnitConstants.UNIT_KGH) ||
+            u.equals(UnitConstants.UNIT_NM) || u.equals(UnitConstants.UNIT_FTLB) ||
+            u.equals(UnitConstants.UNIT_PERCENT) || u.equals(UnitConstants.UNIT_VOLTS) ||
+            u.equals(UnitConstants.UNIT_MS) || u.equals(UnitConstants.UNIT_DEGREES)) {
+            return u;
+        }
+
         // Note: .matches() requires entire string match, so ^ and $ are implicit
         // We keep anchors here for clarity since these are exact unit string matches
         final String[][] map = {

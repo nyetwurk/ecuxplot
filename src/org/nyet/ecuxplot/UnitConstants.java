@@ -82,6 +82,8 @@ public class UnitConstants {
     public static final String UNIT_PSI = "PSI";
     /** Unit string for millibar */
     public static final String UNIT_MBAR = "mBar";
+    /** Unit string for millibar gauge (relative pressure) */
+    public static final String UNIT_MBAR_GAUGE = "mBar[gauge]";
     /** Unit string for kilopascal */
     public static final String UNIT_KPA = "kPa";
     /** Unit string for miles per hour */

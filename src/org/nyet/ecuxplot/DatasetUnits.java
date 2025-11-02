@@ -66,6 +66,15 @@ public class DatasetUnits {
                     data.mult(UnitConstants.MBAR_PER_PSI).add(a), UnitConstants.UNIT_MBAR);
             });
 
+        // Pressure: mBar gauge <-> PSI
+        // Note: mBar gauge is already relative pressure, convert units directly
+        CONVERTERS.put(key(UnitConstants.UNIT_PSI, UnitConstants.UNIT_MBAR_GAUGE),
+            (data, ambient) -> new ConversionResult(
+                data.div(UnitConstants.MBAR_PER_PSI), UnitConstants.UNIT_PSI));
+        CONVERTERS.put(key(UnitConstants.UNIT_MBAR_GAUGE, UnitConstants.UNIT_PSI),
+            (data, ambient) -> new ConversionResult(
+                data.mult(UnitConstants.MBAR_PER_PSI), UnitConstants.UNIT_MBAR_GAUGE));
+
         // Pressure: kPa <-> mBar
         // Note: Both kPa and mBar are absolute pressure units (1 kPa = 10 mBar)
         CONVERTERS.put(key(UnitConstants.UNIT_MBAR, UnitConstants.UNIT_KPA),
