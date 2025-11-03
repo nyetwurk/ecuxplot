@@ -71,7 +71,7 @@ public class AxisMenu extends JMenu {
      * This calls addToSubmenu(String, DatasetId) with null units.
      */
     private void addToSubmenu(String submenu, String id) {
-        addToSubmenu(submenu, new DatasetId(id, null, null));
+        addToSubmenu(submenu, new DatasetId(id));
     }
 
     /**
@@ -94,7 +94,7 @@ public class AxisMenu extends JMenu {
      * PREFERRED: Use this overload to ensure units are always passed.
      */
     private void addToSubmenu(String submenu, DatasetId dsid) {
-        final AbstractButton item = makeMenuItem(dsid.id, null);
+        final AbstractButton item = makeMenuItem(dsid);
         addToSubmenu(submenu, item, true);
 
         // Track this column's state
@@ -109,7 +109,7 @@ public class AxisMenu extends JMenu {
                 if (!columnStates.containsKey(convertedId)) {
                     columnStates.put(convertedId, ColumnState.UNIT_CONVERTED);
                     // For unit conversions, pass a dummy DatasetId with no units to avoid recursion
-                    DatasetId dummyDsid = new DatasetId(convertedId, null, null);
+                    DatasetId dummyDsid = new DatasetId(convertedId);
                     addToSubmenu(submenu, dummyDsid); // Already a conversion, don't recurse
                 }
             }
@@ -125,20 +125,23 @@ public class AxisMenu extends JMenu {
     private final Map<String, ColumnState> columnStates = new HashMap<>();
 
 
-    private AbstractButton makeMenuItem(String id, String tip) {
+    private AbstractButton makeMenuItem(DatasetId dsid) {
         boolean checked = false;
 
         for (final Comparable<?> element : this.initialChecked) {
-            if(id.equals(element)) {
+            if(dsid.id.equals(element)) {
                 checked = true;
                 break;
             }
         }
 
-        final AbstractButton item = (this.buttonGroup==null)?new JCheckBox(id, checked):
-            new JRadioButtonMenuItem(id, checked);
+        final AbstractButton item = (this.buttonGroup==null)?new JCheckBox(dsid.id, checked):
+            new JRadioButtonMenuItem(dsid.id, checked);
 
-        if(tip!=null) item.setToolTipText(tip);
+        // Only set tooltip if id2 exists and is different from the menu item text
+        if(dsid.id2!=null && !dsid.id2.equals(dsid.id)) {
+            item.setToolTipText(dsid.id2);
+        }
 
         item.addActionListener(new MenuListener(this.listener, this.getText()));
         if(this.buttonGroup!=null) this.buttonGroup.add(item);
@@ -148,7 +151,7 @@ public class AxisMenu extends JMenu {
 
     /* string, index */
     private void addDirect(String id, int index) {
-        final AbstractButton item = makeMenuItem(id, null);
+        final AbstractButton item = makeMenuItem(new DatasetId(id));
         this.members.put(id, item);
         super.add(item, index);
     }
@@ -165,7 +168,7 @@ public class AxisMenu extends JMenu {
         /* Return null if item already exists (duplicate) */
         if (this.members.containsKey(dsid.id)) return null;
 
-        final AbstractButton item = makeMenuItem(dsid.id, dsid.id2);
+        final AbstractButton item = makeMenuItem(dsid);
 
         final String id = dsid.id;
         if(id.matches("RPM")) {
@@ -270,7 +273,7 @@ public class AxisMenu extends JMenu {
             if(id.matches("IgnitionTimingAngleOverall")) {
                 this.add("IgnitionTimingAngleOverallDesired");
             }
-            final AbstractButton titem = makeMenuItem(id + " (ms)", dsid.id2);
+            final AbstractButton titem = makeMenuItem(new DatasetId(id + " (ms)", dsid.id2, UnitConstants.UNIT_MS));
             addToSubmenu("TrueTiming", titem, true);
         } else if(id.matches(".*(Cam|NWS|Valve).*")) {
             addToSubmenu("VVT", dsid);
