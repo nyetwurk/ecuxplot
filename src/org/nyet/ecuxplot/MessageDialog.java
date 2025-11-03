@@ -28,7 +28,8 @@ public class MessageDialog {
      */
     public static void showMessageDialog(Component parentComponent, Object message) {
         if (nogui) {
-            logger.info("Message: {}", message);
+            String logMessage = normalizeForLogging(message != null ? message.toString() : "null");
+            logger.info("Message: {}", logMessage);
         } else {
             JOptionPane.showMessageDialog(parentComponent, message);
         }
@@ -44,16 +45,18 @@ public class MessageDialog {
     public static void showMessageDialog(Component parentComponent, Object message,
                                        String title, int messageType) {
         // Always log messages for debugging, regardless of GUI mode
+        // Normalize message for logging (replace multiple newlines with single space)
+        String logMessage = normalizeForLogging(message != null ? message.toString() : "null");
         String level = getLogLevel(messageType);
         switch (level) {
             case "ERROR":
-                logger.error("{}: {}", title, message);
+                logger.error("{}: {}", title, logMessage);
                 break;
             case "WARN":
-                logger.warn("{}: {}", title, message);
+                logger.warn("{}: {}", title, logMessage);
                 break;
             default:
-                logger.info("{}: {}", title, message);
+                logger.info("{}: {}", title, logMessage);
                 break;
         }
 
@@ -82,7 +85,8 @@ public class MessageDialog {
     public static int showConfirmDialog(Component parentComponent, Object message,
                                       String title, int optionType, int messageType) {
         if (nogui) {
-            logger.info("Confirm dialog (assuming YES): {} - {}", title, message);
+            String logMessage = normalizeForLogging(message != null ? message.toString() : "null");
+            logger.info("Confirm dialog (assuming YES): {} - {}", title, logMessage);
             return JOptionPane.YES_OPTION;
         } else {
             return JOptionPane.showConfirmDialog(parentComponent, message, title,
@@ -97,7 +101,8 @@ public class MessageDialog {
      */
     public static String showInputDialog(Object message) {
         if (nogui) {
-            logger.info("Input dialog (no input): {}", message);
+            String logMessage = normalizeForLogging(message != null ? message.toString() : "null");
+            logger.info("Input dialog (no input): {}", logMessage);
             return null;
         } else {
             return JOptionPane.showInputDialog(message);
@@ -114,7 +119,9 @@ public class MessageDialog {
     public static String showInputDialog(Component parentComponent, Object message,
                                        Object initialSelectionValue) {
         if (nogui) {
-            logger.info("Input dialog (using initial value): {} - {}", message, initialSelectionValue);
+            String logMessage = normalizeForLogging(message != null ? message.toString() : "null");
+            String logValue = normalizeForLogging(initialSelectionValue != null ? initialSelectionValue.toString() : "null");
+            logger.info("Input dialog (using initial value): {} - {}", logMessage, logValue);
             return initialSelectionValue != null ? initialSelectionValue.toString() : null;
         } else {
             return JOptionPane.showInputDialog(parentComponent, message, initialSelectionValue);
@@ -139,6 +146,22 @@ public class MessageDialog {
             default:
                 return "INFO";
         }
+    }
+
+    /**
+     * Normalize message string for logging by replacing multiple consecutive newlines
+     * and whitespace with a single space. This prevents excessive whitespace in logs
+     * while preserving the original message for GUI display.
+     * @param message the message to normalize
+     * @return normalized message suitable for logging
+     */
+    private static String normalizeForLogging(String message) {
+        if (message == null) {
+            return "null";
+        }
+        // Replace multiple consecutive newlines (including \r\n, \n\n, etc.) with single space
+        // Also replace single newlines with spaces to keep log output on one line
+        return message.replaceAll("[\r\n]+", " ").replaceAll("\\s+", " ").trim();
     }
 }
 
