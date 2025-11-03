@@ -42,6 +42,25 @@ public class AxisMenu extends JMenu {
     private AxisMenu more=null;
     private AxisMenu parent=null;
 
+    // Calc menu names that should be pre-populated and grouped near the top
+    private static final String[] CALC_MENU_NAMES = {
+        "Calc Power", "Calc MAF", "Calc Fuel", "Calc Boost", "Calc PID", "Calc IAT"
+    };
+
+    /**
+     * Check if a menu has any items (excluding separators).
+     */
+    private boolean hasMenuItems(JMenu menu) {
+        if (menu == null) return false;
+        for (int i = 0; i < menu.getMenuComponentCount(); i++) {
+            Component comp = menu.getMenuComponent(i);
+            if (!(comp instanceof JSeparator)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void addToSubmenu(String submenu, JComponent item, boolean autoadd) {
         JMenu sub = this.subMenus.get(submenu);
         if(sub==null) {
@@ -205,9 +224,10 @@ public class AxisMenu extends JMenu {
                     addToSubmenu("Calc MAF", "Sim Load Corrected");
                     addToSubmenu("Calc MAF", "Sim MAF");
                 }
-                addToSubmenu("Calc MAF", "MassAirFlow df/dt");
-                addToSubmenu("Calc MAF", "Turbo Flow");
-                addToSubmenu("Calc MAF", "Turbo Flow (lb/min)");
+                // MAF-related calc items always go to MAF submenu (not Calc MAF) for consistency
+                addToSubmenu("MAF", "MassAirFlow df/dt");
+                addToSubmenu("MAF", "Turbo Flow");
+                addToSubmenu("MAF", "Turbo Flow (lb/min)");
                 addToSubmenu("Calc MAF", new JSeparator());
             }
         } else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85|[LH]PFP|Rail).*")) {
@@ -344,6 +364,14 @@ public class AxisMenu extends JMenu {
         if (maxItems>0) this.maxItems = maxItems;
 
         if (ids!=null) {
+            // Pre-populate all calc menus and add them to the menu near the top
+            for (String calcMenuName : CALC_MENU_NAMES) {
+                if (!this.subMenus.containsKey(calcMenuName)) {
+                    AxisMenu calcMenu = new AxisMenu(calcMenuName, this);
+                    this.subMenus.put(calcMenuName, calcMenu);
+                }
+            }
+
             /* top level menu (before "more...") */
             if(radioButton) {
                 this.buttonGroup = new ButtonGroup();
@@ -351,10 +379,32 @@ public class AxisMenu extends JMenu {
                 this.add(new JSeparator());
             }
 
+            // Add calc menus near the top (only for non-X axis menus, X axis uses radioButton)
+            if (!radioButton) {
+                super.add(new JSeparator());
+                for (String calcMenuName : CALC_MENU_NAMES) {
+                    JMenu calcMenu = this.subMenus.get(calcMenuName);
+                    if (calcMenu != null) {
+                        super.add(calcMenu);
+                    }
+                }
+                super.add(new JSeparator());
+            }
+
             for(int i=0;i<ids.length;i++) {
                 if(ids[i] == null) continue;
                 if(ids[i].id.length()>0 && !this.members.containsKey(ids[i].id)) {
                     this.add(ids[i]);
+                }
+            }
+
+            // Remove calc menus that have no items (only for non-X axis menus)
+            if (!radioButton) {
+                for (String calcMenuName : CALC_MENU_NAMES) {
+                    JMenu calcMenu = this.subMenus.get(calcMenuName);
+                    if (calcMenu != null && !hasMenuItems(calcMenu)) {
+                        this.remove(calcMenu);
+                    }
                 }
             }
 
