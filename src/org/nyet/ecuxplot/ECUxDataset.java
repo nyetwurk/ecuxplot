@@ -19,6 +19,7 @@ import org.nyet.ecuxplot.DataLogger.DataLoggerConfig;
 
 import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
+import org.nyet.util.MonotonicDataAnalyzer;
 
 public class ECUxDataset extends Dataset {
     private static final Logger logger = LoggerFactory.getLogger(ECUxDataset.class);
@@ -210,48 +211,15 @@ public class ECUxDataset extends Dataset {
         if (rawTime!=null) {
             // Convert raw TIME ticks to seconds for calculation
             final DoubleArray timeSeconds = rawTime.data.div(this.time_ticks_per_sec);
+            final double[] timeArray = timeSeconds.toArray();
 
-            // Use first 5 seconds of data to calculate sample rate
-            // If log is shorter than 5 seconds, use total start/end
-            final double targetTimeWindow = 5.0; // seconds
-            final double startTime = timeSeconds.get(0);
-            final double endTimeTarget = startTime + targetTimeWindow;
-            final double totalTimeSpan = timeSeconds.get(timeSeconds.size() - 1) - startTime;
+            // Calculate sample rate from time data
+            this.samples_per_sec = MonotonicDataAnalyzer.calculateSampleRate(timeArray);
 
-            int endIndex = 0;
-            boolean useFullSpan = false;
-
-            if(totalTimeSpan < targetTimeWindow) {
-                // Log is shorter than 5 seconds, use full span
-                useFullSpan = true;
-                endIndex = timeSeconds.size() - 1;
+            if (this.samples_per_sec > 0) {
+                logger.debug("samples_per_sec={} (from segment-aware analysis)", this.samples_per_sec);
             } else {
-                // Find end index for first 5 seconds
-                for(int i=1; i<timeSeconds.size(); i++) {
-                    if(timeSeconds.get(i) >= endTimeTarget) {
-                        endIndex = i;
-                        break;
-                    }
-                }
-                // If we didn't find the target (shouldn't happen if totalTimeSpan >= targetTimeWindow), use full span
-                if(endIndex == 0) {
-                    useFullSpan = true;
-                    endIndex = timeSeconds.size() - 1;
-                }
-            }
-
-            if(endIndex > 0) {
-                final double actualTimeSpan = timeSeconds.get(endIndex) - startTime;
-                if(actualTimeSpan > 0) {
-                    this.samples_per_sec = endIndex / actualTimeSpan;
-                    logger.debug("samples_per_sec={} (from {}, {} samples in {}s)",
-                        this.samples_per_sec, useFullSpan ? "full dataset" : "first 5 seconds",
-                        endIndex + 1, actualTimeSpan);
-                } else {
-                    logger.warn("TIME span is zero (endIndex={})", endIndex);
-                }
-            } else {
-                logger.warn("Not enough TIME data to calculate samples_per_sec (need at least 2 points)");
+                logger.warn("samples_per_sec calculation failed (need at least 2 points)");
             }
         } else {
             logger.warn("TIME column is null, cannot calculate samples_per_sec");
@@ -409,6 +377,40 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
+     * Create a smoothed TIME column.
+     * Smooths time deltas (intervals) rather than absolute time to prevent drift.
+     *
+     * @return The processed TIME Column, or null if TIME column doesn't exist
+     */
+    private Column createSegmentAwareSmoothedTimeColumn() {
+        // Get base CSV column
+        Column baseColumn = super.get("TIME");
+        if (baseColumn == null) {
+            logger.error("_get('TIME'): Base CSV column 'TIME' not found! Cannot create smoothed column.");
+            return null;
+        }
+
+        // Save raw column BEFORE smoothing
+        createRawColumn("TIME", UnitConstants.UNIT_SECONDS,
+                       (data) -> data.div(this.time_ticks_per_sec));
+
+        // Transform data: convert ticks to seconds
+        DoubleArray processedData = baseColumn.data.div(this.time_ticks_per_sec);
+        double[] timeArray = processedData.toArray();
+
+        // Apply smoothing if threshold is met (5.0 samples/sec)
+        double[] smoothedTime = MonotonicDataAnalyzer.smoothTimeByDeltas(timeArray, this.samples_per_sec);
+        if (smoothedTime != timeArray) {
+            processedData = new DoubleArray(smoothedTime);
+            logger.debug("_get('TIME'): Applied smoothing to time deltas (samples_per_sec={})", this.samples_per_sec);
+        }
+
+        // Create and return final column, preserving id2 (original name) from base column
+        String id2 = baseColumn.getId2();
+        return new Column("TIME", id2, UnitConstants.UNIT_SECONDS, processedData, Dataset.ColumnType.PROCESSED_VARIANT);
+    }
+
+    /**
      * Get a column in the specified unit, converting if necessary.
      * @param columnName The name of the column to get
      * @param targetUnit The target unit (from UnitConstants) to convert to, or null to get in original unit
@@ -416,6 +418,34 @@ public class ECUxDataset extends Dataset {
      */
     public Column getColumnInUnits(String columnName, String targetUnit) {
         return getColumnInUnits(columnName, targetUnit, null);
+    }
+
+    /**
+     * Calculate torque from smoothed power data.
+     * Creates a column with torque calculated from smoothed power (HP or WHP) and RPM.
+     *
+     * @param torqueId The ID for the torque column (e.g., "TQ" or "WTQ")
+     * @param powerColumnName The name of the power column (e.g., "HP" or "WHP")
+     * @return Column with calculated torque, or null if power/RPM data is unavailable
+     */
+    private Column calculateTorque(String torqueId, String powerColumnName) {
+        final Range fullRange = new Range(0, this.length() - 1);
+        final double[] smoothedPower = this.getData(powerColumnName, fullRange);
+        final double[] rpm = this.getData("RPM", fullRange);
+        if (smoothedPower == null || rpm == null || smoothedPower.length != rpm.length) {
+            logger.error("_get('{}'): Failed to get smoothed {} or RPM data - {}={}, RPM={}, lengths match={}",
+                torqueId, powerColumnName, powerColumnName, smoothedPower != null, rpm != null,
+                smoothedPower != null && rpm != null ? smoothedPower.length == rpm.length : false);
+            return null;
+        }
+        // Calculate torque from smoothed power
+        final double[] torque = new double[smoothedPower.length];
+        for (int i = 0; i < smoothedPower.length; i++) {
+            torque[i] = smoothedPower[i] * UnitConstants.HP_CALCULATION_FACTOR / rpm[i];
+        }
+        String label = UnitConstants.UNIT_FTLB;
+        if(this.env.sae.enabled()) label += " (SAE)";
+        return new Column(torqueId, label, new DoubleArray(torque), Dataset.ColumnType.VEHICLE_CONSTANTS);
     }
 
     /**
@@ -499,10 +529,9 @@ public class ECUxDataset extends Dataset {
                 return deltaRPMPerSec;
             }
         } else {
-            // Fallback: if samples_per_sec is invalid, use conservative check
-            // Assume worst case (low sample rate) - use original delta check with converted threshold
-            // For safety, convert threshold assuming 10 Hz (most common logger rate)
-            double conservativeThreshold = this.filter.monotonicRPMfuzz() * 0.2;  // 500 RPM/s * 0.2s = 100 RPM
+            // Fallback: samples_per_sec invalid, use conservative threshold
+            // Assume 10 Hz = 0.2s per 2 samples, so threshold = fuzz * 0.2
+            double conservativeThreshold = this.filter.monotonicRPMfuzz() * 0.2;
             if (delta > conservativeThreshold) {
                 // Return a value indicating failure, but we don't have RPM/s to report
                 return Double.MAX_VALUE;
@@ -609,8 +638,8 @@ public class ECUxDataset extends Dataset {
             c = new Column("Sample", "#", a, Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("TIME")) {
             // Smooth TIME data to reduce jitter in sample rate calculations
-            c = createSmoothedColumn("TIME", UnitConstants.UNIT_SECONDS,
-                                    (data) -> data.div(this.time_ticks_per_sec), 5.0, false);
+            // Use segment-aware smoothing to avoid artifacts from time discontinuities
+            c = createSegmentAwareSmoothedTimeColumn();
         } else if(id.equals("TIME - raw")) {
             c = getOrCreateRawColumn("TIME", UnitConstants.UNIT_SECONDS,
                                     (data) -> data.div(this.time_ticks_per_sec));
@@ -722,6 +751,14 @@ public class ECUxDataset extends Dataset {
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
             c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x, this.AccelMAW()).max(0), Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Acceleration (RPM/s) - range smoothed")) {
+            // Calculate unsmoothed, then smooth in getData() like HP/TQ (for comparison)
+            final DoubleArray y = this.get("RPM").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0).max(0);
+            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+            // Register for range-based smoothing (same as HP/TQ approach)
+            this.smoothingWindows.put(id.toString(), this.AccelMAW());
         } else if(id.equals("Acceleration - raw (RPM/s)")) {
             final DoubleArray y = this.get("RPM - raw").data;
             final DoubleArray x = this.get("TIME").data;
@@ -737,10 +774,8 @@ public class ECUxDataset extends Dataset {
             }
             final DoubleArray y = velocityCol.data;
             final DoubleArray x = timeCol.data;
-            final DoubleArray derivative = y.derivative(x, this.MAW()).max(0);
-            // Store unsmoothed data and record smoothing requirement
+            final DoubleArray derivative = y.derivative(x, 0).max(0);
             c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("Acceleration (g)")) {
             // Depends on Acceleration (m/s^2) which uses RPM_PER_MPH
             final DoubleArray a = this.get("Acceleration (m/s^2)").data;
@@ -789,19 +824,9 @@ public class ECUxDataset extends Dataset {
             this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("WTQ")) {
             // Depends on WHP (which uses all WHP constants)
-            Column whpCol = this.get("WHP");
-            Column rpmCol = this.get("RPM");
-            if (whpCol == null || rpmCol == null) {
-                logger.warn("_get('WTQ'): Missing dependencies - WHP={}, RPM={}",
-                    whpCol != null, rpmCol != null);
-                return null;
-            }
-            final DoubleArray whp = whpCol.data;
-            final DoubleArray rpm = rpmCol.data;
-            final DoubleArray value = whp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
-            String l = UnitConstants.UNIT_FTLB;
-            if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            // Calculate WTQ from smoothed WHP
+            c = this.calculateTorque("WTQ", "WHP");
+            // WTQ is already calculated from smoothed WHP, no additional smoothing needed
         } else if(id.toString().equals(idWithUnit("WTQ", UnitConstants.UNIT_NM))) {
             // Depends on WTQ (which uses WHP constants)
             final DoubleArray wtq = this.get("WTQ").data;
@@ -811,12 +836,9 @@ public class ECUxDataset extends Dataset {
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("TQ")) {
             // Depends on HP (which uses all HP/WHP constants)
-            final DoubleArray hp = this.get("HP").data;
-            final DoubleArray rpm = this.get("RPM").data;
-            final DoubleArray value = hp.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
-            String l = UnitConstants.UNIT_FTLB;
-            if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            // Calculate TQ from smoothed HP
+            c = this.calculateTorque("TQ", "HP");
+            // TQ is already calculated from smoothed HP, no additional smoothing needed
         } else if(id.toString().equals(idWithUnit("TQ", UnitConstants.UNIT_NM))) {
             // Depends on TQ (which uses all HP/WHP constants)
             final DoubleArray tq = this.get("TQ").data;
@@ -1368,41 +1390,24 @@ public class ECUxDataset extends Dataset {
     private double[] applySmoothingIfNeeded(Column column, String columnName, Range r) {
         Integer smoothingWindow = this.smoothingWindows.get(columnName);
 
-        // Recalculate window size dynamically if column is registered for smoothing
-        // This ensures we always use the current HPTQMAW/accelMAW values, not stale cached window sizes
+        // Use stored window size - it was set when the column was created
+        // For HP/TQ/WHP: uses MAW() (HPTQMAW)
+        // For "Acceleration (RPM/s) - range smoothed": uses AccelMAW()
         if (smoothingWindow != null && smoothingWindow > 0) {
-            // Recalculate to get current window size (HPTQMAW may have changed)
-            smoothingWindow = this.MAW();  // Update to current value
-            // Extract the raw data for this range
-            final double[] rawData = column.data.toArray(r.start, r.end);
+            final int rangeSize = r.end - r.start + 1;
 
             // Check if range is large enough for smoothing window
-            // MovingAverageSmoothing requires at least (window-1)/2 samples on each side
-            // So we need rawData.length >= window
-            if (rawData.length < smoothingWindow) {
+            if (rangeSize < smoothingWindow) {
                 logger.warn("getData('{}'): Skipping smoothing - range size {} is smaller than window {}",
-                    columnName, rawData.length, smoothingWindow);
-                return rawData;
+                    columnName, rangeSize, smoothingWindow);
+                return column.data.toArray(r.start, r.end);
             }
 
-            // Apply moving average smoothing using only data within the range
-            // This prevents interference from filtered data outside the range
-
-            // Apply smoothing using a window that doesn't extend beyond range bounds
+            // Apply range-aware smoothing with padding to prevent edge artifacts
+            // MovingAverageSmoothing.smoothAll() with range always pads automatically
+            final double[] fullData = column.data.toArray();
             final org.nyet.util.MovingAverageSmoothing s = new org.nyet.util.MovingAverageSmoothing(smoothingWindow);
-            final double[] smoothed = s.smoothAll(rawData, -s.getNk(), rawData.length + s.getNk() - 1);
-
-            // Return the smoothed data within range bounds
-            // smoothAll() returns array of size (end - start + 1), which may differ from rawData.length
-            // Copy only what's available from smoothed array
-            final int copyLength = Math.min(smoothed.length, rawData.length);
-            final double[] result = new double[rawData.length];
-            System.arraycopy(smoothed, 0, result, 0, copyLength);
-            // If smoothed array was shorter, fill remainder with original data
-            if (copyLength < rawData.length) {
-                System.arraycopy(rawData, copyLength, result, copyLength, rawData.length - copyLength);
-            }
-            return result;
+            return s.smoothAll(fullData, r.start, r.end);
         }
 
         // No smoothing needed, return raw data
