@@ -19,6 +19,7 @@
 - Boost pressure automatically converts to PSI regardless of logger's native units (kPa or mBar)
 - Renamed "Alt column names" menu option to "Original names" for clarity (preference key unchanged for backward compatibility)
 - RPM and Time smoothing revamped for high data rate logs and logs with excessive jitter ([Issue #86](https://github.com/nyetwurk/ecuxplot/issues/86))
+- Improved filter parameter tooltips with clearer, more concise descriptions
 
 ### Fixed
 
@@ -35,6 +36,8 @@
   - Range Selector window tooltips and node labels update with new power values
 - Main chart display uses original column names instead of aliases when "Original names" preference is enabled
 - FATS restore defaults now restores mph/kph range defaults as well ([Issue #97](https://github.com/nyetwurk/ecuxplot/issues/97))
+- Time smoothing now uses interval smoothing instead of absolute time to prevent drift and accumulated errors ([Issue #104](https://github.com/nyetwurk/ecuxplot/issues/104))
+- Torque (TQ/WTQ) now calculated from smoothed HP/WHP for consistent power calculations
 
 ## [1.1.5] - 2025-10-31
 
