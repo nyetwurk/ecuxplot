@@ -147,6 +147,11 @@ public class DatasetUnits {
      */
     public static Dataset.Column convertUnits(Dataset dataset, Dataset.Column baseColumn, String targetUnit,
             Supplier<Double> getAmbientPressure, Dataset.ColumnType columnType) {
+        return convertUnits(dataset, baseColumn, targetUnit, getAmbientPressure, columnType, null);
+    }
+
+    public static Dataset.Column convertUnits(Dataset dataset, Dataset.Column baseColumn, String targetUnit,
+            Supplier<Double> getAmbientPressure, Dataset.ColumnType columnType, String targetId) {
         String baseUnit = baseColumn.getUnits();
 
         // Early return if no conversion needed
@@ -162,7 +167,9 @@ public class DatasetUnits {
             ConversionResult result = converter.convert(baseColumn.data, getAmbientPressure);
             // If data was modified, create new column
             if (result.data != baseColumn.data) {
-                return dataset.new Column(baseColumn.getId(), result.newUnit, result.data, columnType);
+                // Use targetId if provided (e.g., "BoostPressure (PSI)"), otherwise use base column ID
+                String columnId = (targetId != null && !targetId.isEmpty()) ? targetId : baseColumn.getId();
+                return dataset.new Column(columnId, result.newUnit, result.data, columnType);
             }
         }
 

@@ -22,7 +22,15 @@
     </manifestclasspath>
 
     <target name="test" depends="compile">
+	<echo message="Running logger detection tests..."/>
 	<java classname="test.java.LoggerDetectionTest" fork="true" failonerror="true">
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
+	<echo message="Running unit conversion tests..."/>
+	<java classname="test.java.UnitConversionTest" fork="true" failonerror="true">
 	    <classpath>
 		<pathelement location="build/classes"/>
 		<path refid="classpath"/>
@@ -33,6 +41,15 @@
     <target name="test-detection" depends="compile">
 	<java classname="test.java.LoggerDetectionTest" fork="true" failonerror="true">
 	    <arg value="detection"/>
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
+    </target>
+
+    <target name="test-unit-conversion" depends="compile">
+	<java classname="test.java.UnitConversionTest" fork="true" failonerror="true">
 	    <classpath>
 		<pathelement location="build/classes"/>
 		<path refid="classpath"/>

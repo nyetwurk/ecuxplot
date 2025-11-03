@@ -79,6 +79,11 @@ test-detection: compile
 	@echo "Running detection-only tests..."
 	@$(ANT) -e test-detection || (echo "Detection tests failed!" && exit 1)
 
+# Test unit conversion functionality (Issue #103)
+test-unit-conversion: compile
+	@echo "Running unit conversion tests..."
+	@$(ANT) -e test-unit-conversion || (echo "Unit conversion tests failed!" && exit 1)
+
 # clean targets
 binclean:
 	rm -f $(addprefix *.,jar zip tar gz exe)

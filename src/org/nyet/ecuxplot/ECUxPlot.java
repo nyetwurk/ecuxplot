@@ -910,10 +910,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     private String findUnits(Comparable<?> key) {
         final ArrayList<String> units = new ArrayList<String>();
+        // Extract field ID from Key - Key.toString() returns formatted string like "filename:field:range"
+        // but columns are stored by simple field ID, so we need getString() for Dataset.Key objects
+        String lookupId = key.toString();
+        if(key instanceof Dataset.Key) {
+            lookupId = ((Dataset.Key)key).getString();
+        }
+        // Lookup units using the Key's ID (columns are stored with full IDs for unit conversions)
         for(final ECUxDataset d : this.fileDatasets.values()) {
-            final String u = d.units(key);
-            if(u==null || u.length()==0) continue;
-            if(!units.contains(u)) units.add(u);
+            final String u = d.units(lookupId);
+            if(u != null && u.length() > 0 && !units.contains(u)) {
+                units.add(u);
+            }
         }
         return Strings.join(",", units);
     }

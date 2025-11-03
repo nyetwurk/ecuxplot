@@ -44,6 +44,10 @@
 	<ant antfile="subbuild.xml" target="test-detection"/>
     </target>
 
+    <target name="test-unit-conversion" depends="prep">
+	<ant antfile="subbuild.xml" target="test-unit-conversion"/>
+    </target>
+
     <target name="clean">
 	<exec executable="make" failonerror="true">
 	    <arg value="clean" />

@@ -409,12 +409,29 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
-     * Get a column in the specified unit, converting if necessary
+     * Get a column in the specified unit, converting if necessary.
      * @param columnName The name of the column to get
      * @param targetUnit The target unit (from UnitConstants) to convert to, or null to get in original unit
      * @return Column in the requested unit, or null if column doesn't exist
      */
     public Column getColumnInUnits(String columnName, String targetUnit) {
+        return getColumnInUnits(columnName, targetUnit, null);
+    }
+
+    /**
+     * Get a column in the specified unit, converting if necessary.
+     *
+     * @param columnName The name of the column to get
+     * @param targetUnit The target unit (from UnitConstants) to convert to
+     * @param targetId The target ID to use for storing the converted column (e.g., "VehicleSpeed (mph)").
+     *               If null, will be constructed as "columnName (targetUnit)"
+     * @return Column in the requested unit, or null if column doesn't exist
+     */
+    public Column getColumnInUnits(String columnName, String targetUnit, String targetId) {
+        // Construct targetId if not provided
+        if (targetId == null && targetUnit != null && !targetUnit.isEmpty()) {
+            targetId = columnName + " (" + targetUnit + ")";
+        }
         // Get base column - use _get() to allow calculation and go through recursion protection
         Column column = _get(columnName);
         if(column == null || targetUnit == null || targetUnit.isEmpty()) {
@@ -450,7 +467,7 @@ public class ECUxDataset extends Dataset {
         if (columnType == Dataset.ColumnType.CSV_NATIVE) {
             columnType = Dataset.ColumnType.COMPILE_TIME_CONSTANTS;
         }
-        Column converted = DatasetUnits.convertUnits(this, column, targetUnit, ambientSupplier, columnType);
+        Column converted = DatasetUnits.convertUnits(this, column, targetUnit, ambientSupplier, columnType, targetId);
         // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
         if (converted != column) {
             this.putColumn(converted);
@@ -539,7 +556,13 @@ public class ECUxDataset extends Dataset {
         try {
             return _get(id);
         } catch (final NullPointerException e) {
-            logger.warn("get('{}'): NullPointerException getting column: {}", id, e.getMessage());
+            // Provide more context about what failed - check if it's env-related
+            String cause = e.getMessage();
+            if (cause != null && cause.contains("this.env")) {
+                logger.warn("get('{}'): NullPointerException - env is null (expected in test contexts): {}", id, cause);
+            } else {
+                logger.warn("get('{}'): NullPointerException getting column: {}", id, cause != null ? cause : e.getClass().getName());
+            }
             return null;
         }
     }
@@ -570,7 +593,8 @@ public class ECUxDataset extends Dataset {
         if (parsed != null) {
             Column baseColumn = super.get(parsed.baseField);
             if (baseColumn != null) {
-                return getColumnInUnits(parsed.baseField, parsed.targetUnit);
+                // Pass full requested ID so converted column is stored with correct ID (not base ID)
+                return getColumnInUnits(parsed.baseField, parsed.targetUnit, idStr);
             }
         }
 
@@ -1319,20 +1343,29 @@ public class ECUxDataset extends Dataset {
         return original;
     }
 
-    @Override
-    public double[] getData(Comparable<?> id, Range r) {
-        // If range is null, use full dataset
+    /**
+     * Normalize range to full dataset if null.
+     * @param r The range, or null for full dataset
+     * @return Normalized range, or null if dataset is empty
+     */
+    private Range normalizeRange(Range r) {
         if (r == null) {
             if (this.length() == 0) {
                 return null;
             }
-            r = new Range(0, this.length() - 1);
+            return new Range(0, this.length() - 1);
         }
-        final Column c = this.get(id);
-        if (c==null) return null;
+        return r;
+    }
 
-        // Check if this column needs range-aware smoothing
-        final String columnName = id.toString();
+    /**
+     * Apply range-aware smoothing to column data if configured.
+     * @param column The column containing the data
+     * @param columnName The name of the column (for lookup and logging)
+     * @param r The range to extract and smooth
+     * @return Smoothed data array, or raw data if smoothing not needed/applicable
+     */
+    private double[] applySmoothingIfNeeded(Column column, String columnName, Range r) {
         Integer smoothingWindow = this.smoothingWindows.get(columnName);
 
         // Recalculate window size dynamically if column is registered for smoothing
@@ -1341,7 +1374,7 @@ public class ECUxDataset extends Dataset {
             // Recalculate to get current window size (HPTQMAW may have changed)
             smoothingWindow = this.MAW();  // Update to current value
             // Extract the raw data for this range
-            final double[] rawData = c.data.toArray(r.start, r.end);
+            final double[] rawData = column.data.toArray(r.start, r.end);
 
             // Check if range is large enough for smoothing window
             // MovingAverageSmoothing requires at least (window-1)/2 samples on each side
@@ -1360,13 +1393,64 @@ public class ECUxDataset extends Dataset {
             final double[] smoothed = s.smoothAll(rawData, -s.getNk(), rawData.length + s.getNk() - 1);
 
             // Return the smoothed data within range bounds
+            // smoothAll() returns array of size (end - start + 1), which may differ from rawData.length
+            // Copy only what's available from smoothed array
+            final int copyLength = Math.min(smoothed.length, rawData.length);
             final double[] result = new double[rawData.length];
-            System.arraycopy(smoothed, 0, result, 0, rawData.length);
+            System.arraycopy(smoothed, 0, result, 0, copyLength);
+            // If smoothed array was shorter, fill remainder with original data
+            if (copyLength < rawData.length) {
+                System.arraycopy(rawData, copyLength, result, copyLength, rawData.length - copyLength);
+            }
             return result;
         }
 
         // No smoothing needed, return raw data
-        return c.data.toArray(r.start, r.end);
+        return column.data.toArray(r.start, r.end);
+    }
+
+    @Override
+    public double[] getData(Comparable<?> id, Range r) {
+        r = normalizeRange(r);
+        if (r == null) return null;
+
+        final Column c = this.get(id);
+        if (c == null) return null;
+
+        // Apply range-aware smoothing if needed
+        final String columnName = id.toString();
+        return applySmoothingIfNeeded(c, columnName, r);
+    }
+
+    @Override
+    public double[] getData(Key id, Range r) {
+        // Route through get() which calls _get() for unit conversion handling
+        // This ensures Keys with full IDs (e.g., "VehicleSpeed (mph)") are properly handled
+        r = normalizeRange(r);
+        if (r == null) return null;
+
+        final String lookupId = id.getString();
+        final Column c = this.get(lookupId);
+        if (c == null) {
+            // Check if this might be unexpected recursion behavior (base exists but conversion failed)
+            Units.ParsedUnitConversion parsed = Units.parseUnitConversion(lookupId);
+            if (parsed != null) {
+                Column baseCol = super.get(parsed.baseField);
+                if (baseCol != null) {
+                    // Base column exists but conversion returned null - possible recursion issue
+                    logger.warn("getData('{}'): Unit conversion returned null but base column exists - possible recursion issue. " +
+                        "Requested ID: '{}', Base field: '{}', Target unit: '{}', " +
+                        "Base column units: '{}', Base column type: '{}', " +
+                        "Key: filename={}, range={}",
+                        lookupId, lookupId, parsed.baseField, parsed.targetUnit,
+                        baseCol.getUnits(), baseCol.getColumnType(),
+                        id.getFilename(), id.getRange());
+                }
+            }
+            return null;
+        }
+        // Apply range-aware smoothing if needed (shared logic with getData(Comparable<?>, Range))
+        return applySmoothingIfNeeded(c, lookupId, r);
     }
 
     @Override
@@ -1622,7 +1706,13 @@ public class ECUxDataset extends Dataset {
     public Env getEnv() { return this.env; }
     //public void setEnv(Env e) { this.env=e; }
     @Override
-    public boolean useId2() { return this.env.prefs.getBoolean("altnames", false); }
+    public boolean useId2() {
+        // Handle null env gracefully (e.g., in test contexts where env is not provided)
+        if (this.env == null || this.env.prefs == null) {
+            return false;
+        }
+        return this.env.prefs.getBoolean("altnames", false);
+    }
 
     /**
      * Helper method to construct a unit-converted column ID.

@@ -22,6 +22,7 @@
 
 ### Fixed
 
+- Y2 axis units now display correctly when adding datasets to the secondary Y axis ([Issue #103](https://github.com/nyetwurk/ecuxplot/issues/103))
 - Unit extraction now correctly handles fields with descriptive metadata in parentheses
   - Lambda fields now correctly show `"λ"` unit instead of descriptive text
   - Units from alias targets (e.g., `"AirFuelRatioDesired (AFR)"`) are now properly extracted

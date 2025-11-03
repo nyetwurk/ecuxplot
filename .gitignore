@@ -16,3 +16,4 @@
 /data/*-*.kp
 /src/org/nyet/ecuxplot/loggers.xml
 /src/org/nyet/util/Version.java
+__pycache__
