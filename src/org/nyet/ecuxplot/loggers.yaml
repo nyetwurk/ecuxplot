@@ -593,7 +593,7 @@ loggers:
       - ["Vehicle Speed.*", "VehicleSpeed"]
       - ["WG Flow Des.*", "WastegateFlowDesired"]
       - ["WG Pos Base.*", "WastegatePositionBase"]
-      - ["WG Pos Final.*", "WastegateDutyCycleAfterLin"]
+      - ["WG Pos Final.*", "WastegateDutyCycle"]
       - ["WG I Value.*", "BoostPID-I-Result"]
       - ["WG P-D Value.*", "BoostPID-P-Result"]
       - ["WG voltage.*", "WastegateVoltage"]

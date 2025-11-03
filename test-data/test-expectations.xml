@@ -1558,7 +1558,7 @@
             <id index="68">VehicleSpeed</id>
             <id index="69">WastegateFlowDesired</id>
             <id index="70">WastegatePositionBase</id>
-            <id index="71">WastegateDutyCycleAfterLin</id>
+            <id index="71">WastegateDutyCycle</id>
             <id index="72">BoostPID-I-Result</id>
             <id index="73">BoostPID-P-Result</id>
             <id index="74">WastegateVoltage</id>
