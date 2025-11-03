@@ -134,20 +134,18 @@ public class FilterWindow extends ECUxPlotWindow {
 
     // Tooltips for filter parameters (indexed by FilterParameter index)
     private static final String[] FILTER_PARAMETER_TOOLTIPS = {
-        "Filter data to specific gear (or 'Any' for all gears)",  // GEAR (0)
-        "Minimum RPM threshold. Data points below this RPM are filtered out.",  // MIN_RPM (1)
-        "Maximum RPM threshold. Data points above this RPM are filtered out.",  // MAX_RPM (2)
-        "Minimum RPM range required for a valid run. Range must span at least this many RPM.",  // MIN_RPM_RANGE (3)
-        "Maximum allowed RPM drop rate in RPM per second. Detects severe RPM swings/deceleration. " +
-        "Lower values = stricter filtering (fewer false positives).",  // MONOTONIC_RPM_FUZZ (4)
-        "Minimum pedal position threshold (%). Data points below this pedal position are filtered out.",  // MIN_PEDAL (5)
-        "Minimum throttle position threshold (%). Data points below this throttle position are filtered out. " +
-        "Lower values allow for throttle cut scenarios.",  // MIN_THROTTLE (6)
-        "Minimum acceleration threshold in RPM per second. Data points with acceleration below this are filtered out.",  // MIN_ACCEL (7)
-        "Minimum number of data points required for a valid run. Ranges with fewer points are filtered out.",  // MIN_POINTS (8)
-        "Acceleration moving average window in seconds. Used for smoothing acceleration calculations.",  // ACCEL_MAW (9)
-        "HP/Torque moving average window in seconds. Used for smoothing power and torque calculations.",  // HPTQ_MAW (10)
-        "Zeitronix data moving average window in seconds. Used for smoothing Zeitronix boost and AFR data.",  // ZEIT_MAW (11)
+        "Filter to specific gear, or 'Any' for all gears",  // GEAR (0)
+        "Filter out points below this RPM",  // MIN_RPM (1)
+        "Filter out points above this RPM",  // MAX_RPM (2)
+        "Minimum RPM span required for a valid run",  // MIN_RPM_RANGE (3)
+        "Max RPM drop rate (RPM/s). Detects severe swings/decel. Lower = stricter.",  // MONOTONIC_RPM_FUZZ (4)
+        "Filter out points below this pedal %",  // MIN_PEDAL (5)
+        "Filter out points below this throttle %. Lower values allow throttle cuts.",  // MIN_THROTTLE (6)
+        "Filter out points with acceleration below this (RPM/s)",  // MIN_ACCEL (7)
+        "Minimum points required for a valid run",  // MIN_POINTS (8)
+        "Moving average window (seconds) for smoothing RPM derivative in acceleration calculation",  // ACCEL_MAW (9)
+        "Moving average window (seconds) for smoothing HP/TQ within filtered ranges",  // HPTQ_MAW (10)
+        "Moving average window (seconds) for smoothing Zeitronix boost/AFR data",  // ZEIT_MAW (11)
     };
 
 
@@ -496,7 +494,10 @@ public class FilterWindow extends ECUxPlotWindow {
             // Widths tuned to windows rendering
             if (param == FilterParameter.GEAR) {
                 gear.setPreferredSize(new Dimension(60, gear.getPreferredSize().height));
-                gear.setToolTipText("Filter data to specific gear (or 'Any' for all gears)");
+                String tooltip = getTooltipForField(param);
+                if (tooltip != null) {
+                    gear.setToolTipText(tooltip);
+                }
                 formPanel.add(gear, gbc);
             } else {
                 // Map pairs index to fields array index
