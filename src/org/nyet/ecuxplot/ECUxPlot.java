@@ -366,8 +366,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 // Apply custom axis range calculation for better padding with negative values
                 ECUxChartFactory.applyCustomAxisRange(chartPanel.getChart(), axis, newdataset);
             }
-            updateXAxisLabel(plot);
-            updatePlotTitleAndYAxisLabels(plot);
+            updateAllAxisLabels(plot);
 
             // Update all open windows to show new file data
             updateOpenWindows();
@@ -802,8 +801,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             // Start wait cursor for immediate feedback
             WaitCursor.startWaitCursor(this);
             // rebuild title and labels
-            this.updateXAxisLabel();
-            this.updatePlotTitleAndYAxisLabels();
+            this.updateAllAxisLabels();
             // Defer stopping wait cursor to ensure any repaints complete
             SwingUtilities.invokeLater(() -> {
                 WaitCursor.stopWaitCursor(ECUxPlot.this);
@@ -1054,6 +1052,21 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             }
         }
         plot.getDomainAxis().setLabel(label);
+    }
+
+    /**
+     * Update both X and Y axis labels together.
+     * Use this when both axes need updating (e.g., after chart rebuild).
+     * Use individual updateXAxisLabel() or updatePlotTitleAndYAxisLabels() when only one axis changes.
+     */
+    private void updateAllAxisLabels() {
+        if(this.chartPanel!=null)
+            updateAllAxisLabels(this.chartPanel.getChart().getXYPlot());
+    }
+
+    private void updateAllAxisLabels(XYPlot plot) {
+        updateXAxisLabel(plot);
+        updatePlotTitleAndYAxisLabels(plot);
     }
 
     /**
@@ -1370,8 +1383,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                         ECUxChartFactory.applyCustomAxisRange(ECUxPlot.this.chartPanel.getChart(), axis, newdataset);
                     }
 
-                    updateXAxisLabel(plot);
-                    updatePlotTitleAndYAxisLabels(plot);
+                    updateAllAxisLabels(plot);
 
                     // Visibility already applied via applyVisibilityToSeries() for each dataset
                     // No need to call updateChartVisibility() here - it's already done
@@ -1553,6 +1565,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             // Apply visibility based on Filter state (Filter controls visibility, not series existence)
             // Preserve existing Filter selections - presets only change columns, not range selections
             updateChartVisibility();
+
+            // Update axis labels to reflect new Y-keys
+            updatePlotTitleAndYAxisLabels();
         }
 
         // set up scatter depending on preset
