@@ -799,15 +799,27 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("Original names")) {
             final boolean s = source.isSelected();
             this.prefs.putBoolean("altnames", s);
+            // Start wait cursor for immediate feedback
+            WaitCursor.startWaitCursor(this);
             // rebuild title and labels
             this.updateXAxisLabel();
             this.updatePlotTitleAndYAxisLabels();
+            // Defer stopping wait cursor to ensure any repaints complete
+            SwingUtilities.invokeLater(() -> {
+                WaitCursor.stopWaitCursor(ECUxPlot.this);
+            });
         } else if(source.getText().equals("Scatter plot")) {
             final boolean s = source.isSelected();
             this.prefs.putBoolean("scatter", s);
+            // Start wait cursor for immediate feedback
+            WaitCursor.startWaitCursor(this);
             if(this.chartPanel != null)
                 ECUxChartFactory.setChartStyle(this.chartPanel.getChart(),
                     !s, s);
+            // Defer stopping wait cursor to ensure any repaints complete
+            SwingUtilities.invokeLater(() -> {
+                WaitCursor.stopWaitCursor(ECUxPlot.this);
+            });
         } else if(source.getText().equals("Enable filter")) {
             this.filter.enabled(source.isSelected());
             rebuild();
@@ -862,8 +874,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             this.pe.showDialog(this, "PID");
         } else if(source.getText().equals("Apply SAE")) {
             this.env.sae.enabled(source.isSelected());
+            // Note: Don't call updateSAECheckBox() here - checkbox is already in correct state
+            // from user's click. updateSAECheckBox() is for syncing when state changes externally.
+            // rebuild() manages WaitCursor internally (starts and stops it)
+            // We start it here for immediate feedback before async rebuild begins
+            // Note: updatePlotTitleAndYAxisLabels() is called from rebuild's done() method
+            // AFTER columns are invalidated and recreated, ensuring fresh column state is read
+            WaitCursor.startWaitCursor(this);
             rebuild();
-            updatePlotTitleAndYAxisLabels();
         } else if(source.getText().equals("SAE constants...")) {
             if(this.sae == null) this.sae = new SAEEditor(this.prefs, this.env.sae);
             this.sae.showDialog(this, "SAE");
@@ -1347,9 +1365,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                             allSeriesIndices[i] = i;
                         }
                         applyVisibilityToSeries(axis, newdataset, allSeriesIndices);
+
+                        // Apply custom axis range calculation for better padding with negative values
+                        ECUxChartFactory.applyCustomAxisRange(ECUxPlot.this.chartPanel.getChart(), axis, newdataset);
                     }
 
                     updateXAxisLabel(plot);
+                    updatePlotTitleAndYAxisLabels(plot);
 
                     // Visibility already applied via applyVisibilityToSeries() for each dataset
                     // No need to call updateChartVisibility() here - it's already done

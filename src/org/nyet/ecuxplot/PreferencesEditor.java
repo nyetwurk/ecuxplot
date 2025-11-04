@@ -25,10 +25,43 @@ public class PreferencesEditor extends JPanel {
         if(this.eplot!=null) this.eplot.rebuild();
     }
 
+    /**
+     * Returns an array of preference keys that should be excluded from reset
+     * when "Defaults" is clicked. Subclasses can override this to preserve
+     * certain preference values.
+     * @return Array of preference keys to exclude from reset
+     */
+    protected String[] getExcludedKeysFromDefaults() {
+        return new String[0];
+    }
+
     private void setDefaults() {
         if(this.prefs!=null) {
+            // Get keys to exclude from reset
+            final String[] excludedKeys = getExcludedKeysFromDefaults();
+
+            // Save excluded preference values (as strings - Preferences stores everything as strings)
+            final java.util.Map<String, String> savedValues = new java.util.HashMap<>();
+            for (final String key : excludedKeys) {
+                final String value = this.prefs.get(key, null);
+                if (value != null) {
+                    savedValues.put(key, value);
+                }
+            }
+
+            // Clear all preferences
             try { this.prefs.clear(); }
             catch (final Exception e) { }
+
+            // Restore excluded preference values
+            for (final java.util.Map.Entry<String, String> entry : savedValues.entrySet()) {
+                try {
+                    this.prefs.put(entry.getKey(), entry.getValue());
+                } catch (final Exception e) {
+                    // Ignore restore errors
+                }
+            }
+
             if(this.eplot!=null) this.eplot.rebuild();
             updateDialog();
         }
@@ -183,9 +216,12 @@ public class PreferencesEditor extends JPanel {
         else owner = (Frame)SwingUtilities.
             getAncestorOfClass(Frame.class, parent);
 
-        if(this.dialog == null || this.dialog.getOwner() != owner) {
-            if(owner instanceof ECUxPlot) this.eplot = (ECUxPlot)owner;
+        // Always set eplot reference if owner is ECUxPlot (even if dialog is reused)
+        if(owner instanceof ECUxPlot) {
+            this.eplot = (ECUxPlot)owner;
+        }
 
+        if(this.dialog == null || this.dialog.getOwner() != owner) {
             this.dialog = new JDialog(owner);
             this.dialog.add(this);
             this.dialog.getRootPane().setDefaultButton(this.jbtnOK);

@@ -24,7 +24,23 @@ public class SAEEditor extends PreferencesEditor {
         this.s.altitude(Double.valueOf(this.altitude.getText()));
         this.s.humidity(Double.valueOf(this.humidity.getText()));
         updateCorrection();
-        super.Process(event);
+
+        // Enable SAE when settings are applied (same pattern as Filter window)
+        this.s.enabled(true);
+
+        // Update the SAE checkbox in OptionsMenu to reflect that SAE is enabled
+        if (this.eplot != null && this.eplot.optionsMenu != null) {
+            this.eplot.optionsMenu.updateSAECheckBox();
+        }
+
+        // Trigger rebuild to update chart with new SAE correction values
+        // eplot is always set by showDialog() when owner is ECUxPlot
+        if (this.eplot != null) {
+            this.eplot.rebuild();
+        } else {
+            // Fallback: try super.Process() which also calls rebuild if eplot is set
+            super.Process(event);
+        }
     }
 
     private static String [][] pairs = {
@@ -53,6 +69,13 @@ public class SAEEditor extends PreferencesEditor {
         this.altitude.setText("" + this.s.altitude());
         this.humidity.setText("" + this.s.humidity());
         updateCorrection();
+    }
+
+    @Override
+    protected String[] getExcludedKeysFromDefaults() {
+        // Preserve the "enabled" preference when resetting to defaults
+        // Only reset temperature, altitude, and humidity values
+        return new String[] { "enabled" };
     }
 }
 

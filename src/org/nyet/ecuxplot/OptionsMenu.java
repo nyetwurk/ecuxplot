@@ -15,6 +15,7 @@ public final class OptionsMenu extends JMenu {
     private JMenuItem showFATSItem;
     private JCheckBox filterCheckBox;
     private JCheckBox scatterCheckBox;
+    private JCheckBox saeCheckBox;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
         super(id);
@@ -46,6 +47,7 @@ public final class OptionsMenu extends JMenu {
         jcb.setToolTipText("Apply SAE constants to HP and TQ calculations");
         jcb.addActionListener(plotFrame);
         this.add(jcb);
+        this.saeCheckBox = jcb;
 
         this.add(new JSeparator());
 
@@ -120,6 +122,20 @@ public final class OptionsMenu extends JMenu {
             // Only update if state has changed to avoid triggering action listeners
             if (this.scatterCheckBox.isSelected() != scatterEnabled) {
                 this.scatterCheckBox.setSelected(scatterEnabled);
+            }
+        }
+    }
+
+    /**
+     * Update the SAE checkbox to reflect the current SAE enabled state
+     */
+    public void updateSAECheckBox() {
+        if (this.saeCheckBox != null) {
+            final Preferences prefs = ECUxPlot.getPreferences();
+            boolean saeEnabled = SAE.enabled(prefs);
+            // Only update if state has changed to avoid triggering action listeners
+            if (this.saeCheckBox.isSelected() != saeEnabled) {
+                this.saeCheckBox.setSelected(saeEnabled);
             }
         }
     }
