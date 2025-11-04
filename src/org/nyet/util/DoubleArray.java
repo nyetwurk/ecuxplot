@@ -241,7 +241,15 @@ public class DoubleArray
         */
         for(int i=0;i<this.sp;i++) {
             final int i0=Math.max(i-1, 0), i1=Math.min(i+1,this.sp-1);
-            out[i]=(this.get(i1)-this.get(i0))/(d[i1]-d[i0]);
+            final double timeDelta = d[i1] - d[i0];
+            // Handle duplicate or near-zero time deltas to prevent division by zero
+            // and avoid huge spikes from quantization/jitter
+            if (Math.abs(timeDelta) < 1e-6) {
+                // Use previous value or zero for first point
+                out[i] = (i > 0) ? out[i-1] : 0.0;
+            } else {
+                out[i] = (this.get(i1) - this.get(i0)) / timeDelta;
+            }
             // System.out.println(i +" ["+ i0 + ", " + i1 + "]:" + this.get(i1) + "," + this.get(i0) + "/" + d[i1] +","+d[i0]);
         }
         if(window>0 && window<this.sp/2) {

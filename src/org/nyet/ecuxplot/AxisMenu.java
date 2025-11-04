@@ -44,7 +44,7 @@ public class AxisMenu extends JMenu {
 
     // Calc menu names that should be pre-populated and grouped near the top
     private static final String[] CALC_MENU_NAMES = {
-        "Calc Power", "Calc MAF", "Calc Fuel", "Calc Boost", "Calc PID", "Calc IAT"
+        "Calc Power", "Calc MAF", "Calc Fuel", "Calc Boost", "Calc PID", "Calc IAT", "Acceleration"
     };
 
     /**
@@ -168,13 +168,6 @@ public class AxisMenu extends JMenu {
         return item;
     }
 
-    /* string, index */
-    private void addDirect(String id, int index) {
-        final AbstractButton item = makeMenuItem(new DatasetId(id));
-        this.members.put(id, item);
-        super.add(item, index);
-    }
-
     /* string */
     /* process through this.add() to detect submenu */
     /* override add */
@@ -191,8 +184,10 @@ public class AxisMenu extends JMenu {
 
         final String id = dsid.id;
         if(id.matches("RPM")) {
-            this.add(item, 0);  // always add rpms first!
-            addDirect("RPM - raw", 1);
+            // Add RPM and variants to RPM submenu
+            // We are guaranteed top placement since the parent RPM menu is the first menu in the menu bar
+            addToSubmenu("RPM", dsid);
+            addToSubmenu("RPM", "RPM - raw");
 
             addToSubmenu("Calc Power", "WHP");
             addToSubmenu("Calc Power", "WTQ");
@@ -202,17 +197,29 @@ public class AxisMenu extends JMenu {
             addToSubmenu("Calc Power", idWithUnit("TQ", UnitConstants.UNIT_NM));
             addToSubmenu("Calc Power", "Drag");
 
-            addToSubmenu("Calc Power", new JSeparator());
-
-            addToSubmenu("Calc Power", "Calc Velocity");
-            addToSubmenu("Calc Power", "Acceleration (RPM/s)");
-            addToSubmenu("Calc Power", "Acceleration - raw (RPM/s)");
-            addToSubmenu("Calc Power", "Acceleration (m/s^2)");
-            addToSubmenu("Calc Power", "Acceleration (g)");
+            // Add acceleration items to Acceleration submenu
+            addToSubmenu("Acceleration", "Calc Velocity");
+            addToSubmenu("Acceleration", "Acceleration (RPM/s)");
+            addToSubmenu("Acceleration", "Acceleration - raw (RPM/s)");
+            addToSubmenu("Acceleration", "Acceleration (m/s^2)");
+            addToSubmenu("Acceleration", "Acceleration (m/s^2) - raw");
+            addToSubmenu("Acceleration", "Acceleration (g)");
 
         } else if(id.matches("TIME")) {
-            this.add(item, 2);  // always add time third!
-            addDirect("TIME - raw", 3);
+            // Add TIME and variants to TIME submenu
+            addToSubmenu("TIME", dsid);
+            addToSubmenu("TIME", "TIME - raw");
+            addToSubmenu("TIME", "TIME [Range]");
+        } else if(id.matches("TIME \\[Range\\]")) {
+            // Handle TIME [Range] when processed separately
+            addToSubmenu("TIME", dsid);
+        } else if(id.matches("Sample")) {
+            // Add Sample and variants to Sample submenu
+            addToSubmenu("Sample", dsid);
+            addToSubmenu("Sample", "Sample [Range]");
+        } else if(id.matches("Sample \\[Range\\]")) {
+            // Handle Sample [Range] when processed separately
+            addToSubmenu("Sample", dsid);
 
         // goes before .*Load.* to catch CalcLoad
         } else if(id.matches(".*(MAF|Mass *Air|Air *Mass|Mass *Air *Flow).*")) {
@@ -372,16 +379,39 @@ public class AxisMenu extends JMenu {
                 }
             }
 
+            // Pre-populate RPM, TIME, and Sample submenus for all axes (same pattern as calc menus)
+            String[] baseMenus = {"RPM", "TIME", "Sample"};
+            for (String menuName : baseMenus) {
+                if (!this.subMenus.containsKey(menuName)) {
+                    AxisMenu baseMenu = new AxisMenu(menuName, this);
+                    this.subMenus.put(menuName, baseMenu);
+                }
+            }
+
             /* top level menu (before "more...") */
             if(radioButton) {
                 this.buttonGroup = new ButtonGroup();
-                this.add("Sample");
+                // Add base menus to X-axis (radioButton menu) - will be removed if empty
+                for (String baseMenuName : baseMenus) {
+                    JMenu baseMenu = this.subMenus.get(baseMenuName);
+                    if (baseMenu != null) {
+                        super.add(baseMenu);
+                    }
+                }
                 this.add(new JSeparator());
             }
 
-            // Add calc menus near the top (only for non-X axis menus, X axis uses radioButton)
+            // Add calc menus and base menus (RPM, TIME, Sample) near the top (only for non-X axis menus, X axis uses radioButton)
             if (!radioButton) {
+                // Add base menus first (RPM, TIME, Sample) - same pattern as calc menus
                 super.add(new JSeparator());
+                for (String baseMenuName : baseMenus) {
+                    JMenu baseMenu = this.subMenus.get(baseMenuName);
+                    if (baseMenu != null) {
+                        super.add(baseMenu);
+                    }
+                }
+                // Add calc menus after base menus
                 for (String calcMenuName : CALC_MENU_NAMES) {
                     JMenu calcMenu = this.subMenus.get(calcMenuName);
                     if (calcMenu != null) {
@@ -391,6 +421,7 @@ public class AxisMenu extends JMenu {
                 super.add(new JSeparator());
             }
 
+            // Process all items to populate submenus
             for(int i=0;i<ids.length;i++) {
                 if(ids[i] == null) continue;
                 if(ids[i].id.length()>0 && !this.members.containsKey(ids[i].id)) {
@@ -398,14 +429,9 @@ public class AxisMenu extends JMenu {
                 }
             }
 
-            // Remove calc menus that have no items (only for non-X axis menus)
-            if (!radioButton) {
-                for (String calcMenuName : CALC_MENU_NAMES) {
-                    JMenu calcMenu = this.subMenus.get(calcMenuName);
-                    if (calcMenu != null && !hasMenuItems(calcMenu)) {
-                        this.remove(calcMenu);
-                    }
-                }
+            // Ensure Sample submenu is populated even if "Sample" isn't in DatasetIds
+            if (!this.members.containsKey("Sample")) {
+                this.add("Sample");
             }
 
             // put ME7Log next
@@ -419,6 +445,20 @@ public class AxisMenu extends JMenu {
             if(this.more!=null) {
                 super.add(new JSeparator());
                 super.add(this.more);
+            }
+
+            // Remove empty menus last (calc menus and base menus) - same pattern for all
+            for (String calcMenuName : CALC_MENU_NAMES) {
+                JMenu calcMenu = this.subMenus.get(calcMenuName);
+                if (calcMenu != null && !hasMenuItems(calcMenu)) {
+                    this.remove(calcMenu);
+                }
+            }
+            for (String baseMenuName : baseMenus) {
+                JMenu baseMenu = this.subMenus.get(baseMenuName);
+                if (baseMenu != null && !hasMenuItems(baseMenu)) {
+                    this.remove(baseMenu);
+                }
             }
         }
 

@@ -760,11 +760,26 @@ public class ECUxDataset extends Dataset {
             // Register for range-based smoothing (same as HP/TQ approach)
             this.smoothingWindows.put(id.toString(), this.AccelMAW());
         } else if(id.equals("Acceleration - raw (RPM/s)")) {
-            final DoubleArray y = this.get("RPM - raw").data;
+            // Use smoothed RPM (not raw) to reduce quantization noise before differentiation
+            // "Raw" refers to unsmoothed derivative, not unsmoothed input
+            final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
             c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x), Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Acceleration (m/s^2) - raw")) {
+            // Raw (unsmoothed) acceleration in m/s^2 - depends on Calc Velocity
+            Column velocityCol = this.get("Calc Velocity");
+            Column timeCol = this.get("TIME");
+            if (velocityCol == null || timeCol == null) {
+                logger.warn("_get('Acceleration (m/s^2) - raw'): Missing dependencies - Calc Velocity={}, TIME={}",
+                    velocityCol != null, timeCol != null);
+                return null;
+            }
+            final DoubleArray y = velocityCol.data;
+            final DoubleArray x = timeCol.data;
+            final DoubleArray derivative = y.derivative(x, 0).max(0);
+            c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("Acceleration (m/s^2)")) {
-            // Depends on Calc Velocity which uses RPM_PER_MPH
+            // Smoothed acceleration in m/s^2 - depends on Calc Velocity
             Column velocityCol = this.get("Calc Velocity");
             Column timeCol = this.get("TIME");
             if (velocityCol == null || timeCol == null) {
@@ -774,12 +789,58 @@ public class ECUxDataset extends Dataset {
             }
             final DoubleArray y = velocityCol.data;
             final DoubleArray x = timeCol.data;
-            final DoubleArray derivative = y.derivative(x, 0).max(0);
+            final DoubleArray derivative = y.derivative(x, this.AccelMAW()).max(0);
             c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("Acceleration (g)")) {
             // Depends on Acceleration (m/s^2) which uses RPM_PER_MPH
             final DoubleArray a = this.get("Acceleration (m/s^2)").data;
             c = new Column(id, UnitConstants.UNIT_G, a.div(UnitConstants.STANDARD_GRAVITY), Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("TIME [Range]")) {
+            // Relative time to start of range (if filter enabled), otherwise just TIME
+            if (!this.filter.enabled()) {
+                // Filter disabled: return base TIME data
+                final DoubleArray time = this.get("TIME").data;
+                c = new Column(id, UnitConstants.UNIT_SECONDS, time, Dataset.ColumnType.PROCESSED_VARIANT);
+            } else {
+                // Filter enabled: calculate relative time to range start
+                final DoubleArray time = this.get("TIME").data;
+                final ArrayList<Dataset.Range> ranges = this.getRanges();
+                final double[] result = new double[this.length()];
+                for (int i = 0; i < this.length(); i++) {
+                    final Dataset.Range range = findRangeForIndex(ranges, i);
+                    if (range != null) {
+                        result[i] = time.get(i) - time.get(range.start);
+                    } else {
+                        // Not in any range: use absolute time
+                        result[i] = time.get(i);
+                    }
+                }
+                c = new Column(id, UnitConstants.UNIT_SECONDS, new DoubleArray(result), Dataset.ColumnType.PROCESSED_VARIANT);
+            }
+        } else if(id.equals("Sample [Range]")) {
+            // Relative sample to start of range (if filter enabled), otherwise just Sample
+            if (!this.filter.enabled()) {
+                // Filter disabled: return base Sample data
+                final double[] idx = new double[this.length()];
+                for (int i = 0; i < this.length(); i++) {
+                    idx[i] = i;
+                }
+                c = new Column(id, UnitConstants.UNIT_SAMPLE, new DoubleArray(idx), Dataset.ColumnType.PROCESSED_VARIANT);
+            } else {
+                // Filter enabled: calculate relative sample to range start
+                final ArrayList<Dataset.Range> ranges = this.getRanges();
+                final double[] result = new double[this.length()];
+                for (int i = 0; i < this.length(); i++) {
+                    final Dataset.Range range = findRangeForIndex(ranges, i);
+                    if (range != null) {
+                        result[i] = i - range.start;
+                    } else {
+                        // Not in any range: use absolute sample index
+                        result[i] = i;
+                    }
+                }
+                c = new Column(id, UnitConstants.UNIT_SAMPLE, new DoubleArray(result), Dataset.ColumnType.PROCESSED_VARIANT);
+            }
 
         // ========== CALCULATED FIELDS: POWER ==========
         // WHP, WTQ, HP, TQ, Drag
@@ -1378,6 +1439,24 @@ public class ECUxDataset extends Dataset {
             return new Range(0, this.length() - 1);
         }
         return r;
+    }
+
+    /**
+     * Find which range a given data point index belongs to.
+     * @param ranges The list of ranges to search
+     * @param index The data point index to find
+     * @return The range containing the index, or null if not in any range
+     */
+    private Dataset.Range findRangeForIndex(ArrayList<Dataset.Range> ranges, int index) {
+        if (ranges == null) {
+            return null;
+        }
+        for (Dataset.Range range : ranges) {
+            if (index >= range.start && index <= range.end) {
+                return range;
+            }
+        }
+        return null;
     }
 
     /**
