@@ -1,6 +1,23 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Preset loading now updates axis labels when X-axis is unchanged but Y-axes change ([Issue #108](https://github.com/nyetwurk/ecuxplot/issues/108))
+- Improved Cobb Accessport boost pressure alias matching to handle variations in field names ([Issue #106](https://github.com/nyetwurk/ecuxplot/issues/106))
+
+### Changed
+
+- Consolidated axis label update calls into `updateAllAxisLabels()` helper method
+- Added wait cursor feedback for "Original names", "Scatter plot", and "Apply SAE" menu actions
+- Enhanced preferences editor to preserve excluded keys when resetting to defaults (SAE editor preserves "enabled" state) ([Issue #107](https://github.com/nyetwurk/ecuxplot/issues/107))
+
+### Added
+
+- SAE checkbox state synchronization in OptionsMenu to reflect external state changes ([Issue #107](https://github.com/nyetwurk/ecuxplot/issues/107))
+
 ## [1.1.6] - 2025-11-03
 
 ### Added
