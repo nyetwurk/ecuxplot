@@ -2,14 +2,53 @@ package org.nyet.ecuxplot;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 public final class Units {
 
     private static final Pattern UNIT_PATTERN = Pattern.compile("^(.+?)\\s*\\((.*?)\\)$");
+
+    /**
+     * Set of all known normalized unit constants.
+     * Automatically discovered from UnitConstants using reflection.
+     * Used for early return optimization in normalize() to avoid unnecessary processing.
+     *
+     * This ensures any new UNIT_* constants added to UnitConstants are automatically
+     * included without manual maintenance.
+     */
+    private static final Set<String> KNOWN_NORMALIZED_UNITS;
+
+    static {
+        Set<String> units = new HashSet<>();
+        try {
+            Field[] fields = UnitConstants.class.getDeclaredFields();
+            for (Field field : fields) {
+                // Find all public static final String fields starting with "UNIT_"
+                int modifiers = field.getModifiers();
+                if (Modifier.isPublic(modifiers) &&
+                    Modifier.isStatic(modifiers) &&
+                    Modifier.isFinal(modifiers) &&
+                    field.getType() == String.class &&
+                    field.getName().startsWith("UNIT_")) {
+                    String unitValue = (String) field.get(null);
+                    if (unitValue != null && !unitValue.isEmpty()) {
+                        units.add(unitValue);
+                    }
+                }
+            }
+        } catch (IllegalAccessException e) {
+            // Should never happen for public static final fields
+            throw new RuntimeException("Failed to discover unit constants from UnitConstants", e);
+        }
+        KNOWN_NORMALIZED_UNITS = Collections.unmodifiableSet(units);
+    }
 
     /**
      * Parses unit conversion pattern "FieldName (unit)"
@@ -130,18 +169,8 @@ public final class Units {
             u = u.replaceAll("\\((.+)\\)", "$1");
         }
 
-        // FIXME: make nicer
         // Early return: if input is already a known constant, return it directly
-        if (u.equals(UnitConstants.UNIT_MBAR) || u.equals(UnitConstants.UNIT_MBAR_GAUGE) ||
-            u.equals(UnitConstants.UNIT_PSI) || u.equals(UnitConstants.UNIT_KPA) ||
-            u.equals(UnitConstants.UNIT_RPM) || u.equals(UnitConstants.UNIT_SECONDS) ||
-            u.equals(UnitConstants.UNIT_KMH) || u.equals(UnitConstants.UNIT_MPH) ||
-            u.equals(UnitConstants.UNIT_CELSIUS) || u.equals(UnitConstants.UNIT_FAHRENHEIT) ||
-            u.equals(UnitConstants.UNIT_LAMBDA) || u.equals(UnitConstants.UNIT_AFR) ||
-            u.equals(UnitConstants.UNIT_GPS) || u.equals(UnitConstants.UNIT_KGH) ||
-            u.equals(UnitConstants.UNIT_NM) || u.equals(UnitConstants.UNIT_FTLB) ||
-            u.equals(UnitConstants.UNIT_PERCENT) || u.equals(UnitConstants.UNIT_VOLTS) ||
-            u.equals(UnitConstants.UNIT_MS) || u.equals(UnitConstants.UNIT_DEGREES)) {
+        if (KNOWN_NORMALIZED_UNITS.contains(u)) {
             return u;
         }
 
