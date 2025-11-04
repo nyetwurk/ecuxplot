@@ -352,7 +352,8 @@ loggers:
       - ["AFR Set Point.*", "AirFuelRatioDesired (AFR)"] # workaround for ME7L's AFR alias
       - ["AFR.*", "AirFuelRatioActual"]
       - ["Trgt\\. Boost Press\\..*", "BoostPressureDesired"]
-      - ["Boost Press\\..*", "BoostPressureActual"]
+      - ["Boost.*", "BoostPressureActual"] # Sometimes Boost Press. (psi), sometimes Boost (psi)
+      #- ["Boost Press\\..*", "BoostPressureActual"]
       - ["Air Mass IM Per Stroke.*", "MassAirFlowPerStroke"]
       - ["Air Mass Per Stroke SP.*", "MassAirFlowPerStrokeDesired"]
       - ["Ambient Air Temp\\..*", "AmbientTemperature"]
