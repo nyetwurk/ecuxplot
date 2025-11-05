@@ -42,9 +42,48 @@ public class AxisMenu extends JMenu {
     private AxisMenu more=null;
     private AxisMenu parent=null;
 
+    /**
+     * Creates a multiline HTML tooltip for calculation descriptions.
+     * Format:
+     *   [processing step 1]
+     *   [processing step 2]
+     *   ...
+     *   Range-aware: [range-aware smoothing] (optional)
+     *
+     * @param processingSteps Array of processing steps (each on a separate line)
+     * @param rangeAware Optional range-aware smoothing description (null to omit)
+     * @return HTML-formatted tooltip string
+     */
+    private String createCalcTooltip(String[] processingSteps, String rangeAware) {
+        StringBuilder sb = new StringBuilder("<html>");
+        for (int i = 0; i < processingSteps.length; i++) {
+            if (i > 0) sb.append("<br>");
+            sb.append(processingSteps[i]);
+        }
+        if (rangeAware != null && !rangeAware.isEmpty()) {
+            if (processingSteps.length > 0) sb.append("<br>");
+            sb.append("Range-aware: ").append(rangeAware);
+        }
+        sb.append("</html>");
+        return sb.toString();
+    }
+
+    /**
+     * Check if debug logging is enabled (verbose >= 1, i.e., -v or -vv flag).
+     * @return true if debug level is enabled
+     */
+    private boolean isDebugEnabled() {
+        // Check if listener is ECUxPlot and has verbose option set
+        if (this.listener instanceof ECUxPlot) {
+            ECUxPlot plot = (ECUxPlot) this.listener;
+            return plot.getVerbose() > 0;
+        }
+        return false;
+    }
+
     // Calc menu names that should be pre-populated and grouped near the top
     private static final String[] CALC_MENU_NAMES = {
-        "Calc Power", "Calc MAF", "Calc Fuel", "Calc Boost", "Calc PID", "Calc IAT", "Acceleration"
+        "Calc Power", "Calc MAF", "Calc Fuel", "Calc Boost", "Calc PID", "Calc IAT", "Speed", "Acceleration"
     };
 
     /**
@@ -189,21 +228,125 @@ public class AxisMenu extends JMenu {
             addToSubmenu("RPM", dsid);
             addToSubmenu("RPM", "RPM - raw");
 
-            addToSubmenu("Calc Power", "WHP");
-            addToSubmenu("Calc Power", "WTQ");
+            // Add debug columns if debug level is enabled
+            if (isDebugEnabled()) {
+                addToSubmenu("RPM", "RPM - base");  // Base RPM for range detection (debug only)
+            }
+
+            // Add power/torque items with tooltips listing smoothing functions
+            AbstractButton whpItem = makeMenuItem(new DatasetId("WHP"));
+            whpItem.setToolTipText(createCalcTooltip(
+                new String[]{
+                    "Acceleration (m/s^2): MA+SG or SG -> accelMAW",
+                    "Calc Velocity: MA+SG or SG",
+                    "HPMAW"},
+                "HPMAW"));
+            addToSubmenu("Calc Power", whpItem, true);
+
+            AbstractButton wtqItem = makeMenuItem(new DatasetId("WTQ"));
+            wtqItem.setToolTipText(createCalcTooltip(
+                new String[]{
+                    "MA+SG or SG",
+                    "accelMAW",
+                    "HPMAW"},
+                null));
+            addToSubmenu("Calc Power", wtqItem, true);
+
             addToSubmenu("Calc Power", idWithUnit("WTQ", UnitConstants.UNIT_NM));
-            addToSubmenu("Calc Power", "HP");
-            addToSubmenu("Calc Power", "TQ");
+
+            AbstractButton hpItem = makeMenuItem(new DatasetId("HP"));
+            hpItem.setToolTipText(createCalcTooltip(
+                new String[]{
+                    "MA+SG or SG",
+                    "accelMAW",
+                    "HPMAW"},
+                "HPMAW"));
+            addToSubmenu("Calc Power", hpItem, true);
+
+            AbstractButton tqItem = makeMenuItem(new DatasetId("TQ"));
+            tqItem.setToolTipText(createCalcTooltip(
+                new String[]{
+                    "MA+SG or SG",
+                    "accelMAW",
+                    "HPMAW"},
+                null));
+            addToSubmenu("Calc Power", tqItem, true);
+
             addToSubmenu("Calc Power", idWithUnit("TQ", UnitConstants.UNIT_NM));
-            addToSubmenu("Calc Power", "Drag");
+
+            AbstractButton dragItem = makeMenuItem(new DatasetId("Drag"));
+            dragItem.setToolTipText(createCalcTooltip(
+                new String[]{"MA+SG or SG"},
+                null));
+            addToSubmenu("Calc Power", dragItem, true);
+
+            // Add speed items to Speed submenu
+            AbstractButton calcVelocityItem = makeMenuItem(new DatasetId("Calc Velocity"));
+            calcVelocityItem.setToolTipText(createCalcTooltip(
+                new String[]{"MA+SG for quantized, SG for smooth"},
+                null));
+            addToSubmenu("Speed", calcVelocityItem, true);
 
             // Add acceleration items to Acceleration submenu
-            addToSubmenu("Acceleration", "Calc Velocity");
-            addToSubmenu("Acceleration", "Acceleration (RPM/s)");
-            addToSubmenu("Acceleration", "Acceleration - raw (RPM/s)");
-            addToSubmenu("Acceleration", "Acceleration (m/s^2)");
-            addToSubmenu("Acceleration", "Acceleration (m/s^2) - raw");
-            addToSubmenu("Acceleration", "Acceleration (g)");
+            // Grouped by type (RPM/s, then m/s^2), ordered by calculation order (raw, base, final)
+
+            // === RPM/s acceleration group (ordered: raw, base, final) ===
+            if (isDebugEnabled()) {
+                AbstractButton rawRpmAccelItem = makeMenuItem(new DatasetId("Acceleration (RPM/s) - raw"));
+                rawRpmAccelItem.setToolTipText(createCalcTooltip(
+                    new String[]{
+                        "MA+SG for quantized, SG for smooth",
+                        "derivative"},
+                    null));
+                addToSubmenu("Acceleration", rawRpmAccelItem, true);
+
+                // Debug column: acceleration from base RPM input for validation
+                AbstractButton baseRpmAccelItem = makeMenuItem(new DatasetId("Acceleration (RPM/s) - from base RPM"));
+                baseRpmAccelItem.setToolTipText(createCalcTooltip(
+                    new String[]{
+                        "SG",
+                        "accelMAW",
+                        "derivative"},
+                    null));
+                addToSubmenu("Acceleration", baseRpmAccelItem, true);
+            }
+
+            AbstractButton rpmAccelItem = makeMenuItem(new DatasetId("Acceleration (RPM/s)"));
+            rpmAccelItem.setToolTipText(createCalcTooltip(
+                new String[]{
+                    "MA+SG for quantized, SG for smooth",
+                    "derivative (accelMAW during calculation)"},
+                "accelMAW (applied in getData())"));
+            addToSubmenu("Acceleration", rpmAccelItem, true);
+
+            // === m/s^2 acceleration group (ordered: raw, final) ===
+            if (isDebugEnabled()) {
+                AbstractButton rawMsAccelItem = makeMenuItem(new DatasetId("Acceleration (m/s^2) - raw"));
+                rawMsAccelItem.setToolTipText(createCalcTooltip(
+                    new String[]{
+                        "MA+SG for quantized, SG for smooth",
+                        "derivative"},
+                    null));
+                addToSubmenu("Acceleration", rawMsAccelItem, true);
+            }
+
+            AbstractButton msAccelItem = makeMenuItem(new DatasetId("Acceleration (m/s^2)"));
+            msAccelItem.setToolTipText(createCalcTooltip(
+                new String[]{
+                    "MA+SG for quantized, SG for smooth",
+                    "derivative (accelMAW during calculation)"},
+                "accelMAW (applied in getData())"));
+            addToSubmenu("Acceleration", msAccelItem, true);
+
+            // === Derived acceleration column ===
+            AbstractButton accelGItem = makeMenuItem(new DatasetId("Acceleration (g)"));
+            accelGItem.setToolTipText(createCalcTooltip(
+                new String[]{
+                    "MA+SG for quantized, SG for smooth",
+                    "derivative (accelMAW during calculation)",
+                    "unit conversion to g"},
+                "accelMAW (applied in getData())"));
+            addToSubmenu("Acceleration", accelGItem, true);
 
         } else if(id.matches("TIME")) {
             // Add TIME and variants to TIME submenu
@@ -317,7 +460,7 @@ public class AxisMenu extends JMenu {
         } else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
             addToSubmenu("O2 Sensor(s)", dsid);
         } else if(id.matches("VehicleSpeed")) {
-            addToSubmenu("Vehicle Speed", dsid);
+            addToSubmenu("Speed", dsid);
         } else if(id.matches("TorqueDesired")) {
             this.add(item);  /* Must add self - standalone item with derived ft-lb and HP versions */
             this.add("Engine torque (ft-lb)");

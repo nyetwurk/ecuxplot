@@ -145,6 +145,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         return ECUxPlot.scatter(this.prefs);
     }
 
+    /**
+     * Get the verbose level from options (-v flag).
+     * @return verbose level (0 = normal, 1 = -v, 2 = -vv)
+     */
+    public int getVerbose() {
+        return this.options != null ? this.options.verbose : 0;
+    }
+
     private Comparable<?> xkey() {
         // Use a hardcoded default instead of creating ECUxPreset to avoid infinite recursion
         final String defaultXkey = "RPM";
