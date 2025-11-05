@@ -1318,8 +1318,8 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 }
 
                 try {
-                    // buildRanges() has completed - now invalidate constant-dependent columns
-                    // This marks columns for recreation with new constants on next access
+                    // Invalidate constant-dependent columns so they're recreated with new values
+                    // This ensures columns are updated when vehicle constants or filter smoothing windows change
                     for (ECUxDataset dataset : ECUxPlot.this.fileDatasets.values()) {
                         dataset.invalidateConstantDependentColumns();
                     }
@@ -1713,6 +1713,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         rebuild(() -> {
             // Update all windows that display constant-dependent data
             // Main chart is already updated by rebuild()
+            // Columns are invalidated and recreated during rebuild()
 
             // Update FATS window if open
             if (this.fatsFrame != null) {
