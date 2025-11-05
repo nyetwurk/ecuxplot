@@ -5,17 +5,62 @@
 
 ### Fixed
 
+- Fixed #109: Resolved circular dependency between range detection and RPM smoothing using three-tier architecture
+- Fixed derivative calculation to handle duplicate/near-zero time deltas preventing division by zero errors
+- Fixed acceleration calculations to avoid double-smoothing artifacts
+- Fixed FilterWindow to use base RPM for data visualization matching actual filter behavior
 - Preset loading now updates axis labels when X-axis is unchanged but Y-axes change ([Issue #108](https://github.com/nyetwurk/ecuxplot/issues/108))
 - Improved Cobb Accessport boost pressure alias matching to handle variations in field names ([Issue #106](https://github.com/nyetwurk/ecuxplot/issues/106))
 
 ### Changed
 
+- **Major Refactoring**: Replaced `MovingAverageSmoothing` with unified `Smoothing` class
+  - Removed automatic padding/extrapolation (simpler, more predictable behavior)
+  - Simplified edge handling: returns original data at edges instead of padding
+  - Added `smoothAdaptive()` for quantization-aware adaptive smoothing
+- **Three-Tier RPM Architecture**: Implemented CSV/Base/Final RPM system to break circular dependency
+  - CSV RPM: Raw data from CSV (no smoothing)
+  - Base RPM: SG smoothing only (for range detection, no ranges needed)
+  - Final RPM: Adaptive smoothing (MA+SG for quantized, SG for smooth) using ranges for quantization detection
+- **Smoothing Improvements**:
+  - Adaptive smoothing automatically detects quantization noise and chooses MA+SG vs SG-only
+  - Adaptive window sizing based on detected quantization characteristics
+  - Range-aware quantization detection to avoid false positives from idle/deceleration periods
+- **Filter Parameter Rename**: Renamed `HPTQMAW` to `HPMAW` for clarity
+  - Updated all UI labels, tooltips, and filter parameter names
+  - Improved filter parameter tooltips with clearer descriptions of what each parameter affects
+- **Axis Menu Reorganization**:
+  - Organized RPM, TIME, and Sample columns into dedicated submenus
+  - Added "Speed" submenu for velocity-related columns
+  - Added "Acceleration" submenu for acceleration-related columns
+  - Added calculation tooltips showing smoothing chain for power/torque/acceleration columns
+  - Debug columns (RPM - base, Acceleration - raw, etc.) now only visible when verbose logging enabled
+- **Acceleration Calculation Improvements**:
+  - All acceleration calculations now use smoothed RPM input to reduce quantization noise
+  - Removed double-smoothing: derivatives use `derivative(x, 0)` with range-aware smoothing in `getData()`
+  - Added "Acceleration (RPM/s) - raw" and "Acceleration (m/s^2) - raw" variants
+  - Acceleration (m/s^2) now calculated directly from RPM (same approach as RPM/s) for consistency
+- **HP/TQ Calculation**:
+  - HP now calculated from smoothed WHP during column creation to inherit smoothing without redundancy
+  - HP smoothing applied to WHP data before calculating HP (avoids redundant smoothing)
+- **Range-Aware Smoothing**:
+  - Improved range-aware smoothing with proper padding handling
+  - Applied to: Acceleration (RPM/s), Acceleration (m/s^2), WHP, HP, WTQ, TQ
+- **New Columns**:
+  - Added "Time [Range]" column: relative time to range start (when filter enabled)
+  - Added "Sample [Range]" column: relative sample to range start (when filter enabled)
+  - Added "RPM - base" debug column (only visible with verbose logging)
 - Consolidated axis label update calls into `updateAllAxisLabels()` helper method
 - Added wait cursor feedback for "Original names", "Scatter plot", and "Apply SAE" menu actions
 - Enhanced preferences editor to preserve excluded keys when resetting to defaults (SAE editor preserves "enabled" state) ([Issue #107](https://github.com/nyetwurk/ecuxplot/issues/107))
 
 ### Added
 
+- Added `getVerbose()` method to `ECUxPlot` for UI elements to check debug logging level
+- Added calculation tooltips to AxisMenu showing smoothing chain for calculated columns
+- Added `getSmoothingWindow()` method to `ECUxDataset` to expose smoothing window sizes
+- Added `getFilterAcceleration()` method to `ECUxDataset` for filter visualization
+- Added `getCsvRpmColumn()` and `getBaseRpmColumn()` accessors for debug/debugging
 - SAE checkbox state synchronization in OptionsMenu to reflect external state changes ([Issue #107](https://github.com/nyetwurk/ecuxplot/issues/107))
 
 ## [1.1.6] - 2025-11-03
