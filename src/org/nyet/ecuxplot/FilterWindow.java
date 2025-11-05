@@ -36,7 +36,7 @@ public class FilterWindow extends ECUxPlotWindow {
     private JTextField minAcceleration;
     private JTextField accelMAW;
     private JTextField minPoints;
-    private JTextField HPTQMAW;
+    private JTextField HPMAW;
     private JTextField ZeitMAW;
 
     // Data visualization components
@@ -143,9 +143,9 @@ public class FilterWindow extends ECUxPlotWindow {
         "Filter out points below this throttle %. Lower values allow throttle cuts.",  // MIN_THROTTLE (6)
         "Filter out points with acceleration below this (RPM/s)",  // MIN_ACCEL (7)
         "Minimum points required for a valid run",  // MIN_POINTS (8)
-        "Moving average window (seconds) for smoothing RPM derivative in acceleration calculation",  // ACCEL_MAW (9)
-        "Moving average window (seconds) for smoothing HP/TQ within filtered ranges",  // HPTQ_MAW (10)
-        "Moving average window (seconds) for smoothing Zeitronix boost/AFR data",  // ZEIT_MAW (11)
+        "Affects: Acceleration (RPM/s), Acceleration (m/s^2) - derivative smoothing and range-aware smoothing",  // ACCEL_MAW (9)
+        "Affects: WHP, HP, WTQ, TQ, Boost Spool Rate (time) - range-aware smoothing",  // HPTQ_MAW (10)
+        "Affects: Zeitronix Boost (PSI) - range-aware smoothing",  // ZEIT_MAW (11)
     };
 
 
@@ -208,7 +208,7 @@ public class FilterWindow extends ECUxPlotWindow {
         minAcceleration = new JTextField(10);
         minPoints = new JTextField(10);
         accelMAW = new JTextField(10);
-        HPTQMAW = new JTextField(10);
+        HPMAW = new JTextField(10);
         ZeitMAW = new JTextField(10);
 
         // Add change listeners to automatically refresh visualization
@@ -236,7 +236,7 @@ public class FilterWindow extends ECUxPlotWindow {
         minAcceleration.addActionListener(refreshListener);
         accelMAW.addActionListener(refreshListener);
         minPoints.addActionListener(refreshListener);
-        HPTQMAW.addActionListener(refreshListener);
+        HPMAW.addActionListener(refreshListener);
         ZeitMAW.addActionListener(refreshListener);
     }
 
@@ -281,7 +281,7 @@ public class FilterWindow extends ECUxPlotWindow {
         // Create control panel
         statusLabel = new JLabel("No dataset loaded");
         showRPMDataCheckBox = new JCheckBox("Show RPM Detail", false);
-        maxRowsSpinner = new JSpinner(new SpinnerNumberModel(500, 10, 1000, 10));
+        maxRowsSpinner = new JSpinner(new SpinnerNumberModel(1000, 10, 10000, 100));
         fileSelector = new JComboBox<String>();
         // Use custom renderer to elide long filenames to control dropdown width
         fileSelector.setRenderer(new DefaultListCellRenderer() {
@@ -341,7 +341,7 @@ public class FilterWindow extends ECUxPlotWindow {
         // Add filter parameter fields in separate panels
         JTextField[] fields = {minRPM, maxRPM, minRPMRange, monotonicRPMfuzz,
                               minPedal, minThrottle, minAcceleration, minPoints,
-                              accelMAW, HPTQMAW, ZeitMAW};
+                              accelMAW, HPMAW, ZeitMAW};
 
         // Engine Panel
         JPanel enginePanel = createParameterPanel("Engine",
@@ -501,7 +501,7 @@ public class FilterWindow extends ECUxPlotWindow {
                 formPanel.add(gear, gbc);
             } else {
                 // Map pairs index to fields array index
-                // pairs: [0:gear(not in fields), 1:minRPM(0), 2:maxRPM(1), ... 8:accelMAW(7), 9:minPoints(8), 10:HPTQMAW(9), 11:ZeitMAW(10)]
+                // pairs: [0:gear(not in fields), 1:minRPM(0), 2:maxRPM(1), ... 8:accelMAW(7), 9:minPoints(8), 10:HPMAW(9), 11:ZeitMAW(10)]
                 int fieldsIndex = fieldIndex - 1; // Subtract 1 because gear is not in fields array
                 fields[fieldsIndex].setColumns(5);
 
@@ -642,7 +642,7 @@ public class FilterWindow extends ECUxPlotWindow {
         // Double fields
         setFilterDoubleValueFromTextField(monotonicRPMfuzz, filter::monotonicRPMfuzz);
         setFilterDoubleValueFromTextField(accelMAW, filter::accelMAW);
-        setFilterDoubleValueFromTextField(HPTQMAW, filter::HPTQMAW);
+        setFilterDoubleValueFromTextField(HPMAW, filter::HPMAW);
         setFilterDoubleValueFromTextField(ZeitMAW, filter::ZeitMAW);
     }
 
@@ -667,7 +667,7 @@ public class FilterWindow extends ECUxPlotWindow {
         minAcceleration.setText(String.valueOf(filter.minAcceleration()));
         accelMAW.setText(String.valueOf(filter.accelMAW()));
         minPoints.setText(String.valueOf(filter.minPoints()));
-        HPTQMAW.setText(String.valueOf(filter.HPTQMAW()));
+        HPMAW.setText(String.valueOf(filter.HPMAW()));
         ZeitMAW.setText(String.valueOf(filter.ZeitMAW()));
     }
 
@@ -733,9 +733,17 @@ public class FilterWindow extends ECUxPlotWindow {
             boolean showRPMData = showRPMDataCheckBox.isSelected();
             boolean showOnlyValid = showOnlyValidDataCheckBox.isSelected();
 
-            // Get data columns - these will trigger recreation if invalidated
+            // Get data columns - use base RPM and filter acceleration to match what dataValid() checks
             Dataset.Column timeCol = dataset.get("TIME");
-            Dataset.Column rpmCol = dataset.get("RPM");
+            // Use base RPM to match what dataValid() uses for filtering
+            Dataset.Column rpmCol = null;
+            if (dataset instanceof ECUxDataset) {
+                rpmCol = ((ECUxDataset)dataset).getBaseRpmColumn();
+            }
+            if (rpmCol == null) {
+                // Fallback to final RPM if base not available
+                rpmCol = dataset.get("RPM");
+            }
             // Get both native velocity (if available) and calculated velocity
             // Native velocity may not be available in all logs
             Dataset.Column nativeMphCol = null;
@@ -743,8 +751,8 @@ public class FilterWindow extends ECUxPlotWindow {
                 nativeMphCol = ((ECUxDataset)dataset).getColumnInUnits("VehicleSpeed", UnitConstants.UNIT_MPH);
             }
             Dataset.Column calcMphCol = dataset.get("Calc Velocity");
-            // Get the same acceleration column that the filter checks (smoothed with moving average)
-            Dataset.Column accelCol = dataset.get("Acceleration (RPM/s)");
+            // Don't use Acceleration (RPM/s) column - we'll calculate filter acceleration inline
+            // to match what dataValid() uses
             Dataset.Column pedalCol = dataset.get(DataLogger.pedalField());
             Dataset.Column throttleCol = dataset.get(DataLogger.throttleField());
             Dataset.Column gearCol = dataset.get(DataLogger.gearField());
@@ -785,7 +793,7 @@ public class FilterWindow extends ECUxPlotWindow {
             boolean hasVelocityData = (nativeMphCol != null || calcMphCol != null) && showRPMData;
             for (int rowIndex : rowsToShow) {
                 rowIndexMapping.add(rowIndex);
-                Object[] rowData = createRowData(rowIndex, timeCol, rpmCol, nativeMphCol, calcMphCol, accelCol, pedalCol, throttleCol, gearCol, ranges, hasVelocityData, hasNativeVelocity);
+                Object[] rowData = createRowData(rowIndex, timeCol, rpmCol, nativeMphCol, calcMphCol, dataset, pedalCol, throttleCol, gearCol, ranges, hasVelocityData, hasNativeVelocity);
                 tableModel.addRow(rowData);
             }
 
@@ -842,7 +850,7 @@ public class FilterWindow extends ECUxPlotWindow {
     }
 
     private Object[] createRowData(int rowIndex, Dataset.Column timeCol, Dataset.Column rpmCol,
-                                 Dataset.Column nativeMphCol, Dataset.Column calcMphCol, Dataset.Column accelCol,
+                                 Dataset.Column nativeMphCol, Dataset.Column calcMphCol, Dataset dataset,
                                  Dataset.Column pedalCol, Dataset.Column throttleCol, Dataset.Column gearCol,
                                  ArrayList<Dataset.Range> ranges, boolean showRPMData, boolean hasNativeVelocity) {
         Object[] row = new Object[Column.getColumnCount()];
@@ -863,10 +871,10 @@ public class FilterWindow extends ECUxPlotWindow {
             }
             row[Column.idx(Column.DELTA_RPM)] = String.format("%.1f", deltaRPM);
 
-            // Acceleration (always show) - use the same smoothed acceleration that the filter checks
+            // Acceleration (always show) - use the same acceleration calculation that dataValid() uses
             double acceleration = 0;
-            if (accelCol != null && rowIndex < accelCol.data.size()) {
-                acceleration = accelCol.data.get(rowIndex);
+            if (dataset instanceof ECUxDataset) {
+                acceleration = ((ECUxDataset)dataset).getFilterAcceleration(rowIndex);
             }
             row[Column.idx(Column.ACCELERATION)] = String.format("%.1f", acceleration);
 

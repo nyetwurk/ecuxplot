@@ -313,7 +313,7 @@ public class ECUxDataset extends Dataset {
 
     private int HPMAW() {
         // HPMAW is in seconds, convert to samples (Smoothing constructor will make it odd)
-        return (int)Math.round(this.samples_per_sec * this.filter.HPTQMAW());
+        return (int)Math.round(this.samples_per_sec * this.filter.HPMAW());
     }
 
     private int AccelMAW() {

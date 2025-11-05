@@ -27,7 +27,7 @@ public class Filter {
     private static final int defaultGear = 3;
     private static final int defaultMinPoints = 5;
     private static final double defaultAccelMAW = 1.5;         // acceleration moving average window (seconds)
-    private static final double defaultHPTQMAW = 1.5;         // hp/tq moving average window (seconds)
+    private static final double defaultHPMAW = 1.5;         // hp/tq moving average window (seconds)
     private static final double defaultZeitMAW = 1.5;          // zeitronix MAW (seconds)
 
     private final Preferences prefs;
@@ -288,11 +288,11 @@ public class Filter {
         this.prefs.putInt("minPoints", val);
     }
 
-    public double HPTQMAW() {
-        // Use new key name to avoid type mismatch with old int values
-        return this.prefs.getDouble("HPTQMAW_sec", defaultHPTQMAW);
+    public double HPMAW() {
+        // Use HPTQMAW_sec key name to avoid type mismatch with old int values
+        return this.prefs.getDouble("HPTQMAW_sec", defaultHPMAW);
     }
-    public void HPTQMAW(Double val) {
+    public void HPMAW(Double val) {
         this.prefs.putDouble("HPTQMAW_sec", val);
     }
 
@@ -315,7 +315,7 @@ public class Filter {
         this.minAcceleration(defaultMinAcceleration);
         this.accelMAW(defaultAccelMAW);
         this.minPoints(defaultMinPoints);
-        this.HPTQMAW(defaultHPTQMAW);
+        this.HPMAW(defaultHPMAW);
         this.ZeitMAW(defaultZeitMAW);
     }
 }
