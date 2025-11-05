@@ -253,7 +253,7 @@ public class DoubleArray
             // System.out.println(i +" ["+ i0 + ", " + i1 + "]:" + this.get(i1) + "," + this.get(i0) + "/" + d[i1] +","+d[i0]);
         }
         if(window>0 && window<this.sp/2) {
-            final MovingAverageSmoothing s = new MovingAverageSmoothing(window);
+            final Smoothing s = new Smoothing(window);
             return s.smoothAll(out);
         } else {
             return out;
@@ -291,8 +291,12 @@ public class DoubleArray
     }
 
     public DoubleArray smooth() {
+        // Too few points for any smoothing - return original data
         if(this.sp<4) return new DoubleArray(this.toArray());
+        // Not enough points for Savitzky-Golay (needs 11 points for SG(5,5)) - use moving average as fallback
+        // Note that this window is hardcoded to be half the dataset size, which is independent of both filter MAW settings
         if(this.sp<10) return movingAverage(this.sp/4);
+        // Enough points for Savitzky-Golay smoothing - use SG(5,5) polynomial filter
         final SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
         return new DoubleArray(s.smoothAll(this.toArray()));
     }
@@ -303,8 +307,10 @@ public class DoubleArray
             // Window too large or invalid - return unsmoothed data
             return new DoubleArray(this.toArray());
         }
-        final MovingAverageSmoothing s = new MovingAverageSmoothing(window);
-        return new DoubleArray(s.smoothAll(this.toArray()));
+        final Smoothing s = new Smoothing(window);
+        // Call with explicit start/end to use the overridden version that handles edges correctly
+        final double[] input = this.toArray();
+        return new DoubleArray(s.smoothAll(input, 0, input.length - 1));
     }
 
     public Spline spline(int order, double[] mesh) {
