@@ -57,15 +57,25 @@ public class Smoothing extends LinearSmoothing
         final int windowSize = smoother.cn.length;
 
         // Calculate bounds using the effective window size
+        // Don't use data before 'start' to avoid pre-range artifacts (idle/deceleration periods)
+        // But allow data after 'end' for right-side padding (continuation of run)
         final int lastSmoothable = input.length - windowSize - smoother.nk - 1;
+        final int firstSmoothable = Math.max(start, smoother.nk >= 0 ? 0 : -smoother.nk);
 
         final double[] result = new double[rangeSize];
 
         for (int i = 0; i < rangeSize; i++) {
             final int idx = start + i;
-            // Use effective window for bounds check - if window was clamped, fewer points will be smoothable
-            // Existing edge handling will return original values for points that can't be smoothed
-            if (idx <= lastSmoothable && idx + smoother.nk >= 0 && idx + smoother.nk + windowSize <= input.length) {
+            // Check bounds: can't use data before 'start', but can use data after 'end'
+            // smoothAt needs (idx + nk) >= 0 and (idx + nk + windowSize) <= input.length
+            // But we also need to ensure we're not using data before 'start' (pre-range data)
+            final int windowStart = idx + smoother.nk;  // First index used by smoothing window
+            final int windowEnd = idx + smoother.nk + windowSize - 1;  // Last index used by smoothing window
+            final boolean canSmooth = (idx >= firstSmoothable && idx <= lastSmoothable &&
+                                      windowStart >= start &&  // Don't use data before range start
+                                      windowEnd < input.length);  // Can use data after range end (up to array bounds)
+
+            if (canSmooth) {
                 result[i] = smoother.smoothAt(input, null, idx, idx);
             } else if (idx < input.length) {
                 result[i] = input[idx];
