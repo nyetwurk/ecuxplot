@@ -1748,10 +1748,18 @@ public class ECUxDataset extends Dataset {
         if (smoothingWindow != null && smoothingWindow > 0) {
             final int rangeSize = r.end - r.start + 1;
 
+            // Clamp window to half the range size to prevent issues when window is close to dataset size
+            final int originalWindow = smoothingWindow;
+            final int effectiveWindow = org.nyet.util.Smoothing.clampWindowToHalfSize(smoothingWindow, rangeSize);
+            if (effectiveWindow != originalWindow) {
+                logger.debug("getData('{}'): Clamped smoothing window from {} to {} (half of range size {})",
+                    columnName, originalWindow, effectiveWindow, rangeSize);
+            }
+
             // Check if range is large enough for smoothing window
-            if (rangeSize < smoothingWindow) {
+            if (rangeSize < effectiveWindow) {
                 logger.warn("getData('{}'): Skipping smoothing - range size {} is smaller than window {}",
-                    columnName, rangeSize, smoothingWindow);
+                    columnName, rangeSize, effectiveWindow);
                 return column.data.toArray(r.start, r.end);
             }
 
@@ -1761,7 +1769,7 @@ public class ECUxDataset extends Dataset {
             final double[] fullData = column.data.toArray();
             // For symmetric smoothing with window W, we need (W-1)/2 samples on the right side
             // nk = (1-window)/2, so abs(nk) = (window-1)/2 is the padding needed
-            final int paddingNeeded = (smoothingWindow - 1) / 2;
+            final int paddingNeeded = (effectiveWindow - 1) / 2;
 
             // Extend range to include right-side padding from full dataset (but don't go outside array bounds)
             // No left padding - start at requested range start
@@ -1769,7 +1777,7 @@ public class ECUxDataset extends Dataset {
             final int paddedEnd = Math.min(fullData.length - 1, r.end + paddingNeeded);
 
             // Smooth the extended range (includes right-side padding from full dataset)
-            final org.nyet.util.Smoothing s = new org.nyet.util.Smoothing(smoothingWindow);
+            final org.nyet.util.Smoothing s = new org.nyet.util.Smoothing(effectiveWindow);
             final double[] smoothedWithPadding = s.smoothAll(fullData, paddedStart, paddedEnd);
 
             // Extract only the requested range from the smoothed result

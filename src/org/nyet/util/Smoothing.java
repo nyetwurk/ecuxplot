@@ -43,16 +43,30 @@ public class Smoothing extends LinearSmoothing
 
     @Override
     public double[] smoothAll(double[] input, int start, int end) {
-        final int lastSmoothable = input.length - this.cn.length - this.nk - 1;
         final int actualEnd = Math.min(end, input.length - 1);
         final int rangeSize = actualEnd - start + 1;
+
+        // Clamp window to half the range size to prevent issues when window is close to dataset size
+        // This ensures we can actually smooth the data effectively without creating edge artifacts
+        final int originalWindow = this.cn.length;
+        final int effectiveWindow = clampWindowToHalfSize(originalWindow, rangeSize);
+
+        // If window was clamped, create a smoother with the clamped window size
+        // Otherwise use this smoother directly
+        final Smoothing smoother = (effectiveWindow < originalWindow) ? new Smoothing(effectiveWindow) : this;
+        final int windowSize = smoother.cn.length;
+
+        // Calculate bounds using the effective window size
+        final int lastSmoothable = input.length - windowSize - smoother.nk - 1;
 
         final double[] result = new double[rangeSize];
 
         for (int i = 0; i < rangeSize; i++) {
             final int idx = start + i;
-            if (idx <= lastSmoothable && idx + this.nk >= 0 && idx + this.nk + this.cn.length <= input.length) {
-                result[i] = this.smoothAt(input, null, idx, idx);
+            // Use effective window for bounds check - if window was clamped, fewer points will be smoothable
+            // Existing edge handling will return original values for points that can't be smoothed
+            if (idx <= lastSmoothable && idx + smoother.nk >= 0 && idx + smoother.nk + windowSize <= input.length) {
+                result[i] = smoother.smoothAt(input, null, idx, idx);
             } else if (idx < input.length) {
                 result[i] = input[idx];
             }
@@ -112,6 +126,24 @@ public class Smoothing extends LinearSmoothing
         logger.trace("detectAverageQuantizationRun: {} samples analyzed, no quantization runs (>= {}) found",
             data.length, MIN_QUANTIZATION_RUN);
         return 0;
+    }
+
+    /**
+     * Clamp a smoothing window to half the data size to prevent issues when window is close to dataset size.
+     * This ensures the window is never larger than half the data size, which prevents edge artifacts.
+     *
+     * @param window The window size to clamp
+     * @param dataSize The size of the data (dataset or range)
+     * @return Clamped window size (always odd, at most half the data size)
+     */
+    public static int clampWindowToHalfSize(int window, int dataSize) {
+        final int maxWindow = Math.max(1, dataSize / 2);
+        if (window > maxWindow) {
+            window = maxWindow;
+            // Ensure window is odd (required by Smoothing constructor)
+            window |= 1;
+        }
+        return window;
     }
 
     /**
@@ -175,11 +207,12 @@ public class Smoothing extends LinearSmoothing
             avgQuantizationRun = detectAverageQuantizationRun(rawData);
         }
 
-        final int maWindow = calculateAdaptiveMAWindow(avgQuantizationRun);
+        int maWindow = calculateAdaptiveMAWindow(avgQuantizationRun);
         final int datasetSize = data.size();
 
         if (avgQuantizationRun >= MIN_QUANTIZATION_RUN) {
             // Quantization detected: use MA then SG (MA reduces quantization steps, SG preserves trends)
+            // Note: smoothAll() will automatically clamp the window to half the data size
             final int minSizeForMA = 2 * maWindow;  // Require 2x MA window size
             if (datasetSize >= minSizeForMA) {
                 // Step 1: Apply MA to reduce quantization steps
@@ -196,13 +229,13 @@ public class Smoothing extends LinearSmoothing
                     maSmoothed = new double[input.length];
                     System.arraycopy(input, 0, maSmoothed, 0, input.length);
 
-                    // For each range: apply MA smoothing
+                    // For each range: apply MA smoothing (smoothAll will automatically clamp window to range size)
                     for (Dataset.Range r : ranges) {
                         final double[] rangeSmoothed = maSmoother.smoothAll(input, r.start, r.end);
                         System.arraycopy(rangeSmoothed, 0, maSmoothed, r.start, r.end - r.start + 1);
                     }
                 } else {
-                    // No ranges: apply MA smoothing to full dataset
+                    // No ranges: apply MA smoothing to full dataset (smoothAll will automatically clamp window)
                     maSmoothed = maSmoother.smoothAll(input, 0, input.length - 1);
                 }
 
