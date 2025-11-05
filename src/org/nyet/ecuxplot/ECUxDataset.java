@@ -20,11 +20,14 @@ import org.nyet.ecuxplot.DataLogger.DataLoggerConfig;
 import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
 import org.nyet.util.MonotonicDataAnalyzer;
+import org.nyet.util.Smoothing;
 
 public class ECUxDataset extends Dataset {
     private static final Logger logger = LoggerFactory.getLogger(ECUxDataset.class);
 
-    private final Column rpm;
+    private final Column rpm;      // Final RPM (quantization-aware adaptive smoothing, for display/calculations)
+    private final Column baseRpm;  // Base RPM (SG smoothing only, for range detection, full dataset, no ranges)
+    private final Column csvRpm;   // CSV RPM (native data from CSV, no smoothing)
     private Column pedal;
     private Column throttle;
     private Column gear;
@@ -38,6 +41,15 @@ public class ECUxDataset extends Dataset {
     // Track which columns need moving average smoothing
     // Maps column name to smoothing window size (in samples)
     private final Map<String, Integer> smoothingWindows = new HashMap<>();
+
+    /**
+     * Get the smoothing window size for a column, if it has one.
+     * @param columnName The name of the column
+     * @return The smoothing window size in samples, or null if column doesn't have smoothing
+     */
+    public Integer getSmoothingWindow(String columnName) {
+        return this.smoothingWindows.get(columnName);
+    }
 
     // Track range failure reasons per row index
     // Used to explain why points "Not in valid range"
@@ -238,21 +250,75 @@ public class ECUxDataset extends Dataset {
             }
         }
 
-        // get RPM AFTER getting TIME, so we have an accurate samples per sec
-        this.rpm = get("RPM");
+        // Three-tier RPM architecture to break circular dependency:
+        // 1. CSV RPM - native data from CSV (no smoothing)
+        // 2. Base RPM - SG smoothing only (for range detection, full dataset, no ranges needed)
+        // 3. Final RPM - quantization-aware adaptive smoothing (for display/calculations, uses ranges when available)
+
+        this.csvRpm = super.get("RPM");  // CSV_NATIVE column, always available
+
+        // Create base RPM for range detection (full dataset, no ranges)
+        // This breaks the circular dependency: ranges need smoothed RPM, but this smoothing
+        // doesn't need ranges, so it can be created before buildRanges()
+        this.baseRpm = createBaseRpm();
+
+        // Build ranges using base RPM (no dependency on final smoothing or ranges)
         // Note: buildRanges() is called by parent constructor, but we need to call it again
         // after filter is assigned to ensure proper spline creation
         buildRanges(); // regenerate ranges, splines
+
+        // After ranges are built, create final RPM (can use ranges for quantization detection)
+        this.rpm = get("RPM");
     }
 
-    private int MAW() {
-        // HPTQMAW is in seconds, convert to samples
-        return (int)Math.floor(this.samples_per_sec * this.filter.HPTQMAW());
+    /**
+     * Create base RPM for range detection.
+     * This applies SG smoothing to the full dataset without using ranges.
+     * Breaks the circular dependency: ranges need smoothed RPM, but this smoothing
+     * doesn't need ranges, so it can be created before buildRanges().
+     *
+     * @return Base RPM column (SG smoothing only)
+     */
+    private Column createBaseRpm() {
+        if (this.csvRpm == null) {
+            logger.error("createBaseRpm(): csvRpm is null, cannot create base RPM");
+            return null;
+        }
+
+        // Apply SG smoothing to full dataset (no ranges, no quantization detection)
+        // Use standard SG smoothing - effective for range detection
+        final DoubleArray smoothedData = this.csvRpm.data.smooth();
+
+        return new Column("RPM", this.csvRpm.getId2(), UnitConstants.UNIT_RPM,
+                         smoothedData, Dataset.ColumnType.PROCESSED_VARIANT);
+    }
+
+    /**
+     * Get the CSV RPM column (native data from CSV).
+     *
+     * @return The CSV RPM column (CSV_NATIVE), or null if not available
+     */
+    public Column getCsvRpmColumn() {
+        return this.csvRpm;
+    }
+
+    /**
+     * Get the base RPM column used for range detection.
+     *
+     * @return The base RPM column (SG smoothing only), or null if not available
+     */
+    public Column getBaseRpmColumn() {
+        return this.baseRpm;
+    }
+
+    private int HPMAW() {
+        // HPMAW is in seconds, convert to samples (Smoothing constructor will make it odd)
+        return (int)Math.round(this.samples_per_sec * this.filter.HPTQMAW());
     }
 
     private int AccelMAW() {
-        // accelMAW is in seconds, convert to samples
-        return (int)Math.floor(this.samples_per_sec * this.filter.accelMAW());
+        // accelMAW is in seconds, convert to samples (Smoothing constructor will make it odd)
+        return (int)Math.round(this.samples_per_sec * this.filter.accelMAW());
     }
 
     /**
@@ -342,12 +408,11 @@ public class ECUxDataset extends Dataset {
      * @param dataTransform Optional function to transform base data (e.g., convert ticks to seconds)
      *                      If null, uses baseColumn.data directly
      * @param threshold Minimum samples_per_sec to apply Savitzky-Golay smoothing (0.0 = no smoothing)
-     * @param useInfoLog Whether to use INFO level logging (for RPM) or DEBUG (for TIME)
      * @return The processed Column, or null if base column doesn't exist
      */
     private Column createSmoothedColumn(String baseColumnName, String units,
                                          java.util.function.Function<DoubleArray, DoubleArray> dataTransform,
-                                         double threshold, boolean useInfoLog) {
+                                         double threshold) {
         // Get base CSV column
         Column baseColumn = super.get(baseColumnName);
         if (baseColumn == null) {
@@ -362,12 +427,26 @@ public class ECUxDataset extends Dataset {
         // Transform data if needed
         DoubleArray processedData = dataTransform != null ? dataTransform.apply(baseColumn.data) : baseColumn.data;
 
-        // Apply smoothing if threshold is met
-        if (threshold > 0 && this.samples_per_sec >= threshold) {
-            // Apply Savitzky-Golay smoothing
-            if (useInfoLog) {
-                logger.info("_get('{}'): Applying Savitzky-Golay smoothing (samples_per_sec={})", baseColumnName, this.samples_per_sec);
-            }
+        // Apply adaptive smoothing for RPM data (quantization detection + MA/SG selection)
+        // Other columns use standard SG smoothing
+        if (baseColumnName.equals("RPM")) {
+            // Use csvRpm column for quantization detection (guaranteed to be CSV_NATIVE, not processed)
+            // This ensures we're analyzing the actual CSV data, not a processed version
+            // Note: For RPM, dataTransform is null, so processedData == baseColumn.data
+            // But baseColumn might be a processed version if get("RPM") was called before,
+            // so we use this.csvRpm.data which is always the CSV_NATIVE column
+            final DoubleArray csvRpmData = (this.csvRpm != null) ? this.csvRpm.data : processedData;
+            // Detect quantization: use ranges if available (avoids false positives from idle/deceleration)
+            // But don't require ranges - this is called during column creation which may happen
+            // before buildRanges() completes (to avoid dependency loops)
+            final ArrayList<Dataset.Range> ranges = this.getRanges();
+            // Only use ranges if they're already built (non-empty), otherwise analyze full dataset
+            // Use csvRpmData for quantization detection and smoothing (they're the same for RPM)
+            processedData = Smoothing.smoothAdaptive(csvRpmData,
+                (ranges != null && !ranges.isEmpty()) ? ranges : null,
+                baseColumnName);
+        } else {
+            // Non-RPM columns: use standard SG smoothing
             processedData = processedData.smooth();
         }
 
@@ -509,16 +588,17 @@ public class ECUxDataset extends Dataset {
      * Check if RPM shows a severe swing (non-monotonic behavior) by comparing
      * the RPM at point i-1 and i+1, converting the delta to RPM/sec for consistency
      * across different logger sample rates.
+     * Uses base RPM for range detection (breaks circular dependency).
      *
      * @param i The current point index to check
      * @return The RPM drop rate in RPM/s if it exceeds threshold, or 0.0 if valid
      */
     private double checkRPMMonotonicity(int i) {
-        if (this.rpm == null || i <= 0 || this.rpm.data.size() <= i + 2) {
+        if (this.baseRpm == null || i <= 0 || this.baseRpm.data.size() <= i + 2) {
             return 0.0;
         }
 
-        double delta = this.rpm.data.get(i-1) - this.rpm.data.get(i+1);
+        double delta = this.baseRpm.data.get(i-1) - this.baseRpm.data.get(i+1);
         // Convert delta (RPM over 2 samples) to RPM/sec
         // Time between samples: 1.0 / samples_per_sec
         // Time over 2 samples: 2.0 / samples_per_sec
@@ -538,6 +618,59 @@ public class ECUxDataset extends Dataset {
             }
         }
         return 0.0;
+    }
+
+    /**
+     * Calculate acceleration from base RPM and TIME data using user-specified AccelMAW.
+     * Used for range detection only - avoids dependency on final RPM.
+     * This breaks the circular dependency: range detection uses base RPM.
+     *
+     * NOTE: This uses a different approach than display columns:
+     * - Display columns: derivative(x, 0) + range-aware smoothing in getData()
+     * - This method: derivative(x, AccelMAW()) with smoothing during derivative
+     *
+     * Reason: This is called during buildRanges() when ranges don't exist yet,
+     * so we can't use range-aware smoothing. Instead, smoothing is applied to
+     * the full dataset during derivative calculation. Both approaches use the
+     * same AccelMAW() window for consistency.
+     *
+     * @param i The current point index to check
+     * @return Acceleration in RPM/s, or 0.0 if calculation not possible
+     */
+    private double calculateRangeDetectionAcceleration(int i) {
+        if (this.baseRpm == null || i < 0 || i >= this.baseRpm.data.size()) {
+            return 0.0;
+        }
+
+        // Get TIME column for derivative calculation
+        Column timeCol = super.get("TIME");
+        if (timeCol == null || i >= timeCol.data.size()) {
+            return 0.0;
+        }
+
+        // Calculate derivative with smoothing applied during derivative calculation
+        // (Not range-aware because ranges don't exist yet - this is called during range detection)
+        final DoubleArray y = this.baseRpm.data;
+        final DoubleArray x = timeCol.data;
+        final DoubleArray derivative = y.derivative(x, this.AccelMAW()).max(0);
+
+        // Extract value at index i (clamp to valid range)
+        if (i >= derivative.size()) {
+            return 0.0;
+        }
+
+        return derivative.get(i);
+    }
+
+    /**
+     * Get the acceleration value used by dataValid() for filtering.
+     * This matches what the filter actually checks, so visualization can show the same values.
+     *
+     * @param i The point index
+     * @return Acceleration in RPM/s, or 0.0 if not available
+     */
+    public double getFilterAcceleration(int i) {
+        return calculateRangeDetectionAcceleration(i);
     }
 
 
@@ -645,9 +778,13 @@ public class ECUxDataset extends Dataset {
                                     (data) -> data.div(this.time_ticks_per_sec));
         } else if(id.equals("RPM")) {
             // smooth sampling quantum noise/jitter, RPM is an integer!
-            c = createSmoothedColumn("RPM", UnitConstants.UNIT_RPM, null, 5.0, true);
+            // Always applies MA (if enough samples), then optionally SG
+            c = createSmoothedColumn("RPM", UnitConstants.UNIT_RPM, null, 0.0);
         } else if(id.equals("RPM - raw")) {
             c = getOrCreateRawColumn("RPM", UnitConstants.UNIT_RPM, null);
+        } else if(id.equals("RPM - base")) {
+            // Debug column: return base RPM used for range detection
+            c = this.baseRpm;
 
         // ========== CALCULATED MAF & FUEL FIELDS ==========
         } else if(id.equals("Sim Load")) {
@@ -741,6 +878,25 @@ public class ECUxDataset extends Dataset {
         // ========== CALCULATED FIELDS: VELOCITY & ACCELERATION ==========
         // Calc Velocity, Acceleration (RPM/s), Acceleration (m/s^2), Acceleration (g)
         // See MenuHandlerRegistry.REGISTRY["Calc Velocity"], etc.
+        //
+        // SMOOTHING STRATEGY:
+        // - All acceleration calculations use smoothed RPM input (from get("RPM").data)
+        //   to reduce quantization noise before differentiation
+        //   The final RPM column already has adaptive smoothing (MAW+SG for quantized, SG for smooth)
+        // - Acceleration (RPM/s) and Acceleration (m/s^2) use AccelMAW() smoothing window
+        //   applied via range-aware smoothing in getData() for consistent smoothing
+        // - "Raw" variants (Acceleration (RPM/s) - raw, Acceleration (m/s^2) - raw) use
+        //   smoothed RPM input but no smoothing on the derivative (tooltip explains this)
+        // - Calc Velocity inherits smoothing quality from smoothed RPM (no additional smoothing)
+        //
+        // SMOOTHING WINDOWS:
+        // - Acceleration derivatives: AccelMAW() (typically 5-10 samples)
+        //   Applied via range-aware smoothing in getData() only (NOT during derivative calculation)
+        //   IMPORTANT: Do NOT apply smoothing during derivative calculation (derivative(x, AccelMAW()))
+        //   AND also register for range-aware smoothing. This creates double-smoothing which is
+        //   excessive and causes edge artifacts. The three-stage RPM design already provides
+        //   appropriate smoothing at the input level (final RPM with adaptive smoothing).
+        // - "Raw" variants: none (derivative without smoothing window, no range-aware smoothing)
         } else if(id.equals("Calc Velocity")) {
             // Calculate vehicle speed from RPM and gear ratio (more accurate than VehicleSpeed sensor)
             // Uses user-specified rpm_per_mph for calibration
@@ -748,49 +904,95 @@ public class ECUxDataset extends Dataset {
             c = new Column(id, UnitConstants.UNIT_MPS, rpm.div(this.env.c.rpm_per_mph()).
                 mult(UnitConstants.MPS_PER_MPH), Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("Acceleration (RPM/s)")) {
+            // Smoothed RPM acceleration - uses smoothed RPM with AccelMAW() smoothing applied via range-aware smoothing
+            // Smoothing window: AccelMAW() (typically 5-10 samples) - applied in getData() via range-aware smoothing
+            // NOTE: We do NOT apply smoothing during derivative calculation here to avoid double-smoothing and edge loss.
+            // Instead, smoothing is applied only via range-aware smoothing in getData(), which handles edges correctly with padding.
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
-            c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x, this.AccelMAW()).max(0), Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Acceleration (RPM/s) - range smoothed")) {
-            // Calculate unsmoothed, then smooth in getData() like HP/TQ (for comparison)
+            final DoubleArray derivative = y.derivative(x, 0).max(0);  // No smoothing during derivative - will be smoothed in getData()
+            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+            // Register for range-aware smoothing to prevent edge artifacts when viewing truncated ranges
+            this.smoothingWindows.put(id.toString(), this.AccelMAW());
+        } else if(id.equals("Acceleration (RPM/s) - raw")) {
+            // Use smoothed RPM (not raw) to reduce quantization noise before differentiation
+            // "Raw" refers to unsmoothed derivative, not unsmoothed input
+            // Smoothing window: none (derivative without smoothing window)
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
             final DoubleArray derivative = y.derivative(x, 0).max(0);
             c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-            // Register for range-based smoothing (same as HP/TQ approach)
-            this.smoothingWindows.put(id.toString(), this.AccelMAW());
-        } else if(id.equals("Acceleration - raw (RPM/s)")) {
-            // Use smoothed RPM (not raw) to reduce quantization noise before differentiation
+        } else if(id.equals("Acceleration (RPM/s) - from base RPM")) {
+            // Debug column: acceleration from base RPM input (uses AccelMAW smoothing on input)
+            // Uses base RPM (SG smoothing only) instead of final RPM (adaptive smoothing)
+            // Applies AccelMAW smoothing to base RPM input before derivative calculation
+            // This allows comparison of base RPM vs final RPM effects on acceleration
+            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): baseRpm is null, cannot calculate acceleration", id);
+                return null;
+            }
+            final DoubleArray x = this.get("TIME").data;
+            // Apply AccelMAW smoothing to base RPM, then calculate derivative
+            final int accelMAW = AccelMAW();
+            DoubleArray derivative;
+            if (accelMAW > 0 && this.samples_per_sec > 0) {
+                final double[] baseRpmArray = y.toArray();
+                final Smoothing smoother = new Smoothing(accelMAW);
+                final double[] smoothedRpm = smoother.smoothAll(baseRpmArray, 0, baseRpmArray.length - 1);
+                derivative = new DoubleArray(smoothedRpm).derivative(x, 0).max(0);
+            } else {
+                derivative = y.derivative(x, 0).max(0);
+            }
+            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Acceleration (m/s^2) - raw")) {
+            // Raw (unsmoothed) acceleration in m/s^2 - calculated directly from RPM (same approach as RPM/s)
             // "Raw" refers to unsmoothed derivative, not unsmoothed input
+            // Smoothing window: none (derivative without smoothing window)
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
-            c = new Column(id, UnitConstants.UNIT_RPS, y.derivative(x), Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Acceleration (m/s^2) - raw")) {
-            // Raw (unsmoothed) acceleration in m/s^2 - depends on Calc Velocity
-            Column velocityCol = this.get("Calc Velocity");
-            Column timeCol = this.get("TIME");
-            if (velocityCol == null || timeCol == null) {
-                logger.warn("_get('Acceleration (m/s^2) - raw'): Missing dependencies - Calc Velocity={}, TIME={}",
-                    velocityCol != null, timeCol != null);
-                return null;
-            }
-            final DoubleArray y = velocityCol.data;
-            final DoubleArray x = timeCol.data;
             final DoubleArray derivative = y.derivative(x, 0).max(0);
-            c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            // Convert RPM/s to m/s^2: derivative (RPM/s) / rpm_per_mph * MPS_PER_MPH
+            final DoubleArray accel = derivative.div(this.env.c.rpm_per_mph()).
+                mult(UnitConstants.MPS_PER_MPH);
+            c = new Column(id, "m/s^2", accel, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("Acceleration (m/s^2)")) {
-            // Smoothed acceleration in m/s^2 - depends on Calc Velocity
-            Column velocityCol = this.get("Calc Velocity");
-            Column timeCol = this.get("TIME");
-            if (velocityCol == null || timeCol == null) {
-                logger.warn("_get('Acceleration (m/s^2)'): Missing dependencies - Calc Velocity={}, TIME={}",
-                    velocityCol != null, timeCol != null);
-                return null;
+            // Smoothed acceleration in m/s^2 - calculated directly from RPM (same approach as Acceleration (RPM/s))
+            // Uses smoothed RPM directly, derivative with AccelMAW() smoothing applied via range-aware smoothing
+            // Smoothing window: AccelMAW() (typically 5-10 samples) - applied in getData() via range-aware smoothing
+            // NOTE: We do NOT apply smoothing during derivative calculation here to avoid double-smoothing and edge loss.
+            // Instead, smoothing is applied only via range-aware smoothing in getData(), which handles edges correctly with padding.
+            // This ensures consistent smoothing between RPM/s and m/s^2 acceleration
+            final DoubleArray y = this.get("RPM").data;
+            // Log values from middle of dataset to verify we're using smoothed RPM (not CSV)
+            // Also compare with CSV RPM at same indices to verify smoothing is applied
+            if (y != null && y.size() > 20 && this.csvRpm != null && this.csvRpm.data.size() == y.size()) {
+                final int middleStart = y.size() / 2 - 5;
+                final int middleEnd = middleStart + 10;
+                final StringBuilder sb = new StringBuilder();
+                sb.append("RPM data used for acceleration (indices ").append(middleStart).append("-").append(middleEnd - 1).append("): ");
+                for (int j = middleStart; j < middleEnd && j < y.size(); j++) {
+                    if (j > middleStart) sb.append(", ");
+                    sb.append(String.format("%.1f", y.get(j)));
+                }
+                logger.debug("_get('{}'): {}", id, sb.toString());
+                // Compare with CSV RPM at same indices
+                final StringBuilder sbCsv = new StringBuilder();
+                sbCsv.append("CSV RPM at same indices (for comparison): ");
+                for (int j = middleStart; j < middleEnd && j < this.csvRpm.data.size(); j++) {
+                    if (j > middleStart) sbCsv.append(", ");
+                    sbCsv.append(String.format("%.1f", this.csvRpm.data.get(j)));
+                }
+                logger.debug("_get('{}'): {}", id, sbCsv.toString());
             }
-            final DoubleArray y = velocityCol.data;
-            final DoubleArray x = timeCol.data;
-            final DoubleArray derivative = y.derivative(x, this.AccelMAW()).max(0);
-            c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0).max(0);  // No smoothing during derivative - will be smoothed in getData()
+            // Convert RPM/s to m/s^2: derivative (RPM/s) / rpm_per_mph * MPS_PER_MPH
+            final DoubleArray accel = derivative.div(this.env.c.rpm_per_mph()).
+                mult(UnitConstants.MPS_PER_MPH);
+            c = new Column(id, "m/s^2", accel, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            // Register for range-aware smoothing to prevent edge artifacts when viewing truncated ranges
+            this.smoothingWindows.put(id.toString(), this.AccelMAW());
         } else if(id.equals("Acceleration (g)")) {
             // Depends on Acceleration (m/s^2) which uses RPM_PER_MPH
             final DoubleArray a = this.get("Acceleration (m/s^2)").data;
@@ -842,11 +1044,54 @@ public class ECUxDataset extends Dataset {
                 c = new Column(id, UnitConstants.UNIT_SAMPLE, new DoubleArray(result), Dataset.ColumnType.PROCESSED_VARIANT);
             }
 
-        // ========== CALCULATED FIELDS: POWER ==========
+        // ========== CALCULATED FIELDS: POWER & TORQUE ==========
         // WHP, WTQ, HP, TQ, Drag
         // See MenuHandlerRegistry.REGISTRY["WHP"], etc.
+        //
+        // HP/WHP CALCULATION CHAIN:
+        // 1. RPM (smoothed) → Acceleration (m/s^2) [uses AccelMAW() smoothing window]
+        // 2. RPM (smoothed) → Calc Velocity [inherits smoothing, no additional smoothing]
+        // 3. Acceleration (m/s^2) + Calc Velocity → WHP [smoothed in getData() with HPMAW() window]
+        // 4. WHP → HP [calculated from smoothed WHP during _get(), no additional smoothing]
+        //    NOTE: HP is calculated from smoothed WHP (not unsmoothed) to avoid redundant smoothing.
+        //    Since HP = WHP / (1-driveline_loss) + static_loss is a linear transformation,
+        //    smoothing HP directly would be equivalent to smoothing WHP then calculating HP.
+        //    We calculate HP from smoothed WHP during column creation to inherit smoothing.
+        // 5. HP/WHP → TQ/WTQ [calculated from already-smoothed HP/WHP]
+        //
+        // SMOOTHING WINDOWS:
+        // - Acceleration derivatives: AccelMAW() (typically 5-10 samples)
+        //   Applied via range-aware smoothing in getData() only (NOT during derivative calculation)
+        //   IMPORTANT: Do NOT apply smoothing during derivative calculation (derivative(x, AccelMAW()))
+        //   AND also in getData(). This creates double-smoothing which is excessive and causes edge artifacts.
+        //   The three-stage RPM design (CSV → Base → Final) already provides appropriate smoothing:
+        //   - Final RPM uses adaptive smoothing (MAW+SG for quantized, SG for smooth)
+        //   - Range-aware smoothing in getData() handles edge artifacts with proper padding
+        //   - Single smoothing point per architectural layer avoids redundancy
+        // - WHP: HPMAW() (typically 10-20 samples) - applied in getData()
+        // - HP: No additional smoothing (calculated from smoothed WHP during _get())
+        //   NOTE: HP smoothing is applied to WHP data before calculating HP, so HP inherits
+        //   smoothing from WHP without redundant smoothing application.
+        // - TQ/WTQ: No additional smoothing (calculated from smoothed HP/WHP)
+        //
+        // RANGE-AWARE SMOOTHING:
+        // Range-aware smoothing (via getData()) prevents edge artifacts when data windows
+        // are truncated by ranges. It uses padding and re-smooths only the requested range.
+        // This is applied to: Acceleration (RPM/s), Acceleration (m/s^2), WHP
+        //
+        // DESIGN PRINCIPLE: Single Smoothing Point Per Architectural Layer
+        // The three-stage RPM architecture (CSV → Base → Final) provides a clear separation:
+        // - CSV RPM: Raw data (no smoothing)
+        // - Base RPM: SG only (for range detection, no quantization detection needed)
+        // - Final RPM: Adaptive smoothing (MAW+SG for quantized, SG for smooth) - for calculations
+        // - Display columns: Range-aware smoothing (for edge handling when viewing truncated ranges)
+        // - Power calculations: HPMAW() smoothing (user preference on final power values)
+        // Each layer adds ONE smoothing step. Double-smoothing (e.g., smoothing in derivative AND
+        // range-aware smoothing) violates this principle and causes excessive smoothing and edge artifacts.
         } else if(id.equals("WHP")) {
             // Uses: mass, Cd, FA, rolling_drag (via drag()), rpm_per_mph (via Calc Velocity)
+            // Depends on: Acceleration (m/s^2) [smoothed with AccelMAW()], Calc Velocity [from smoothed RPM]
+            // Smoothing: Applied in getData() using HPMAW() window
             Column accelCol = this.get("Acceleration (m/s^2)");
             Column velocityCol = this.get("Calc Velocity");
             if (accelCol == null || velocityCol == null) {
@@ -866,30 +1111,54 @@ public class ECUxDataset extends Dataset {
                 l += " (SAE)";
             }
             // Store unsmoothed data and record smoothing requirement
+            // Smoothing will be applied in getData() using MAW() window
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            this.smoothingWindows.put(id.toString(), this.MAW());
+            this.smoothingWindows.put(id.toString(), this.HPMAW());
         } else if(id.equals("HP")) {
             // Uses: driveline_loss, static_loss, plus all WHP dependencies
+            // Depends on: WHP [smoothed with HPMAW() in getData()]
+            //
+            // IMPORTANT: HP is calculated from smoothed WHP (not unsmoothed) to avoid redundant smoothing.
+            // Since HP = WHP / (1-driveline_loss) + static_loss is a linear transformation,
+            // smoothing HP directly would be mathematically equivalent to smoothing WHP then calculating HP.
+            // By calculating HP from smoothed WHP during column creation, HP inherits smoothing from WHP
+            // without applying smoothing twice. This is more efficient and avoids redundant computation.
+            //
+            // Change history: Previously HP was calculated from unsmoothed WHP and then smoothed independently
+            // in getData(). This was redundant since smoothing a linear transformation is equivalent to
+            // transforming smoothed data. The change ensures HP inherits smoothing from WHP.
             Column whpCol = this.get("WHP");
             if (whpCol == null) {
                 logger.warn("_get('HP'): Missing dependency - WHP");
                 return null;
             }
-            final DoubleArray whp = whpCol.data;
-            final DoubleArray value = whp.div((1-this.env.c.driveline_loss())).
+            // Apply smoothing to WHP data (same as getData() would do), then calculate HP
+            // This ensures HP inherits smoothing from WHP without redundant smoothing
+            final int whpSmoothingWindow = this.smoothingWindows.getOrDefault("WHP", 0);
+            DoubleArray smoothedWHP;
+            if (whpSmoothingWindow > 0) {
+                final double[] whpData = whpCol.data.toArray();
+                final org.nyet.util.Smoothing s = new org.nyet.util.Smoothing(whpSmoothingWindow);
+                smoothedWHP = new DoubleArray(s.smoothAll(whpData, 0, whpData.length - 1));
+            } else {
+                smoothedWHP = whpCol.data;
+            }
+            // Calculate HP from smoothed WHP (no additional smoothing needed)
+            final DoubleArray value = smoothedWHP.div((1-this.env.c.driveline_loss())).
                     add(this.env.c.static_loss());
             String l = UnitConstants.UNIT_HP;
             if(this.env.sae.enabled()) l += " (SAE)";
-            // Store unsmoothed data and record smoothing requirement
+            // HP is already calculated from smoothed WHP, so no smoothing registration needed
+            // getData() will return HP data directly without additional smoothing
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            this.smoothingWindows.put(id.toString(), this.MAW());
         } else if(id.equals("WTQ")) {
             // Depends on WHP (which uses all WHP constants)
-            // Calculate WTQ from smoothed WHP
+            // Calculate WTQ from smoothed WHP (WHP is smoothed in getData() with MAW() window)
+            // No additional smoothing needed - inherits smoothing from WHP
             c = this.calculateTorque("WTQ", "WHP");
-            // WTQ is already calculated from smoothed WHP, no additional smoothing needed
         } else if(id.toString().equals(idWithUnit("WTQ", UnitConstants.UNIT_NM))) {
             // Depends on WTQ (which uses WHP constants)
+            // WTQ inherits smoothing from WHP
             final DoubleArray wtq = this.get("WTQ").data;
             final DoubleArray value = wtq.mult(UnitConstants.FTLB_PER_NM); // ft-lb to Nm
             String l = UnitConstants.UNIT_NM;
@@ -897,9 +1166,9 @@ public class ECUxDataset extends Dataset {
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("TQ")) {
             // Depends on HP (which uses all HP/WHP constants)
-            // Calculate TQ from smoothed HP
+            // Calculate TQ from smoothed HP (HP is smoothed in getData() with MAW() window)
+            // No additional smoothing needed - inherits smoothing from HP
             c = this.calculateTorque("TQ", "HP");
-            // TQ is already calculated from smoothed HP, no additional smoothing needed
         } else if(id.toString().equals(idWithUnit("TQ", UnitConstants.UNIT_NM))) {
             // Depends on TQ (which uses all HP/WHP constants)
             final DoubleArray tq = this.get("TQ").data;
@@ -1119,10 +1388,10 @@ public class ECUxDataset extends Dataset {
             Column psiCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_PSI, ambientSupplier, colType);
             final DoubleArray abs = psiCol.data.smooth();
             final DoubleArray time = this.get("TIME").data;
-            final DoubleArray derivative = abs.derivative(time, this.MAW()).max(0);
+            final DoubleArray derivative = abs.derivative(time, this.HPMAW()).max(0);
             // Store unsmoothed data and record smoothing requirement
             c = new Column(id, "PSI/sec", derivative);
-            this.smoothingWindows.put(id.toString(), this.MAW());
+            this.smoothingWindows.put(id.toString(), this.HPMAW());
         } else if(id.equals("ps_w error")) {
             final DoubleArray abs = super.get("BoostPressureActual").data.max(900);
             final DoubleArray ps_w = super.get("ME7L ps_w").data.max(900);
@@ -1136,7 +1405,7 @@ public class ECUxDataset extends Dataset {
             final DoubleArray set = super.get("BoostPressureDesired").data;
             final DoubleArray out = super.get("BoostPressureActual").data;
             final DoubleArray t = this.get("TIME").data;
-            final DoubleArray o = set.sub(out).derivative(t,this.MAW());
+            final DoubleArray o = set.sub(out).derivative(t,this.HPMAW());
             c = new Column(id,"100mBar",o.mult(this.env.pid.time_constant).div(100));
         } else if(id.equals("LDR I e dt")) {
             final DoubleArray set = super.get("BoostPressureDesired").data;
@@ -1266,9 +1535,10 @@ public class ECUxDataset extends Dataset {
             ret=false;
         }
         if(this.filter.minAcceleration()>0) {
-            final Column accel = this.get("Acceleration (RPM/s)");
-            if(accel!=null && accel.data.get(i)<this.filter.minAcceleration()) {
-                reasons.add("accel " + String.format("%.0f", accel.data.get(i)) +
+            // Calculate acceleration from base RPM (avoids dependency on final RPM)
+            double accel = calculateRangeDetectionAcceleration(i);
+            if(accel < this.filter.minAcceleration()) {
+                reasons.add("accel " + String.format("%.0f", accel) +
                     "<" + this.filter.minAcceleration());
                 ret=false;
             }
@@ -1303,18 +1573,20 @@ public class ECUxDataset extends Dataset {
                 ret=false;
             }
         }
-        if(this.rpm!=null) {
-            if(this.rpm.data.get(i)<this.filter.minRPM()) {
-                reasons.add("rpm " + String.format("%.0f", this.rpm.data.get(i)) +
+        // Use base RPM for range detection checks (breaks circular dependency)
+        // Base smoothing doesn't need ranges, so it can be created before buildRanges()
+        if(this.baseRpm!=null) {
+            if(this.baseRpm.data.get(i)<this.filter.minRPM()) {
+                reasons.add("rpm " + String.format("%.0f", this.baseRpm.data.get(i)) +
                     "<" + this.filter.minRPM());
                 ret=false;
             }
-            if(this.rpm.data.get(i)>this.filter.maxRPM()) {
-                reasons.add("rpm " + String.format("%.0f", this.rpm.data.get(i)) +
+            if(this.baseRpm.data.get(i)>this.filter.maxRPM()) {
+                reasons.add("rpm " + String.format("%.0f", this.baseRpm.data.get(i)) +
                     ">" + this.filter.maxRPM());
                 ret=false;
             }
-            if(i>0 && this.rpm.data.size()>i+2) {
+            if(i>0 && this.baseRpm.data.size()>i+2) {
                 double dropRate = checkRPMMonotonicity(i);
                 if(dropRate > 0.0) {
                     if(dropRate == Double.MAX_VALUE) {
@@ -1470,8 +1742,9 @@ public class ECUxDataset extends Dataset {
         Integer smoothingWindow = this.smoothingWindows.get(columnName);
 
         // Use stored window size - it was set when the column was created
-        // For HP/TQ/WHP: uses MAW() (HPTQMAW)
-        // For "Acceleration (RPM/s) - range smoothed": uses AccelMAW()
+        // For HP/TQ/WHP: uses HPMAW()
+        // For Acceleration (RPM/s) and Acceleration (m/s^2): uses AccelMAW()
+        // Range-aware smoothing prevents edge artifacts when data is truncated by ranges
         if (smoothingWindow != null && smoothingWindow > 0) {
             final int rangeSize = r.end - r.start + 1;
 
@@ -1482,11 +1755,31 @@ public class ECUxDataset extends Dataset {
                 return column.data.toArray(r.start, r.end);
             }
 
-            // Apply range-aware smoothing with padding to prevent edge artifacts
-            // MovingAverageSmoothing.smoothAll() with range always pads automatically
+            // Apply range-aware smoothing with right-side padding to prevent edge artifacts
+            // Extend the range with right-side padding from full dataset to ensure smoothAt() has enough data
+            // at the end. The smoothing window needs padding of approximately (window-1)/2 on the right side.
             final double[] fullData = column.data.toArray();
-            final org.nyet.util.MovingAverageSmoothing s = new org.nyet.util.MovingAverageSmoothing(smoothingWindow);
-            return s.smoothAll(fullData, r.start, r.end);
+            // For symmetric smoothing with window W, we need (W-1)/2 samples on the right side
+            // nk = (1-window)/2, so abs(nk) = (window-1)/2 is the padding needed
+            final int paddingNeeded = (smoothingWindow - 1) / 2;
+
+            // Extend range to include right-side padding from full dataset (but don't go outside array bounds)
+            // No left padding - start at requested range start
+            final int paddedStart = r.start;
+            final int paddedEnd = Math.min(fullData.length - 1, r.end + paddingNeeded);
+
+            // Smooth the extended range (includes right-side padding from full dataset)
+            final org.nyet.util.Smoothing s = new org.nyet.util.Smoothing(smoothingWindow);
+            final double[] smoothedWithPadding = s.smoothAll(fullData, paddedStart, paddedEnd);
+
+            // Extract only the requested range from the smoothed result
+            // Since paddedStart == r.start, no offset needed
+            final int resultSize = r.end - r.start + 1;
+
+            final double[] result = new double[resultSize];
+            System.arraycopy(smoothedWithPadding, 0, result, 0, resultSize);
+
+            return result;
         }
 
         // No smoothing needed, return raw data
@@ -1546,6 +1839,7 @@ public class ECUxDataset extends Dataset {
         }
 
         // Build ranges - parent method will call rangeValid() which tracks failures
+        // Note: dataValid() uses baseRpm (created before buildRanges()), so no circular dependency
         super.buildRanges();
 
         // Handle filter null case (timing issue during construction)
