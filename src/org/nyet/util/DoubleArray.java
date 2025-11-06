@@ -266,6 +266,26 @@ public class DoubleArray
         return new DoubleArray(this._derivative(d.toArray(), window));
     }
 
+    /**
+     * Calculate sample-to-sample difference (not time-normalized).
+     * Returns difference[i] = value[i] - value[i-1] for i > 0, 0 for i == 0.
+     * @return New DoubleArray with differences
+     */
+    public double[] _difference() {
+        final double[] out = new double[ this.sp ];
+        if (this.sp == 0) {
+            return out;
+        }
+        out[0] = 0.0; // First sample has no previous value
+        for (int i = 1; i < this.sp; i++) {
+            out[i] = this.array[i] - this.array[i-1];
+        }
+        return out;
+    }
+    public DoubleArray difference() {
+        return new DoubleArray(this._difference());
+    }
+
     public double[] _integral(double[] d, double min, double max) {
         final double[] out = new double[ this.sp ];
         if(this.sp==1 || d.length<2 || d.length!=this.sp) {
