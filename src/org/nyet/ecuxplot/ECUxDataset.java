@@ -490,23 +490,30 @@ public class ECUxDataset extends Dataset {
      * @return Column with calculated torque, or null if power/RPM data is unavailable
      */
     private Column calculateTorque(String torqueId, String powerColumnName) {
-        final Range fullRange = new Range(0, this.length() - 1);
-        final double[] smoothedPower = this.getData(powerColumnName, fullRange);
-        final double[] rpm = this.getData("RPM", fullRange);
-        if (smoothedPower == null || rpm == null || smoothedPower.length != rpm.length) {
-            logger.error("_get('{}'): Failed to get smoothed {} or RPM data - {}={}, RPM={}, lengths match={}",
-                torqueId, powerColumnName, powerColumnName, smoothedPower != null, rpm != null,
-                smoothedPower != null && rpm != null ? smoothedPower.length == rpm.length : false);
+        // Calculate torque from raw power data (no smoothing applied here)
+        // Smoothing will be applied in getData() if needed
+        Column powerCol = this.get(powerColumnName);
+        Column rpmCol = this.get("RPM");
+        if (powerCol == null || rpmCol == null) {
+            logger.error("_get('{}'): Failed to get {} or RPM column - {}={}, RPM={}",
+                torqueId, powerColumnName, powerColumnName, powerCol != null, rpmCol != null);
             return null;
         }
-        // Calculate torque from smoothed power
-        final double[] torque = new double[smoothedPower.length];
-        for (int i = 0; i < smoothedPower.length; i++) {
-            torque[i] = smoothedPower[i] * UnitConstants.HP_CALCULATION_FACTOR / rpm[i];
+        final DoubleArray power = powerCol.data;
+        final DoubleArray rpm = rpmCol.data;
+        if (power.size() != rpm.size()) {
+            logger.error("_get('{}'): Power and RPM data length mismatch - {}={}, RPM={}",
+                torqueId, powerColumnName, power.size(), rpm.size());
+            return null;
         }
+        // Calculate torque from raw power data: TQ = HP * HP_CALCULATION_FACTOR / RPM
+        final DoubleArray torque = power.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
         String label = UnitConstants.UNIT_FTLB;
         if(this.env.sae.enabled()) label += " (SAE)";
-        return new Column(torqueId, label, new DoubleArray(torque), Dataset.ColumnType.VEHICLE_CONSTANTS);
+        // Register for range-aware smoothing in getData() (same as power columns)
+        Column c = new Column(torqueId, label, torque, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        this.smoothingWindows.put(torqueId, this.HPMAW());
+        return c;
     }
 
     /**
@@ -562,6 +569,12 @@ public class ECUxDataset extends Dataset {
         // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
         if (converted != column) {
             this.putColumn(converted);
+            // Inherit smoothing registration from base column if base column is registered
+            // This ensures unit-converted columns (e.g., "WTQ (Nm)") get smoothing if base column ("WTQ") has it
+            Metadata baseMetadata = this.smoothingWindows.get(columnName);
+            if (baseMetadata != null && targetId != null) {
+                this.smoothingWindows.put(targetId, baseMetadata.windowSize);
+            }
         }
         return converted;
     }
@@ -735,7 +748,9 @@ public class ECUxDataset extends Dataset {
         // 4. Returns new Column with converted data
         Units.ParsedUnitConversion parsed = Units.parseUnitConversion(idStr);
         if (parsed != null) {
-            Column baseColumn = super.get(parsed.baseField);
+            // Use this.get() instead of super.get() to ensure base column is created via _get()
+            // This ensures smoothing registration happens before we try to inherit it
+            Column baseColumn = this.get(parsed.baseField);
             if (baseColumn != null) {
                 // Pass full requested ID so converted column is stored with correct ID (not base ID)
                 return getColumnInUnits(parsed.baseField, parsed.targetUnit, idStr);
@@ -1034,12 +1049,13 @@ public class ECUxDataset extends Dataset {
         // 1. RPM (smoothed) → Acceleration (m/s^2) [uses AccelMAW() smoothing window]
         // 2. RPM (smoothed) → Calc Velocity [inherits smoothing, no additional smoothing]
         // 3. Acceleration (m/s^2) + Calc Velocity → WHP [smoothed in getData() with HPMAW() window]
-        // 4. WHP → HP [calculated from smoothed WHP during _get(), no additional smoothing]
-        //    NOTE: HP is calculated from smoothed WHP (not unsmoothed) to avoid redundant smoothing.
+        // 4. WHP → HP [calculated from raw WHP during _get(), smoothed in getData() with HPMAW() window]
+        //    NOTE: HP is calculated from raw WHP data (not smoothed) during column creation.
+        //    Smoothing is applied separately in getData() via range-aware smoothing.
         //    Since HP = WHP / (1-driveline_loss) + static_loss is a linear transformation,
-        //    smoothing HP directly would be equivalent to smoothing WHP then calculating HP.
-        //    We calculate HP from smoothed WHP during column creation to inherit smoothing.
-        // 5. HP/WHP → TQ/WTQ [calculated from already-smoothed HP/WHP]
+        //    smoothing HP directly is equivalent to smoothing WHP then calculating HP.
+        //    Both WHP and HP are registered for smoothing and smoothed independently in getData().
+        // 5. HP/WHP → TQ/WTQ [calculated from raw HP/WHP, smoothed in getData() with HPMAW() window]
         //
         // SMOOTHING WINDOWS:
         // - Acceleration derivatives: AccelMAW() (typically 5-10 samples)
@@ -1051,10 +1067,11 @@ public class ECUxDataset extends Dataset {
         //   - Range-aware smoothing in getData() handles edge artifacts with proper padding
         //   - Single smoothing point per architectural layer avoids redundancy
         // - WHP: HPMAW() (typically 10-20 samples) - applied in getData()
-        // - HP: No additional smoothing (calculated from smoothed WHP during _get())
-        //   NOTE: HP smoothing is applied to WHP data before calculating HP, so HP inherits
-        //   smoothing from WHP without redundant smoothing application.
-        // - TQ/WTQ: No additional smoothing (calculated from smoothed HP/WHP)
+        // - HP: HPMAW() (typically 10-20 samples) - applied in getData()
+        //   NOTE: HP is calculated from raw WHP during _get(), then smoothed independently in getData().
+        //   Both WHP and HP are registered for smoothing and smoothed separately.
+        // - TQ/WTQ: HPMAW() (typically 10-20 samples) - applied in getData()
+        //   NOTE: TQ/WTQ are calculated from raw HP/WHP during _get(), then smoothed independently in getData().
         //
         // RANGE-AWARE SMOOTHING:
         // Range-aware smoothing (via getData()) prevents edge artifacts when data windows
@@ -1098,66 +1115,55 @@ public class ECUxDataset extends Dataset {
             this.smoothingWindows.put(id.toString(), this.HPMAW());
         } else if(id.equals("HP")) {
             // Uses: driveline_loss, static_loss, plus all WHP dependencies
-            // Depends on: WHP [smoothed with HPMAW() in getData()]
+            // Depends on: WHP (raw, unsmoothed data)
             //
-            // IMPORTANT: HP is calculated from smoothed WHP (not unsmoothed) to avoid redundant smoothing.
-            // Since HP = WHP / (1-driveline_loss) + static_loss is a linear transformation,
-            // smoothing HP directly would be mathematically equivalent to smoothing WHP then calculating HP.
-            // By calculating HP from smoothed WHP during column creation, HP inherits smoothing from WHP
-            // without applying smoothing twice. This is more efficient and avoids redundant computation.
-            //
-            // Change history: Previously HP was calculated from unsmoothed WHP and then smoothed independently
-            // in getData(). This was redundant since smoothing a linear transformation is equivalent to
-            // transforming smoothed data. The change ensures HP inherits smoothing from WHP.
+            // Calculate HP directly from raw WHP using driveline loss formula.
+            // No additional smoothing applied - smoothing will be applied in getData() if needed.
+            // HP = WHP / (1 - driveline_loss) + static_loss
             Column whpCol = this.get("WHP");
             if (whpCol == null) {
                 logger.warn("_get('HP'): Missing dependency - WHP");
                 return null;
             }
-            // Apply smoothing to WHP data (same as getData() would do), then calculate HP
-            // This ensures HP inherits smoothing from WHP without redundant smoothing
-            final int whpSmoothingWindow = this.smoothingWindows.getOrDefault("WHP", 0);
-            DoubleArray smoothedWHP;
-            if (whpSmoothingWindow > 0) {
-                final double[] whpData = whpCol.data.toArray();
-                final org.nyet.util.Smoothing s = new org.nyet.util.Smoothing(whpSmoothingWindow);
-                smoothedWHP = new DoubleArray(s.smoothAll(whpData, 0, whpData.length - 1));
-            } else {
-                smoothedWHP = whpCol.data;
-            }
-            // Calculate HP from smoothed WHP (no additional smoothing needed)
-            final DoubleArray value = smoothedWHP.div((1-this.env.c.driveline_loss())).
+            // Calculate HP from raw WHP (no smoothing applied here)
+            final DoubleArray value = whpCol.data.div((1-this.env.c.driveline_loss())).
                     add(this.env.c.static_loss());
             String l = UnitConstants.UNIT_HP;
             if(this.env.sae.enabled()) l += " (SAE)";
-            // HP is already calculated from smoothed WHP, so no smoothing registration needed
-            // getData() will return HP data directly without additional smoothing
+            // Register for range-aware smoothing in getData() (same as WHP)
+            // This ensures HP gets smoothed when retrieved, matching WHP smoothing behavior
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            this.smoothingWindows.put(id.toString(), this.HPMAW());
         } else if(id.equals("WTQ")) {
             // Depends on WHP (which uses all WHP constants)
-            // Calculate WTQ from smoothed WHP (WHP is smoothed in getData() with MAW() window)
-            // No additional smoothing needed - inherits smoothing from WHP
+            // Calculate WTQ from raw WHP (no smoothing applied here)
+            // Smoothing will be applied in getData() via range-aware smoothing
             c = this.calculateTorque("WTQ", "WHP");
         } else if(id.toString().equals(idWithUnit("WTQ", UnitConstants.UNIT_NM))) {
             // Depends on WTQ (which uses WHP constants)
-            // WTQ inherits smoothing from WHP
+            // Note: This handler is typically bypassed by the generic unit conversion handler,
+            // which automatically inherits smoothing registration from the base "WTQ" column
             final DoubleArray wtq = this.get("WTQ").data;
             final DoubleArray value = wtq.mult(UnitConstants.NM_PER_FTLB); // ft-lb to Nm
             String l = UnitConstants.UNIT_NM;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            // Smoothing registration inherited automatically via getColumnInUnits() when generic handler runs
         } else if(id.equals("TQ")) {
             // Depends on HP (which uses all HP/WHP constants)
-            // Calculate TQ from smoothed HP (HP is smoothed in getData() with MAW() window)
-            // No additional smoothing needed - inherits smoothing from HP
+            // Calculate TQ from raw HP (no smoothing applied here)
+            // Smoothing will be applied in getData() via range-aware smoothing
             c = this.calculateTorque("TQ", "HP");
         } else if(id.toString().equals(idWithUnit("TQ", UnitConstants.UNIT_NM))) {
             // Depends on TQ (which uses all HP/WHP constants)
+            // Note: This handler is typically bypassed by the generic unit conversion handler,
+            // which automatically inherits smoothing registration from the base "TQ" column
             final DoubleArray tq = this.get("TQ").data;
             final DoubleArray value = tq.mult(UnitConstants.NM_PER_FTLB); // ft-lb to Nm
             String l = UnitConstants.UNIT_NM;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
+            // Smoothing registration inherited automatically via getColumnInUnits() when generic handler runs
         } else if(id.equals("Drag")) {
             // Uses: Cd, FA, rolling_drag, mass (via drag()), rpm_per_mph (via Calc Velocity)
             final DoubleArray v = this.get("Calc Velocity").data;
