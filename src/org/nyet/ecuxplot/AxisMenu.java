@@ -382,7 +382,7 @@ public class AxisMenu extends JMenu {
                 addToSubmenu("MAF", "Turbo Flow (lb/min)");
                 addToSubmenu("Calc MAF", new JSeparator());
             }
-        } else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Injector|Methanol|E85|[LH]PFP|Rail).*")) {
+        } else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Inject|Ethanol|Methanol|E85|[LH]PFP|Rail|Combustion).*")) {
             addToSubmenu("Fuel", dsid);
             if(id.matches("FuelInjectorOnTime")) {      // ti
                 this.add("FuelInjectorDutyCycle");
@@ -411,13 +411,15 @@ public class AxisMenu extends JMenu {
                 this.add("Zeitronix Lambda (AFR)");
             }
             addToSubmenu("Zeitronix", dsid);
-        } else if(id.matches(".*(Load|Torque|ChargeLimit.*Protection).*")) {
+        } else if(id.matches(".*(Load|ChargeLimit.*Protection).*")) {
             // before Boost so we catch ChargeLimit*Protection before Charge
             addToSubmenu("Load", dsid);
             if(id.matches("EngineLoad(Requested|Corrected)")) {
                 addToSubmenu("Calc Boost", "Sim BoostPressureDesired");
                 addToSubmenu("Calc Boost", "Sim LoadSpecified correction");
             }
+        } else if(id.matches(".*Torque.*")) {
+            addToSubmenu("Torque", dsid);
         } else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Press|PID|Turbine).*")) {
             addToSubmenu("Boost", dsid);
             if(id.matches("BoostPressureDesired")) {
@@ -463,7 +465,7 @@ public class AxisMenu extends JMenu {
             addToSubmenu("Misfires", dsid);
         } else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
             addToSubmenu("O2 Sensor(s)", dsid);
-        } else if(id.matches("Vehicle.*Speed.*")) {
+        } else if(id.matches("(Vehicle|Wheel).*Speed.*")) {
             addToSubmenu("Speed", dsid);
         } else if(id.matches("TorqueDesired")) {
             this.add(item);  /* Must add self - standalone item with derived ft-lb and HP versions */
