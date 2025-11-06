@@ -71,7 +71,7 @@ Within each group:
 
 - Find best power within the group
 - Find best FATS within the group
-- Mark the files that contain these bests as best in gropu
+- Mark the files that contain these bests as best in group
 - If a file already has an overall best, don't mark it as best in group
 
 ### Important Notes

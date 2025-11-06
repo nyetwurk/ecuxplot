@@ -11,22 +11,23 @@ ECUxPlot uses a YAML-driven configuration system for detecting and parsing vario
 - **`loggers.yaml`**: YAML configuration defining detection patterns and parsing parameters
 - **`loggers.xml`**: Generated XML file (converted from YAML during build)
 - **`DataLogger.java`**: Loads configuration and provides detection/parsing utilities
-- **`ECUxDataset.java`**: Contains parsing logic with logger-specific case statements
+- **`ECUxDataset.java`**: Uses DataLogger configuration to process headers (no logger-specific code)
+- **`VCDSHeaderProcessor.java`**: Handles VCDS-specific header processing via registered header processor
 - **`scripts/yaml_to_xml.py`**: Converts YAML to XML during build process
 
 ### Detection Process
 
 The system uses a two-phase detection mechanism that scans comment lines first, then CSV header fields.
 
-**Process Flow** (See `ECUxDataset.java`):
+**Process Flow** (See `ECUxDataset.detectLoggerType()`):
 
-1. Check if logger type is already detected
+1. Check if logger type is already detected (skip if already known)
 2. **Phase 1**: Scan comment lines for comment signatures (raw text, not CSV)
-   - Location: `DataLogger.detectComment(String comment)`
+   - Location: `ECUxDataset.detectLoggerType()` calls `DataLogger.detectComment(String comment)`
    - Checks each comment line against regex patterns in `comment_signatures`
    - Returns first logger name that matches
-3. **Phase 2**: Scan CSV header fields for field signatures (fallback)
-   - Location: `DataLogger.detectField(String[] fields)`
+3. **Phase 2**: Scan CSV header fields for field signatures (fallback if Phase 1 fails)
+   - Location: `ECUxDataset.detectLoggerType()` calls `DataLogger.detectField(String[] fields)`
    - Checks each field against regex patterns in `field_signatures`
    - Supports any-column or specific-column matching via `column_index`
 4. Default to UNKNOWN if no match found
@@ -285,7 +286,7 @@ Aliases map logger-specific field names to standardized canonical names. The sys
 
 1. **ME7_ALIASES** - Fast O(1) hash map lookup for ME7L variable names (201 aliases)
    - Exact string matches only
-   - Example: `"dwkrz_0"` → `"IgnitionRetardCyl1"`
+   - Example: `"dwkrz_0"` → `"IgnitionRetardCyl$1"` (note: `$1` is literal, not a placeholder)
 2. **Logger-Specific Aliases** - Regex patterns specific to detected logger type
 3. **DEFAULT Aliases** - Common aliases applied to all loggers
 
@@ -330,13 +331,14 @@ Unit determination uses a multi-step fallback strategy to extract and normalize 
    - Used by VOLVOLOGGER
 3. **Apply Aliases** - Generate canonical field names
    - ME7_ALIASES → Logger-specific aliases → DEFAULT aliases
-4. **Logger-Specific Processing** - Custom logic (e.g., VCDS group handling via `VCDSHeaderProcessor.java`)
+4. **Logger-Specific Processing** - Custom logic via registered header processors (e.g., VCDS group handling via `VCDSHeaderProcessor.java`)
    - Runs after aliasing but before general unit parsing
    - For VCDS/VCDS_LEGACY: Handles group disambiguation, STAMP→TIME conversion
+   - Only loggers with registered header processors use this step (most loggers skip it)
 5. **General Unit Parsing** - Extract units from field names in format `"FieldName (unit)"`
    - Only triggered when logger doesn't have `header_format` with `u` token
    - If logger has `u` token, units were already extracted during header format parsing
-6. **Field Transformations** - Apply prepend/append (must happen BEFORE unit processing)
+6. **Field Transformations** - Apply prepend/append
    - Applied after general unit parsing so transformed field names can be used for unit inference
 7. **Unit Normalization and Inference** - Process and normalize units (`Units.normalize()` and `Units.find()`)
    - Normalizes unit strings: `"(sec)"` → `"sec"`, `"rpm"` → `"RPM"`, `"degC"` → `"°C"`, `"hPa"` → `"mBar"`
@@ -364,13 +366,6 @@ All extracted units are validated globally to prevent descriptive text from bein
 - Invalid units are cleared (set to `null`) and passed to `Units.find()` for inference
 - This allows the system to infer correct units from field names (e.g., lambda fields → `"λ"`)
 
-**Benefits**:
-
-- No logger-specific configuration needed - validation applies globally
-- Handles complex field formats with descriptive metadata (e.g., `"O2 voltage (Bank 1  Sensor 1) (V)"`)
-- Prevents descriptive text from overwriting valid units
-- Improves unit accuracy across all logger types
-
 **Example**:
 
 ```text
@@ -385,51 +380,16 @@ Result: Correct unit "λ" instead of descriptive text
 
 ### Current Implementation Strategy
 
-The system has largely migrated to YAML-driven configuration, with minimal logger-specific code remaining:
+The system is fully YAML-driven with registered header processors for special cases:
 
 - **YAML Configuration**: Handles detection, parsing parameters, field aliases, and transformations
-- **Minimal Case Statements**: Only VCDS retains complex parsing logic that cannot be expressed in YAML
+- **Registered Header Processors**: VCDS/VCDS_LEGACY use `VCDSHeaderProcessor` registered via `registerHeaderProcessor()` (not case statements)
 
 ### Remaining Logger-Specific Code
 
 #### VCDS (Complex Multi-Header Processing)
 
-The main logger-specific case statement handles VCDS's complex header processing:
-
-```java
-case "VCDS": {
-    // VCDS uses header_format: "id2,id,u" which gives us:
-    // id2 = Group line (for Group/Block detection)
-    // id = Field names line (clean field names)
-    // u = Units line (actual units)
-
-    for (int i = 0; i < id.length; i++) {
-        String g = (id2 != null && i < id2.length) ? id2[i] : null;
-        if (id2 != null && i < id2.length) {
-            id2[i] = id[i]; // id2 gets copy of original field names
-        }
-
-        // VCDS TIME field detection
-        if (u != null && i < u.length) {
-            if (id[i] != null && id[i].matches("^(TIME|Zeit|Time|STAMP|MARKE)$")) {
-                id[i] = "TIME";
-                u[i] = "s";
-            } else if ((id[i] == null || id[i].trim().isEmpty()) &&
-                      u[i] != null && u[i].matches("^(STAMP|MARKE)$")) {
-                id[i] = "TIME";
-                u[i] = "s";
-            }
-        }
-
-        // Group 24 blacklist logic
-        if (g != null && g.matches("^Group 24.*") &&
-            id[i].equals("Accelerator position")) {
-            id[i] = "AcceleratorPedalPosition (G024)";
-        }
-    }
-    break;
-}
-```
+VCDS header processing is handled by `VCDSHeaderProcessor.processVCDSHeader()` which is registered as a header processor (not a case statement):
 
 **Why VCDS Still Needs Special Handling**:
 
@@ -707,64 +667,13 @@ For **VCDS** format (non-legacy):
 
 While most parsing has moved to YAML, several logger-specific conditionals remain in the UI and calculation code:
 
-**Zeitronix Field Processing** (`AxisMenu.java`, `ECUxDataset.java`):
+**Zeitronix Field Processing** (`AxisMenu.java`, `ECUxDataset.java`): Handles field prefixing and unit conversions for Zeitronix fields.
 
-```java
-// Zeitronix field prefixing and conversions
-if(id.matches("^Zeitronix.*")) {
-    if(id.matches("^Zeitronix Boost")) {
-        this.add("Zeitronix Boost (PSI)");
-        addToSubmenu("Calc Boost", "Boost Spool Rate Zeit (RPM)");
-    }
-    if(id.matches("^Zeitronix AFR")) {
-        this.add("Zeitronix AFR (lambda)");
-    }
-    if(id.matches("^Zeitronix Lambda")) {
-        this.add("Zeitronix Lambda (AFR)");
-    }
-    addToSubmenu("Zeitronix", item);
-}
-```
+**ME7LOGGER-Specific Calculations** (`AxisMenu.java`): Provides unique calculated fields not available in other loggers.
 
-**ME7LOGGER-Specific Calculations** (`AxisMenu.java`):
+**JB4-Specific Field Handling** (`AxisMenu.java`): Handles boost pressure calculation for JB4 format.
 
-```java
-// ME7LOGGER-specific calculated fields
-if (dsid.type.equals("ME7LOGGER")) {
-    addToSubmenu("Calc MAF", "Sim Load");
-    addToSubmenu("Calc MAF", "Sim Load Corrected");
-    addToSubmenu("Calc MAF", "Sim MAF");
-}
-
-if (dsid.type.equals("ME7LOGGER")) {
-    addToSubmenu("Calc IAT", "Sim evtmod");
-    addToSubmenu("Calc IAT", "Sim ftbr");
-    addToSubmenu("Calc IAT", "Sim BoostIATCorrection");
-}
-```
-
-**JB4-Specific Field Handling** (`AxisMenu.java`):
-
-```java
-// JB4 boost pressure calculation
-if(id.matches("BoostPressureDesiredDelta")) {
-    this.add(new DatasetId("BoostPressureDesired", null, units));
-}
-```
-
-**ME7L Field Processing** (`ECUxDataset.java`, `AxisMenu.java`):
-
-```java
-// ME7L-specific field references
-final DoubleArray ps_w = super.get("ME7L ps_w").data;
-if(id.matches("^ME7L.*")) {
-    addToSubmenu("ME7 Logger", item);
-    if(id.matches("ME7L ps_w")) {
-        addToSubmenu("Calc Boost", "Sim pspvds");
-        addToSubmenu("Boost", "ps_w error");
-    }
-}
-```
+**ME7L Field Processing** (`ECUxDataset.java`, `AxisMenu.java`): Processes ME7L-specific field references.
 
 **Why These Conditionals Remain**:
 
@@ -797,31 +706,15 @@ compile: convert-loggers
 
 ### 1. Add YAML Definition
 
-```yaml
-NEW_LOGGER:
-  comment_signatures:
-    - regex: ".*New Logger.*"
-  field_signatures:
-    - regex: "^UniqueField$"
-  skip_lines: 2
-  aliases:
-    - ["^OriginalField$", "StandardField"]
-```
+Add logger configuration to `loggers.yaml` with detection patterns, parsing parameters, and field aliases.
 
-### 2. Add Java Constant
+### 2. Add Java Constant (if needed)
 
-```java
-public static final String LOG_NEW_LOGGER = "NEW_LOGGER";
-```
+If the logger needs a Java constant for reference, add it to the appropriate class.
 
-### 3. Add Case Statement (if needed)
+### 3. Add Header Processor (if needed)
 
-```java
-case "NEW_LOGGER": {
-    // Logger-specific parsing logic
-    break;
-}
-```
+Only if the logger requires special processing that cannot be expressed in YAML, create a header processor class and register it via `DataLogger.registerHeaderProcessor()`.
 
 ### 4. Add Test Data
 
@@ -846,7 +739,6 @@ case "NEW_LOGGER": {
 
 ## 🔄 Future Enhancements
 
-- Complete migration of complex case statements to YAML
 - Position-aware parsing (know exact detection line)
 - More sophisticated field transformation patterns
 - Unit extraction patterns in YAML
@@ -857,7 +749,7 @@ Field transformations allow prepending or appending text to field names with opt
 
 ### Processing Flow
 
-**Location**: `DataLogger.applyFieldTransformations()` - applied AFTER aliases but BEFORE final unit processing
+**Location**: `DataLogger.applyFieldTransformations()` - applied after aliases, logger-specific processing, and general unit parsing, but before unit normalization/inference (`processUnits()`)
 
 **Process Order**:
 

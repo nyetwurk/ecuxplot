@@ -36,14 +36,15 @@ Unit conversion handled automatically via `ECUxDataset._get()` → `parseUnitCon
 
 **Behavior**: `IgnitionTimingAngleOverallDesired` is calculated from retard fields when not directly available.
 
-**Formula**: `IgnitionTimingAngleOverallDesired = IgnitionTimingAngleOverall + average(abs(IgnitionRetardCyl*))`
+**Formula**: `IgnitionTimingAngleOverallDesired = IgnitionTimingAngleOverall + average(abs(IgnitionRetardCyl0-7))`
+
+**Implementation Note**: The code uses 0-indexed loop (`for(int i=0;i<8;i++)`) looking for `IgnitionRetardCyl0` through `IgnitionRetardCyl7`, but canonical field names from aliases are 1-indexed (`IgnitionRetardCyl1` through `IgnitionRetardCyl8`). Since `Dataset.get()` uses exact string matching, this loop will not find 1-indexed canonical fields. The calculation may only work via the `AverageIgnitionRetard` fallback for loggers that don't provide per-cylinder retard fields.
 
 **Unexpected Cases**:
 
 #### Partial Cylinder Support (SWCOMM)
-- Only logs 3 of 6 cylinders: `IGA_ADJ_KNK[0,3,5]` → `IgnitionRetardCyl1,4,6`
-- Calculation correctly averages only these 3 cylinders (not all 6)
-- Pattern matching in test framework handles this automatically
+- Only logs 3 of 6 cylinders: `IGA_ADJ_KNK[0,3,5]` → `IgnitionRetardCyl1,4,6` (canonical 1-indexed names)
+- **Implementation Note**: The calculation code looks for `IgnitionRetardCyl0-7` (0-indexed), but canonical names are `IgnitionRetardCyl1-8` (1-indexed). Since `Dataset.get()` uses exact string matching, this loop will not find these 1-indexed fields. The calculation may rely on fallback to `AverageIgnitionRetard` if available.
 
 #### Average Retard Fallback (JB4)
 - No per-cylinder retard fields
@@ -60,10 +61,10 @@ Timing preset may show slightly different desired timing values depending on how
 
 ### 3. Logger-Specific Limitations
 
-#### SIMOS_TOOLS - Missing EngineLoad
-- **Unexpected**: Timing preset ykeys0 requires `EngineLoad` OR `MassAirFlowPerStroke`
-- **Current State**: SIMOS_TOOLS only has `MassAirFlowPerStroke` (no `EngineLoad`)
-- **Impact**: Timing preset works but uses MAF per stroke instead of load for X-axis
+#### SIMOS_TOOLS - Has EngineLoad
+- **Current State**: SIMOS_TOOLS has both `EngineLoad` (index 39) and `MassAirFlowPerStroke`
+- **Preset Configuration**: Timing preset ykeys0 accepts either `EngineLoad` OR `MassAirFlowPerStroke` (defined in `loggers.yaml`)
+- **Impact**: Timing preset can use either field depending on availability
 
 #### SWCOMM - Partial Cylinder Logging
 - **Unexpected**: Only logs 3 of 6 cylinders (1, 4, 6), not sequential 1-6
