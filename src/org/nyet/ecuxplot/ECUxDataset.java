@@ -42,15 +42,6 @@ public class ECUxDataset extends Dataset {
     // Maps column name to smoothing window size (in samples)
     private final Map<String, Integer> smoothingWindows = new HashMap<>();
 
-    /**
-     * Get the smoothing window size for a column, if it has one.
-     * @param columnName The name of the column
-     * @return The smoothing window size in samples, or null if column doesn't have smoothing
-     */
-    public Integer getSmoothingWindow(String columnName) {
-        return this.smoothingWindows.get(columnName);
-    }
-
     // Track range failure reasons per row index
     // Used to explain why points "Not in valid range"
     private final Map<Integer, ArrayList<String>> rangeFailureReasons = new HashMap<>();
@@ -291,15 +282,6 @@ public class ECUxDataset extends Dataset {
 
         return new Column("RPM", this.csvRpm.getId2(), UnitConstants.UNIT_RPM,
                          smoothedData, Dataset.ColumnType.PROCESSED_VARIANT);
-    }
-
-    /**
-     * Get the CSV RPM column (native data from CSV).
-     *
-     * @return The CSV RPM column (CSV_NATIVE), or null if not available
-     */
-    public Column getCsvRpmColumn() {
-        return this.csvRpm;
     }
 
     /**

@@ -15,8 +15,6 @@ public class Filter {
     public static final String PREFS_TAG = "filter";
 
     private static final boolean defaultEnabled = true;
-    private static final boolean defaultShowAllRanges = true;
-    private static final boolean defaultMonotonicRPM = true;
     private static final double defaultMonotonicRPMfuzz = 500.0;  // RPM/s (was 100 RPM at 10 Hz = 500 RPM/s)
     private static final int defaultMinRPM = 2000;
     private static final int defaultMaxRPM = 8000;
@@ -106,16 +104,6 @@ public class Filter {
         this.prefs.putBoolean("enabled", val);
     }
 
-    private int currentRange = 0;
-
-    public int getCurrentRange() {
-        return this.currentRange;
-    }
-
-    public void setCurrentRange(int currentRange) {
-        this.currentRange = currentRange;
-    }
-
     // Per-file range selection support
     private Map<String, Set<Integer>> selectedRanges = new HashMap<>();
 
@@ -199,23 +187,6 @@ public class Filter {
         return selectedFiles.contains(filename);
     }
 
-    public static boolean showAllRanges(Preferences prefs) {
-    return prefs.node(PREFS_TAG).getBoolean("showAllRanges", defaultShowAllRanges);
-    }
-
-    public boolean showAllRanges() {
-    return this.prefs.getBoolean("showAllRanges", defaultShowAllRanges);
-    }
-    public void showAllRanges(boolean val) {
-    this.prefs.putBoolean("showAllRanges", val);
-    }
-
-    public boolean monotonicRPM() {
-        return this.prefs.getBoolean("monotonicRPM", defaultMonotonicRPM);
-    }
-    public void monotonicRPM(boolean val) {
-        this.prefs.putBoolean("monotonicRPM", val);
-    }
 
     public double monotonicRPMfuzz() {
         // Use new key name to avoid type mismatch with old int values

@@ -91,7 +91,7 @@ public class FATS {
      * @param speedUnit The speed unit
      * @return The corresponding handler
      */
-    public static SpeedUnitHandler getSpeedUnitHandler(SpeedUnit speedUnit) {
+    private static SpeedUnitHandler getSpeedUnitHandler(SpeedUnit speedUnit) {
         switch (speedUnit) {
             case RPM: return RPM_HANDLER;
             case mph: return MPH_HANDLER;
@@ -153,11 +153,6 @@ public class FATS {
     public double endKph() { return getPref("end_kph", defaultEndKph, Double::parseDouble); }
     public void endKph(double val) { setPref("end_kph", val); }
 
-    // Conversion methods (functional style)
-    public int mphToRpm(double mph, double rpmPerMph) { return (int) Math.round(mph * rpmPerMph); }
-    public int kphToRpm(double kph, double rpmPerKph) { return (int) Math.round(kph * rpmPerKph); }
-    public double rpmToMph(int rpm, double rpmPerMph) { return rpm / rpmPerMph; }
-    public double rpmToKph(int rpm, double rpmPerKph) { return rpm / rpmPerKph; }
 }
 
 // vim: set sw=4 ts=8 expandtab:

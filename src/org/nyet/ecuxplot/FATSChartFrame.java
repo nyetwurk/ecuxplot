@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.TreeMap;
 
 import javax.swing.*;
 
@@ -227,12 +226,6 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         super.setLocation(l);
     }
 
-    public void setDatasets(TreeMap<String, ECUxDataset> fileDatasets) {
-        this.dataset.clear();
-        for(final ECUxDataset data : fileDatasets.values()) {
-            setDataset(data);
-        }
-    }
 
     public void setDataset(ECUxDataset data) {
         this.dataset.setValue(data);

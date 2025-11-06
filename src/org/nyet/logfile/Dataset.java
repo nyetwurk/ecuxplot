@@ -103,9 +103,6 @@ public class Dataset {
             this.columnType = columnType;
         }
 
-        public void setColumnType(ColumnType type) {
-            this.columnType = type;
-        }
 
         public ColumnType getColumnType() {
             return this.columnType;
