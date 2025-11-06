@@ -348,6 +348,8 @@ public class AxisMenu extends JMenu {
                 "accelMAW (applied in getData())"));
             addToSubmenu("Acceleration", accelGItem, true);
 
+        } else if(id.matches("RPM.*")) {
+            addToSubmenu("RPM", dsid);
         } else if(id.matches("TIME")) {
             // Add TIME and variants to TIME submenu
             addToSubmenu("TIME", dsid);
@@ -365,7 +367,7 @@ public class AxisMenu extends JMenu {
             addToSubmenu("Sample", dsid);
 
         // goes before .*Load.* to catch CalcLoad
-        } else if(id.matches(".*(MAF|Mass *Air|Air *Mass|Mass *Air *Flow).*")) {
+        } else if(id.matches(".*(Intake|MAF|Mass.*Air|Air.*Mass|Mass.*Flow).*")) {
             addToSubmenu("MAF", dsid);
             if(id.matches("MassAirFlow")) {
                 this.add("MassAirFlow (kg/hr)");
@@ -438,6 +440,8 @@ public class AxisMenu extends JMenu {
         /* do this before Timing so we don't match Throttle Angle */
         } else if(id.matches(".*(Pedal|Throttle).*")) {
             addToSubmenu("Throttle", dsid);
+        } else if(id.matches(".*Accel.*")) {
+            addToSubmenu("Acceleration", dsid);
         } else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing|Angle|Spark|Combustion).*")) {
             addToSubmenu("Ignition", dsid);
             if(id.matches("IgnitionTimingAngleOverall")) {
@@ -459,7 +463,7 @@ public class AxisMenu extends JMenu {
             addToSubmenu("Misfires", dsid);
         } else if(id.matches(".*(OXS|O2|ResistanceSensor).*")) {
             addToSubmenu("O2 Sensor(s)", dsid);
-        } else if(id.matches("VehicleSpeed")) {
+        } else if(id.matches("Vehicle.*Speed.*")) {
             addToSubmenu("Speed", dsid);
         } else if(id.matches("TorqueDesired")) {
             this.add(item);  /* Must add self - standalone item with derived ft-lb and HP versions */
