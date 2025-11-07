@@ -1142,7 +1142,7 @@ public class ECUxDataset extends Dataset {
             // Depends on WTQ (which uses WHP constants)
             // WTQ inherits smoothing from WHP
             final DoubleArray wtq = this.get("WTQ").data;
-            final DoubleArray value = wtq.mult(UnitConstants.FTLB_PER_NM); // ft-lb to Nm
+            final DoubleArray value = wtq.mult(UnitConstants.NM_PER_FTLB); // ft-lb to Nm
             String l = UnitConstants.UNIT_NM;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
@@ -1154,7 +1154,7 @@ public class ECUxDataset extends Dataset {
         } else if(id.toString().equals(idWithUnit("TQ", UnitConstants.UNIT_NM))) {
             // Depends on TQ (which uses all HP/WHP constants)
             final DoubleArray tq = this.get("TQ").data;
-            final DoubleArray value = tq.mult(UnitConstants.FTLB_PER_NM); // ft-lb to Nm
+            final DoubleArray value = tq.mult(UnitConstants.NM_PER_FTLB); // ft-lb to Nm
             String l = UnitConstants.UNIT_NM;
             if(this.env.sae.enabled()) l += " (SAE)";
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
