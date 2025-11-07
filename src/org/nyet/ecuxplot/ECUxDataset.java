@@ -1431,6 +1431,106 @@ public class ECUxDataset extends Dataset {
             final DoubleArray ps_w = super.get("ME7L ps_w").data;
             final DoubleArray pvdkds = super.get("BoostPressureActual").data;
             c = new Column(id,"",ps_w.div(pvdkds));
+        // ========== SMOOTHING DIAGNOSTIC COLUMNS ==========
+        // Time derivatives (drpm/dt - time-normalized)
+        } else if(id.equals("dRPM/dt - raw")) {
+            // Time derivative of CSV RPM
+            final DoubleArray y = (this.csvRpm != null) ? this.csvRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): csvRpm is null, cannot calculate derivative", id);
+                return null;
+            }
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0);
+            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("dRPM/dt - base")) {
+            // Time derivative of Base RPM
+            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): baseRpm is null, cannot calculate derivative", id);
+                return null;
+            }
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0);
+            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("dRPM/dt")) {
+            // Time derivative of Final RPM
+            final DoubleArray y = this.get("RPM").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0);
+            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("dVelocity/dt")) {
+            // Time derivative of Calc Velocity
+            final DoubleArray y = this.get("Calc Velocity").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0);
+            c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("dAccel/dt")) {
+            // Time derivative of Acceleration (m/s²) - this is "jerk"
+            final DoubleArray y = this.get("Acceleration (m/s^2)").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0);
+            c = new Column(id, "m/s^3", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("dWHP/dt")) {
+            // Time derivative of WHP
+            final DoubleArray y = this.get("WHP").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0);
+            c = new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("dHP/dt")) {
+            // Time derivative of HP
+            final DoubleArray y = this.get("HP").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x, 0);
+            c = new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+
+        // Sample differences (Δ - not time-normalized)
+        } else if(id.equals("Δ RPM - raw")) {
+            // Sample difference of CSV RPM
+            final DoubleArray y = (this.csvRpm != null) ? this.csvRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): csvRpm is null, cannot calculate difference", id);
+                return null;
+            }
+            final DoubleArray difference = y.difference();
+            c = new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Δ RPM - base")) {
+            // Sample difference of Base RPM
+            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): baseRpm is null, cannot calculate difference", id);
+                return null;
+            }
+            final DoubleArray difference = y.difference();
+            c = new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Δ RPM")) {
+            // Sample difference of Final RPM
+            final DoubleArray y = this.get("RPM").data;
+            final DoubleArray difference = y.difference();
+            c = new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Δ Velocity")) {
+            // Sample difference of Calc Velocity
+            final DoubleArray y = this.get("Calc Velocity").data;
+            final DoubleArray difference = y.difference();
+            c = new Column(id, UnitConstants.UNIT_MPS, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("Δ Acceleration")) {
+            // Sample difference of Acceleration (m/s²)
+            final DoubleArray y = this.get("Acceleration (m/s^2)").data;
+            final DoubleArray difference = y.difference();
+            c = new Column(id, "m/s^2", difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("Δ WHP")) {
+            // Sample difference of WHP - use raw (unsmoothed) WHP data
+            // This shows the raw difference between samples, not smoothed differences
+            final DoubleArray y = this.get("WHP").data;
+            final DoubleArray difference = y.difference();
+            c = new Column(id, UnitConstants.UNIT_HP, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("Δ HP")) {
+            // Sample difference of HP
+            // HP is already calculated from smoothed WHP, so this difference is consistent
+            final DoubleArray y = this.get("HP").data;
+            final DoubleArray difference = y.difference();
+            c = new Column(id, UnitConstants.UNIT_HP, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
+
 /*****************************************************************************/
         } else if(id.equals("IgnitionTimingAngleOverall")) {
             // Calculate from per-cylinder timing angles if Overall not directly available
