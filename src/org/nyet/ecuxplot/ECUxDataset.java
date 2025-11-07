@@ -119,6 +119,13 @@ public class ECUxDataset extends Dataset {
         return this.loadedFromPrefs;
     }
 
+    /**
+     * Detect the logger type from comment lines and CSV field headers.
+     * Tries detection in order: comment lines first, then CSV field headers.
+     * Sets log_detected to the detected logger type or UNKNOWN if not found.
+     *
+     * @throws Exception If detection fails
+     */
     protected void detectLoggerType() throws Exception {
         // Only detect if not already detected
         if (!DataLogger.isUnknown(this.log_detected)) {
@@ -161,6 +168,13 @@ public class ECUxDataset extends Dataset {
         this.log_detected = DataLogger.UNKNOWN;
     }
 
+    /**
+     * Detect logger type by scanning CSV field headers in the file.
+     * Reads the file line by line, skipping comments and numeric data lines,
+     * and attempts to detect the logger type from field headers.
+     *
+     * @return The detected logger type, or null if detection fails or file path not set
+     */
     private String detectFieldInstance() {
         try {
             // If filePath is not set yet (called from parent constructor), skip field detection
@@ -214,6 +228,14 @@ public class ECUxDataset extends Dataset {
         return null;
     }
 
+    /**
+     * Check if all fields in a CSV line are numeric.
+     * Used to distinguish header lines from data lines during logger detection.
+     *
+     * @param fields The array of field strings to check
+     * @param ignoreEmpty If true, empty fields are ignored (treated as numeric)
+     * @return true if all non-empty fields are numeric, false otherwise
+     */
     private boolean allFieldsAreNumeric(String[] fields, boolean ignoreEmpty) {
         for (String field : fields) {
             if (ignoreEmpty && (field == null || field.trim().length() == 0)) continue;
@@ -226,13 +248,24 @@ public class ECUxDataset extends Dataset {
         return true;
     }
 
-
-
-
+    /**
+     * Get the detected logger type.
+     * @return The logger type string (e.g., "ECUX", "JB4", "UNKNOWN")
+     */
     public String getLogDetected() {
         return this.log_detected;
     }
 
+    /**
+     * Construct a new ECUxDataset from a CSV file.
+     * Initializes the dataset, detects logger type, parses headers, and creates base columns.
+     *
+     * @param filename The path to the CSV file to load
+     * @param env The environment configuration (vehicle constants, preferences)
+     * @param filter The filter configuration for range detection
+     * @param verbose Verbosity level for logging (0=quiet, higher=more verbose)
+     * @throws Exception If file cannot be read, logger detection fails, or header parsing fails
+     */
     public ECUxDataset(String filename, Env env, Filter filter, int verbose)
             throws Exception {
         super(filename, verbose);
@@ -529,154 +562,6 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
-     * Get smoothing diagnostic columns (debug-only, not referenced by AxisMenu).
-     * These columns are used for debugging smoothing behavior and are not shown in the UI.
-     * Extracted from main _get() method to separate debug diagnostics from main field handlers.
-     *
-     * @param id The column ID to get
-     * @return Column if it's a diagnostic column, null otherwise
-     */
-    private Column getSmoothingDiagnosticColumn(Comparable<?> id) {
-        // Time derivatives (drpm/dt - time-normalized)
-        if(id.equals("dRPM/dt - raw")) {
-            // Time derivative of CSV RPM
-            final DoubleArray y = (this.csvRpm != null) ? this.csvRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): csvRpm is null, cannot calculate derivative", id);
-                return null;
-            }
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            return new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("dRPM/dt - base")) {
-            // Time derivative of Base RPM
-            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): baseRpm is null, cannot calculate derivative", id);
-                return null;
-            }
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            return new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("dRPM/dt")) {
-            // Time derivative of Final RPM
-            final DoubleArray y = this.get("RPM").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            return new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("dVelocity/dt")) {
-            // Time derivative of Calc Velocity
-            final DoubleArray y = this.get("Calc Velocity").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            return new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("dAccel/dt")) {
-            // Time derivative of Acceleration (m/s²) - this is "jerk"
-            final DoubleArray y = this.get("Acceleration (m/s^2)").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            return new Column(id, "m/s^3", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("dWHP/dt")) {
-            // Time derivative of WHP
-            final DoubleArray y = this.get("WHP").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            return new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("dHP/dt")) {
-            // Time derivative of HP
-            final DoubleArray y = this.get("HP").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            return new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-
-        // Sample differences (Δ - not time-normalized)
-        } else if(id.equals("Δ RPM - raw")) {
-            // Sample difference of CSV RPM
-            final DoubleArray y = (this.csvRpm != null) ? this.csvRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): csvRpm is null, cannot calculate difference", id);
-                return null;
-            }
-            final DoubleArray difference = y.difference();
-            return new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Δ RPM - base")) {
-            // Sample difference of Base RPM
-            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): baseRpm is null, cannot calculate difference", id);
-                return null;
-            }
-            final DoubleArray difference = y.difference();
-            return new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Δ RPM")) {
-            // Sample difference of Final RPM
-            final DoubleArray y = this.get("RPM").data;
-            final DoubleArray difference = y.difference();
-            return new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Δ Velocity")) {
-            // Sample difference of Calc Velocity
-            final DoubleArray y = this.get("Calc Velocity").data;
-            final DoubleArray difference = y.difference();
-            return new Column(id, UnitConstants.UNIT_MPS, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("Δ Acceleration")) {
-            // Sample difference of Acceleration (m/s²)
-            final DoubleArray y = this.get("Acceleration (m/s^2)").data;
-            final DoubleArray difference = y.difference();
-            return new Column(id, "m/s^2", difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("Δ WHP")) {
-            // Sample difference of WHP - use raw (unsmoothed) WHP data
-            // This shows the raw difference between samples, not smoothed differences
-            final DoubleArray y = this.get("WHP").data;
-            final DoubleArray difference = y.difference();
-            return new Column(id, UnitConstants.UNIT_HP, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("Δ HP")) {
-            // Sample difference of HP
-            // HP is already calculated from smoothed WHP, so this difference is consistent
-            final DoubleArray y = this.get("HP").data;
-            final DoubleArray difference = y.difference();
-            return new Column(id, UnitConstants.UNIT_HP, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        }
-
-        // Not a diagnostic column
-        return null;
-    }
-
-    /**
-     * Calculate torque from smoothed power data.
-     * Creates a column with torque calculated from smoothed power (HP or WHP) and RPM.
-     *
-     * @param torqueId The ID for the torque column (e.g., "TQ" or "WTQ")
-     * @param powerColumnName The name of the power column (e.g., "HP" or "WHP")
-     * @return Column with calculated torque, or null if power/RPM data is unavailable
-     */
-    private Column calculateTorque(String torqueId, String powerColumnName) {
-        // Calculate torque from raw power data (no smoothing applied here)
-        // Smoothing will be applied in getData() if needed
-        Column powerCol = this.get(powerColumnName);
-        Column rpmCol = this.get("RPM");
-        if (powerCol == null || rpmCol == null) {
-            logger.error("_get('{}'): Failed to get {} or RPM column - {}={}, RPM={}",
-                torqueId, powerColumnName, powerColumnName, powerCol != null, rpmCol != null);
-            return null;
-        }
-        final DoubleArray power = powerCol.data;
-        final DoubleArray rpm = rpmCol.data;
-        if (power.size() != rpm.size()) {
-            logger.error("_get('{}'): Power and RPM data length mismatch - {}={}, RPM={}",
-                torqueId, powerColumnName, power.size(), rpm.size());
-            return null;
-        }
-        // Calculate torque from raw power data: TQ = HP * HP_CALCULATION_FACTOR / RPM
-        final DoubleArray torque = power.mult(UnitConstants.HP_CALCULATION_FACTOR).div(rpm);
-        String label = UnitConstants.UNIT_FTLB;
-        if(this.env.sae.enabled()) label += " (SAE)";
-        // Register for range-aware smoothing in getData() (same as power columns)
-        Column c = new Column(torqueId, label, torque, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        this.smoothingWindows.put(torqueId, this.filter.HPMAW());
-        return c;
-    }
-
-    /**
      * Get a column in the specified unit, converting if necessary.
      *
      * @param columnName The name of the column to get
@@ -832,6 +717,14 @@ public class ECUxDataset extends Dataset {
 
 
 
+    /**
+     * Parse CSV headers using logger-specific configuration.
+     * Applies TIME scaling correction and processes headers according to detected logger type.
+     *
+     * @param reader The CSVReader instance for reading header lines
+     * @param verbose Verbosity level for logging (0=quiet, higher=more verbose)
+     * @throws Exception If header processing fails or logger configuration is invalid
+     */
     @Override
     public void ParseHeaders(CSVReader reader, int verbose) throws Exception {
         final String logType = this.log_detected;
@@ -859,17 +752,15 @@ public class ECUxDataset extends Dataset {
         this.setIds(h, config);
     }
 
-    private DoubleArray drag (DoubleArray v) {
-        final DoubleArray windDrag = v.pow(3).mult(0.5 * UnitConstants.AIR_DENSITY_STANDARD * this.env.c.Cd() *
-            this.env.c.FA());
-
-        final DoubleArray rollingDrag = v.mult(this.env.c.rolling_drag() *
-            this.env.c.mass() * UnitConstants.STANDARD_GRAVITY);
-
-        return windDrag.add(rollingDrag);
-    }
 
 
+    /**
+     * Get a column by ID with error handling.
+     * Wraps _get() with NullPointerException handling for better error messages.
+     *
+     * @param id The column ID to retrieve
+     * @return The Column if found or calculated, null otherwise
+     */
     @Override
     public Column get(Comparable<?> id) {
         try {
@@ -886,6 +777,14 @@ public class ECUxDataset extends Dataset {
         }
     }
 
+    /**
+     * Core method for retrieving or calculating columns.
+     * Handles recursion protection, unit conversions, and delegates to handlers.
+     * This is the main entry point for all column retrieval after initial CSV loading.
+     *
+     * @param id The column ID to retrieve
+     * @return The Column if found or calculated, null otherwise
+     */
     private Column _get(Comparable<?> id) {
         String idStr = id.toString();
 
@@ -932,758 +831,73 @@ public class ECUxDataset extends Dataset {
         // Violating this requirement breaks the chain logic and makes the code unpredictable.
         // ====================================================================
 
-            // ========== BASIC FIELDS ==========
-        if(id.equals("Sample")) {
+        // Try pattern-based routing first (optimization to skip handlers that won't match)
+        c = AxisMenuHandlers.tryPatternRouting(this, id);
+        if (c == null) {
+            // Try all registered handlers (power/torque, diagnostic columns, etc.)
+            c = AxisMenuHandlers.tryAllHandlers(this, id);
+        }
+
+        // Continue with individual field handlers if no registered handler matched
+        if (c == null) {
+            switch (idStr) {
+                case "Sample": {
             final double[] idx = new double[this.length()];
             for (int i=0;i<this.length();i++)
                 idx[i]=i;
             final DoubleArray a = new DoubleArray(idx);
             c = new Column("Sample", "#", a, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("TIME")) {
+                    break;
+                }
+                case "TIME": {
             // Smooth TIME data to reduce jitter in sample rate calculations
             // Use segment-aware smoothing to avoid artifacts from time discontinuities
             c = createSegmentAwareSmoothedTimeColumn();
-        } else if(id.equals("TIME - raw")) {
+                    break;
+                }
+                case "TIME - raw": {
             c = getOrCreateRawColumn("TIME", UnitConstants.UNIT_SECONDS,
                                     (data) -> data.div(this.time_ticks_per_sec));
-        } else if(id.equals("RPM")) {
+                    break;
+                }
+                case "RPM": {
             // smooth sampling quantum noise/jitter, RPM is an integer!
             // Always applies MA (if enough samples), then optionally SG
             c = createSmoothedColumn("RPM", UnitConstants.UNIT_RPM, null, 0.0);
-        } else if(id.equals("RPM - raw")) {
+                    break;
+                }
+                case "RPM - raw": {
             c = getOrCreateRawColumn("RPM", UnitConstants.UNIT_RPM, null);
-        } else if(id.equals("RPM - base")) {
+                    break;
+                }
+                case "RPM - base": {
             // Debug column: return base RPM used for range detection
             c = this.baseRpm;
-
-        // ========== CALCULATED MAF & FUEL FIELDS ==========
-        } else if(id.equals("Sim Load")) {
-            // g/sec to kg/hr
-            final DoubleArray a = super.get("MassAirFlow").data.mult(UnitConstants.GPS_PER_KGH);
-            final DoubleArray b = super.get("RPM").data.smooth();
-
-            // KUMSRL
-            c = new Column(id, UnitConstants.UNIT_PERCENT, a.div(b).div(.001072));
-        } else if(id.equals("Sim Load Corrected")) {
-            // g/sec to kg/hr
-            final DoubleArray a = this.get("Sim MAF").data.mult(UnitConstants.GPS_PER_KGH);
-            final DoubleArray b = this.get("RPM").data;
-
-            // KUMSRL
-            c = new Column(id, UnitConstants.UNIT_PERCENT, a.div(b).div(.001072));
-        } else if(id.equals("Sim MAF")) {
-            // mass in g/sec
-            final DoubleArray a = super.get("MassAirFlow").data.
-                mult(this.env.f.MAF_correction()).add(this.env.f.MAF_offset());
-            c = new Column(id, UnitConstants.UNIT_GPS, a, Dataset.ColumnType.OTHER_RUNTIME);
-        } else if(id.equals("MassAirFlow df/dt")) {
-            // mass in g/sec
-            final DoubleArray maf = super.get("MassAirFlow").data;
-            final DoubleArray time = this.get("TIME").data;
-            c = new Column(id, "g/sec^s", maf.derivative(time).max(0));
-        } else if(id.equals("Turbo Flow")) {
-            final DoubleArray a = this.get("Sim MAF").data;
-            c = new Column(id, "m^3/sec", a.div(1225*this.env.f.turbos()), Dataset.ColumnType.OTHER_RUNTIME);
-        } else if(id.equals("Turbo Flow (lb/min)")) {
-            final DoubleArray a = this.get("Sim MAF").data;
-            c = new Column(id, "lb/min", a.div(7.55*this.env.f.turbos()), Dataset.ColumnType.OTHER_RUNTIME);
-        } else if(id.equals("Sim Fuel Mass")) { // based on te
-            final double gps = this.env.f.injector()*UnitConstants.GPS_PER_CCMIN;
-            final double cylinders = this.env.f.cylinders();
-            final Column bank1 = this.get("EffInjectorDutyCycle");
-            final Column bank2 = this.get("EffInjectorDutyCycleBank2");
-            DoubleArray duty = bank1.data;
-            /* average two duties for overall mass */
-            if (bank2!=null) duty = duty.add(bank2.data).div(2);
-            final DoubleArray a = duty.mult(cylinders*gps/100);
-            c = new Column(id, "g/sec", a, Dataset.ColumnType.OTHER_RUNTIME);
-
-        // ========== CALCULATED AIR-FUEL RATIO FIELDS ==========
-        // Note: AFR conversions (lambda to AFR) are now handled by generic unit conversion handler
-        } else if(id.equals("Sim AFR")) {
-            final DoubleArray a = this.get("Sim MAF").data;
-            final DoubleArray b = this.get("Sim Fuel Mass").data;
-            c = new Column(id, UnitConstants.UNIT_AFR, a.div(b));
-        } else if(id.equals("Sim lambda")) {
-            final DoubleArray a = this.get("Sim AFR").data.div(UnitConstants.STOICHIOMETRIC_AFR);
-            c = new Column(id, UnitConstants.UNIT_LAMBDA, a);
-        } else if(id.equals("Sim lambda error")) {
-            final DoubleArray a = super.get("AirFuelRatioDesired").data;
-            final DoubleArray b = this.get("Sim lambda").data;
-            c = new Column(id, UnitConstants.UNIT_PERCENT, a.div(b).mult(-1).add(1).mult(100).
-                max(-25).min(25));
-
-        } else if(id.equals("FuelInjectorDutyCycle")) {
-            final DoubleArray a = super.get("FuelInjectorOnTime").data. /* ti */
-                div(60*1000);   /* assumes injector on time is in ms */
-
-            final DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
-            c = new Column(id, UnitConstants.UNIT_PERCENT, a.mult(b).mult(100)); // convert to %
-        } else if(id.equals("EffInjectorDutyCycle")) {          /* te */
-            final DoubleArray a = super.get("EffInjectionTime").data.
-                div(60*1000);   /* assumes injector on time is in ms */
-
-            final DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
-            c = new Column(id, UnitConstants.UNIT_PERCENT, a.mult(b).mult(100)); // convert to %
-        } else if(id.equals("EffInjectorDutyCycleBank2")) {             /* te */
-            final DoubleArray a = super.get("EffInjectionTimeBank2").data.
-                div(60*1000);   /* assumes injector on time is in ms */
-
-            final DoubleArray b = this.get("RPM").data.div(2); // 1/2 cycle
-            c = new Column(id, UnitConstants.UNIT_PERCENT, a.mult(b).mult(100)); // convert to %
-
-        // ========== SPECIAL HANDLERS: ENGINE TORQUE/HP ==========
-        // if log contains Engine torque / converts TorqueDesired (Nm) to ft-lb and calculates HP
-        // See MenuHandlerRegistry.REGISTRY["Engine torque (ft-lb)"], etc.
-        } else if(id.equals("Engine torque (ft-lb)")) {
-            final DoubleArray tq = this.get("TorqueDesired").data;
-            final DoubleArray value = tq.mult(UnitConstants.NM_PER_FTLB);       // nm to ft-lb
-            c = new Column(id, UnitConstants.UNIT_FTLB, value);
-        } else if(id.equals("Engine HP")) {
-            final DoubleArray tq = this.get("Engine torque (ft-lb)").data;
-            final DoubleArray rpm = this.get("RPM").data;
-            final DoubleArray value = tq.div(UnitConstants.HP_CALCULATION_FACTOR).mult(rpm);
-            c = new Column(id, UnitConstants.UNIT_HP, value);
-
-        // ========== CALCULATED FIELDS: VELOCITY & ACCELERATION ==========
-        // Calc Velocity, Acceleration (RPM/s), Acceleration (m/s^2), Acceleration (g)
-        // See MenuHandlerRegistry.REGISTRY["Calc Velocity"], etc.
-        //
-        // SMOOTHING STRATEGY:
-        // - All acceleration calculations use smoothed RPM input (from get("RPM").data)
-        //   to reduce quantization noise before differentiation
-        //   The final RPM column already has adaptive smoothing (MAW+SG for quantized, SG for smooth)
-        // - Acceleration (RPM/s) and Acceleration (m/s^2) use AccelMAW() smoothing window
-        //   applied via range-aware smoothing in getData() for consistent smoothing
-        // - "Raw" variants (Acceleration (RPM/s) - raw, Acceleration (m/s^2) - raw) use
-        //   smoothed RPM input but no smoothing on the derivative (tooltip explains this)
-        // - Calc Velocity inherits smoothing quality from smoothed RPM (no additional smoothing)
-        //
-        // SMOOTHING WINDOWS:
-        // - Acceleration derivatives: AccelMAW() (typically 5-10 samples)
-        //   Applied via range-aware smoothing in getData() only (NOT during derivative calculation)
-        //   IMPORTANT: Do NOT apply smoothing during derivative calculation (derivative(x, AccelMAW()))
-        //   AND also register for range-aware smoothing. This creates double-smoothing which is
-        //   excessive and causes edge artifacts. The three-stage RPM design already provides
-        //   appropriate smoothing at the input level (final RPM with adaptive smoothing).
-        // - "Raw" variants: none (derivative without smoothing window, no range-aware smoothing)
-        } else if(id.equals("Calc Velocity")) {
-            // Calculate vehicle speed from RPM and gear ratio (more accurate than VehicleSpeed sensor)
-            // Uses user-specified rpm_per_mph for calibration
-            final DoubleArray rpm = this.get("RPM").data;
-            c = new Column(id, UnitConstants.UNIT_MPS, rpm.div(this.env.c.rpm_per_mph()).
-                mult(UnitConstants.MPS_PER_MPH), Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("Acceleration (RPM/s)")) {
-            // Smoothed RPM acceleration - uses smoothed RPM with AccelMAW() smoothing applied via range-aware smoothing
-            // Smoothing window: AccelMAW() (typically 5-10 samples) - applied in getData() via range-aware smoothing
-            // NOTE: We do NOT apply smoothing during derivative calculation here to avoid double-smoothing and edge loss.
-            // Instead, smoothing is applied only via range-aware smoothing in getData(), which handles edges correctly with padding.
-            final DoubleArray y = this.get("RPM").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x).max(0);  // No smoothing during derivative - will be smoothed in getData()
-            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-            // Register for range-aware smoothing to prevent edge artifacts when viewing truncated ranges
-            this.smoothingWindows.put(id.toString(), this.filter.accelMAW());
-        } else if(id.equals("Acceleration (RPM/s) - raw")) {
-            // Use smoothed RPM (not raw) to reduce quantization noise before differentiation
-            // "Raw" refers to unsmoothed derivative, not unsmoothed input
-            // Smoothing window: none (derivative without smoothing window)
-            final DoubleArray y = this.get("RPM").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x).max(0);
-            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Acceleration (RPM/s) - from base RPM")) {
-            // Debug column: acceleration from base RPM input (uses AccelMAW smoothing on input)
-            // Uses base RPM (SG smoothing only) instead of final RPM (adaptive smoothing)
-            // Applies AccelMAW smoothing to base RPM input before derivative calculation
-            // This allows comparison of base RPM vs final RPM effects on acceleration
-            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): baseRpm is null, cannot calculate acceleration", id);
-                return null;
-            }
-            final DoubleArray x = this.get("TIME").data;
-            // Apply AccelMAW smoothing to base RPM, then calculate derivative
-            // Convert accelMAW from seconds to samples for derivative smoothing
-            final int accelMAW = (int)Math.round(this.samples_per_sec * this.filter.accelMAW());
-            DoubleArray derivative;
-            if (accelMAW > 0 && this.samples_per_sec > 0) {
-                final double[] baseRpmArray = y.toArray();
-                final Smoothing smoother = new Smoothing(accelMAW);
-                final double[] smoothedRpm = smoother.applyToRange(baseRpmArray, 0, baseRpmArray.length - 1);
-                derivative = new DoubleArray(smoothedRpm).derivative(x).max(0);
-            } else {
-                derivative = y.derivative(x).max(0);
-            }
-            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Acceleration (m/s^2) - raw")) {
-            // Raw (unsmoothed) acceleration in m/s^2 - calculated directly from RPM (same approach as RPM/s)
-            // "Raw" refers to unsmoothed derivative, not unsmoothed input
-            // Smoothing window: none (derivative without smoothing window)
-            final DoubleArray y = this.get("RPM").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x).max(0);
-            // Convert RPM/s to m/s^2: derivative (RPM/s) / rpm_per_mph * MPS_PER_MPH
-            final DoubleArray accel = derivative.div(this.env.c.rpm_per_mph()).
-                mult(UnitConstants.MPS_PER_MPH);
-            c = new Column(id, "m/s^2", accel, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("Acceleration (m/s^2)")) {
-            // Smoothed acceleration in m/s^2 - calculated directly from RPM (same approach as Acceleration (RPM/s))
-            // Uses smoothed RPM directly, derivative with AccelMAW() smoothing applied via range-aware smoothing
-            // Smoothing window: AccelMAW() (typically 5-10 samples) - applied in getData() via range-aware smoothing
-            // NOTE: We do NOT apply smoothing during derivative calculation here to avoid double-smoothing and edge loss.
-            // Instead, smoothing is applied only via range-aware smoothing in getData(), which handles edges correctly with padding.
-            // This ensures consistent smoothing between RPM/s and m/s^2 acceleration
-            final DoubleArray y = this.get("RPM").data;
-            // Log values from middle of dataset to verify we're using smoothed RPM (not CSV)
-            // Also compare with CSV RPM at same indices to verify smoothing is applied
-            if (y != null && y.size() > 20 && this.csvRpm != null && this.csvRpm.data.size() == y.size()) {
-                final int middleStart = y.size() / 2 - 5;
-                final int middleEnd = middleStart + 10;
-                final StringBuilder sb = new StringBuilder();
-                sb.append("RPM data used for acceleration (indices ").append(middleStart).append("-").append(middleEnd - 1).append("): ");
-                for (int j = middleStart; j < middleEnd && j < y.size(); j++) {
-                    if (j > middleStart) sb.append(", ");
-                    sb.append(String.format("%.1f", y.get(j)));
+                    break;
                 }
-                logger.debug("_get('{}'): {}", id, sb.toString());
-                // Compare with CSV RPM at same indices
-                final StringBuilder sbCsv = new StringBuilder();
-                sbCsv.append("CSV RPM at same indices (for comparison): ");
-                for (int j = middleStart; j < middleEnd && j < this.csvRpm.data.size(); j++) {
-                    if (j > middleStart) sbCsv.append(", ");
-                    sbCsv.append(String.format("%.1f", this.csvRpm.data.get(j)));
-                }
-                logger.debug("_get('{}'): {}", id, sbCsv.toString());
+                default:
+                    // No match - c remains null
+                    break;
             }
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x).max(0);  // No smoothing during derivative - will be smoothed in getData()
-            // Convert RPM/s to m/s^2: derivative (RPM/s) / rpm_per_mph * MPS_PER_MPH
-            final DoubleArray accel = derivative.div(this.env.c.rpm_per_mph()).
-                mult(UnitConstants.MPS_PER_MPH);
-            c = new Column(id, "m/s^2", accel, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            // Register for range-aware smoothing to prevent edge artifacts when viewing truncated ranges
-            this.smoothingWindows.put(id.toString(), this.filter.accelMAW());
-        } else if(id.equals("Acceleration (g)")) {
-            // Depends on Acceleration (m/s^2) which uses RPM_PER_MPH
-            final DoubleArray a = this.get("Acceleration (m/s^2)").data;
-            c = new Column(id, UnitConstants.UNIT_G, a.div(UnitConstants.STANDARD_GRAVITY), Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("TIME [Range]")) {
-            // Relative time to start of range (if filter enabled), otherwise just TIME
-            if (!this.filter.enabled()) {
-                // Filter disabled: return base TIME data
-                final DoubleArray time = this.get("TIME").data;
-                c = new Column(id, UnitConstants.UNIT_SECONDS, time, Dataset.ColumnType.PROCESSED_VARIANT);
-            } else {
-                // Filter enabled: calculate relative time to range start
-                final DoubleArray time = this.get("TIME").data;
-                final ArrayList<Dataset.Range> ranges = this.getRanges();
-                final double[] result = new double[this.length()];
-                for (int i = 0; i < this.length(); i++) {
-                    final Dataset.Range range = findRangeForIndex(ranges, i);
-                    if (range != null) {
-                        result[i] = time.get(i) - time.get(range.start);
-                    } else {
-                        // Not in any range: use absolute time
-                        result[i] = time.get(i);
-                    }
-                }
-                c = new Column(id, UnitConstants.UNIT_SECONDS, new DoubleArray(result), Dataset.ColumnType.PROCESSED_VARIANT);
-            }
-        } else if(id.equals("Sample [Range]")) {
-            // Relative sample to start of range (if filter enabled), otherwise just Sample
-            if (!this.filter.enabled()) {
-                // Filter disabled: return base Sample data
-                final double[] idx = new double[this.length()];
-                for (int i = 0; i < this.length(); i++) {
-                    idx[i] = i;
-                }
-                c = new Column(id, UnitConstants.UNIT_SAMPLE, new DoubleArray(idx), Dataset.ColumnType.PROCESSED_VARIANT);
-            } else {
-                // Filter enabled: calculate relative sample to range start
-                final ArrayList<Dataset.Range> ranges = this.getRanges();
-                final double[] result = new double[this.length()];
-                for (int i = 0; i < this.length(); i++) {
-                    final Dataset.Range range = findRangeForIndex(ranges, i);
-                    if (range != null) {
-                        result[i] = i - range.start;
-                    } else {
-                        // Not in any range: use absolute sample index
-                        result[i] = i;
-                    }
-                }
-                c = new Column(id, UnitConstants.UNIT_SAMPLE, new DoubleArray(result), Dataset.ColumnType.PROCESSED_VARIANT);
             }
 
-        // ========== CALCULATED FIELDS: POWER & TORQUE ==========
-        // WHP, WTQ, HP, TQ, Drag
-        // See MenuHandlerRegistry.REGISTRY["WHP"], etc.
-        //
-        // HP/WHP CALCULATION CHAIN:
-        // 1. RPM (smoothed) → Acceleration (m/s^2) [uses AccelMAW() smoothing window]
-        // 2. RPM (smoothed) → Calc Velocity [inherits smoothing, no additional smoothing]
-        // 3. Acceleration (m/s^2) + Calc Velocity → WHP [smoothed in getData() with HPMAW() window]
-        // 4. WHP → HP [calculated from raw WHP during _get(), smoothed in getData() with HPMAW() window]
-        //    NOTE: HP is calculated from raw WHP data (not smoothed) during column creation.
-        //    Smoothing is applied separately in getData() via range-aware smoothing.
-        //    Since HP = WHP / (1-driveline_loss) + static_loss is a linear transformation,
-        //    smoothing HP directly is equivalent to smoothing WHP then calculating HP.
-        //    Both WHP and HP are registered for smoothing and smoothed independently in getData().
-        // 5. HP/WHP → TQ/WTQ [calculated from raw HP/WHP, smoothed in getData() with HPMAW() window]
-        //
-        // SMOOTHING WINDOWS:
-        // - Acceleration derivatives: AccelMAW() (typically 5-10 samples)
-        //   Applied via range-aware smoothing in getData() only (NOT during derivative calculation)
-        //   IMPORTANT: Do NOT apply smoothing during derivative calculation (derivative(x, AccelMAW()))
-        //   AND also in getData(). This creates double-smoothing which is excessive and causes edge artifacts.
-        //   The three-stage RPM design (CSV → Base → Final) already provides appropriate smoothing:
-        //   - Final RPM uses adaptive smoothing (MAW+SG for quantized, SG for smooth)
-        //   - Range-aware smoothing in getData() handles edge artifacts with proper padding
-        //   - Single smoothing point per architectural layer avoids redundancy
-        // - WHP: HPMAW() (typically 10-20 samples) - applied in getData()
-        // - HP: HPMAW() (typically 10-20 samples) - applied in getData()
-        //   NOTE: HP is calculated from raw WHP during _get(), then smoothed independently in getData().
-        //   Both WHP and HP are registered for smoothing and smoothed separately.
-        // - TQ/WTQ: HPMAW() (typically 10-20 samples) - applied in getData()
-        //   NOTE: TQ/WTQ are calculated from raw HP/WHP during _get(), then smoothed independently in getData().
-        //
-        // RANGE-AWARE SMOOTHING:
-        // Range-aware smoothing (via getData()) prevents edge artifacts when data windows
-        // are truncated by ranges. It uses padding and re-smooths only the requested range.
-        // This is applied to: Acceleration (RPM/s), Acceleration (m/s^2), WHP
-        //
-        // DESIGN PRINCIPLE: Single Smoothing Point Per Architectural Layer
-        // The three-stage RPM architecture (CSV → Base → Final) provides a clear separation:
-        // - CSV RPM: Raw data (no smoothing)
-        // - Base RPM: SG only (for range detection, no quantization detection needed)
-        // - Final RPM: Adaptive smoothing (MAW+SG for quantized, SG for smooth) - for calculations
-        // - Display columns: Range-aware smoothing (for edge handling when viewing truncated ranges)
-        // - Power calculations: HPMAW() smoothing (user preference on final power values)
-        // Each layer adds ONE smoothing step. Double-smoothing (e.g., smoothing in derivative AND
-        // range-aware smoothing) violates this principle and causes excessive smoothing and edge artifacts.
-        } else if(id.equals("WHP")) {
-            // Uses: mass, Cd, FA, rolling_drag (via drag()), rpm_per_mph (via Calc Velocity)
-            // Depends on: Acceleration (m/s^2) [smoothed with AccelMAW()], Calc Velocity [from smoothed RPM]
-            // Smoothing: Applied in getData() using HPMAW() window
-            Column accelCol = this.get("Acceleration (m/s^2)");
-            Column velocityCol = this.get("Calc Velocity");
-            if (accelCol == null || velocityCol == null) {
-                logger.warn("_get('WHP'): Missing dependencies - Acceleration (m/s^2)={}, Calc Velocity={}",
-                    accelCol != null, velocityCol != null);
-                return null;
+            if(c!=null) {
+                // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
+                // This ensures CSV_NATIVE columns are replaced by calculated versions (TIME/RPM, BoostPressureActual/Desired, etc.)
+                this.putColumn(c);
+                return c;
             }
-            final DoubleArray a = accelCol.data;
-            final DoubleArray v = velocityCol.data;
-            final DoubleArray whp = a.mult(v).mult(this.env.c.mass()).
-                add(this.drag(v));      // in watts
-
-            DoubleArray value = whp.mult(1.0 / UnitConstants.HP_PER_WATT);
-            String l = UnitConstants.UNIT_HP;
-            if(this.env.sae.enabled()) {
-                value = value.mult(this.env.sae.correction());
-                l += " (SAE)";
-            }
-            // Store unsmoothed data and record smoothing requirement
-            // Smoothing will be applied in getData() using MAW() window
-            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            this.smoothingWindows.put(id.toString(), this.filter.HPMAW());
-        } else if(id.equals("HP")) {
-            // Uses: driveline_loss, static_loss, plus all WHP dependencies
-            // Depends on: WHP (raw, unsmoothed data)
-            //
-            // Calculate HP directly from raw WHP using driveline loss formula.
-            // No additional smoothing applied - smoothing will be applied in getData() if needed.
-            // HP = WHP / (1 - driveline_loss) + static_loss
-            Column whpCol = this.get("WHP");
-            if (whpCol == null) {
-                logger.warn("_get('HP'): Missing dependency - WHP");
-                return null;
-            }
-            // Calculate HP from raw WHP (no smoothing applied here)
-            final DoubleArray value = whpCol.data.div((1-this.env.c.driveline_loss())).
-                    add(this.env.c.static_loss());
-            String l = UnitConstants.UNIT_HP;
-            if(this.env.sae.enabled()) l += " (SAE)";
-            // Register for range-aware smoothing in getData() (same as WHP)
-            // This ensures HP gets smoothed when retrieved, matching WHP smoothing behavior
-            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            this.smoothingWindows.put(id.toString(), this.filter.HPMAW());
-        } else if(id.equals("WTQ")) {
-            // Depends on WHP (which uses all WHP constants)
-            // Calculate WTQ from raw WHP (no smoothing applied here)
-            // Smoothing will be applied in getData() via range-aware smoothing
-            c = this.calculateTorque("WTQ", "WHP");
-        } else if(id.toString().equals(idWithUnit("WTQ", UnitConstants.UNIT_NM))) {
-            // Depends on WTQ (which uses WHP constants)
-            // Note: This handler is typically bypassed by the generic unit conversion handler,
-            // which automatically inherits smoothing registration from the base "WTQ" column
-            final DoubleArray wtq = this.get("WTQ").data;
-            final DoubleArray value = wtq.mult(UnitConstants.NM_PER_FTLB); // ft-lb to Nm
-            String l = UnitConstants.UNIT_NM;
-            if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            // Smoothing registration inherited automatically via getColumnInUnits() when generic handler runs
-        } else if(id.equals("TQ")) {
-            // Depends on HP (which uses all HP/WHP constants)
-            // Calculate TQ from raw HP (no smoothing applied here)
-            // Smoothing will be applied in getData() via range-aware smoothing
-            c = this.calculateTorque("TQ", "HP");
-        } else if(id.toString().equals(idWithUnit("TQ", UnitConstants.UNIT_NM))) {
-            // Depends on TQ (which uses all HP/WHP constants)
-            // Note: This handler is typically bypassed by the generic unit conversion handler,
-            // which automatically inherits smoothing registration from the base "TQ" column
-            final DoubleArray tq = this.get("TQ").data;
-            final DoubleArray value = tq.mult(UnitConstants.NM_PER_FTLB); // ft-lb to Nm
-            String l = UnitConstants.UNIT_NM;
-            if(this.env.sae.enabled()) l += " (SAE)";
-            c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            // Smoothing registration inherited automatically via getColumnInUnits() when generic handler runs
-        } else if(id.equals("Drag")) {
-            // Uses: Cd, FA, rolling_drag, mass (via drag()), rpm_per_mph (via Calc Velocity)
-            final DoubleArray v = this.get("Calc Velocity").data;
-            final DoubleArray drag = this.drag(v);
-            c = new Column(id, "HP", drag.mult(1.0 / UnitConstants.HP_PER_WATT), Dataset.ColumnType.VEHICLE_CONSTANTS);
-
-        // ========== BOOST PRESSURE & ZEITRONIX HANDLERS ==========
-        // BoostPressureDesired, Zeitronix Boost, Zeitronix AFR, Zeitronix Lambda
-        // See MenuHandlerRegistry.REGISTRY["Zeitronix Boost (PSI)"], etc.
-        } else if(id.equals("BoostPressureDesired")) {
-            final Column delta = super.get("BoostPressureDesiredDelta");
-            if (delta != null) {
-                final Column ecu = super.get("ECUBoostPressureDesired");
-                if (ecu != null) {
-                    c = new Column(id, UnitConstants.UNIT_PSI, ecu.data.add(delta.data));
-                }
-            }
-        } else if(id.toString().equals(idWithUnit("Zeitronix Boost", UnitConstants.UNIT_PSI))) {
-            final DoubleArray boost = super.get("Zeitronix Boost").data;
-            // Store unsmoothed data and record smoothing requirement
-            c = new Column(id, UnitConstants.UNIT_PSI, boost);
-            // Register for range-aware smoothing (window size in seconds, converted to samples internally)
-            this.smoothingWindows.put(id.toString(), this.filter.ZeitMAW());
-        } else if(id.equals("Zeitronix Boost")) {
-            // Get base column directly from map (no calculations) and convert units directly
-            Column baseCol = super.get("Zeitronix Boost");
-            if (baseCol == null) {
-                logger.warn("_get('Zeitronix Boost'): Base column not found in map");
-                return null;
-            }
-            // Convert to PSI using DatasetUnits (bypasses getColumnInUnits to avoid recursion)
-            java.util.function.Supplier<Double> ambientSupplier = () -> {
-                Column baro = super.get("BaroPressure");
-                if (baro != null && baro.data != null && baro.data.size() > 0) {
-                    return baro.data.get(0);
-                }
-                return null;
-            };
-            Dataset.ColumnType colType = baseCol.getColumnType();
-            if (colType == Dataset.ColumnType.CSV_NATIVE) {
-                colType = Dataset.ColumnType.COMPILE_TIME_CONSTANTS;
-            }
-            Column psiCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_PSI, ambientSupplier, colType);
-            final DoubleArray boost = psiCol.data;
-            c = new Column(id, UnitConstants.UNIT_MBAR, boost.mult(UnitConstants.MBAR_PER_PSI).add(UnitConstants.MBAR_PER_ATM));
-        } else if(id.toString().equals(idWithUnit("Zeitronix AFR", UnitConstants.UNIT_LAMBDA))) {
-            final DoubleArray abs = super.get("Zeitronix AFR").data;
-            c = new Column(id, UnitConstants.UNIT_LAMBDA, abs.div(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.toString().equals(idWithUnit("Zeitronix Lambda", UnitConstants.UNIT_AFR))) {
-            final DoubleArray abs = super.get("Zeitronix Lambda").data;
-            c = new Column(id, UnitConstants.UNIT_AFR, abs.mult(UnitConstants.STOICHIOMETRIC_AFR));
-        } else if(id.equals("BoostDesired PR")) {
-            final Column act = super.get("BoostPressureDesired");
-            try {
-                final DoubleArray ambient = super.get("BaroPressure").data;
-                c = new Column(id, "PR", act.data.div(ambient));
-            } catch (final Exception e) {
-                if (act.getUnits().matches(UnitConstants.UNIT_PSI))
-                    c = new Column(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
-                else
-                    c = new Column(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
-            }
-
-        } else if(id.equals("BoostActual PR")) {
-            final Column act = super.get("BoostPressureActual");
-            try {
-                final DoubleArray ambient = super.get("BaroPressure").data;
-                c = new Column(id, "PR", act.data.div(ambient));
-            } catch (final Exception e) {
-                if (act.getUnits().matches(UnitConstants.UNIT_PSI))
-                    c = new Column(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
-                else
-                    c = new Column(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
-            }
-        } else if(id.equals("Sim evtmod")) {
-            // Get base column directly from map and convert units directly (avoid recursion)
-            Column baseCol = super.get("IntakeAirTemperature");
-            if (baseCol == null) {
-                logger.warn("_get('Sim evtmod'): IntakeAirTemperature not found in map");
-                return null;
-            }
-            Column celsiusCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_CELSIUS, null, baseCol.getColumnType());
-            final DoubleArray tans = celsiusCol.data;
-            DoubleArray tmot = tans.ident(95);
-            try {
-                tmot = this.get("CoolantTemperature").data;
-            } catch (final Exception e) {}
-
-            // KFFWTBR=0.02
-            // evtmod = tans + (tmot-tans)*KFFWTBR
-            final DoubleArray evtmod = tans.add((tmot.sub(tans)).mult(0.02));
-            c = new Column(id, "\u00B0C", evtmod);
-        } else if(id.equals("Sim ftbr")) {
-            // Get base column directly from map and convert units directly (avoid recursion)
-            Column baseCol = super.get("IntakeAirTemperature");
-            if (baseCol == null) {
-                logger.warn("_get('Sim ftbr'): IntakeAirTemperature not found in map");
-                return null;
-            }
-            Column celsiusCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_CELSIUS, null, baseCol.getColumnType());
-            final DoubleArray tans = celsiusCol.data;
-            final DoubleArray evtmod = this.get("Sim evtmod").data;
-            // linear fit to stock FWFTBRTA
-            // fwtf = (tans+637.425)/731.334
-
-            final DoubleArray fwft = tans.add(673.425).div(731.334);
-
-            // ftbr = 273/(tans+273) * fwft
-
-            //    (tans+637.425)      273
-            //    -------------- *  -------
-            //      (tans+273)      731.334
-
-            // ftbr=273/(evtmod-273) * fwft
-            c = new Column(id, "", evtmod.ident(273).div(evtmod.add(273)).mult(fwft));
-        } else if(id.equals("Sim BoostIATCorrection")) {
-            final DoubleArray ftbr = this.get("Sim ftbr").data;
-            c = new Column(id, "", ftbr.inverse());
-        } else if(id.equals("Sim BoostPressureDesired")) {
-            final boolean SY_BDE = false;
-            final boolean SY_AGR = true;
-            DoubleArray load;
-            DoubleArray ps;
-
-            try {
-                load = super.get("EngineLoadRequested").data; // rlsol
-            } catch (final Exception e) {
-                load = super.get("EngineLoadCorrected").data; // rlmax
-            }
-
-            try {
-                ps = super.get("ME7L ps_w").data;
-            } catch (final Exception e) {
-                ps = super.get("BoostPressureActual").data;
-            }
-
-            DoubleArray ambient = ps.ident(UnitConstants.MBAR_PER_ATM); // pu
-            try {
-                ambient = super.get("BaroPressure").data;
-            } catch (final Exception e) { }
-
-            DoubleArray fupsrl = load.ident(0.1037); // KFURL
-            try {
-                final DoubleArray ftbr = this.get("Sim ftbr").data;
-                // fupsrl = KFURL * ftbr
-                fupsrl = fupsrl.mult(ftbr);
-            } catch (final Exception e) {}
-
-            // pirg = fho * KFPRG = (pu/UnitConstants.MBAR_PER_ATM) * 70
-            final DoubleArray pirg = ambient.mult(70/UnitConstants.MBAR_PER_ATM);
-
-            if (!SY_BDE) {
-                //load = load.sub(rlr);
-                load = load.max(0);     // rlfgs
-                if (SY_AGR) {
-                    // pbr = ps * fpbrkds
-                    // rfges = (pbr-pirg).max(0)*fupsrl
-                    final DoubleArray rfges = (ps.mult(1.106)).sub(pirg).max(0).mult(fupsrl);
-                    // psagr = 250??
-                    // rfagr = rfges * psagr/ps
-                    // load = rlfgs + rfagr;
-                    load = load.add(rfges.mult(250).div(ps));
-                }
-                //load = load.add(rlr);
-            }
-
-            DoubleArray boost = load.div(fupsrl);
-
-            if (SY_BDE) {
-                boost = boost.add(pirg);
-            }
-
-            // fpbrkds from KFPBRK/KFPBRKNW
-            boost = boost.div(1.016);   // pssol
-
-            // vplsspls from KFVPDKSD/KFVPDKSDSE
-            boost = boost.div(1.016);   // plsol
-
-            c = new Column(id, UnitConstants.UNIT_MBAR, boost.max(ambient));
-        } else if(id.equals("Boost Spool Rate (RPM)")) {
-            final DoubleArray abs = super.get("BoostPressureActual").data.smooth();
-            final DoubleArray rpm = this.get("RPM").data;
-            c = new Column(id, "mBar/RPM", abs.derivative(rpm).max(0));
-        } else if(id.equals("Boost Spool Rate Zeit (RPM)")) {
-            final DoubleArray boost = this.get("Zeitronix Boost").data.smooth();
-            final DoubleArray rpm =
-                this.get("RPM").data; // Remove movingAverage - apply per-range
-            c = new Column(id, "mBar/RPM", boost.derivative(rpm).max(0));
-            // Note: RPM smoothing handled in getData(), but we need to mark RPM column
-            // This is complex because RPM is used in derivative - needs special handling
-        } else if(id.equals("Boost Spool Rate (time)")) {
-            // Get base column directly from map and convert units directly (avoid recursion)
-            Column baseCol = super.get("BoostPressureActual");
-            if (baseCol == null) {
-                logger.warn("_get('Boost Spool Rate (time)'): BoostPressureActual not found in map");
-                return null;
-            }
-            java.util.function.Supplier<Double> ambientSupplier = () -> {
-                Column baro = super.get("BaroPressure");
-                if (baro != null && baro.data != null && baro.data.size() > 0) {
-                    return baro.data.get(0);
-                }
-                return null;
-            };
-            Dataset.ColumnType colType = baseCol.getColumnType();
-            if (colType == Dataset.ColumnType.CSV_NATIVE) {
-                colType = Dataset.ColumnType.COMPILE_TIME_CONSTANTS;
-            }
-            Column psiCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_PSI, ambientSupplier, colType);
-            final DoubleArray abs = psiCol.data.smooth();
-            final DoubleArray time = this.get("TIME").data;
-            final DoubleArray derivative = abs.derivative(time).max(0);
-            c = new Column(id, "PSI/sec", derivative);
-            // Need to consider what "register for smoothing" means for non HP data
-            this.smoothingWindows.put(id.toString(), 1.0); // For now, fixed at 1 second
-        } else if(id.equals("ps_w error")) {
-            final DoubleArray abs = super.get("BoostPressureActual").data.max(900);
-            final DoubleArray ps_w = super.get("ME7L ps_w").data.max(900);
-            //c = new Column(id, "%", abs.div(ps_w).sub(1).mult(-100));
-            c = new Column(id, UnitConstants.UNIT_LAMBDA, ps_w.div(abs));
-        } else if(id.equals("LDR error")) {
-            final DoubleArray set = super.get("BoostPressureDesired").data;
-            final DoubleArray out = super.get("BoostPressureActual").data;
-            c = new Column(id, "100mBar", set.sub(out).div(100));
-        } else if(id.equals("LDR de/dt")) {
-            final DoubleArray set = super.get("BoostPressureDesired").data;
-            final DoubleArray out = super.get("BoostPressureActual").data;
-            final DoubleArray t = this.get("TIME").data;
-            final DoubleArray o = set.sub(out).derivative(t);
-            c = new Column(id,"100mBar",o.mult(this.env.pid.time_constant).div(100));
-            // Need to consider what "register for smoothing" means for non HP data
-            this.smoothingWindows.put(id.toString(), 1.0); // For now, fixed at 1 second
-        } else if(id.equals("LDR I e dt")) {
-            final DoubleArray set = super.get("BoostPressureDesired").data;
-            final DoubleArray out = super.get("BoostPressureActual").data;
-            final DoubleArray t = this.get("TIME").data;
-            final DoubleArray o = set.sub(out).
-                integral(t,0,this.env.pid.I_limit/this.env.pid.I*100);
-            c = new Column(id,"100mBar",o.div(this.env.pid.time_constant).div(100));
-        } else if(id.equals("LDR PID")) {
-            final DoubleArray.TransferFunction fP =
-                new DoubleArray.TransferFunction() {
-                    @Override
-                    public final double f(double x, double y) {
-                        if(Math.abs(x)<ECUxDataset.this.env.pid.P_deadband/100) return 0;
-                        return x*ECUxDataset.this.env.pid.P;
-                    }
-            };
-            final DoubleArray.TransferFunction fD =
-                new DoubleArray.TransferFunction() {
-                    @Override
-                    public final double f(double x, double y) {
-                        y=Math.abs(y);
-                        if(y<3) return x*ECUxDataset.this.env.pid.D[0];
-                        if(y<5) return x*ECUxDataset.this.env.pid.D[1];
-                        if(y<7) return x*ECUxDataset.this.env.pid.D[2];
-                        return x*ECUxDataset.this.env.pid.D[3];
-                    }
-            };
-            final DoubleArray E = this.get("LDR error").data;
-            final DoubleArray P = E.func(fP);
-            final DoubleArray I = this.get("LDR I e dt").data.mult(this.env.pid.I);
-            final DoubleArray D = this.get("LDR de/dt").data.func(fD,E);
-            c = new Column(id, "%", P.add(I).add(D).max(0).min(95));
-        } else if(id.equals("Sim pspvds")) {
-            final DoubleArray ps_w = super.get("ME7L ps_w").data;
-            final DoubleArray pvdkds = super.get("BoostPressureActual").data;
-            c = new Column(id,"",ps_w.div(pvdkds));
-/*****************************************************************************/
-        } else if(id.equals("IgnitionTimingAngleOverall")) {
-            // Calculate from per-cylinder timing angles if Overall not directly available
-            // This supports loggers like JB4 that only log per-cylinder timing, not overall timing
-            // Note: _get() already handles recursion protection - if calculated version exists, it returns early
-            final Column overall = super.get("IgnitionTimingAngleOverall");
-            if(overall != null && overall.getColumnType() == Dataset.ColumnType.CSV_NATIVE) {
-                // Exists as CSV column, use it directly
-                c = overall;
-            } else {
-                // Calculate average of available per-cylinder timing angles
-                DoubleArray avetiming = null;
-                int count = 0;
-                for(int i=1; i<=8; i++) {
-                    final Column timing = this.get("IgnitionTimingAngle" + i);
-                    if(timing != null) {
-                        if(avetiming == null) avetiming = timing.data;
-                        else avetiming = avetiming.add(timing.data);
-                        count++;
-                    }
-                }
-                if(count > 0) {
-                    c = new Column(id, "\u00B0", avetiming.div(count));
-                } else {
-                    // Handler matched but cannot create column - must set c to null explicitly
-                    c = null;
-                }
-            }
-        } else if(id.equals("IgnitionTimingAngleOverallDesired")) {
-            DoubleArray averetard = null;
-            int count=0;
-            for(int i=0;i<8;i++) {
-                final Column retard = this.get("IgnitionRetardCyl" + i);
-                if(retard!=null) {
-                    if(averetard==null) averetard = retard.data;
-                    else averetard = averetard.add(retard.data);
-                    count++;
-                }
-            }
-            // Fallback to AverageIgnitionRetard if no per-cylinder retard fields found
-            if(count == 0) {
-                final Column avgRetard = this.get("AverageIgnitionRetard");
-                if(avgRetard != null) {
-                    averetard = avgRetard.data;
-                    count = 1; // Use count=1 to indicate we have average retard
-                }
-            }
-            DoubleArray out = this.get("IgnitionTimingAngleOverall").data;
-            if(count>0) {
-                // assume retard is always positive... some loggers log it negative
-                // abs it to normalize
-                out = out.add(averetard.div(count).abs());
-            }
-            c = new Column(id, "\u00B0", out);
-        } else if(id.equals("Sim LoadSpecified correction")) {
-            final DoubleArray cs = super.get("EngineLoadCorrected").data;
-            final DoubleArray s = super.get("EngineLoadSpecified").data;
-            c = new Column(id, "K", cs.div(s));
-        } else {
-            // Try diagnostic columns - if found, set c and continue to putColumn() path
-            // ========== SMOOTHING DIAGNOSTIC COLUMNS ==========
-            // These are debug-only columns not referenced by AxisMenu
-            // Checked at the end of the chain as a fallback (only if no handler matched)
-            // Extracted to helper function to separate debug diagnostics from main field handlers
-            // Note: Since all handlers MUST set 'c' (see requirement at top), if c is null here,
-            // it means no handler matched, so we can safely try diagnostic columns.
-            c = getSmoothingDiagnosticColumn(id);
-        }
-
-        if(c!=null) {
-            // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
-            // This ensures CSV_NATIVE columns are replaced by calculated versions (TIME/RPM, BoostPressureActual/Desired, etc.)
-            this.putColumn(c);
-            return c;
-        }
-        return super.get(id);
+            return super.get(id);
     }
 
+    /**
+     * Check if a data point at index i passes all filter criteria.
+     * Validates gear, pedal, throttle, acceleration, and RPM monotonicity.
+     * Stores failure reasons for later retrieval via getFilterReasonsForRow().
+     *
+     * @param i The data point index to validate
+     * @return true if the point passes all filter criteria, false otherwise
+     */
     @Override
     protected boolean dataValid(int i) {
         boolean ret = true;
@@ -1826,6 +1040,14 @@ public class ECUxDataset extends Dataset {
         return reasons != null ? new ArrayList<String>(reasons) : new ArrayList<String>();
     }
 
+    /**
+     * Check if a range passes validation criteria.
+     * Validates minimum point count and RPM range requirements.
+     * Stores failure reasons for points in failed ranges.
+     *
+     * @param r The range to validate
+     * @return true if the range passes all validation criteria, false otherwise
+     */
     @Override
     protected boolean rangeValid(Range r) {
         boolean ret = true;
@@ -1861,6 +1083,12 @@ public class ECUxDataset extends Dataset {
         return ret;
     }
 
+    /**
+     * Create a null PrintStream that discards all output.
+     * Used to suppress stdout during certain operations.
+     *
+     * @return The original System.out PrintStream (before it was replaced)
+     */
     private static final PrintStream nullStdout() {
         PrintStream original = System.out;
         System.setOut(new PrintStream(new OutputStream() {
@@ -1892,7 +1120,7 @@ public class ECUxDataset extends Dataset {
      * @param index The data point index to find
      * @return The range containing the index, or null if not in any range
      */
-    private Dataset.Range findRangeForIndex(ArrayList<Dataset.Range> ranges, int index) {
+    Dataset.Range findRangeForIndex(ArrayList<Dataset.Range> ranges, int index) {
         if (ranges == null) {
             return null;
         }
@@ -1918,6 +1146,14 @@ public class ECUxDataset extends Dataset {
             this.postDiffSmoothingStrategy, this.padding.left, this.padding.right, logger);
     }
 
+    /**
+     * Get data array for a column over a specified range with range-aware smoothing applied.
+     * Normalizes the range, retrieves the column, and applies smoothing if configured.
+     *
+     * @param id The column ID to retrieve
+     * @param r The range to extract (null for full dataset)
+     * @return Smoothed data array, or null if column not found or range invalid
+     */
     @Override
     public double[] getData(Comparable<?> id, Range r) {
         r = normalizeRange(r);
@@ -1947,6 +1183,14 @@ public class ECUxDataset extends Dataset {
         return new int[] { originalWindow, effectiveWindow };
     }
 
+    /**
+     * Get data array for a column using a Key (with filename and range context).
+     * Routes through get() to handle unit conversions, then applies range-aware smoothing.
+     *
+     * @param id The Key containing the column ID, filename, and range context
+     * @param r The range to extract (null for full dataset)
+     * @return Smoothed data array, or null if column not found or range invalid
+     */
     @Override
     public double[] getData(Key id, Range r) {
         // Route through get() which calls _get() for unit conversion handling
@@ -1978,6 +1222,11 @@ public class ECUxDataset extends Dataset {
         return applySmoothing(c, lookupId, r);
     }
 
+    /**
+     * Build valid ranges from the dataset using filter criteria.
+     * Clears previous range failure reasons, calls parent method to build ranges,
+     * and creates cubic splines for FATS calculations.
+     */
     @Override
     public void buildRanges() {
         // Clear previous range failure reasons (only if initialized)
@@ -2227,10 +1476,103 @@ public class ECUxDataset extends Dataset {
         return out;
     }
 
+    /**
+     * Get the filter configuration.
+     * @return The Filter instance used for range detection and data validation
+     */
     public Filter getFilter() { return this.filter; }
     //public void setFilter(Filter f) { this.filter=f; }
+
+    /**
+     * Get the environment configuration.
+     * @return The Env instance containing vehicle constants and preferences
+     */
     public Env getEnv() { return this.env; }
     //public void setEnv(Env e) { this.env=e; }
+
+    // ========== Package-private accessors for AxisMenuHandlers ==========
+    // These methods provide controlled access to internal state for handler functions.
+
+    /**
+     * Get the base RPM column (SG smoothing only, used for range detection).
+     * @return The base RPM column, or null if not available
+     */
+    Column getBaseRpm() { return this.baseRpm; }
+
+    /**
+     * Get the raw CSV RPM column (no smoothing, native CSV data).
+     * @return The CSV RPM column, or null if not available
+     */
+    Column getCsvRpm() { return this.csvRpm; }
+
+    /**
+     * Get the sample rate (samples per second).
+     * @return The number of samples per second, or 0.0 if not calculated
+     */
+    double getSamplesPerSec() { return this.samples_per_sec; }
+
+    /**
+     * Get the smoothing windows map.
+     * @return The SmoothingWindowsMap instance for registering smoothing windows
+     */
+    SmoothingWindowsMap getSmoothingWindows() { return this.smoothingWindows; }
+
+    /**
+     * Get a CSV column directly without triggering calculations.
+     * Calls super.get() to bypass _get() and avoid triggering calculated column handlers.
+     * Used by handlers when they need raw CSV data.
+     *
+     * @param id The column ID to retrieve
+     * @return The CSV column if found, null otherwise
+     */
+    Column getCsvColumn(Comparable<?> id) {
+        return super.get(id);
+    }
+
+    /**
+     * Create a Column instance from handler functions.
+     * Column is a non-static inner class, so handlers need this helper to instantiate it.
+     *
+     * @param id The column ID
+     * @param units The unit string
+     * @param data The data array
+     * @return A new Column instance
+     */
+    Column createColumn(Comparable<?> id, String units, DoubleArray data) {
+        return new Column(id, units, data);
+    }
+
+    /**
+     * Create a Column instance with a specific ColumnType.
+     * Column is a non-static inner class, so handlers need this helper to instantiate it.
+     *
+     * @param id The column ID
+     * @param units The unit string
+     * @param data The data array
+     * @param columnType The column type (e.g., VEHICLE_CONSTANTS, PROCESSED_VARIANT)
+     * @return A new Column instance
+     */
+    Column createColumn(Comparable<?> id, String units, DoubleArray data, ColumnType columnType) {
+        return new Column(id, units, data, columnType);
+    }
+
+    /**
+     * Register a column for range-aware smoothing.
+     * SmoothingWindowsMap.put(String, double) is not accessible from handlers,
+     * so this helper method provides access.
+     *
+     * @param columnName The name of the column to register
+     * @param seconds The smoothing window size in seconds (converted to samples internally)
+     */
+    void registerSmoothingWindow(String columnName, double seconds) {
+        this.smoothingWindows.put(columnName, seconds);
+    }
+    /**
+     * Check if alternate column names (id2) should be used for display.
+     * Determined by the "altnames" preference in environment settings.
+     *
+     * @return true if alternate names should be used, false otherwise
+     */
     @Override
     public boolean useId2() {
         // Handle null env gracefully (e.g., in test contexts where env is not provided)
@@ -2248,6 +1590,18 @@ public class ECUxDataset extends Dataset {
      */
     private static String idWithUnit(String originalId, String unit) {
         return String.format("%s (%s)", originalId, unit);
+    }
+
+    /**
+     * Package-private helper for AxisMenuHandlers to construct unit-converted column IDs.
+     * Delegates to idWithUnit() to format strings like "FieldName (unit)".
+     *
+     * @param originalId The original column ID
+     * @param unit The target unit constant
+     * @return Formatted string like "FieldName (unit)"
+     */
+    static String idWithUnitHelper(String originalId, String unit) {
+        return idWithUnit(originalId, unit);
     }
 
     /**
