@@ -76,16 +76,16 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
     private static class PowerAnalysis {
         static double getMaxPowerInRange(ECUxDataset dataset, Dataset.Range range) {
             try {
-                Dataset.Column whpCol = dataset.get("WHP");
-                if (whpCol == null) whpCol = dataset.get("HP");
-                if (whpCol == null) whpCol = dataset.get("Engine HP");
+                // Use getData() to get smoothed data instead of raw column data
+                // This ensures range-aware smoothing is applied for accurate max power calculation
+                double[] powerData = dataset.getData("WHP", range);
+                if (powerData == null) powerData = dataset.getData("HP", range);
+                if (powerData == null) powerData = dataset.getData("Engine HP", range);
 
-                if (whpCol != null && range.start < whpCol.data.size() && range.end < whpCol.data.size()) {
+                if (powerData != null && powerData.length > 0) {
                     double max = 0;
-                    for (int i = range.start; i <= range.end; i++) {
-                        if (i < whpCol.data.size()) {
-                            max = Math.max(max, whpCol.data.get(i));
-                        }
+                    for (double power : powerData) {
+                        max = Math.max(max, power);
                     }
                     return max;
                 }
@@ -97,24 +97,23 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
 
         static int getMaxPowerRPMInRange(ECUxDataset dataset, Dataset.Range range) {
             try {
-                Dataset.Column whpCol = dataset.get("WHP");
-                if (whpCol == null) whpCol = dataset.get("HP");
-                if (whpCol == null) whpCol = dataset.get("Engine HP");
-                Dataset.Column rpmCol = dataset.get("RPM");
+                // Use getData() to get smoothed data instead of raw column data
+                // This ensures range-aware smoothing is applied for accurate max power calculation
+                double[] powerData = dataset.getData("WHP", range);
+                if (powerData == null) powerData = dataset.getData("HP", range);
+                if (powerData == null) powerData = dataset.getData("Engine HP", range);
+                double[] rpmData = dataset.getData("RPM", range);
 
-                if (whpCol != null && rpmCol != null &&
-                    range.start < whpCol.data.size() && range.end < whpCol.data.size() &&
-                    range.start < rpmCol.data.size() && range.end < rpmCol.data.size()) {
+                if (powerData != null && rpmData != null &&
+                    powerData.length == rpmData.length && powerData.length > 0) {
 
                     double maxPower = 0;
                     int maxRPM = 0;
-                    for (int i = range.start; i <= range.end; i++) {
-                        if (i < whpCol.data.size() && i < rpmCol.data.size()) {
-                            double power = whpCol.data.get(i);
-                            if (power > maxPower) {
-                                maxPower = power;
-                                maxRPM = (int) rpmCol.data.get(i);
-                            }
+                    for (int i = 0; i < powerData.length; i++) {
+                        double power = powerData[i];
+                        if (power > maxPower) {
+                            maxPower = power;
+                            maxRPM = (int) rpmData[i];
                         }
                     }
                     return maxRPM;
