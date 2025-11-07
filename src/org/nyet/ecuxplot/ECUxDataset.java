@@ -1641,13 +1641,13 @@ public class ECUxDataset extends Dataset {
 /*****************************************************************************/
             }
 
-            if(c!=null) {
-                // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
-                // This ensures CSV_NATIVE columns are replaced by calculated versions (TIME/RPM, BoostPressureActual/Desired, etc.)
-                this.putColumn(c);
-                return c;
-            }
-            return super.get(id);
+        if(c!=null) {
+            // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
+            // This ensures CSV_NATIVE columns are replaced by calculated versions (TIME/RPM, BoostPressureActual/Desired, etc.)
+            this.putColumn(c);
+            return c;
+        }
+        return super.get(id);
     }
 
     @Override
