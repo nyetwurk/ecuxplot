@@ -53,20 +53,21 @@ public class FilterWindow extends ECUxPlotWindow {
 
     // Column definitions with metadata
     private enum Column {
-        TIME(0, 80, false),
-        RPM(1, 60, false),
-        DELTA_RPM(2, 70, false),
-        RAW_MPH(3, 80, true, true), // Requires both RPM data AND native velocity
-        CALC_MPH(4, 80, true, false), // Only requires RPM data
-        MPH_DIFF_PERCENT(5, 70, true, true), // Requires both RPM data AND native velocity
-        DELTA_MPH(6, 70, true, false), // Only requires RPM data
-        ACCELERATION(7, 100, false),
-        PEDAL(8, 60, false),
-        THROTTLE(9, 70, false),
-        GEAR(10, 50, false),
-        FILTER_STATUS(11, 80, false),
-        RANGE(12, 50, false),
-        FILTER_REASONS(13, 400, false);
+        SAMPLE(0, 80, false),
+        TIME(1, 80, false),
+        RPM(2, 60, false),
+        DELTA_RPM(3, 70, false),
+        RAW_MPH(4, 80, true, true), // Requires both RPM data AND native velocity
+        CALC_MPH(5, 80, true, false), // Only requires RPM data
+        MPH_DIFF_PERCENT(6, 70, true, true), // Requires both RPM data AND native velocity
+        DELTA_MPH(7, 70, true, false), // Only requires RPM data
+        ACCELERATION(8, 100, false),
+        PEDAL(9, 60, false),
+        THROTTLE(10, 70, false),
+        GEAR(11, 50, false),
+        FILTER_STATUS(12, 80, false),
+        RANGE(13, 50, false),
+        FILTER_REASONS(14, 400, false);
 
         private final int index;
         private final int width;
@@ -243,7 +244,7 @@ public class FilterWindow extends ECUxPlotWindow {
     private void initializeVisualizationComponents() {
         // Create table model with columns
         String[] columnNames = {
-            "Time", "RPM", "Δ RPM", "MPH", "Calc MPH", "Calc Err %", "Δ MPH", "Accel (RPM/s)", "Pedal", "Throttle", "Gear",
+            "sample", "Time", "RPM", "Δ RPM", "MPH", "Calc MPH", "Calc Err %", "Δ MPH", "Accel (RPM/s)", "Pedal", "Throttle", "Gear",
             "Status", "Range", "Filter Reasons"
         };
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -856,6 +857,9 @@ public class FilterWindow extends ECUxPlotWindow {
         Object[] row = new Object[Column.getColumnCount()];
 
         try {
+            // Sample (absolute index)
+            row[Column.idx(Column.SAMPLE)] = String.valueOf(rowIndex);
+
             // Time
             row[Column.idx(Column.TIME)] = timeCol != null && rowIndex < timeCol.data.size() ?
                 String.format("%.2f", timeCol.data.get(rowIndex)) : "N/A";
