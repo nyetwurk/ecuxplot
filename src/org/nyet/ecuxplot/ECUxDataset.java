@@ -529,6 +529,119 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
+     * Get smoothing diagnostic columns (debug-only, not referenced by AxisMenu).
+     * These columns are used for debugging smoothing behavior and are not shown in the UI.
+     * Extracted from main _get() method to separate debug diagnostics from main field handlers.
+     *
+     * @param id The column ID to get
+     * @return Column if it's a diagnostic column, null otherwise
+     */
+    private Column getSmoothingDiagnosticColumn(Comparable<?> id) {
+        // Time derivatives (drpm/dt - time-normalized)
+        if(id.equals("dRPM/dt - raw")) {
+            // Time derivative of CSV RPM
+            final DoubleArray y = (this.csvRpm != null) ? this.csvRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): csvRpm is null, cannot calculate derivative", id);
+                return null;
+            }
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x);
+            return new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("dRPM/dt - base")) {
+            // Time derivative of Base RPM
+            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): baseRpm is null, cannot calculate derivative", id);
+                return null;
+            }
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x);
+            return new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("dRPM/dt")) {
+            // Time derivative of Final RPM
+            final DoubleArray y = this.get("RPM").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x);
+            return new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("dVelocity/dt")) {
+            // Time derivative of Calc Velocity
+            final DoubleArray y = this.get("Calc Velocity").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x);
+            return new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("dAccel/dt")) {
+            // Time derivative of Acceleration (m/s²) - this is "jerk"
+            final DoubleArray y = this.get("Acceleration (m/s^2)").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x);
+            return new Column(id, "m/s^3", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("dWHP/dt")) {
+            // Time derivative of WHP
+            final DoubleArray y = this.get("WHP").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x);
+            return new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("dHP/dt")) {
+            // Time derivative of HP
+            final DoubleArray y = this.get("HP").data;
+            final DoubleArray x = this.get("TIME").data;
+            final DoubleArray derivative = y.derivative(x);
+            return new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
+
+        // Sample differences (Δ - not time-normalized)
+        } else if(id.equals("Δ RPM - raw")) {
+            // Sample difference of CSV RPM
+            final DoubleArray y = (this.csvRpm != null) ? this.csvRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): csvRpm is null, cannot calculate difference", id);
+                return null;
+            }
+            final DoubleArray difference = y.difference();
+            return new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Δ RPM - base")) {
+            // Sample difference of Base RPM
+            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
+            if (y == null) {
+                logger.warn("_get('{}'): baseRpm is null, cannot calculate difference", id);
+                return null;
+            }
+            final DoubleArray difference = y.difference();
+            return new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Δ RPM")) {
+            // Sample difference of Final RPM
+            final DoubleArray y = this.get("RPM").data;
+            final DoubleArray difference = y.difference();
+            return new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
+        } else if(id.equals("Δ Velocity")) {
+            // Sample difference of Calc Velocity
+            final DoubleArray y = this.get("Calc Velocity").data;
+            final DoubleArray difference = y.difference();
+            return new Column(id, UnitConstants.UNIT_MPS, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("Δ Acceleration")) {
+            // Sample difference of Acceleration (m/s²)
+            final DoubleArray y = this.get("Acceleration (m/s^2)").data;
+            final DoubleArray difference = y.difference();
+            return new Column(id, "m/s^2", difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("Δ WHP")) {
+            // Sample difference of WHP - use raw (unsmoothed) WHP data
+            // This shows the raw difference between samples, not smoothed differences
+            final DoubleArray y = this.get("WHP").data;
+            final DoubleArray difference = y.difference();
+            return new Column(id, UnitConstants.UNIT_HP, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        } else if(id.equals("Δ HP")) {
+            // Sample difference of HP
+            // HP is already calculated from smoothed WHP, so this difference is consistent
+            final DoubleArray y = this.get("HP").data;
+            final DoubleArray difference = y.difference();
+            return new Column(id, UnitConstants.UNIT_HP, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
+        }
+
+        // Not a diagnostic column
+        return null;
+    }
+
+    /**
      * Calculate torque from smoothed power data.
      * Creates a column with torque calculated from smoothed power (HP or WHP) and RPM.
      *
@@ -807,6 +920,17 @@ public class ECUxDataset extends Dataset {
         }
 
         Column c = null;
+
+        // ========== HARD REQUIREMENT: HANDLERS MUST ALWAYS SET c ==========
+        // Every handler in the if/then/else chain MUST set the variable 'c' when it matches.
+        // This is a structural requirement - if a handler matches (the condition is true),
+        // it MUST set 'c' to either:
+        //   - A Column object (if the column can be created)
+        //   - null (if the column cannot be created, but the handler still matched)
+        // This ensures that the diagnostic column fallback (at the end) only runs when
+        // NO handler matched, not when a handler matched but failed to set 'c'.
+        // Violating this requirement breaks the chain logic and makes the code unpredictable.
+        // ====================================================================
 
             // ========== BASIC FIELDS ==========
         if(id.equals("Sample")) {
@@ -1482,106 +1606,6 @@ public class ECUxDataset extends Dataset {
             final DoubleArray ps_w = super.get("ME7L ps_w").data;
             final DoubleArray pvdkds = super.get("BoostPressureActual").data;
             c = new Column(id,"",ps_w.div(pvdkds));
-        // ========== SMOOTHING DIAGNOSTIC COLUMNS ==========
-        // Time derivatives (drpm/dt - time-normalized)
-        } else if(id.equals("dRPM/dt - raw")) {
-            // Time derivative of CSV RPM
-            final DoubleArray y = (this.csvRpm != null) ? this.csvRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): csvRpm is null, cannot calculate derivative", id);
-                return null;
-            }
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("dRPM/dt - base")) {
-            // Time derivative of Base RPM
-            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): baseRpm is null, cannot calculate derivative", id);
-                return null;
-            }
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("dRPM/dt")) {
-            // Time derivative of Final RPM
-            final DoubleArray y = this.get("RPM").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("dVelocity/dt")) {
-            // Time derivative of Calc Velocity
-            final DoubleArray y = this.get("Calc Velocity").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("dAccel/dt")) {
-            // Time derivative of Acceleration (m/s²) - this is "jerk"
-            final DoubleArray y = this.get("Acceleration (m/s^2)").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            c = new Column(id, "m/s^3", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("dWHP/dt")) {
-            // Time derivative of WHP
-            final DoubleArray y = this.get("WHP").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            c = new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("dHP/dt")) {
-            // Time derivative of HP
-            final DoubleArray y = this.get("HP").data;
-            final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x);
-            c = new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
-
-        // Sample differences (Δ - not time-normalized)
-        } else if(id.equals("Δ RPM - raw")) {
-            // Sample difference of CSV RPM
-            final DoubleArray y = (this.csvRpm != null) ? this.csvRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): csvRpm is null, cannot calculate difference", id);
-                return null;
-            }
-            final DoubleArray difference = y.difference();
-            c = new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Δ RPM - base")) {
-            // Sample difference of Base RPM
-            final DoubleArray y = (this.baseRpm != null) ? this.baseRpm.data : null;
-            if (y == null) {
-                logger.warn("_get('{}'): baseRpm is null, cannot calculate difference", id);
-                return null;
-            }
-            final DoubleArray difference = y.difference();
-            c = new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Δ RPM")) {
-            // Sample difference of Final RPM
-            final DoubleArray y = this.get("RPM").data;
-            final DoubleArray difference = y.difference();
-            c = new Column(id, UnitConstants.UNIT_RPM, difference, Dataset.ColumnType.PROCESSED_VARIANT);
-        } else if(id.equals("Δ Velocity")) {
-            // Sample difference of Calc Velocity
-            final DoubleArray y = this.get("Calc Velocity").data;
-            final DoubleArray difference = y.difference();
-            c = new Column(id, UnitConstants.UNIT_MPS, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("Δ Acceleration")) {
-            // Sample difference of Acceleration (m/s²)
-            final DoubleArray y = this.get("Acceleration (m/s^2)").data;
-            final DoubleArray difference = y.difference();
-            c = new Column(id, "m/s^2", difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("Δ WHP")) {
-            // Sample difference of WHP - use raw (unsmoothed) WHP data
-            // This shows the raw difference between samples, not smoothed differences
-            final DoubleArray y = this.get("WHP").data;
-            final DoubleArray difference = y.difference();
-            c = new Column(id, UnitConstants.UNIT_HP, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        } else if(id.equals("Δ HP")) {
-            // Sample difference of HP
-            // HP is already calculated from smoothed WHP, so this difference is consistent
-            final DoubleArray y = this.get("HP").data;
-            final DoubleArray difference = y.difference();
-            c = new Column(id, UnitConstants.UNIT_HP, difference, Dataset.ColumnType.VEHICLE_CONSTANTS);
-
 /*****************************************************************************/
         } else if(id.equals("IgnitionTimingAngleOverall")) {
             // Calculate from per-cylinder timing angles if Overall not directly available
@@ -1605,6 +1629,9 @@ public class ECUxDataset extends Dataset {
                 }
                 if(count > 0) {
                     c = new Column(id, "\u00B0", avetiming.div(count));
+                } else {
+                    // Handler matched but cannot create column - must set c to null explicitly
+                    c = null;
                 }
             }
         } else if(id.equals("IgnitionTimingAngleOverallDesired")) {
@@ -1633,13 +1660,20 @@ public class ECUxDataset extends Dataset {
                 out = out.add(averetard.div(count).abs());
             }
             c = new Column(id, "\u00B0", out);
-/*****************************************************************************/
         } else if(id.equals("Sim LoadSpecified correction")) {
             final DoubleArray cs = super.get("EngineLoadCorrected").data;
             final DoubleArray s = super.get("EngineLoadSpecified").data;
             c = new Column(id, "K", cs.div(s));
-/*****************************************************************************/
-            }
+        } else {
+            // Try diagnostic columns - if found, set c and continue to putColumn() path
+            // ========== SMOOTHING DIAGNOSTIC COLUMNS ==========
+            // These are debug-only columns not referenced by AxisMenu
+            // Checked at the end of the chain as a fallback (only if no handler matched)
+            // Extracted to helper function to separate debug diagnostics from main field handlers
+            // Note: Since all handlers MUST set 'c' (see requirement at top), if c is null here,
+            // it means no handler matched, so we can safely try diagnostic columns.
+            c = getSmoothingDiagnosticColumn(id);
+        }
 
         if(c!=null) {
             // LinkedHashMap automatically handles duplicates - put() replaces existing column with same ID
