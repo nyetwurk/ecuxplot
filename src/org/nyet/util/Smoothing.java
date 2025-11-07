@@ -370,6 +370,8 @@ public class Smoothing extends LinearSmoothing
     private static final int SG_MIN_SAMPLES = 11;
     /** Minimum consecutive constant values to consider as quantization noise */
     private static final int MIN_QUANTIZATION_RUN = 3;
+    /** Tolerance for detecting constant values (handles integer RPM with floating-point differences) */
+    private static final double QUANTIZATION_TOLERANCE = 0.5;
     private static final int CLAMP_RATIO_DENOMINATOR = 2;
     private static final int SG_WINDOW_SIZE = 11;
     private static final int SG_NK = -5;
@@ -625,7 +627,7 @@ public class Smoothing extends LinearSmoothing
         for (int i = 1; i < data.length; i++) {
             // For RPM (integer values), use exact equality with small tolerance for floating point errors
             // Tolerance of 0.5 allows for integer RPM values that might have slight floating point differences
-            if (Math.abs(data[i] - lastValue) < 0.5) {
+            if (Math.abs(data[i] - lastValue) < QUANTIZATION_TOLERANCE) {
                 currentRun++;
             } else {
                 // Run ended - include if this was a quantization run

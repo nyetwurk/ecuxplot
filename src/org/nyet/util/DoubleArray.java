@@ -7,6 +7,14 @@ import ru.sscc.util.CalculatingException;
 
 public class DoubleArray
 {
+    // Smoothing constants
+    /** Minimum points required for any smoothing (returns original data if smaller) */
+    private static final int MIN_POINTS_FOR_SMOOTHING = 4;
+    /** Minimum points for SG smoothing (uses MAW if smaller) */
+    private static final int SG_THRESHOLD = 10;
+    /** MAW window divisor for small datasets (MAW window = length / MA_WINDOW_DIVISOR) */
+    private static final int MA_WINDOW_DIVISOR = 4;
+
     // "stack pointer" to keep track of position in the array
     private int sp = 0;
 
@@ -312,10 +320,11 @@ public class DoubleArray
 
     public DoubleArray smooth() {
         // Too few points for any smoothing - return original data
-        if(this.sp<4) return new DoubleArray(this.toArray());
+        // this.sp is the length of the array
+        if(this.sp < MIN_POINTS_FOR_SMOOTHING) return new DoubleArray(this.toArray());
         // Not enough points for Savitzky-Golay (needs 11 points for SG(5,5)) - use moving average as fallback
         // Note that this window is hardcoded to be half the dataset size, which is independent of both filter MAW settings
-        if(this.sp<10) return movingAverage(this.sp/4);
+        if(this.sp < SG_THRESHOLD) return movingAverage(this.sp / MA_WINDOW_DIVISOR);
         // Enough points for Savitzky-Golay smoothing - use SG(5,5) polynomial filter
         final SavitzkyGolaySmoothing s = new SavitzkyGolaySmoothing(5,5);
         return new DoubleArray(s.smoothAll(this.toArray()));
