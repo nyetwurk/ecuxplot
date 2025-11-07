@@ -928,7 +928,7 @@ public class ECUxDataset extends Dataset {
             // Instead, smoothing is applied only via range-aware smoothing in getData(), which handles edges correctly with padding.
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0).max(0);  // No smoothing during derivative - will be smoothed in getData()
+            final DoubleArray derivative = y.derivative(x).max(0);  // No smoothing during derivative - will be smoothed in getData()
             c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
             // Register for range-aware smoothing to prevent edge artifacts when viewing truncated ranges
             this.smoothingWindows.put(id.toString(), this.AccelMAW());
@@ -938,7 +938,7 @@ public class ECUxDataset extends Dataset {
             // Smoothing window: none (derivative without smoothing window)
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0).max(0);
+            final DoubleArray derivative = y.derivative(x).max(0);
             c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("Acceleration (RPM/s) - from base RPM")) {
             // Debug column: acceleration from base RPM input (uses AccelMAW smoothing on input)
@@ -958,9 +958,9 @@ public class ECUxDataset extends Dataset {
                 final double[] baseRpmArray = y.toArray();
                 final Smoothing smoother = new Smoothing(accelMAW);
                 final double[] smoothedRpm = smoother.applyToRange(baseRpmArray, 0, baseRpmArray.length - 1);
-                derivative = new DoubleArray(smoothedRpm).derivative(x, 0).max(0);
+                derivative = new DoubleArray(smoothedRpm).derivative(x).max(0);
             } else {
-                derivative = y.derivative(x, 0).max(0);
+                derivative = y.derivative(x).max(0);
             }
             c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("Acceleration (m/s^2) - raw")) {
@@ -969,7 +969,7 @@ public class ECUxDataset extends Dataset {
             // Smoothing window: none (derivative without smoothing window)
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0).max(0);
+            final DoubleArray derivative = y.derivative(x).max(0);
             // Convert RPM/s to m/s^2: derivative (RPM/s) / rpm_per_mph * MPS_PER_MPH
             final DoubleArray accel = derivative.div(this.env.c.rpm_per_mph()).
                 mult(UnitConstants.MPS_PER_MPH);
@@ -1004,7 +1004,7 @@ public class ECUxDataset extends Dataset {
                 logger.debug("_get('{}'): {}", id, sbCsv.toString());
             }
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0).max(0);  // No smoothing during derivative - will be smoothed in getData()
+            final DoubleArray derivative = y.derivative(x).max(0);  // No smoothing during derivative - will be smoothed in getData()
             // Convert RPM/s to m/s^2: derivative (RPM/s) / rpm_per_mph * MPS_PER_MPH
             final DoubleArray accel = derivative.div(this.env.c.rpm_per_mph()).
                 mult(UnitConstants.MPS_PER_MPH);
@@ -1465,7 +1465,7 @@ public class ECUxDataset extends Dataset {
                 return null;
             }
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0);
+            final DoubleArray derivative = y.derivative(x);
             c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("dRPM/dt - base")) {
             // Time derivative of Base RPM
@@ -1475,37 +1475,37 @@ public class ECUxDataset extends Dataset {
                 return null;
             }
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0);
+            final DoubleArray derivative = y.derivative(x);
             c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("dRPM/dt")) {
             // Time derivative of Final RPM
             final DoubleArray y = this.get("RPM").data;
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0);
+            final DoubleArray derivative = y.derivative(x);
             c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
         } else if(id.equals("dVelocity/dt")) {
             // Time derivative of Calc Velocity
             final DoubleArray y = this.get("Calc Velocity").data;
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0);
+            final DoubleArray derivative = y.derivative(x);
             c = new Column(id, "m/s^2", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("dAccel/dt")) {
             // Time derivative of Acceleration (m/s²) - this is "jerk"
             final DoubleArray y = this.get("Acceleration (m/s^2)").data;
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0);
+            final DoubleArray derivative = y.derivative(x);
             c = new Column(id, "m/s^3", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("dWHP/dt")) {
             // Time derivative of WHP
             final DoubleArray y = this.get("WHP").data;
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0);
+            final DoubleArray derivative = y.derivative(x);
             c = new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
         } else if(id.equals("dHP/dt")) {
             // Time derivative of HP
             final DoubleArray y = this.get("HP").data;
             final DoubleArray x = this.get("TIME").data;
-            final DoubleArray derivative = y.derivative(x, 0);
+            final DoubleArray derivative = y.derivative(x);
             c = new Column(id, "HP/s", derivative, Dataset.ColumnType.VEHICLE_CONSTANTS);
 
         // Sample differences (Δ - not time-normalized)
