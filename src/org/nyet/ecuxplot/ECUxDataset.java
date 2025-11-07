@@ -1425,11 +1425,10 @@ public class ECUxDataset extends Dataset {
             Column psiCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_PSI, ambientSupplier, colType);
             final DoubleArray abs = psiCol.data.smooth();
             final DoubleArray time = this.get("TIME").data;
-            // Store unsmoothed data: FIXME: needs smoothing, but do not use HPMAW() directly
-            // Need to consider what "register for smoothing" means for non HP data
-            final DoubleArray derivative = abs.derivative(time, 0).max(0);
+            final DoubleArray derivative = abs.derivative(time).max(0);
             c = new Column(id, "PSI/sec", derivative);
-            this.smoothingWindows.put(id.toString(), 0);
+            // Need to consider what "register for smoothing" means for non HP data
+            this.smoothingWindows.put(id.toString(), 1.0); // For now, fixed at 1 second
         } else if(id.equals("ps_w error")) {
             final DoubleArray abs = super.get("BoostPressureActual").data.max(900);
             final DoubleArray ps_w = super.get("ME7L ps_w").data.max(900);
@@ -1443,10 +1442,10 @@ public class ECUxDataset extends Dataset {
             final DoubleArray set = super.get("BoostPressureDesired").data;
             final DoubleArray out = super.get("BoostPressureActual").data;
             final DoubleArray t = this.get("TIME").data;
-            // Store unsmoothed data: FIXME: needs smoothing, but do not use HPMAW() directly
-            // Need to consider what "register for smoothing" means for non HP data
-            final DoubleArray o = set.sub(out).derivative(t, 0);
+            final DoubleArray o = set.sub(out).derivative(t);
             c = new Column(id,"100mBar",o.mult(this.env.pid.time_constant).div(100));
+            // Need to consider what "register for smoothing" means for non HP data
+            this.smoothingWindows.put(id.toString(), 1.0); // For now, fixed at 1 second
         } else if(id.equals("LDR I e dt")) {
             final DoubleArray set = super.get("BoostPressureDesired").data;
             final DoubleArray out = super.get("BoostPressureActual").data;
