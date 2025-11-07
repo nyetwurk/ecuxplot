@@ -4,6 +4,8 @@
 
 This document describes the current state of axis preset column support, focusing on unexpected behaviors and limitations that developers and users should be aware of.
 
+**Related**: See [System Architecture - Preset Loading Architecture](system-architecture.md#preset-loading-architecture) for implementation details.
+
 ---
 
 ## Current State
@@ -17,7 +19,7 @@ This document describes the current state of axis preset column support, focusin
 
 ## Unexpected Behaviors & Limitations
 
-### 1. Unit Conversion Behavior
+### Unit Conversion Behavior
 
 **Behavior**: When presets request `BoostPressureDesired (PSI)` or `BoostPressureActual (PSI)`, the system automatically converts from base units (mBar/kPa).
 
@@ -32,7 +34,7 @@ Unit conversion handled automatically via `ECUxDataset._get()` → `parseUnitCon
 
 ---
 
-### 2. Timing Preset Calculation Behavior
+### Timing Preset Calculation Behavior
 
 **Behavior**: `IgnitionTimingAngleOverallDesired` is calculated from retard fields when not directly available.
 
@@ -59,7 +61,7 @@ Timing preset may show slightly different desired timing values depending on how
 
 ---
 
-### 3. Logger-Specific Limitations
+### Logger-Specific Limitations
 
 #### SIMOS_TOOLS - Has EngineLoad
 - **Current State**: SIMOS_TOOLS has both `EngineLoad` (index 39) and `MassAirFlowPerStroke`
@@ -93,7 +95,7 @@ Timing preset may show slightly different desired timing values depending on how
 
 ---
 
-### 4. Fueling Preset Limitations
+### Fueling Preset Limitations
 
 **Legacy Design**: Current Fueling preset designed for older MPI-only vehicles with external wideband sensors.
 
@@ -106,7 +108,7 @@ Timing preset may show slightly different desired timing values depending on how
 
 ---
 
-### 5. Pattern Matching in Test Framework
+### Pattern Matching in Test Framework
 
 **Behavior**: Test framework uses regex patterns to match columns.
 
@@ -117,7 +119,7 @@ Timing preset may show slightly different desired timing values depending on how
 
 ---
 
-### 6. Blacklisted Fields Behavior
+### Blacklisted Fields Behavior
 
 **COBB_AP**: Last column (index 49, "AP Info") is intentionally blacklisted.
 

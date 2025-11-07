@@ -16,7 +16,7 @@ Resolves a circular dependency where range detection requires smoothed RPM, but 
 3. **Final RPM** (`rpm`): Adaptive smoothing (MAW+SG for quantized, SG for smooth), uses ranges for quantization detection
 
 **Implementation:**
-- `dataValid()` uses `baseRpm` (SG-only, no ranges needed) for range detection
+- `dataValid()` uses `baseRpm` (SG-only, no ranges needed) for range detection. See [System Architecture - Filter System](system-architecture.md#filter-system) for details on filtering.
 - `buildRanges()` executes before final RPM creation
 - Final RPM uses ranges for quantization detection, breaking the circular dependency
 - Separation: `baseRpm` for filtering, final RPM for calculations/display

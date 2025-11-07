@@ -1,5 +1,7 @@
 # Awards
 
+**Related**: See [System Architecture](system-architecture.md) for details on FATS calculations and cache management.
+
 ## Award Icons
 
 - 🏆 (AWARD_OF): Overall FATS - Best FATS across all files

@@ -11,7 +11,7 @@ ECUxPlot uses a YAML-driven configuration system for detecting and parsing vario
 - **`loggers.yaml`**: YAML configuration defining detection patterns and parsing parameters
 - **`loggers.xml`**: Generated XML file (converted from YAML during build)
 - **`DataLogger.java`**: Loads configuration and provides detection/parsing utilities
-- **`ECUxDataset.java`**: Uses DataLogger configuration to process headers (no logger-specific code)
+- **`ECUxDataset.java`**: Uses DataLogger configuration to process headers (no logger-specific code). See [System Architecture](system-architecture.md) for details on ECUxDataset structure and filtering.
 - **`VCDSHeaderProcessor.java`**: Handles VCDS-specific header processing via registered header processor
 - **`scripts/yaml_to_xml.py`**: Converts YAML to XML during build process
 
@@ -704,19 +704,19 @@ compile: convert-loggers
 
 ## Adding New Logger Types
 
-### 1. Add YAML Definition
+### Add YAML Definition
 
 Add logger configuration to `loggers.yaml` with detection patterns, parsing parameters, and field aliases.
 
-### 2. Add Java Constant (if needed)
+### Add Java Constant (if needed)
 
 If the logger needs a Java constant for reference, add it to the appropriate class.
 
-### 3. Add Header Processor (if needed)
+### Add Header Processor (if needed)
 
 Only if the logger requires special processing that cannot be expressed in YAML, create a header processor class and register it via `DataLogger.registerHeaderProcessor()`.
 
-### 4. Add Test Data
+### Add Test Data
 
 - Create test file in `test-data/new-logger.csv`
 - Add expectations to `test-data/test-expectations.xml`

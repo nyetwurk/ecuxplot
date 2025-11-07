@@ -18,7 +18,7 @@ The behavior is context-aware based on what files are currently loaded:
 
 ## Implementation
 
-Implemented using metadata stored in each `ECUxDataset` object rather than global flags:
+Implemented using metadata stored in each `ECUxDataset` object rather than global flags. See [System Architecture](system-architecture.md) for details on ECUxDataset structure.
 
 1. **Dataset Metadata**: Each `ECUxDataset` has a `loadedFromPrefs` boolean field
    - Set to `true` when files are auto-loaded from preferences during startup
