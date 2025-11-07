@@ -36,8 +36,6 @@ public class FilterWindow extends ECUxPlotWindow {
     private JTextField minAcceleration;
     private JTextField accelMAW;
     private JTextField minPoints;
-    private JTextField HPMAW;
-    private JTextField ZeitMAW;
 
     // Data visualization components
     private ECUxDataset dataset;
@@ -108,9 +106,7 @@ public class FilterWindow extends ECUxPlotWindow {
         MIN_THROTTLE(6, "Min Throttle (%)"),
         MIN_ACCEL(7, "Min Accel (RPM/s)"),
         MIN_POINTS(8, "Min Points"),
-        ACCEL_MAW(9, "Accel Smoothing (s)"),
-        HPTQ_MAW(10, "HP/TQ Smoothing (s)"),
-        ZEIT_MAW(11, "Zeitronix Smoothing (s)");
+        ACCEL_MAW(9, "Accel Smoothing (s)");
 
         private final int index;
         private final String label;
@@ -145,8 +141,6 @@ public class FilterWindow extends ECUxPlotWindow {
         "Filter out points with acceleration below this (RPM/s)",  // MIN_ACCEL (7)
         "Minimum points required for a valid run",  // MIN_POINTS (8)
         "Affects: Acceleration (RPM/s), Acceleration (m/s^2) - derivative smoothing and range-aware smoothing",  // ACCEL_MAW (9)
-        "Affects: WHP, HP, WTQ, TQ, Boost Spool Rate (time) - range-aware smoothing",  // HPTQ_MAW (10)
-        "Affects: Zeitronix Boost (PSI) - range-aware smoothing",  // ZEIT_MAW (11)
     };
 
 
@@ -161,11 +155,11 @@ public class FilterWindow extends ECUxPlotWindow {
     }
 
     public FilterWindow(Filter filter, ECUxPlot eplot) {
-        super("Filter Window", filter, eplot);
+        super("Filter", filter, eplot);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // Set minimum size first to ensure loaded preferences are enforced
-        setMinimumSize(new Dimension(800, 600));
+        setMinimumSize(new Dimension(800, 475));
         setSize(this.windowSize());
         setLocationRelativeTo(null);
 
@@ -209,8 +203,6 @@ public class FilterWindow extends ECUxPlotWindow {
         minAcceleration = new JTextField(10);
         minPoints = new JTextField(10);
         accelMAW = new JTextField(10);
-        HPMAW = new JTextField(10);
-        ZeitMAW = new JTextField(10);
 
         // Add change listeners to automatically refresh visualization
         addChangeListeners();
@@ -237,8 +229,6 @@ public class FilterWindow extends ECUxPlotWindow {
         minAcceleration.addActionListener(refreshListener);
         accelMAW.addActionListener(refreshListener);
         minPoints.addActionListener(refreshListener);
-        HPMAW.addActionListener(refreshListener);
-        ZeitMAW.addActionListener(refreshListener);
     }
 
     private void initializeVisualizationComponents() {
@@ -342,7 +332,7 @@ public class FilterWindow extends ECUxPlotWindow {
         // Add filter parameter fields in separate panels
         JTextField[] fields = {minRPM, maxRPM, minRPMRange, monotonicRPMfuzz,
                               minPedal, minThrottle, minAcceleration, minPoints,
-                              accelMAW, HPMAW, ZeitMAW};
+                              accelMAW};
 
         // Engine Panel
         JPanel enginePanel = createParameterPanel("Engine",
@@ -357,8 +347,7 @@ public class FilterWindow extends ECUxPlotWindow {
 
         // Data Quality Panel (including smoothing parameters)
         JPanel qualityPanel = createParameterPanel("Data Quality",
-            new int[]{FilterParameter.MIN_POINTS.getIndex(), FilterParameter.ACCEL_MAW.getIndex(),
-                     FilterParameter.HPTQ_MAW.getIndex(), FilterParameter.ZEIT_MAW.getIndex()}, fields);
+            new int[]{FilterParameter.MIN_POINTS.getIndex(), FilterParameter.ACCEL_MAW.getIndex()}, fields);
         formPanel.add(qualityPanel);
 
         // Add scroll pane to handle overflow
@@ -502,7 +491,7 @@ public class FilterWindow extends ECUxPlotWindow {
                 formPanel.add(gear, gbc);
             } else {
                 // Map pairs index to fields array index
-                // pairs: [0:gear(not in fields), 1:minRPM(0), 2:maxRPM(1), ... 8:accelMAW(7), 9:minPoints(8), 10:HPMAW(9), 11:ZeitMAW(10)]
+                // pairs: [0:gear(not in fields), 1:minRPM(0), 2:maxRPM(1), ... 8:accelMAW(7), 9:minPoints(8)]
                 int fieldsIndex = fieldIndex - 1; // Subtract 1 because gear is not in fields array
                 fields[fieldsIndex].setColumns(5);
 
@@ -643,8 +632,6 @@ public class FilterWindow extends ECUxPlotWindow {
         // Double fields
         setFilterDoubleValueFromTextField(monotonicRPMfuzz, filter::monotonicRPMfuzz);
         setFilterDoubleValueFromTextField(accelMAW, filter::accelMAW);
-        setFilterDoubleValueFromTextField(HPMAW, filter::HPMAW);
-        setFilterDoubleValueFromTextField(ZeitMAW, filter::ZeitMAW);
     }
 
     private void updateDialog() {
@@ -668,8 +655,6 @@ public class FilterWindow extends ECUxPlotWindow {
         minAcceleration.setText(String.valueOf(filter.minAcceleration()));
         accelMAW.setText(String.valueOf(filter.accelMAW()));
         minPoints.setText(String.valueOf(filter.minPoints()));
-        HPMAW.setText(String.valueOf(filter.HPMAW()));
-        ZeitMAW.setText(String.valueOf(filter.ZeitMAW()));
     }
 
     public void setDataset(ECUxDataset dataset) {
@@ -1110,8 +1095,17 @@ public class FilterWindow extends ECUxPlotWindow {
      * @throws Exception if any error occurs during the process
      */
     private void restoreDefaultsAndApply() throws Exception {
-        // Reset filter to default values using Filter class method
+        // Reset filter to default values, but preserve HPMAW and ZeitMAW
+        // (those are managed by SmoothingWindow)
+        double savedHPMAW = this.filter.HPMAW();
+        double savedZeitMAW = this.filter.ZeitMAW();
+
+        // Reset all defaults
         this.filter.resetToDefaults();
+
+        // Restore HPMAW and ZeitMAW (don't reset these)
+        this.filter.HPMAW(savedHPMAW);
+        this.filter.ZeitMAW(savedZeitMAW);
 
         // Update the dialog to show default values
         updateDialog();
@@ -1137,7 +1131,7 @@ public class FilterWindow extends ECUxPlotWindow {
 
     private java.awt.Dimension windowSize() {
         int width = ECUxPlot.getPreferences().getInt("FilterWindowWidth", 1000);
-        int height = ECUxPlot.getPreferences().getInt("FilterWindowHeight", 600);
+        int height = ECUxPlot.getPreferences().getInt("FilterWindowHeight", 550);
         return new java.awt.Dimension(width, height);
     }
 
@@ -1147,7 +1141,7 @@ public class FilterWindow extends ECUxPlotWindow {
 
         // Validate window size before saving to prevent unreasonable sizes
         int width = Math.max(originalWidth, 800);  // Minimum width
-        int height = Math.max(originalHeight, 600); // Minimum height
+        int height = Math.max(originalHeight, 475); // Minimum height
 
         // Also set reasonable maximums to prevent extremely large windows
         width = Math.min(width, 2000);

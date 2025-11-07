@@ -71,6 +71,11 @@ public final class OptionsMenu extends JMenu {
         item.addActionListener(plotFrame);
         this.add(item);
 
+        item = new JMenuItem("Smoothing...");
+        item.setToolTipText("Visualize smoothing path from RPM → acceleration → HP with derivatives and boundary analysis");
+        item.addActionListener(plotFrame);
+        this.add(item);
+
         this.add(new JSeparator());
 
         // Editors

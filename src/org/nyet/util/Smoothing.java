@@ -12,9 +12,9 @@ public class Smoothing extends LinearSmoothing
      * Padding method for smoothing operations.
      */
     public enum Padding {
-        NONE("none"),
-        MIRROR("mirror"),
-        DATA("data");
+        NONE("None"),
+        MIRROR("Mirror"),
+        DATA("Data");
 
         private final String value;
 
@@ -26,10 +26,17 @@ public class Smoothing extends LinearSmoothing
             return value;
         }
 
+        @Override
+        public String toString() {
+            return value;
+        }
+
         public static Padding fromString(String s) {
             if (s == null) return NONE;
+            // Case-insensitive matching for backward compatibility
+            String sLower = s.toLowerCase();
             for (Padding method : values()) {
-                if (method.value.equals(s)) {
+                if (method.value.toLowerCase().equals(sLower)) {
                     return method;
                 }
             }

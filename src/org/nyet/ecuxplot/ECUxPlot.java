@@ -55,6 +55,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private EventWindow eventWindow;
     private FilterWindow filterWindow;
     private RangeSelectorWindow rangeSelectorWindow;
+    private SmoothingWindow smoothingWindow;
 
     // Window z-order management: only one window should be alwaysOnTop at a time
     private java.awt.Window topWindow = null;
@@ -925,6 +926,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             // Set all datasets for multi-file support
             this.filterWindow.setFileDatasets(this.fileDatasets);
             this.filterWindow.setVisible(true);
+        } else if(source.getText().equals("Smoothing...")) {
+            if(this.smoothingWindow == null) {
+                this.smoothingWindow =
+                    new SmoothingWindow(this.filter, this, this.fileDatasets);
+            }
+            // Update datasets in case files were loaded after window creation
+            this.smoothingWindow.setFileDatasets(this.fileDatasets);
+            this.smoothingWindow.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this,
                 "unhandled getText=" + source.getText() +
@@ -1681,6 +1690,11 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             if(this.fatsDataset != null) {
                 this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
             }
+        }
+
+        // Update SmoothingWindow if open
+        if(this.smoothingWindow != null) {
+            this.smoothingWindow.setFileDatasets(this.fileDatasets);
         }
 
         // Update FATSChartFrame if open
