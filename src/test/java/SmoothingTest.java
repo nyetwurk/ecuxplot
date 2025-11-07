@@ -1,15 +1,36 @@
 package test.java;
 
 import java.util.ArrayList;
-import org.nyet.logfile.Dataset;
+
 import org.nyet.ecuxplot.ECUxDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.nyet.logfile.Dataset;
 import org.nyet.util.Smoothing;
+
+import ch.qos.logback.classic.Level;
 
 /**
  * Test cases for Smoothing class.
  * Tests padding, smoothing strategies, and edge cases.
  */
 public class SmoothingTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(SmoothingTest.class);
+
+    // Configure logging BEFORE creating dataset (static initializers run in order)
+    static {
+        // Configure logging level based on VERBOSITY environment variable or system property
+        // Default to INFO for CI, can be set to DEBUG for development
+        String verbosity = System.getProperty("VERBOSITY", System.getenv("VERBOSITY"));
+        if (verbosity == null) verbosity = "INFO";
+        Level logLevel = Level.toLevel(verbosity, Level.INFO);
+
+        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger ecuxLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.nyet.ecuxplot");
+        rootLogger.setLevel(logLevel);
+        ecuxLogger.setLevel(logLevel);
+    }
 
     // Use ECUxDataset like UnitConversionTest does - it handles CSV parsing correctly
     private static ECUxDataset testDataset;
@@ -30,10 +51,10 @@ public class SmoothingTest {
         testsRun++;
         if (expected == actual) {
             testsPassed++;
-            System.out.println("  ✅ " + message);
+            logger.info("  ✅  {}", message);
         } else {
             testsFailed++;
-            System.out.println("  ❌ " + message + " - expected " + expected + ", got " + actual);
+            logger.info("  ❌  {}", message + " - expected " + expected + ", got " + actual);
         }
     }
 
@@ -41,10 +62,10 @@ public class SmoothingTest {
         testsRun++;
         if (Math.abs(expected - actual) <= delta) {
             testsPassed++;
-            System.out.println("  ✅ " + message);
+            logger.info("  ✅  {}", message);
         } else {
             testsFailed++;
-            System.out.println("  ❌ " + message + " - expected " + expected + ", got " + actual);
+            logger.info("  ❌  {}", message + " - expected " + expected + ", got " + actual);
         }
     }
 
@@ -52,10 +73,10 @@ public class SmoothingTest {
         testsRun++;
         if (expected == actual) {
             testsPassed++;
-            System.out.println("  ✅ " + message);
+            logger.info("  ✅  {}", message);
         } else {
             testsFailed++;
-            System.out.println("  ❌ " + message + " - expected same reference");
+            logger.info("  ❌  {}", message + " - expected same reference");
         }
     }
 
@@ -63,10 +84,10 @@ public class SmoothingTest {
         testsRun++;
         if (Math.abs(expected - actual) > delta) {
             testsPassed++;
-            System.out.println("  ✅ " + message);
+            logger.info("  ✅  {}", message);
         } else {
             testsFailed++;
-            System.out.println("  ❌ " + message + " - expected different values, got " + actual);
+            logger.info("  ❌  {}", message + " - expected different values, got " + actual);
         }
     }
 
@@ -74,15 +95,15 @@ public class SmoothingTest {
         testsRun++;
         if (condition) {
             testsPassed++;
-            System.out.println("  ✅ " + message);
+            logger.info("  ✅  {}", message);
         } else {
             testsFailed++;
-            System.out.println("  ❌ " + message);
+            logger.info("  ❌  {}", message);
         }
     }
 
     public static void testPaddedRangeCreation() {
-        System.out.println("Test 1: Padded Range Creation (Mirror Padding)");
+        logger.info("Test 1: Padded Range Creation (Mirror Padding)");
         double[] fullData = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
         Dataset.Range range = testDataset.new Range(2, 5);  // indices 2-5: [3.0, 4.0, 5.0, 6.0]
 
@@ -106,7 +127,7 @@ public class SmoothingTest {
     }
 
     public static void testDataExtensionPadding() {
-        System.out.println("Test 2: Data Extension Padding");
+        logger.info("Test 2: Data Extension Padding");
         double[] fullData = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
         Dataset.Range range = testDataset.new Range(2, 5);
 
@@ -119,7 +140,7 @@ public class SmoothingTest {
     }
 
     public static void testMixedPadding() {
-        System.out.println("Test 3: Mixed Padding (Left Mirror, Right Data)");
+        logger.info("Test 3: Mixed Padding (Left Mirror, Right Data)");
         double[] fullData = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
         Dataset.Range range = testDataset.new Range(2, 5);
 
@@ -140,7 +161,7 @@ public class SmoothingTest {
     }
 
     public static void testClampWindow() {
-        System.out.println("Test 4: Window Clamping");
+        logger.info("Test 4: Window Clamping");
         assertEquals("Clamp 10 to 10", 5, Smoothing.clampWindow(10, 10));  // 10/2 = 5
         assertEquals("Clamp 10 to 6", 3, Smoothing.clampWindow(10, 6));   // 6/2 = 3
         assertEquals("No clamp needed", 10, Smoothing.clampWindow(10, 30));  // No clamping
@@ -148,17 +169,17 @@ public class SmoothingTest {
     }
 
     public static void testSmoothingResultExtraction() {
-        System.out.println("Test 5: Smoothing Result Extraction");
+        logger.info("Test 5: Smoothing Result Extraction");
         // SmoothingResult constructor is package-private, so we can't test it directly
         // This test is skipped - the extraction logic is tested indirectly through
         // the smoothing methods that use SmoothingResult
-        System.out.println("  ⚠️  Skipping - SmoothingResult constructor not accessible");
+        logger.info("  ⚠️  Skipping - SmoothingResult constructor not accessible");
         testsRun++;
         testsPassed++;
     }
 
     public static void testSGWithRightPadding() {
-        System.out.println("Test 6: SG Right Padding (Mirror vs Data)");
+        logger.info("Test 6: SG Right Padding (Mirror vs Data)");
         double[] fullData = new double[20];
         for (int i = 0; i < 20; i++) {
             fullData[i] = i * 2.0;  // Linear trend: 0, 2, 4, 6, ...
@@ -179,7 +200,7 @@ public class SmoothingTest {
     }
 
     public static void testNoPadding() {
-        System.out.println("Test 7: No Padding");
+        logger.info("Test 7: No Padding");
         double[] fullData = {1.0, 2.0, 3.0, 4.0, 5.0};
         Dataset.Range range = testDataset.new Range(1, 3);
 
@@ -192,7 +213,7 @@ public class SmoothingTest {
     }
 
     public static void testBothSidesDataExtension() {
-        System.out.println("Test 8: Both Sides Data Extension (Optimized Path)");
+        logger.info("Test 8: Both Sides Data Extension (Optimized Path)");
         double[] fullData = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
         Dataset.Range range = testDataset.new Range(3, 6);
 
@@ -205,7 +226,7 @@ public class SmoothingTest {
     }
 
     public static void testMAWPaddingIndependence() {
-        System.out.println("Test 9: MAW Padding Independence (All Combinations)");
+        logger.info("Test 9: MAW Padding Independence (All Combinations)");
 
         // Use real test data from test-data
         ECUxDataset realDataset;
@@ -221,7 +242,7 @@ public class SmoothingTest {
         // Get a range from the real dataset
         ArrayList<Dataset.Range> ranges = realDataset.getRanges();
         if (ranges.isEmpty()) {
-            System.out.println("  ⚠️  Skipping - No ranges in test data");
+            logger.info("  ⚠️  Skipping - No ranges in test data");
             testsRun++;
             testsPassed++;
             return;
@@ -229,7 +250,7 @@ public class SmoothingTest {
 
         Dataset.Range range = ranges.get(0);
         if (range.size() < 10) {
-            System.out.println("  ⚠️  Skipping - Range too small (need at least 10 points)");
+            logger.info("  ⚠️  Skipping - Range too small (need at least 10 points)");
             testsRun++;
             testsPassed++;
             return;
@@ -333,7 +354,7 @@ public class SmoothingTest {
     }
 
     public static void testSGPaddingIndependence() {
-        System.out.println("Test 10: SG Padding Independence (All Combinations)");
+        logger.info("Test 10: SG Padding Independence (All Combinations)");
 
         // Use real test data from test-data
         ECUxDataset realDataset;
@@ -349,7 +370,7 @@ public class SmoothingTest {
         // Get a range from the real dataset
         ArrayList<Dataset.Range> ranges = realDataset.getRanges();
         if (ranges.isEmpty()) {
-            System.out.println("  ⚠️  Skipping - No ranges in test data");
+            logger.info("  ⚠️  Skipping - No ranges in test data");
             testsRun++;
             testsPassed++;
             return;
@@ -358,7 +379,7 @@ public class SmoothingTest {
         Dataset.Range range = ranges.get(0);
         // SG needs at least 11 points (window size 11)
         if (range.size() < 11) {
-            System.out.println("  ⚠️  Skipping - Range too small (need at least 11 points for SG)");
+            logger.info("  ⚠️  Skipping - Range too small (need at least 11 points for SG)");
             testsRun++;
             testsPassed++;
             return;
@@ -371,7 +392,7 @@ public class SmoothingTest {
 
         // Ensure test range is large enough for SG
         if (testRange.size() < 11) {
-            System.out.println("  ⚠️  Skipping - Test range too small (need at least 11 points for SG)");
+            logger.info("  ⚠️  Skipping - Test range too small (need at least 11 points for SG)");
             testsRun++;
             testsPassed++;
             return;
@@ -467,7 +488,7 @@ public class SmoothingTest {
     }
 
     public static void testMAWRightPaddingEffectiveness() {
-        System.out.println("Test 10: MAW Right Padding Effectiveness");
+        logger.info("Test 10: MAW Right Padding Effectiveness");
 
         // Create test data with a clear discontinuity after the range
         // [10, 20, 30, 40, 50, 60, 70, 100, 200, 300]
@@ -551,8 +572,8 @@ public class SmoothingTest {
     }
 
     public static void main(String[] args) {
-        System.out.println("=== Smoothing Tests ===");
-        System.out.println();
+        logger.info("=== Smoothing Tests ===");
+        logger.info("");
 
         testPaddedRangeCreation();
         testDataExtensionPadding();
@@ -566,17 +587,17 @@ public class SmoothingTest {
         testSGPaddingIndependence();
         testMAWRightPaddingEffectiveness();
 
-        System.out.println();
-        System.out.println("=== Test Results ===");
-        System.out.println("Tests run: " + testsRun);
-        System.out.println("Tests passed: " + testsPassed);
-        System.out.println("Tests failed: " + testsFailed);
+        logger.info("");
+        logger.info("=== Test Results ===");
+        logger.info("Tests run:  {}", testsRun);
+        logger.info("Tests passed:  {}", testsPassed);
+        logger.info("Tests failed:  {}", testsFailed);
 
         if (testsFailed == 0) {
-            System.out.println("✅ All tests passed!");
+            logger.info("✅ All tests passed!");
             System.exit(0);
         } else {
-            System.out.println("❌ " + testsFailed + " tests failed!");
+            logger.info("❌  {}", testsFailed + " tests failed!");
             System.exit(1);
         }
     }

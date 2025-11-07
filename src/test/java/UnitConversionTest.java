@@ -1,8 +1,12 @@
 package test.java;
 
 import org.nyet.ecuxplot.ECUxDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.nyet.ecuxplot.UnitConstants;
 import org.nyet.logfile.Dataset;
+
+import ch.qos.logback.classic.Level;
 
 /**
  * Orthogonal unit tests for unit conversion functionality (Issue #103)
@@ -10,13 +14,26 @@ import org.nyet.logfile.Dataset;
  */
 public class UnitConversionTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(UnitConversionTest.class);
+
     private static int testsRun = 0;
     private static int testsPassed = 0;
     private static int testsFailed = 0;
 
     public static void main(String[] args) {
-        System.out.println("=== Unit Conversion Tests (Issue #103) ===");
-        System.out.println();
+        // Configure logging level based on VERBOSITY environment variable or system property
+        // Default to INFO for CI, can be set to DEBUG for development
+        String verbosity = System.getProperty("VERBOSITY", System.getenv("VERBOSITY"));
+        if (verbosity == null) verbosity = "INFO";
+        Level logLevel = Level.toLevel(verbosity, Level.INFO);
+
+        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger ecuxLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.nyet.ecuxplot");
+        rootLogger.setLevel(logLevel);
+        ecuxLogger.setLevel(logLevel);
+
+        logger.info("=== Unit Conversion Tests (Issue #103) ===");
+        logger.info("");
 
         try {
             // Create minimal test dataset
@@ -44,17 +61,17 @@ public class UnitConversionTest {
         }
 
         // Print results
-        System.out.println();
-        System.out.println("=== Test Results ===");
-        System.out.println("Tests run: " + testsRun);
-        System.out.println("Tests passed: " + testsPassed);
-        System.out.println("Tests failed: " + testsFailed);
+        logger.info("");
+        logger.info("=== Test Results ===");
+        logger.info("Tests run:  {}", testsRun);
+        logger.info("Tests passed:  {}", testsPassed);
+        logger.info("Tests failed:  {}", testsFailed);
 
         if (testsFailed == 0) {
-            System.out.println("✅ All tests passed!");
+            logger.info("✅ All tests passed!");
             System.exit(0);
         } else {
-            System.out.println("❌ " + testsFailed + " tests failed!");
+            logger.info("❌  {}", testsFailed + " tests failed!");
             System.exit(1);
         }
     }
@@ -65,7 +82,7 @@ public class UnitConversionTest {
             testsPassed++;
         } else {
             testsFailed++;
-            System.out.println("  ❌ " + testName);
+            logger.info("  ❌  {}", testName);
         }
     }
 
@@ -73,7 +90,7 @@ public class UnitConversionTest {
      * Test 1: Verify converted columns are stored with correct targetId
      */
     private static void testColumnStorageWithTargetId(ECUxDataset dataset) {
-        System.out.println("Test 1: Column Storage with targetId");
+        logger.info("Test 1: Column Storage with targetId");
 
         // Get native column first (should exist)
         Dataset.Column nativeCol = dataset.get("VehicleSpeed");
@@ -106,7 +123,7 @@ public class UnitConversionTest {
      * Test 2: Verify getData(Key, Range) routes through unit conversion
      */
     private static void testGetDataRouting(ECUxDataset dataset) {
-        System.out.println("Test 2: getData(Key, Range) Routing");
+        logger.info("Test 2: getData(Key, Range) Routing");
 
         // Create Key with full ID (unit conversion format)
         Dataset.Key key = dataset.new Key("VehicleSpeed (mph)", dataset);
@@ -139,7 +156,7 @@ public class UnitConversionTest {
      * Test 3: Verify both native and converted can exist simultaneously
      */
     private static void testNativeAndConvertedTogether(ECUxDataset dataset) {
-        System.out.println("Test 3: Both Native and Converted Together");
+        logger.info("Test 3: Both Native and Converted Together");
 
         // Get both columns
         Dataset.Column nativeCol = dataset.get("VehicleSpeed");
@@ -175,7 +192,7 @@ public class UnitConversionTest {
      * Test 4: Verify recursion safety - no infinite loops
      */
     private static void testRecursionSafety(ECUxDataset dataset) {
-        System.out.println("Test 4: Recursion Safety");
+        logger.info("Test 4: Recursion Safety");
 
         // Request converted column - should complete without infinite recursion
         Dataset.Column converted = null;
@@ -212,7 +229,7 @@ public class UnitConversionTest {
      * Test 5: Simulate findUnits() behavior
      */
     private static void testFindUnits(ECUxDataset dataset) {
-        System.out.println("Test 5: findUnits() Simulation");
+        logger.info("Test 5: findUnits() Simulation");
 
         // Create Keys with different formats
         Dataset.Key nativeKey = dataset.new Key("VehicleSpeed", dataset);

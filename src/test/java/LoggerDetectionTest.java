@@ -2,17 +2,19 @@ package test.java;
 
 import java.io.File;
 import java.io.FileInputStream;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.nyet.ecuxplot.ECUxDataset;
+import org.nyet.logfile.Dataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.nyet.ecuxplot.ECUxDataset;
-import org.nyet.logfile.Dataset;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Test framework for logger detection and parsing testing
@@ -20,44 +22,50 @@ import org.slf4j.LoggerFactory;
  */
 public class LoggerDetectionTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(LoggerDetectionTest.class);
+
     private static int testsRun = 0;
     private static int testsPassed = 0;
     private static int testsFailed = 0;
     private static int fileTestsFailed = 0;
 
     public static void main(String[] args) {
-        // Configure logging to INFO level to reduce verbosity during tests
-        Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        Logger ecuxLogger = (Logger) LoggerFactory.getLogger("org.nyet.ecuxplot");
-        rootLogger.setLevel(Level.INFO);
-        // CHANGE THIS TO DEBUG WHEN TESTING PARSERS
-        ecuxLogger.setLevel(Level.INFO);
+        // Configure logging level based on VERBOSITY environment variable or system property
+        // Default to INFO for CI, can be set to DEBUG for development
+        String verbosity = System.getProperty("VERBOSITY", System.getenv("VERBOSITY"));
+        if (verbosity == null) verbosity = "INFO";
+        Level logLevel = Level.toLevel(verbosity, Level.INFO);
+
+        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger ecuxLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.nyet.ecuxplot");
+        rootLogger.setLevel(logLevel);
+        ecuxLogger.setLevel(logLevel);
 
         // Check if detection-only mode
         boolean detectionOnly = args.length > 0 && "detection".equals(args[0]);
 
         if (detectionOnly) {
-            System.out.println("=== Logger Detection Only Tests ===");
+            logger.info("=== Logger Detection Only Tests ===");
         } else {
-            System.out.println("=== Logger Detection Tests ===");
+            logger.info("=== Logger Detection Tests ===");
         }
-        System.out.println();
+        logger.info("");
 
         // Test comprehensive expectations from XML
         testComprehensiveExpectations(detectionOnly);
 
         // Print results
-        System.out.println();
-        System.out.println("=== Test Results ===");
-        System.out.println("Tests run: " + testsRun);
-        System.out.println("Tests passed: " + testsPassed);
-        System.out.println("Tests failed: " + testsFailed);
+        logger.info("");
+        logger.info("=== Test Results ===");
+        logger.info("Tests run:  {}", testsRun);
+        logger.info("Tests passed:  {}", testsPassed);
+        logger.info("Tests failed:  {}", testsFailed);
 
         if (testsFailed == 0) {
-            System.out.println("✅ All tests passed!");
+            logger.info("✅ All tests passed!");
             System.exit(0);
         } else {
-            System.out.println("❌ " + testsFailed + " tests failed!");
+            logger.info("❌  {}", testsFailed + " tests failed!");
             System.exit(1);
         }
     }
@@ -71,15 +79,15 @@ public class LoggerDetectionTest {
         } else {
             testsFailed++;
             fileTestsFailed++;
-            System.out.println("  ❌ " + testName);
+            logger.info("  ❌  {}", testName);
         }
     }
 
     private static void testComprehensiveExpectations(boolean detectionOnly) {
         if (detectionOnly) {
-            System.out.println("Testing detection expectations from XML...");
+            logger.info("Testing detection expectations from XML...");
         } else {
-            System.out.println("Testing comprehensive expectations from XML...");
+            logger.info("Testing comprehensive expectations from XML...");
         }
 
         try {
@@ -108,7 +116,7 @@ public class LoggerDetectionTest {
                 assertTest("Test file exists: " + fileName, testFile.exists());
 
                 if (!testFile.exists()) {
-                    System.out.println("❌ " + fileName);
+                    logger.info("❌  {}", fileName);
                     continue;
                 }
 
@@ -152,23 +160,23 @@ public class LoggerDetectionTest {
                     } else {
                         assertTest("Can parse file: " + fileName, false);
                     }
-                    System.out.println("  Error " + (detectionOnly ? "detecting" : "parsing") + " " + fileName + ": " + e.getMessage());
+                    logger.error("  Error {} {}: {}", (detectionOnly ? "detecting" : "parsing"), fileName, e.getMessage());
                 }
 
                 // Print file summary
                 if (fileTestsFailed == 0) {
-                    System.out.println("✅ " + fileName);
+                    logger.info("✅  {}", fileName);
                 } else {
-                    System.out.println("❌ " + fileName);
+                    logger.info("❌  {}", fileName);
                     // Fail on first file that has errors
-                    System.out.println("STOPPING AT FIRST FILE WITH ERRORS FOR DEBUGGING");
+                    logger.info("STOPPING AT FIRST FILE WITH ERRORS FOR DEBUGGING");
                     System.exit(1);
                 }
             }
 
         } catch (Exception e) {
             assertTest("Load XML expectations", false);
-            System.out.println("  Error loading XML: " + e.getMessage());
+            logger.error("  Error loading XML: {}", e.getMessage());
         }
     }
 
@@ -469,18 +477,17 @@ public class LoggerDetectionTest {
         String expectedValue = sanityElement.getTextContent();
 
         // Debug printing
-        System.out.println("DEBUG sanity check for " + fileName + ":");
-        System.out.println("  Expected: row=" + row + ", col=" + col + ", value='" + expectedValue + "'");
-        System.out.println("  Dataset has " + dataset.getColumns().size() + " columns");
+        logger.info("DEBUG sanity check for {}:", fileName);
+        logger.info("  Expected: row={}, col={}, value='{}'", row, col, expectedValue);
+        logger.info("  Dataset has {} columns", dataset.getColumns().size());
         if (dataset.getColumns().size() > 0) {
             for (int i = 0; i < Math.min(dataset.getColumns().size(), 5); i++) {
                 Dataset.Column c = dataset.getColumns().get(i);
                 String colName = dataset.getIds()[i].id;
-                System.out.print("  Column " + i + ": name='" + colName + "', data size=" + c.data.size());
                 if (c.data.size() > 0) {
-                    System.out.println("    First value: " + c.data.get(0));
+                    logger.info("  Column {}: name='{}', data size={}, first value={}", i, colName, c.data.size(), c.data.get(0));
                 } else {
-                    System.out.println();
+                    logger.info("  Column {}: name='{}', data size={}", i, colName, c.data.size());
                 }
             }
         }
@@ -488,21 +495,20 @@ public class LoggerDetectionTest {
         try {
             if (dataset.getColumns().size() > col) {
                 Dataset.Column column = dataset.getColumns().get(col);
-                System.out.println("  Column " + col + " data size: " + column.data.size());
+                logger.info("  Column {} data size: {}", col, column.data.size());
                 if (column.data.size() > row) {
                     String actualValue = String.valueOf(column.data.get(row));
-                    System.out.println("  Actual value at [" + row + "," + col + "]: '" + actualValue + "'");
+                    logger.info("  Actual value at [{},{}]: '{}'", row, col, actualValue);
                     assertTest("Sanity check [" + row + "," + col + "] for " + fileName + ": expected '" + expectedValue + "', got '" + actualValue + "'",
                         expectedValue.equals(actualValue));
                 } else {
-                    System.out.println("  ERROR: Column " + col + " only has " + column.data.size() + " rows, need row " + row);
+                    logger.error("  ERROR: Column {} only has {} rows, need row {}", col, column.data.size(), row);
                 }
             } else {
-                System.out.println("  ERROR: Dataset only has " + dataset.getColumns().size() + " columns, need column " + col);
+                logger.error("  ERROR: Dataset only has {} columns, need column {}", dataset.getColumns().size(), col);
             }
         } catch (Exception e) {
-            System.out.println("  EXCEPTION: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("  EXCEPTION: {}", e.getMessage(), e);
             assertTest("Sanity check for " + fileName, false);
         }
     }
