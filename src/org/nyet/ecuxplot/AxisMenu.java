@@ -424,15 +424,15 @@ public class AxisMenu extends JMenu {
             addToSubmenu("Boost", dsid);
             if(id.matches("BoostPressureDesired")) {
                 addToSubmenu("Calc Boost", "BoostDesired PR");
+                addToSubmenu("Calc PID", "LDR error");
+                addToSubmenu("Calc PID", "LDR de/dt");
+                addToSubmenu("Calc PID", "LDR I e dt");
+                addToSubmenu("Calc PID", "LDR PID");
             }
             if(id.matches("BoostPressureActual")) {
                 addToSubmenu("Calc Boost", "BoostActual PR");
                 addToSubmenu("Calc Boost", "Boost Spool Rate (RPM)");
                 addToSubmenu("Calc Boost", "Boost Spool Rate (time)");
-                addToSubmenu("Calc PID", "LDR error");
-                addToSubmenu("Calc PID", "LDR de/dt");
-                addToSubmenu("Calc PID", "LDR I e dt");
-                addToSubmenu("Calc PID", "LDR PID");
             }
             /* JB4 does noth boost pressure desired, its calc'd */
             /* "target" is this delta */
