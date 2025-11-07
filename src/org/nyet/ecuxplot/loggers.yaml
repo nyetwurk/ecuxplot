@@ -597,7 +597,7 @@ loggers:
       - ["WG Pos Final.*", "WastegateDutyCycle"]
       - ["WG I Value.*", "BoostPID-I-Result"]
       - ["WG P-D Value.*", "BoostPID-P-Result"]
-      - ["WG voltage.*", "WastegateVoltage"]
+      - ["WG [Vv]oltage.*", "WastegateVoltage"]
       - ["Wheel Speed FL.*", "WheelSpeedFrontLeft"]
       - ["Wheel Speed FR.*", "WheelSpeedFrontRight"]
       - ["knks_rng_h 1.*", "KnockSensorRangeHigh1"]
