@@ -31,7 +31,7 @@ public class LoggerDetectionTest {
         Logger ecuxLogger = (Logger) LoggerFactory.getLogger("org.nyet.ecuxplot");
         rootLogger.setLevel(Level.INFO);
         // CHANGE THIS TO DEBUG WHEN TESTING PARSERS
-        ecuxLogger.setLevel(Level.DEBUG);
+        ecuxLogger.setLevel(Level.INFO);
 
         // Check if detection-only mode
         boolean detectionOnly = args.length > 0 && "detection".equals(args[0]);
