@@ -21,6 +21,8 @@ import org.nyet.logfile.Dataset;
 import org.nyet.util.DoubleArray;
 import org.nyet.util.MonotonicDataAnalyzer;
 import org.nyet.util.Smoothing;
+import static org.nyet.util.Smoothing.Strategy;
+import static org.nyet.util.Smoothing.Metadata;
 
 public class ECUxDataset extends Dataset {
     private static final Logger logger = LoggerFactory.getLogger(ECUxDataset.class);
@@ -38,9 +40,26 @@ public class ECUxDataset extends Dataset {
     private double samples_per_sec=0;
     private CubicSpline [] splines;     // rpm vs time splines
     private String log_detected;
+    /**
+     * Custom map for smoothing windows that provides a put(String, int) overload.
+     */
+    private static class SmoothingWindowsMap extends HashMap<String, Metadata> {
+        private static final long serialVersionUID = 1L;
+
+        public Metadata put(String columnName, int windowSize) {
+            return super.put(columnName, new Metadata(windowSize));
+        }
+    }
+
     // Track which columns need moving average smoothing
     // Maps column name to smoothing window size (in samples)
-    private final Map<String, Integer> smoothingWindows = new HashMap<>();
+    private final SmoothingWindowsMap smoothingWindows = new SmoothingWindowsMap();
+
+    // Configurable smoothing parameters (for testing variants)
+    // Defaults: MAW with DATA/DATA padding (generally superior to SG)
+    public Smoothing.PaddingConfig padding = Smoothing.PaddingConfig.forStrategy(Strategy.MAW);
+    public Strategy postDiffSmoothingStrategy = Strategy.MAW;
+
 
     // Track range failure reasons per row index
     // Used to explain why points "Not in valid range"
@@ -302,6 +321,8 @@ public class ECUxDataset extends Dataset {
         // accelMAW is in seconds, convert to samples (Smoothing constructor will make it odd)
         return (int)Math.round(this.samples_per_sec * this.filter.accelMAW());
     }
+
+
 
     /**
      * Create a raw version of a column before applying processing/smoothing.
@@ -936,7 +957,7 @@ public class ECUxDataset extends Dataset {
             if (accelMAW > 0 && this.samples_per_sec > 0) {
                 final double[] baseRpmArray = y.toArray();
                 final Smoothing smoother = new Smoothing(accelMAW);
-                final double[] smoothedRpm = smoother.smoothAll(baseRpmArray, 0, baseRpmArray.length - 1);
+                final double[] smoothedRpm = smoother.applyToRange(baseRpmArray, 0, baseRpmArray.length - 1);
                 derivative = new DoubleArray(smoothedRpm).derivative(x, 0).max(0);
             } else {
                 derivative = y.derivative(x, 0).max(0);
@@ -1376,10 +1397,11 @@ public class ECUxDataset extends Dataset {
             Column psiCol = DatasetUnits.convertUnits(this, baseCol, UnitConstants.UNIT_PSI, ambientSupplier, colType);
             final DoubleArray abs = psiCol.data.smooth();
             final DoubleArray time = this.get("TIME").data;
-            final DoubleArray derivative = abs.derivative(time, this.HPMAW()).max(0);
-            // Store unsmoothed data and record smoothing requirement
+            // Store unsmoothed data: FIXME: needs smoothing, but do not use HPMAW() directly
+            // Need to consider what "register for smoothing" means for non HP data
+            final DoubleArray derivative = abs.derivative(time, 0).max(0);
             c = new Column(id, "PSI/sec", derivative);
-            this.smoothingWindows.put(id.toString(), this.HPMAW());
+            this.smoothingWindows.put(id.toString(), 0);
         } else if(id.equals("ps_w error")) {
             final DoubleArray abs = super.get("BoostPressureActual").data.max(900);
             final DoubleArray ps_w = super.get("ME7L ps_w").data.max(900);
@@ -1393,7 +1415,9 @@ public class ECUxDataset extends Dataset {
             final DoubleArray set = super.get("BoostPressureDesired").data;
             final DoubleArray out = super.get("BoostPressureActual").data;
             final DoubleArray t = this.get("TIME").data;
-            final DoubleArray o = set.sub(out).derivative(t,this.HPMAW());
+            // Store unsmoothed data: FIXME: needs smoothing, but do not use HPMAW() directly
+            // Need to consider what "register for smoothing" means for non HP data
+            final DoubleArray o = set.sub(out).derivative(t, 0);
             c = new Column(id,"100mBar",o.mult(this.env.pid.time_constant).div(100));
         } else if(id.equals("LDR I e dt")) {
             final DoubleArray set = super.get("BoostPressureDesired").data;
@@ -1825,61 +1849,12 @@ public class ECUxDataset extends Dataset {
      * @param columnName The name of the column (for lookup and logging)
      * @param r The range to extract and smooth
      * @return Smoothed data array, or raw data if smoothing not needed/applicable
+     * Delegates to Smoothing.applySmoothing().
      */
-    private double[] applySmoothingIfNeeded(Column column, String columnName, Range r) {
-        Integer smoothingWindow = this.smoothingWindows.get(columnName);
-
-        // Use stored window size - it was set when the column was created
-        // For HP/TQ/WHP: uses HPMAW()
-        // For Acceleration (RPM/s) and Acceleration (m/s^2): uses AccelMAW()
-        // Range-aware smoothing prevents edge artifacts when data is truncated by ranges
-        if (smoothingWindow != null && smoothingWindow > 0) {
-            final int rangeSize = r.end - r.start + 1;
-
-            // Clamp window to half the range size to prevent issues when window is close to dataset size
-            final int originalWindow = smoothingWindow;
-            final int effectiveWindow = org.nyet.util.Smoothing.clampWindowToHalfSize(smoothingWindow, rangeSize);
-            if (effectiveWindow != originalWindow) {
-                logger.debug("getData('{}'): Clamped smoothing window from {} to {} (half of range size {})",
-                    columnName, originalWindow, effectiveWindow, rangeSize);
-            }
-
-            // Check if range is large enough for smoothing window
-            if (rangeSize < effectiveWindow) {
-                logger.warn("getData('{}'): Skipping smoothing - range size {} is smaller than window {}",
-                    columnName, rangeSize, effectiveWindow);
-                return column.data.toArray(r.start, r.end);
-            }
-
-            // Apply range-aware smoothing with right-side padding to prevent edge artifacts
-            // Extend the range with right-side padding from full dataset to ensure smoothAt() has enough data
-            // at the end. The smoothing window needs padding of approximately (window-1)/2 on the right side.
-            final double[] fullData = column.data.toArray();
-            // For symmetric smoothing with window W, we need (W-1)/2 samples on the right side
-            // nk = (1-window)/2, so abs(nk) = (window-1)/2 is the padding needed
-            final int paddingNeeded = (effectiveWindow - 1) / 2;
-
-            // Extend range to include right-side padding from full dataset (but don't go outside array bounds)
-            // No left padding - start at requested range start
-            final int paddedStart = r.start;
-            final int paddedEnd = Math.min(fullData.length - 1, r.end + paddingNeeded);
-
-            // Smooth the extended range (includes right-side padding from full dataset)
-            final org.nyet.util.Smoothing s = new org.nyet.util.Smoothing(effectiveWindow);
-            final double[] smoothedWithPadding = s.smoothAll(fullData, paddedStart, paddedEnd);
-
-            // Extract only the requested range from the smoothed result
-            // Since paddedStart == r.start, no offset needed
-            final int resultSize = r.end - r.start + 1;
-
-            final double[] result = new double[resultSize];
-            System.arraycopy(smoothedWithPadding, 0, result, 0, resultSize);
-
-            return result;
-        }
-
-        // No smoothing needed, return raw data
-        return column.data.toArray(r.start, r.end);
+    private double[] applySmoothing(Column column, String columnName, Range r) {
+        return Smoothing.applySmoothing(column, columnName, r,
+            this.smoothingWindows.get(columnName),
+            this.postDiffSmoothingStrategy, this.padding.left, this.padding.right, logger);
     }
 
     @Override
@@ -1892,7 +1867,23 @@ public class ECUxDataset extends Dataset {
 
         // Apply range-aware smoothing if needed
         final String columnName = id.toString();
-        return applySmoothingIfNeeded(c, columnName, r);
+        return applySmoothing(c, columnName, r);
+    }
+
+    /**
+     * Get smoothing window information for a column.
+     * @param columnName The name of the column
+     * @param rangeSize The size of the range (for calculating effective window after clamping)
+     * @return An array with [originalWindow, effectiveWindow], or null if column is not registered for smoothing
+     */
+    public int[] getSmoothingWindowInfo(String columnName, int rangeSize) {
+        Metadata metadata = this.smoothingWindows.get(columnName);
+        if (metadata == null || metadata.windowSize <= 0) {
+            return null;
+        }
+        final int originalWindow = metadata.windowSize;
+        final int effectiveWindow = Smoothing.clampWindow(originalWindow, rangeSize);
+        return new int[] { originalWindow, effectiveWindow };
     }
 
     @Override
@@ -1923,7 +1914,7 @@ public class ECUxDataset extends Dataset {
             return null;
         }
         // Apply range-aware smoothing if needed (shared logic with getData(Comparable<?>, Range))
-        return applySmoothingIfNeeded(c, lookupId, r);
+        return applySmoothing(c, lookupId, r);
     }
 
     @Override

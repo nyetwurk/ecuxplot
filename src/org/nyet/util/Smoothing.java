@@ -1,12 +1,355 @@
 package org.nyet.util;
 
 import vec_math.LinearSmoothing;
+import vec_math.SavitzkyGolaySmoothing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.nyet.logfile.Dataset;
 
 public class Smoothing extends LinearSmoothing
 {
+    /**
+     * Padding method for smoothing operations.
+     */
+    public enum Padding {
+        NONE("none"),
+        MIRROR("mirror"),
+        DATA("data");
+
+        private final String value;
+
+        Padding(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public static Padding fromString(String s) {
+            if (s == null) return NONE;
+            for (Padding method : values()) {
+                if (method.value.equals(s)) {
+                    return method;
+                }
+            }
+            return NONE;
+        }
+    }
+
+    /**
+     * Smoothing strategy for post-differentiation data.
+     */
+    public enum Strategy {
+        MAW("MAW"),
+        SG("SG");
+
+        private final String value;
+
+        Strategy(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public static Strategy fromString(String s) {
+            if (s == null) return MAW;
+            for (Strategy strategy : values()) {
+                if (strategy.value.equals(s)) {
+                    return strategy;
+                }
+            }
+            return MAW;
+        }
+    }
+
+    /**
+     * Get default left padding for a given strategy.
+     * MAW works best with DATA, SG works best with NONE.
+     */
+    public static Padding getDefaultLeftPadding(Strategy strategy) {
+        if (strategy == Strategy.MAW) {
+            return Padding.DATA;
+        }
+        // SG defaults to NONE
+        return Padding.NONE;
+    }
+
+    /**
+     * Get default right padding for a given strategy.
+     * MAW works best with DATA, SG works best with MIRROR.
+     */
+    public static Padding getDefaultRightPadding(Strategy strategy) {
+        if (strategy == Strategy.MAW) {
+            return Padding.DATA;
+        }
+        // SG defaults to MIRROR
+        return Padding.MIRROR;
+    }
+
+    /**
+     * Encapsulates left and right padding configuration.
+     */
+    public static class PaddingConfig {
+        public final Padding left;
+        public final Padding right;
+
+        public PaddingConfig(Padding left, Padding right) {
+            this.left = left;
+            this.right = right;
+        }
+
+        /**
+         * Create PaddingConfig with default padding for the given strategy.
+         */
+        public static PaddingConfig forStrategy(Strategy strategy) {
+            return new PaddingConfig(
+                getDefaultLeftPadding(strategy),
+                getDefaultRightPadding(strategy)
+            );
+        }
+
+        /**
+         * Check if both sides use the same padding method.
+         */
+        public boolean isSymmetric() {
+            return left == right;
+        }
+
+        @Override
+        public String toString() {
+            return left.getValue() + "/" + right.getValue();
+        }
+    }
+
+    /**
+     * Simple range with start and end indices.
+     */
+    public static class Range {
+        public final int start;
+        public final int end;
+        public final int size;
+
+        public Range(int start, int end) {
+            this.start = start;
+            this.end = end;
+            this.size = end - start + 1;
+        }
+    }
+
+    /**
+     * Encapsulates padded data array and range information.
+     */
+    public static class PaddedRange {
+        public final double[] paddedData;
+        public final Range range;
+
+        PaddedRange(double[] paddedData, int rangeStartInPadded, int rangeEndInPadded) {
+            this.paddedData = paddedData;
+            this.range = new Range(rangeStartInPadded, rangeEndInPadded);
+        }
+    }
+
+    /**
+     * Encapsulates all smoothing configuration.
+     */
+    public static class SmoothingContext {
+        public final int originalWindow;
+        public final int effectiveWindow;
+        public final Strategy strategy;
+        public final Padding leftPad;
+        public final Padding rightPad;
+        public final int paddingNeeded;
+
+        SmoothingContext(int originalWindow, int effectiveWindow, Strategy strategy,
+                         Padding leftPad, Padding rightPad, int paddingNeeded) {
+            this.originalWindow = originalWindow;
+            this.effectiveWindow = effectiveWindow;
+            this.strategy = strategy;
+            this.leftPad = leftPad;
+            this.rightPad = rightPad;
+            this.paddingNeeded = paddingNeeded;
+        }
+    }
+
+    /**
+     * Encapsulates smoothed data result.
+     */
+    public static class SmoothingResult {
+        public final double[] smoothedData;
+        public final int rangeStartInResult;
+        public final int rangeSize;
+
+        SmoothingResult(double[] smoothedData, int rangeStartInResult, int rangeSize) {
+            this.smoothedData = smoothedData;
+            this.rangeStartInResult = rangeStartInResult;
+            this.rangeSize = rangeSize;
+        }
+
+        public double[] extractRange() {
+            double[] result = new double[rangeSize];
+            System.arraycopy(smoothedData, rangeStartInResult, result, 0, rangeSize);
+            return result;
+        }
+    }
+
+    /**
+     * Metadata for range-aware smoothing configuration.
+     */
+    public static class Metadata {
+        public final int windowSize;
+
+        public Metadata(int windowSize) {
+            this.windowSize = windowSize;
+        }
+    }
+
+    /**
+     * Encapsulates window boundary calculations for a smoothing operation.
+     */
+    private static class WindowBoundaries {
+        final int minWindowStart;
+        final int maxWindowEnd;
+        final int arrayFirstSmoothable;
+        final int arrayLastSmoothable;
+
+        WindowBoundaries(Range range, SmoothingContext ctx, int windowSize, int nk, int arrayLength) {
+            this.minWindowStart = (ctx.leftPad != Padding.NONE) ? 0 : range.start;
+            this.maxWindowEnd = (ctx.rightPad != Padding.NONE)
+                ? range.end + ctx.paddingNeeded
+                : range.end;
+            this.arrayFirstSmoothable = nk >= 0 ? 0 : -nk;
+            this.arrayLastSmoothable = arrayLength - windowSize - nk - 1;
+        }
+
+        boolean isRightSidePoint(int pointIdx, int windowSize, Range range) {
+            return pointIdx >= range.end - windowSize;
+        }
+
+        int pointMinWindowStart(boolean isRightSide, SmoothingContext ctx, Range range) {
+            return (!isRightSide && ctx.leftPad != Padding.NONE)
+                ? minWindowStart
+                : range.start;
+        }
+
+        int pointMaxWindowEnd(boolean isRightSide, SmoothingContext ctx, Range range) {
+            return (isRightSide && ctx.rightPad != Padding.NONE)
+                ? maxWindowEnd
+                : range.end;
+        }
+
+        int pointLastSmoothable(boolean isRightSide, SmoothingContext ctx, Range range,
+                               int windowSize, int nk) {
+            if (isRightSide && ctx.rightPad != Padding.NONE) {
+                return Math.min(arrayLastSmoothable,
+                    Math.max(range.end, pointMaxWindowEnd(isRightSide, ctx, range) - windowSize - nk));
+            } else {
+                return Math.min(arrayLastSmoothable, range.end - windowSize - nk);
+            }
+        }
+    }
+
+    /**
+     * Encapsulates per-point smoothing calculations and checks.
+     */
+    private static class PointSmoothingInfo {
+        final int pointIdx;
+        final int windowStart;
+        final int windowEnd;
+        final boolean isRightSide;
+        final boolean canSmooth;
+
+        PointSmoothingInfo(int i, Range range, WindowBoundaries bounds, SmoothingContext ctx,
+                          int windowSize, int nk, int arrayLength) {
+            this.pointIdx = range.start + i;
+            this.windowStart = pointIdx + nk;
+            this.windowEnd = pointIdx + nk + windowSize - 1;
+            this.isRightSide = bounds.isRightSidePoint(pointIdx, windowSize, range);
+
+            final int pointMinWindowStart = bounds.pointMinWindowStart(isRightSide, ctx, range);
+            final int pointMaxWindowEnd = bounds.pointMaxWindowEnd(isRightSide, ctx, range);
+            final int pointLastSmoothable = bounds.pointLastSmoothable(isRightSide, ctx, range, windowSize, nk);
+
+            this.canSmooth = pointIdx >= bounds.arrayFirstSmoothable &&
+                           pointIdx <= pointLastSmoothable &&
+                           windowStart >= pointMinWindowStart &&
+                           windowEnd < arrayLength &&
+                           windowEnd <= pointMaxWindowEnd;
+        }
+    }
+
+    /**
+     * Encapsulates SG-specific boundary calculations.
+     */
+    private static class SGBoundaries {
+        final int sgMaxEnd;
+        final WindowBoundaries base;
+
+        SGBoundaries(PaddedRange padded, SmoothingContext ctx) {
+            this.sgMaxEnd = padded.paddedData.length - SG_WINDOW_SIZE + SG_NK;
+            this.base = new WindowBoundaries(padded.range, ctx, SG_WINDOW_SIZE, SG_NK, padded.paddedData.length);
+        }
+
+        boolean canUseSG(int pointIdx, int windowStart, int windowEnd, Range range,
+                        SmoothingContext ctx, boolean isRightSide) {
+            final int pointMinWindowStart = base.pointMinWindowStart(isRightSide, ctx, range);
+            final int pointMaxWindowEnd = base.pointMaxWindowEnd(isRightSide, ctx, range);
+            final boolean windowRespectsBoundaries = isRightSide
+                ? (windowStart >= range.start)
+                : (windowEnd <= range.end);
+            final int arrayLength = base.arrayLastSmoothable + SG_WINDOW_SIZE + SG_NK + 1;
+
+            return pointIdx >= SG_MIN_START &&
+                   (pointIdx <= sgMaxEnd || (isRightSide && ctx.rightPad != Padding.NONE)) &&
+                   windowStart >= pointMinWindowStart &&
+                   windowEnd < arrayLength &&
+                   windowEnd <= pointMaxWindowEnd &&
+                   windowRespectsBoundaries;
+        }
+    }
+
+    /**
+     * Encapsulates padding application logic.
+     */
+    private static class PaddingApplier {
+        static void applyLeft(double[] dataToSmooth, double[] rangeData, double[] fullData,
+                             Dataset.Range range, Padding leftPad, int leftPadSize, int rangeSize) {
+            if (leftPadSize == 0) return;
+
+            if (leftPad == Padding.MIRROR) {
+                for (int i = 0; i < leftPadSize; i++) {
+                    int srcIdx = Math.min(i, rangeSize - 1);
+                    dataToSmooth[leftPadSize - 1 - i] = rangeData[srcIdx];
+                }
+            } else if (leftPad == Padding.DATA) {
+                for (int i = 0; i < leftPadSize; i++) {
+                    int srcIdx = Math.max(0, range.start - leftPadSize + i);
+                    dataToSmooth[i] = fullData[srcIdx];
+                }
+            }
+        }
+
+        static void applyRight(double[] dataToSmooth, double[] rangeData, double[] fullData,
+                              Dataset.Range range, Padding rightPad, int rightPadSize,
+                              int leftPadSize, int rangeSize) {
+            if (rightPadSize == 0) return;
+
+            if (rightPad == Padding.MIRROR) {
+                for (int i = 0; i < rightPadSize; i++) {
+                    int srcIdx = Math.max(rangeSize - 1 - i, 0);
+                    dataToSmooth[leftPadSize + rangeSize + i] = rangeData[srcIdx];
+                }
+            } else if (rightPad == Padding.DATA) {
+                for (int i = 0; i < rightPadSize; i++) {
+                    int srcIdx = Math.min(fullData.length - 1, range.end + 1 + i);
+                    dataToSmooth[leftPadSize + rangeSize + i] = fullData[srcIdx];
+                }
+            }
+        }
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(Smoothing.class);
 
     // Smoothing constants for quantization noise reduction
@@ -20,6 +363,10 @@ public class Smoothing extends LinearSmoothing
     private static final int SG_MIN_SAMPLES = 11;
     /** Minimum consecutive constant values to consider as quantization noise */
     private static final int MIN_QUANTIZATION_RUN = 3;
+    private static final int CLAMP_RATIO_DENOMINATOR = 2;
+    private static final int SG_WINDOW_SIZE = 11;
+    private static final int SG_NK = -5;
+    private static final int SG_MIN_START = 5;
 
     public Smoothing(int window)
     {
@@ -41,49 +388,215 @@ public class Smoothing extends LinearSmoothing
     @Override
     protected void setType() { this.type = FIR; }
 
-    @Override
-    public double[] smoothAll(double[] input, int start, int end) {
-        final int actualEnd = Math.min(end, input.length - 1);
-        final int rangeSize = actualEnd - start + 1;
+    /**
+     * Apply MAW smoothing to entire data array.
+     */
+    public double[] apply(double[] input) {
+        return applyToRange(input, 0, input.length - 1);
+    }
 
-        // Clamp window to half the range size to prevent issues when window is close to dataset size
-        // This ensures we can actually smooth the data effectively without creating edge artifacts
-        final int originalWindow = this.cn.length;
-        final int effectiveWindow = clampWindowToHalfSize(originalWindow, rangeSize);
+    /**
+     * Apply MAW smoothing to a sub-range of data.
+     * Simple version without padding - window cannot extend beyond range boundaries.
+     */
+    public double[] applyToRange(double[] input, int rangeStart, int rangeEnd) {
+        SmoothingResult result = applyToPaddedRange(
+            new PaddedRange(input, rangeStart, rangeEnd),
+            new SmoothingContext(0, this.cn.length, Strategy.MAW,
+                                Padding.NONE, Padding.NONE, 0));
+        return result.extractRange();
+    }
 
-        // If window was clamped, create a smoother with the clamped window size
-        // Otherwise use this smoother directly
-        final Smoothing smoother = (effectiveWindow < originalWindow) ? new Smoothing(effectiveWindow) : this;
-        final int windowSize = smoother.cn.length;
+    /**
+     * Apply MAW smoothing to padded range.
+     */
+    public SmoothingResult applyToPaddedRange(PaddedRange padded, SmoothingContext ctx) {
+        final double[] input = padded.paddedData;
+        final Range range = padded.range;
+        final int windowSize = this.cn.length;
+        final WindowBoundaries bounds = new WindowBoundaries(range, ctx, windowSize, this.nk, input.length);
+        final double[] result = new double[range.size];
 
-        // Calculate bounds using the effective window size
-        // Don't use data before 'start' to avoid pre-range artifacts (idle/deceleration periods)
-        // But allow data after 'end' for right-side padding (continuation of run)
-        final int lastSmoothable = input.length - windowSize - smoother.nk - 1;
-        final int firstSmoothable = Math.max(start, smoother.nk >= 0 ? 0 : -smoother.nk);
-
-        final double[] result = new double[rangeSize];
-
-        for (int i = 0; i < rangeSize; i++) {
-            final int idx = start + i;
-            // Check bounds: can't use data before 'start', but can use data after 'end'
-            // smoothAt needs (idx + nk) >= 0 and (idx + nk + windowSize) <= input.length
-            // But we also need to ensure we're not using data before 'start' (pre-range data)
-            final int windowStart = idx + smoother.nk;  // First index used by smoothing window
-            final int windowEnd = idx + smoother.nk + windowSize - 1;  // Last index used by smoothing window
-            final boolean canSmooth = (idx >= firstSmoothable && idx <= lastSmoothable &&
-                                      windowStart >= start &&  // Don't use data before range start
-                                      windowEnd < input.length);  // Can use data after range end (up to array bounds)
-
-            if (canSmooth) {
-                result[i] = smoother.smoothAt(input, null, idx, idx);
-            } else if (idx < input.length) {
-                result[i] = input[idx];
+        for (int i = 0; i < range.size; i++) {
+            final PointSmoothingInfo info = new PointSmoothingInfo(i, range, bounds, ctx, windowSize, this.nk, input.length);
+            if (info.canSmooth) {
+                result[i] = this.smoothAt(input, null, info.pointIdx, info.pointIdx);
+            } else if (info.pointIdx < input.length) {
+                result[i] = input[info.pointIdx];
             }
         }
 
-        return result;
+        return new SmoothingResult(result, 0, range.size);
     }
+
+    /**
+     * Apply SG smoothing to padded range.
+     */
+    public static SmoothingResult applySGToPaddedRange(PaddedRange padded, SmoothingContext ctx) {
+        final SavitzkyGolaySmoothing sg = new SavitzkyGolaySmoothing(5, 5);
+        final Range range = padded.range;
+        final SGBoundaries bounds = new SGBoundaries(padded, ctx);
+        final double[] result = new double[range.size];
+        int mawFallbackCount = 0;
+        final int mawFallbackWindow = Math.min(7, ctx.effectiveWindow);
+        final Smoothing maw = new Smoothing(mawFallbackWindow);
+
+        for (int i = 0; i < range.size; i++) {
+            final int pointIdx = range.start + i;
+            final int windowStart = pointIdx + SG_NK;
+            final int windowEnd = pointIdx + SG_NK + SG_WINDOW_SIZE - 1;
+            final boolean isRightSide = bounds.base.isRightSidePoint(pointIdx, SG_WINDOW_SIZE, range);
+
+            if (bounds.canUseSG(pointIdx, windowStart, windowEnd, range, ctx, isRightSide)) {
+                result[i] = sg.smoothAll(padded.paddedData, pointIdx, pointIdx)[0];
+            } else {
+                result[i] = fallbackToMAW(maw, padded, range, ctx, isRightSide, mawFallbackWindow, i);
+                mawFallbackCount++;
+            }
+        }
+
+        if (mawFallbackCount > 0) {
+            logger.debug("applySGToPaddedRange: SG falling back to MAW at {} of {} points",
+                mawFallbackCount, range.size);
+        }
+
+        return new SmoothingResult(result, 0, range.size);
+    }
+
+    private static double fallbackToMAW(Smoothing maw, PaddedRange padded, Range range,
+                                       SmoothingContext ctx, boolean isRightSide, int mawFallbackWindow, int i) {
+        final Smoothing.Padding mawLeftPad = (!isRightSide && ctx.leftPad != Padding.NONE) ? ctx.leftPad : Padding.NONE;
+        final Smoothing.Padding mawRightPad = (isRightSide && ctx.rightPad != Padding.NONE) ? ctx.rightPad : Padding.NONE;
+        final SmoothingContext mawCtx = new SmoothingContext(
+            mawFallbackWindow, mawFallbackWindow, Strategy.MAW,
+            mawLeftPad, mawRightPad, ctx.paddingNeeded);
+        final PaddedRange mawPadded = new PaddedRange(padded.paddedData, range.start, range.end);
+        return maw.applyToPaddedRange(mawPadded, mawCtx).extractRange()[i];
+    }
+
+    /**
+     * Apply smoothing strategy to padded range.
+     */
+    public static SmoothingResult applyStrategyToPaddedRange(
+            PaddedRange padded,
+            SmoothingContext ctx,
+            String columnName) {
+
+        if (ctx.strategy == Strategy.MAW) {
+            final Smoothing smoother = new Smoothing(ctx.effectiveWindow);
+            return smoother.applyToPaddedRange(padded, ctx);
+        }
+
+        final boolean useSG = (ctx.strategy == Strategy.SG)
+            && padded.range.size >= SG_MIN_SAMPLES;
+
+        if (!useSG) {
+            final Smoothing smoother = new Smoothing(ctx.effectiveWindow);
+            return smoother.applyToPaddedRange(padded, ctx);
+        }
+
+        return applySGToPaddedRange(padded, ctx);
+    }
+
+    /**
+     * Prepare padded range from full dataset and range.
+     */
+    public static PaddedRange preparePaddedRange(
+            double[] fullData,
+            Dataset.Range range,
+            Padding leftPad,
+            Padding rightPad,
+            int paddingNeeded) {
+
+        final int rangeSize = range.end - range.start + 1;
+        final int leftPadSize = (leftPad != Padding.NONE && paddingNeeded > 0) ? paddingNeeded : 0;
+        final int rightPadSize = (rightPad != Padding.NONE && paddingNeeded > 0) ? paddingNeeded : 0;
+        final boolean needsPadding = leftPadSize > 0 || rightPadSize > 0;
+
+        if (!needsPadding) {
+            return new PaddedRange(fullData, range.start, range.end);
+        }
+
+        if (leftPad == Padding.DATA && rightPad == Padding.DATA) {
+            return new PaddedRange(fullData, range.start, range.end);
+        }
+
+        final int totalPadSize = leftPadSize + rightPadSize;
+        final double[] dataToSmooth = new double[rangeSize + totalPadSize];
+        final double[] rangeData = new double[rangeSize];
+        System.arraycopy(fullData, range.start, rangeData, 0, rangeSize);
+        System.arraycopy(rangeData, 0, dataToSmooth, leftPadSize, rangeSize);
+
+        PaddingApplier.applyLeft(dataToSmooth, rangeData, fullData, range, leftPad, leftPadSize, rangeSize);
+        PaddingApplier.applyRight(dataToSmooth, rangeData, fullData, range, rightPad, rightPadSize, leftPadSize, rangeSize);
+
+        return new PaddedRange(dataToSmooth, leftPadSize, leftPadSize + rangeSize - 1);
+    }
+
+    /**
+     * Create smoothing context from metadata and configuration.
+     */
+    public static SmoothingContext createSmoothingContext(
+            Metadata metadata,
+            int rangeSize,
+            Strategy strategy,
+            Padding leftPadding,
+            Padding rightPadding) {
+
+        final int originalWindow = metadata.windowSize;
+        final int effectiveWindow = clampWindow(metadata.windowSize, rangeSize);
+        final Padding leftPad = leftPadding;
+        final Padding rightPad = rightPadding;
+        final int paddingNeeded = (strategy == Strategy.SG)
+            ? 5
+            : (effectiveWindow - 1) / 2;
+
+        return new SmoothingContext(originalWindow, effectiveWindow, strategy,
+                                   leftPad, rightPad, paddingNeeded);
+    }
+
+    /**
+     * Main entry point.
+     */
+    public static double[] applySmoothing(
+            Dataset.Column column,
+            String columnName,
+            Dataset.Range r,
+            Metadata metadata,
+            Strategy smoothingStrategy,
+            Padding leftPadding,
+            Padding rightPadding,
+            Logger logger) {
+
+        if (metadata == null || metadata.windowSize <= 0) {
+            return column.data.toArray(r.start, r.end);
+        }
+
+        final int rangeSize = r.end - r.start + 1;
+        final int effectiveWindow = clampWindow(metadata.windowSize, rangeSize);
+        if (effectiveWindow != metadata.windowSize) {
+            logger.debug("getData('{}'): Clamped smoothing window from {} to {} (range size {})",
+                columnName, metadata.windowSize, effectiveWindow, rangeSize);
+        }
+
+        if (rangeSize < effectiveWindow) {
+            logger.warn("getData('{}'): Skipping smoothing - range size {} is smaller than window {}",
+                columnName, rangeSize, effectiveWindow);
+            return column.data.toArray(r.start, r.end);
+        }
+
+        SmoothingContext ctx = createSmoothingContext(
+            metadata, rangeSize, smoothingStrategy, leftPadding, rightPadding);
+
+        PaddedRange padded = preparePaddedRange(
+            column.data.toArray(), r, ctx.leftPad, ctx.rightPad, ctx.paddingNeeded);
+
+        SmoothingResult result = applyStrategyToPaddedRange(padded, ctx, columnName);
+
+        return result.extractRange();
+    }
+
+    // ========== ADAPTIVE SMOOTHING (for RPM) ==========
 
     /**
      * Detect average quantization run length in data.
@@ -146,8 +659,8 @@ public class Smoothing extends LinearSmoothing
      * @param dataSize The size of the data (dataset or range)
      * @return Clamped window size (always odd, at most half the data size)
      */
-    public static int clampWindowToHalfSize(int window, int dataSize) {
-        final int maxWindow = Math.max(1, dataSize / 2);
+    public static int clampWindow(int window, int dataSize) {
+        final int maxWindow = Math.max(1, dataSize / CLAMP_RATIO_DENOMINATOR);
         if (window > maxWindow) {
             window = maxWindow;
             // Ensure window is odd (required by Smoothing constructor)
@@ -220,9 +733,16 @@ public class Smoothing extends LinearSmoothing
         int maWindow = calculateAdaptiveMAWindow(avgQuantizationRun);
         final int datasetSize = data.size();
 
+        final int originalMaWindow = maWindow;
+        maWindow = clampWindow(maWindow, datasetSize);
+        if (maWindow != originalMaWindow) {
+            logger.debug("smoothAdaptive('{}'): Clamped adaptive MA window from {} to {} (1/2 of dataset size {})",
+                columnName, originalMaWindow, maWindow, datasetSize);
+        }
+
         if (avgQuantizationRun >= MIN_QUANTIZATION_RUN) {
             // Quantization detected: use MA then SG (MA reduces quantization steps, SG preserves trends)
-            // Note: smoothAll() will automatically clamp the window to half the data size
+            // Note: applyToRange() will automatically clamp the window to half the data size
             final int minSizeForMA = 2 * maWindow;  // Require 2x MA window size
             if (datasetSize >= minSizeForMA) {
                 // Step 1: Apply MA to reduce quantization steps
@@ -231,22 +751,21 @@ public class Smoothing extends LinearSmoothing
                 // smooth the full dataset - just don't use pre-range data when smoothing within ranges.
                 // Right edge can extend beyond range end if data is available.
                 final Smoothing maSmoother = new Smoothing(maWindow);
-                final double[] input = rawData;
                 double[] maSmoothed;
 
                 if (ranges != null && !ranges.isEmpty()) {
                     // Initialize with raw data (will be smoothed per-range)
-                    maSmoothed = new double[input.length];
-                    System.arraycopy(input, 0, maSmoothed, 0, input.length);
+                    maSmoothed = new double[rawData.length];
+                    System.arraycopy(rawData, 0, maSmoothed, 0, rawData.length);
 
-                    // For each range: apply MA smoothing (smoothAll will automatically clamp window to range size)
+                    // For each range: apply MA smoothing (applyToRange will automatically clamp window to range size)
                     for (Dataset.Range r : ranges) {
-                        final double[] rangeSmoothed = maSmoother.smoothAll(input, r.start, r.end);
+                        final double[] rangeSmoothed = maSmoother.applyToRange(rawData, r.start, r.end);
                         System.arraycopy(rangeSmoothed, 0, maSmoothed, r.start, r.end - r.start + 1);
                     }
                 } else {
-                    // No ranges: apply MA smoothing to full dataset (smoothAll will automatically clamp window)
-                    maSmoothed = maSmoother.smoothAll(input, 0, input.length - 1);
+                    // No ranges: apply MA smoothing to full dataset (applyToRange will automatically clamp window)
+                    maSmoothed = maSmoother.applyToRange(rawData, 0, rawData.length - 1);
                 }
 
                 // Step 2: Apply SG smoothing to preserve trends after MA
@@ -273,4 +792,3 @@ public class Smoothing extends LinearSmoothing
 }
 
 // vim: set sw=4 ts=8 expandtab:
-

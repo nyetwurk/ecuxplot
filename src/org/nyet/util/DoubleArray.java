@@ -254,7 +254,7 @@ public class DoubleArray
         }
         if(window>0 && window<this.sp/2) {
             final Smoothing s = new Smoothing(window);
-            return s.smoothAll(out);
+            return s.applyToRange(out, 0, out.length - 1);
         } else {
             return out;
         }
@@ -330,7 +330,7 @@ public class DoubleArray
         final Smoothing s = new Smoothing(window);
         // Call with explicit start/end to use the overridden version that handles edges correctly
         final double[] input = this.toArray();
-        return new DoubleArray(s.smoothAll(input, 0, input.length - 1));
+        return new DoubleArray(s.apply(input));
     }
 
     public Spline spline(int order, double[] mesh) {
