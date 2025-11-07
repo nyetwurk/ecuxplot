@@ -261,7 +261,7 @@ public class SmoothingWindow extends ECUxPlotWindow {
         smoothingStrategyCombo = new JComboBox<>(Strategy.values());
         smoothingStrategyCombo.setToolTipText(
             "<html>Smoothing strategy:<br/>" +
-            "• <b>MAW</b>: Moving Average Window (can amplify inflection points)<br/>" +
+            "• <b>MAW</b>: Moving Average Window (default, smooths out noise and inflection points)<br/>" +
             "• <b>SG</b>: Savitzky-Golay filter (preserves inflection points, better for derivatives)</html>"
         );
         // Note: Strategy and padding changes are applied via Apply/OK buttons
@@ -275,7 +275,7 @@ public class SmoothingWindow extends ECUxPlotWindow {
 
         // HPMAW control
         HPMAW = new JTextField(10);
-        HPMAW.setToolTipText("HP/TQ Smoothing window (seconds). Affects: WHP, HP, WTQ, TQ, Boost Spool Rate (time) - range-aware smoothing");
+        HPMAW.setToolTipText("HP/TQ Smoothing window (seconds). Affects: WHP, HP, WTQ, TQ - range-aware smoothing");
 
         // ZeitMAW control
         ZeitMAW = new JTextField(10);

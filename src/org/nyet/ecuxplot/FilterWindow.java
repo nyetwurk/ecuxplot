@@ -140,7 +140,7 @@ public class FilterWindow extends ECUxPlotWindow {
         "Filter out points below this throttle %. Lower values allow throttle cuts.",  // MIN_THROTTLE (6)
         "Filter out points with acceleration below this (RPM/s)",  // MIN_ACCEL (7)
         "Minimum points required for a valid run",  // MIN_POINTS (8)
-        "Affects: Acceleration (RPM/s), Acceleration (m/s^2) - derivative smoothing and range-aware smoothing",  // ACCEL_MAW (9)
+        "Affects: Acceleration (RPM/s), Acceleration (m/s^2) - range-aware smoothing",  // ACCEL_MAW (9)
     };
 
 
