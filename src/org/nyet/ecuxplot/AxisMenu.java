@@ -83,7 +83,7 @@ public class AxisMenu extends JMenu {
 
     // Calc menu names that should be pre-populated and grouped near the top
     private static final String[] CALC_MENU_NAMES = {
-        "Calc Power", "Calc MAF", "Calc Fuel", "Calc Boost", "Calc PID", "Calc IAT", "Speed", "Acceleration"
+        "Calc Power", "Calc MAF", "Calc Fuel", "Calc Boost", "Calc PID", "Calc IAT", "Acceleration"
     };
 
     /**
@@ -528,8 +528,8 @@ public class AxisMenu extends JMenu {
                 }
             }
 
-            // Pre-populate RPM, TIME, and Sample submenus for all axes (same pattern as calc menus)
-            String[] baseMenus = {"RPM", "TIME", "Sample"};
+            // Pre-populate RPM, TIME, Sample, and Speed submenus for all axes (same pattern as calc menus)
+            String[] baseMenus = {"RPM", "TIME", "Sample", "Speed"};
             for (String menuName : baseMenus) {
                 if (!this.subMenus.containsKey(menuName)) {
                     AxisMenu baseMenu = new AxisMenu(menuName, this);
