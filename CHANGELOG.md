@@ -5,7 +5,11 @@
 
 ### Fixed
 
-- Fixed #109: Resolved circular dependency between range detection and RPM smoothing using three-tier architecture
+- Fixed #110: Calc PID now requires both boost desired and boost actual fields ([Issue #110](https://github.com/nyetwurk/ecuxplot/issues/110))
+- Fixed #109: Resolved circular dependency between range detection and RPM smoothing using three-tier architecture ([Issue #109](https://github.com/nyetwurk/ecuxplot/issues/109))
+- Fixed torque unit conversion (ft/lb to Nm) for accurate calculations
+- Fixed max HP calculation in Range Selector to use smoothed data instead of raw data
+- Fixed smoothing inheritance so unit-converted columns (e.g., WTQ (Nm)) automatically inherit smoothing from base columns
 - Fixed derivative calculation to handle duplicate/near-zero time deltas preventing division by zero errors
 - Fixed acceleration calculations to avoid double-smoothing artifacts
 - Fixed FilterWindow to use base RPM for data visualization matching actual filter behavior
@@ -23,6 +27,7 @@
   - Base RPM: SG smoothing only (for range detection, no ranges needed)
   - Final RPM: Adaptive smoothing (MA+SG for quantized, SG for smooth) using ranges for quantization detection
 - **Smoothing Improvements**:
+  - Added edge clamping to prevent artifacts at range boundaries
   - Adaptive smoothing automatically detects quantization noise and chooses MA+SG vs SG-only
   - Adaptive window sizing based on detected quantization characteristics
   - Range-aware quantization detection to avoid false positives from idle/deceleration periods
@@ -49,13 +54,17 @@
 - **New Columns**:
   - Added "Time [Range]" column: relative time to range start (when filter enabled)
   - Added "Sample [Range]" column: relative sample to range start (when filter enabled)
+  - Added "Sample" column to FilterWindow for easier data navigation
   - Added "RPM - base" debug column (only visible with verbose logging)
+- **Alias Improvements**: Added more Simos logger aliases and improved axis menu sorting
 - Consolidated axis label update calls into `updateAllAxisLabels()` helper method
 - Added wait cursor feedback for "Original names", "Scatter plot", and "Apply SAE" menu actions
 - Enhanced preferences editor to preserve excluded keys when resetting to defaults (SAE editor preserves "enabled" state) ([Issue #107](https://github.com/nyetwurk/ecuxplot/issues/107))
 
 ### Added
 
+- Added "Smoothing..." window for configuring smoothing parameters (HPMAW and ZeitMAW moved from Filter window)
+- Smoothing window sizes now specified in seconds (converted to samples internally) for easier configuration
 - Added `getVerbose()` method to `ECUxPlot` for UI elements to check debug logging level
 - Added calculation tooltips to AxisMenu showing smoothing chain for calculated columns
 - Added `getSmoothingWindow()` method to `ECUxDataset` to expose smoothing window sizes
