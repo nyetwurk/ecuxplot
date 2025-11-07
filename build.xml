@@ -48,6 +48,10 @@
 	<ant antfile="subbuild.xml" target="test-unit-conversion"/>
     </target>
 
+    <target name="test-smoothing" depends="prep">
+	<ant antfile="subbuild.xml" target="test-smoothing"/>
+    </target>
+
     <target name="clean">
 	<exec executable="make" failonerror="true">
 	    <arg value="clean" />

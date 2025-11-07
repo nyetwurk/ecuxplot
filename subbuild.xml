@@ -36,6 +36,13 @@
 		<path refid="classpath"/>
 	    </classpath>
 	</java>
+	<echo message="Running smoothing tests..."/>
+	<java classname="test.java.SmoothingTest" fork="true" failonerror="true">
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
     </target>
 
     <target name="test-detection" depends="compile">
@@ -50,6 +57,15 @@
 
     <target name="test-unit-conversion" depends="compile">
 	<java classname="test.java.UnitConversionTest" fork="true" failonerror="true">
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
+    </target>
+
+    <target name="test-smoothing" depends="compile">
+	<java classname="test.java.SmoothingTest" fork="true" failonerror="true">
 	    <classpath>
 		<pathelement location="build/classes"/>
 		<path refid="classpath"/>
