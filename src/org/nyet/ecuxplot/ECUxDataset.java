@@ -41,18 +41,52 @@ public class ECUxDataset extends Dataset {
     private CubicSpline [] splines;     // rpm vs time splines
     private String log_detected;
     /**
-     * Custom map for smoothing windows that provides a put(String, int) overload.
+     * Custom map for smoothing windows that provides a put(String, double) overload
+     * to accept time in seconds and convert to samples internally.
      */
-    private static class SmoothingWindowsMap extends HashMap<String, Metadata> {
+    private class SmoothingWindowsMap extends HashMap<String, Metadata> {
         private static final long serialVersionUID = 1L;
 
+        /**
+         * Register a column for smoothing with window size in seconds.
+         * Converts to samples internally using samples_per_sec.
+         * @param columnName The name of the column to register
+         * @param seconds Smoothing window size in seconds
+         * @return The previous Metadata for this column, or null if none
+         */
+        public Metadata put(String columnName, double seconds) {
+            if (seconds <= 0) {
+                // Zero or negative means no smoothing
+                return super.put(columnName, new Metadata(0));
+            }
+            if (samples_per_sec <= 0) {
+                logger.warn("smoothingWindows.put('{}', {}s): samples_per_sec is {}, cannot convert to samples. Using 0 (no smoothing).",
+                    columnName, seconds, samples_per_sec);
+                return super.put(columnName, new Metadata(0));
+            }
+            // Convert seconds to samples (rounding to nearest int)
+            int windowSize = (int)Math.round(samples_per_sec * seconds);
+            if (windowSize <= 0) {
+                logger.warn("smoothingWindows.put('{}', {}s): Converted window size is {} samples (samples_per_sec={}), using 0 (no smoothing).",
+                    columnName, seconds, windowSize, samples_per_sec);
+                return super.put(columnName, new Metadata(0));
+            }
+            return super.put(columnName, new Metadata(windowSize));
+        }
+
+        /**
+         * Register a column for smoothing with window size in samples (for backward compatibility).
+         * @param columnName The name of the column to register
+         * @param windowSize Smoothing window size in samples
+         * @return The previous Metadata for this column, or null if none
+         */
         public Metadata put(String columnName, int windowSize) {
             return super.put(columnName, new Metadata(windowSize));
         }
     }
 
     // Track which columns need moving average smoothing
-    // Maps column name to smoothing window size (in samples)
+    // Maps column name to smoothing window size (stored in samples, but registered in seconds)
     private final SmoothingWindowsMap smoothingWindows = new SmoothingWindowsMap();
 
     // Configurable smoothing parameters (for testing variants)
@@ -312,15 +346,7 @@ public class ECUxDataset extends Dataset {
         return this.baseRpm;
     }
 
-    private int HPMAW() {
-        // HPMAW is in seconds, convert to samples (Smoothing constructor will make it odd)
-        return (int)Math.round(this.samples_per_sec * this.filter.HPMAW());
-    }
-
-    private int AccelMAW() {
-        // accelMAW is in seconds, convert to samples (Smoothing constructor will make it odd)
-        return (int)Math.round(this.samples_per_sec * this.filter.accelMAW());
-    }
+    // Note: HPMAW() and AccelMAW() helper methods removed - smoothingWindows.put() now accepts seconds directly
 
 
 
@@ -533,7 +559,7 @@ public class ECUxDataset extends Dataset {
         if(this.env.sae.enabled()) label += " (SAE)";
         // Register for range-aware smoothing in getData() (same as power columns)
         Column c = new Column(torqueId, label, torque, Dataset.ColumnType.VEHICLE_CONSTANTS);
-        this.smoothingWindows.put(torqueId, this.HPMAW());
+        this.smoothingWindows.put(torqueId, this.filter.HPMAW());
         return c;
     }
 
@@ -668,7 +694,9 @@ public class ECUxDataset extends Dataset {
         // (Not range-aware because ranges don't exist yet - this is called during range detection)
         final DoubleArray y = this.baseRpm.data;
         final DoubleArray x = timeCol.data;
-        final DoubleArray derivative = y.derivative(x, this.AccelMAW()).max(0);
+        // Convert accelMAW from seconds to samples for derivative smoothing
+        final int accelMAW = (int)Math.round(this.samples_per_sec * this.filter.accelMAW());
+        final DoubleArray derivative = y.derivative(x, accelMAW).max(0);
 
         // Extract value at index i (clamp to valid range)
         if (i >= derivative.size()) {
@@ -931,7 +959,7 @@ public class ECUxDataset extends Dataset {
             final DoubleArray derivative = y.derivative(x).max(0);  // No smoothing during derivative - will be smoothed in getData()
             c = new Column(id, UnitConstants.UNIT_RPS, derivative, Dataset.ColumnType.PROCESSED_VARIANT);
             // Register for range-aware smoothing to prevent edge artifacts when viewing truncated ranges
-            this.smoothingWindows.put(id.toString(), this.AccelMAW());
+            this.smoothingWindows.put(id.toString(), this.filter.accelMAW());
         } else if(id.equals("Acceleration (RPM/s) - raw")) {
             // Use smoothed RPM (not raw) to reduce quantization noise before differentiation
             // "Raw" refers to unsmoothed derivative, not unsmoothed input
@@ -952,7 +980,8 @@ public class ECUxDataset extends Dataset {
             }
             final DoubleArray x = this.get("TIME").data;
             // Apply AccelMAW smoothing to base RPM, then calculate derivative
-            final int accelMAW = AccelMAW();
+            // Convert accelMAW from seconds to samples for derivative smoothing
+            final int accelMAW = (int)Math.round(this.samples_per_sec * this.filter.accelMAW());
             DoubleArray derivative;
             if (accelMAW > 0 && this.samples_per_sec > 0) {
                 final double[] baseRpmArray = y.toArray();
@@ -1010,7 +1039,7 @@ public class ECUxDataset extends Dataset {
                 mult(UnitConstants.MPS_PER_MPH);
             c = new Column(id, "m/s^2", accel, Dataset.ColumnType.VEHICLE_CONSTANTS);
             // Register for range-aware smoothing to prevent edge artifacts when viewing truncated ranges
-            this.smoothingWindows.put(id.toString(), this.AccelMAW());
+            this.smoothingWindows.put(id.toString(), this.filter.accelMAW());
         } else if(id.equals("Acceleration (g)")) {
             // Depends on Acceleration (m/s^2) which uses RPM_PER_MPH
             final DoubleArray a = this.get("Acceleration (m/s^2)").data;
@@ -1133,7 +1162,7 @@ public class ECUxDataset extends Dataset {
             // Store unsmoothed data and record smoothing requirement
             // Smoothing will be applied in getData() using MAW() window
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            this.smoothingWindows.put(id.toString(), this.HPMAW());
+            this.smoothingWindows.put(id.toString(), this.filter.HPMAW());
         } else if(id.equals("HP")) {
             // Uses: driveline_loss, static_loss, plus all WHP dependencies
             // Depends on: WHP (raw, unsmoothed data)
@@ -1154,7 +1183,7 @@ public class ECUxDataset extends Dataset {
             // Register for range-aware smoothing in getData() (same as WHP)
             // This ensures HP gets smoothed when retrieved, matching WHP smoothing behavior
             c = new Column(id, l, value, Dataset.ColumnType.VEHICLE_CONSTANTS);
-            this.smoothingWindows.put(id.toString(), this.HPMAW());
+            this.smoothingWindows.put(id.toString(), this.filter.HPMAW());
         } else if(id.equals("WTQ")) {
             // Depends on WHP (which uses all WHP constants)
             // Calculate WTQ from raw WHP (no smoothing applied here)
@@ -1206,9 +1235,8 @@ public class ECUxDataset extends Dataset {
             final DoubleArray boost = super.get("Zeitronix Boost").data;
             // Store unsmoothed data and record smoothing requirement
             c = new Column(id, UnitConstants.UNIT_PSI, boost);
-            // Convert seconds to samples
-            int smoothingWindow = (int)Math.floor(this.samples_per_sec * this.filter.ZeitMAW());
-            this.smoothingWindows.put(id.toString(), smoothingWindow);
+            // Register for range-aware smoothing (window size in seconds, converted to samples internally)
+            this.smoothingWindows.put(id.toString(), this.filter.ZeitMAW());
         } else if(id.equals("Zeitronix Boost")) {
             // Get base column directly from map (no calculations) and convert units directly
             Column baseCol = super.get("Zeitronix Boost");
