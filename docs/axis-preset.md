@@ -140,7 +140,7 @@ Blacklisted fields are filtered but parsing still happens - this is expected beh
 
 ### IgnitionTimingAngleOverallDesired Calculation
 
-**Location**: `ECUxDataset.java`
+**Location**: `AxisMenuHandlers.java`
 
 **Edge Cases**:
 1. **No retard fields**: Returns `IgnitionTimingAngleOverall` unchanged
@@ -150,7 +150,7 @@ Blacklisted fields are filtered but parsing still happens - this is expected beh
 
 ### IgnitionTimingAngleOverall Calculation
 
-**Location**: `ECUxDataset.java`
+**Location**: `AxisMenuHandlers.java`
 
 **Edge Case**:
 - If not directly available, calculates from per-cylinder timing angles (`IgnitionTimingAngle1-8`)
@@ -162,6 +162,7 @@ Blacklisted fields are filtered but parsing still happens - this is expected beh
 ## References
 
 - `loggers.yaml`: Logger definitions, aliases, preset categories
-- `ECUxDataset.java`: Calculation logic for derived fields
+- `AxisMenuHandlers.java`: Calculation logic for derived fields (ignition timing, etc.)
+- `ECUxDataset.java`: Dataset management and column retrieval
 - `test-expectations.xml`: Expected columns per logger
 - `DatasetUnits.java`: Unit conversion logic
