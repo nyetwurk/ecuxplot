@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Axis Menu Expectations for Comprehensive Test Dataset
+
+    This file defines the expected menu structure when loading comprehensive-test-dataset.csv
+    into ECUxDataset and building an AxisMenu.
+
+    Structure:
+    - Base menus: TIME, Sample, Speed (available for X-axis)
+    - Calculated menus: Acceleration, Power, Boost, MAF, Fuel, Calc PID, Calc IAT (not available for X-axis)
+    - Submenus: Organized by field category
+
+    Note: This is a comprehensive test dataset that includes fields from multiple logger types
+    (ECUx, Zeitronix, ME7L, EvoScan) to test all pattern matching and special cases.
+-->
+<axis_menu_expectations>
+    <test_case file="comprehensive-test-dataset.csv">
+        <description>Comprehensive test dataset with representative fields from all major categories</description>
+
+        <!-- Field Routing Expectations: field name -> expected submenu -->
+        <!--
+            Note: Most field routing is determined by patterns in AxisMenu.java (SUBMENU_PATTERNS).
+            This XML only lists specific test cases from comprehensive-test-dataset.csv.
+            Patterns are checked in AxisMenu.java, so this serves as test data validation.
+
+            Pattern-based routing (from AxisMenu.SUBMENU_PATTERNS):
+            - ^RPM.* -> RPM
+            - .*(Cam|NWS|Valve).* -> VVT
+            - (Cat|MainCat).* -> Cats
+            - .*EGT.* -> EGT
+            - .*(Idle|Idling).* -> Idle
+            - .*[Kk]nock.* -> Knock
+            - .*Misfire.* -> Misfires
+            - .*(OXS|O2|ResistanceSensor).* -> O2 Sensor(s)
+            - (Vehicle|Wheel).*Speed.* -> Speed
+            - .*Temperature.* -> Temperature
+            - .*VV.* -> VVT (EvoScan)
+            - ^Log.* -> EvoScan
+            - .*Torque.* -> Torque
+
+            Special cases (handled before patterns in AxisMenu):
+            - TIME, RPM, Sample -> handled by special cases
+            - IntakeAirTemperature -> special case (adds calculated fields)
+            - TorqueDesired -> special case (adds derived fields)
+            - Zeitronix.* -> Zeitronix submenu
+            - ME7L.* -> ME7 Logger submenu
+            - Boost/Throttle/Ignition/Load patterns -> handled by special cases
+        -->
+        <field_routing>
+            <!-- Test cases from comprehensive-test-dataset.csv -->
+            <!-- These validate that the patterns work correctly -->
+            <field name="TIME" submenu="TIME"/>
+            <field name="RPM" submenu="RPM"/>
+            <field name="Sample" submenu="Sample"/>
+            <field name="VehicleSpeed" submenu="Speed"/>
+
+            <!-- Pattern-based routing test cases -->
+            <field name="CoolantTemperature" submenu="Temperature"/>
+            <field name="WaterTemperature" submenu="Temperature"/>
+            <field name="OilTemperature" submenu="Temperature"/>
+            <field name="AmbientTemperature" submenu="Temperature"/>
+            <field name="TransmissionTemperature" submenu="Temperature"/>
+            <field name="Coolant Outlet Temp" submenu="Temperature"/>
+
+            <field name="ExhaustCamPosition" submenu="VVT"/>
+            <field name="IntakeCamPosition" submenu="VVT"/>
+            <field name="NWS" submenu="VVT"/>
+            <field name="VV1" submenu="VVT"/>
+            <field name="VV2" submenu="VVT"/>
+
+            <field name="CatTemperature" submenu="Cats"/>
+            <field name="MainCatTemperature" submenu="Cats"/>
+
+            <field name="EGTbank1" submenu="EGT"/>
+            <field name="EGTbank2" submenu="EGT"/>
+
+            <field name="IdleSpeed" submenu="Idle"/>
+            <field name="IdlingSpeed" submenu="Idle"/>
+
+            <field name="KnockVoltCyl1" submenu="Knock"/>
+            <field name="KnockVoltCyl2" submenu="Knock"/>
+
+            <field name="MisfireCyl1" submenu="Misfires"/>
+            <field name="MisfireCyl2" submenu="Misfires"/>
+
+            <field name="OXSVoltS1B1" submenu="O2 Sensor(s)"/>
+            <field name="O2SVoltageSensor1" submenu="O2 Sensor(s)"/>
+            <field name="O2SVoltageSensor2" submenu="O2 Sensor(s)"/>
+            <field name="ResistanceSensor1" submenu="O2 Sensor(s)"/>
+
+            <field name="TorqueActual" submenu="Torque"/>
+            <field name="TorqueAtClutch" submenu="Torque"/>
+            <field name="TorqueLimit" submenu="Torque"/>
+            <field name="Torque Actual" submenu="Torque"/>
+            <field name="Maximum Torque at Clutch" submenu="Torque"/>
+
+            <!-- Special cases (handled before patterns) -->
+            <!-- Note: Zeitronix AFR and Zeitronix Lambda match the Fuel pattern (.*(AFR|Lambda).*) -->
+            <!-- which is checked before the Zeitronix pattern, so they go to Fuel submenu -->
+            <field name="Zeitronix AFR" submenu="Fuel"/>
+            <field name="Zeitronix Lambda" submenu="Fuel"/>
+
+            <field name="ME7L ps_w" submenu="ME7 Logger"/>
+
+            <field name="LogID" submenu="EvoScan"/>
+            <field name="LogEntrySeconds" submenu="EvoScan"/>
+
+            <!-- Special case patterns (handled before pattern table) -->
+            <field name="BoostPressureActual" submenu="Boost"/>
+            <field name="BoostPressureDesired" submenu="Boost"/>
+            <field name="WastegateDutyCycle" submenu="Boost"/>
+
+            <field name="MassAirFlow" submenu="MAF"/>
+            <field name="Intake Flow" submenu="MAF"/>
+            <field name="Airflow" submenu="MAF"/>
+
+            <field name="FuelInjectorOnTime" submenu="Fuel"/>
+            <field name="EffInjectorDutyCycle" submenu="Fuel"/>
+            <field name="AirFuelRatio" submenu="Fuel"/>
+            <field name="LambdaActual" submenu="Fuel"/>
+
+            <field name="ThrottlePlateAngle" submenu="Throttle"/>
+            <field name="AcceleratorPedalPosition" submenu="Throttle"/>
+
+            <field name="IgnitionTimingAngleOverall" submenu="Ignition"/>
+
+            <field name="EngineLoad" submenu="Load"/>
+            <field name="EngineLoadRequested" submenu="Load"/>
+            <field name="EngineLoadCorrected" submenu="Load"/>
+        </field_routing>
+
+        <!-- Calculated Field Expectations: calculated field name -> expected submenu -->
+        <!--
+            Note: Calculated fields are defined in AxisMenu.java (RPM_CALCULATED_FIELDS array).
+            This XML lists test cases to validate calculated field creation.
+            See AxisMenu.RPM_CALCULATED_FIELDS for complete list of RPM-triggered fields.
+        -->
+        <calculated_fields>
+            <!-- RPM-triggered calculated fields (from AxisMenu.RPM_CALCULATED_FIELDS) -->
+            <calculated_field name="WHP" submenu="Power"/>
+            <calculated_field name="WTQ" submenu="Power"/>
+            <calculated_field name="HP" submenu="Power"/>
+            <calculated_field name="TQ" submenu="Power"/>
+            <calculated_field name="Drag" submenu="Power"/>
+            <calculated_field name="Calc Velocity" submenu="Speed"/>
+            <calculated_field name="Acceleration (RPM/s)" submenu="Acceleration"/>
+            <calculated_field name="Acceleration (m/s^2)" submenu="Acceleration"/>
+            <calculated_field name="Acceleration (g)" submenu="Acceleration"/>
+
+            <!-- MAF calculated fields (from DatasetHandlers.getMafFuelColumn) -->
+            <!-- Note: Sim Load, Sim Load Corrected, and Sim MAF are only added to menu when logger type is ME7LOGGER -->
+            <calculated_field name="Sim Load" submenu="Calc MAF"/>
+            <calculated_field name="Sim MAF" submenu="Calc MAF"/>
+
+            <!-- Fuel calculated fields (from DatasetHandlers.getAfrColumn) -->
+            <calculated_field name="Sim AFR" submenu="Calc Fuel"/>
+        </calculated_fields>
+
+        <!-- Base Menus (available for X-axis) -->
+        <base_menus>
+            <menu name="TIME">
+                <item>TIME</item>
+                <item>TIME - raw</item>
+                <item>TIME [Range]</item>
+            </menu>
+            <menu name="Sample">
+                <item>Sample</item>
+                <item>Sample [Range]</item>
+            </menu>
+            <menu name="Speed">
+                <item>VehicleSpeed</item>
+            </menu>
+        </base_menus>
+
+        <!-- Calculated Menus (not available for X-axis) -->
+        <calculated_menus>
+            <!-- RPM submenu and RPM-triggered calculated fields -->
+            <menu name="RPM">
+                <item>RPM</item>
+                <item>RPM - raw</item>
+                <!-- Calculated fields triggered by RPM detection -->
+                <calculated_field name="WHP" submenu="Power"/>
+                <calculated_field name="WTQ" submenu="Power"/>
+                <calculated_field name="WTQ (Nm)" submenu="Power"/>
+                <calculated_field name="HP" submenu="Power"/>
+                <calculated_field name="TQ" submenu="Power"/>
+                <calculated_field name="TQ (Nm)" submenu="Power"/>
+                <calculated_field name="Drag" submenu="Power"/>
+                <calculated_field name="Calc Velocity" submenu="Speed"/>
+                <calculated_field name="Acceleration (RPM/s)" submenu="Acceleration"/>
+                <calculated_field name="Acceleration (m/s^2)" submenu="Acceleration"/>
+                <calculated_field name="Acceleration (g)" submenu="Acceleration"/>
+                <!-- Debug-only fields (only if debug enabled) -->
+                <calculated_field name="Acceleration (RPM/s) - raw" submenu="Acceleration" debug="true"/>
+                <calculated_field name="Acceleration (RPM/s) - from base RPM" submenu="Acceleration" debug="true"/>
+                <calculated_field name="Acceleration (m/s^2) - raw" submenu="Acceleration" debug="true"/>
+            </menu>
+
+            <!-- MAF submenu -->
+            <menu name="MAF">
+                <item>MassAirFlow</item>
+                    <item>MassAirFlow df/dt</item>
+                    <item>Turbo Flow</item>
+                    <item>Turbo Flow (lb/min)</item>
+                    <separator/>
+                    <!-- Note: Sim Load, Sim Load Corrected, and Sim MAF are only added when logger type is ME7LOGGER -->
+                    <calculated_field name="Sim Load" submenu="Calc MAF"/>
+                    <calculated_field name="Sim Load Corrected" submenu="Calc MAF"/>
+                    <calculated_field name="Sim MAF" submenu="Calc MAF"/>
+            </menu>
+
+            <!-- Fuel submenu -->
+            <menu name="Fuel">
+                <item>FuelInjectorOnTime</item>
+                <item>EffInjectorDutyCycle</item>
+                <item>EffInjectorDutyCycleBank2</item>
+                <item>AirFuelRatio</item>
+                <item>LambdaActual</item>
+                <item>LambdaActualBank2</item>
+                <separator/>
+                <calculated_field name="Sim Fuel Mass" submenu="Calc Fuel"/>
+                <calculated_field name="Sim AFR" submenu="Calc Fuel"/>
+                <calculated_field name="Sim lambda" submenu="Calc Fuel"/>
+                <calculated_field name="Sim lambda error" submenu="Calc Fuel"/>
+            </menu>
+
+            <!-- Boost submenu -->
+            <menu name="Boost">
+                <item>BoostPressureActual</item>
+                <item>BoostPressureDesired</item>
+                <item>BoostPressureDesiredDelta</item>
+                <item>WastegateDutyCycle</item>
+                <item>Zeitronix Boost</item>
+                <item>Zeitronix Boost (PSI)</item>
+                <calculated_field name="BoostDesired PR" submenu="Boost"/>
+                <calculated_field name="BoostActual PR" submenu="Boost"/>
+                <calculated_field name="Boost Spool Rate (RPM)" submenu="Boost"/>
+                <calculated_field name="Boost Spool Rate (time)" submenu="Boost"/>
+                <calculated_field name="Boost Spool Rate Zeit (RPM)" submenu="Boost"/>
+                <calculated_field name="Sim BoostPressureDesired" submenu="Boost"/>
+                <calculated_field name="Sim LoadSpecified correction" submenu="Boost"/>
+                <calculated_field name="Sim pspvds" submenu="Boost"/>
+                <calculated_field name="ps_w error" submenu="Boost"/>
+            </menu>
+
+            <!-- Throttle submenu -->
+            <menu name="Throttle">
+                <item>ThrottlePlateAngle</item>
+                <item>AcceleratorPedalPosition</item>
+            </menu>
+
+            <!-- Ignition submenu -->
+            <menu name="Ignition">
+                <item>IgnitionTimingAngleOverall</item>
+                <calculated_field name="IgnitionTimingAngleOverallDesired" submenu="Ignition"/>
+            </menu>
+
+            <!-- TrueTiming submenu (unit conversion) -->
+            <menu name="TrueTiming">
+                <item>IgnitionTimingAngleOverall (ms)</item>
+            </menu>
+
+            <!-- Temperature submenu -->
+            <menu name="Temperature">
+                <item>IntakeAirTemperature</item>
+                <item>CoolantTemperature</item>
+                <item>WaterTemperature</item>
+                <item>OilTemperature</item>
+                <calculated_field name="Sim evtmod" submenu="Calc IAT"/>
+                <calculated_field name="Sim ftbr" submenu="Calc IAT"/>
+                <calculated_field name="Sim BoostIATCorrection" submenu="Calc IAT"/>
+            </menu>
+
+            <!-- VVT submenu (pattern: .*(Cam|NWS|Valve).* or .*VV.*) -->
+            <menu name="VVT">
+                <item>ExhaustCamPosition</item>
+                <item>IntakeCamPosition</item>
+                <item>NWS</item>
+                <item>VV1</item>
+                <item>VV2</item>
+            </menu>
+
+            <!-- Cats submenu (pattern: (Cat|MainCat).*) -->
+            <menu name="Cats">
+                <item>CatTemperature</item>
+                <item>MainCatTemperature</item>
+            </menu>
+
+            <!-- EGT submenu (pattern: .*EGT.*) -->
+            <menu name="EGT">
+                <item>EGTbank1</item>
+                <item>EGTbank2</item>
+            </menu>
+
+            <!-- Idle submenu (pattern: .*(Idle|Idling).*) -->
+            <menu name="Idle">
+                <item>IdleSpeed</item>
+                <item>IdlingSpeed</item>
+            </menu>
+
+            <!-- Knock submenu (pattern: .*[Kk]nock.*) -->
+            <menu name="Knock">
+                <item>KnockVoltCyl1</item>
+                <item>KnockVoltCyl2</item>
+            </menu>
+
+            <!-- Misfires submenu (pattern: .*Misfire.*) -->
+            <menu name="Misfires">
+                <item>MisfireCyl1</item>
+                <item>MisfireCyl2</item>
+            </menu>
+
+            <!-- O2 Sensor(s) submenu (pattern: .*(OXS|O2|ResistanceSensor).*) -->
+            <menu name="O2 Sensor(s)">
+                <item>OXSVoltS1B1</item>
+                <item>O2SVoltageSensor1</item>
+                <item>O2SVoltageSensor2</item>
+                <item>ResistanceSensor1</item>
+            </menu>
+
+            <!-- Torque submenu (pattern: .*Torque.*) -->
+            <menu name="Torque">
+                <item>TorqueActual</item>
+                <item>TorqueAtClutch</item>
+                <!-- TorqueDesired is special case - adds derived fields -->
+                <item>TorqueDesired</item>
+                <calculated_field name="Engine torque (ft-lb)" submenu="Torque"/>
+                <calculated_field name="Engine HP" submenu="Torque"/>
+            </menu>
+
+            <!-- Load submenu (pattern: .*(Load|ChargeLimit.*Protection).*) -->
+            <menu name="Load">
+                <item>EngineLoad</item>
+                <item>EngineLoadRequested</item>
+                <item>EngineLoadCorrected</item>
+                <item>ChargeLimitProtection</item>
+            </menu>
+
+            <!-- Zeitronix submenu (pattern: ^Zeitronix.*) -->
+            <!-- Note: Zeitronix AFR and Zeitronix Lambda go to Fuel submenu because they match -->
+            <!-- the Fuel pattern (.*(AFR|Lambda).*) which is checked before the Zeitronix pattern -->
+            <menu name="Zeitronix">
+                <item>Zeitronix Boost</item>
+                <item>Zeitronix Boost (PSI)</item>
+            </menu>
+
+            <!-- ME7 Logger submenu (pattern: ^ME7L.*) -->
+            <menu name="ME7 Logger">
+                <item>ME7L ps_w</item>
+            </menu>
+
+            <!-- EvoScan submenu (pattern: ^Log.*) -->
+            <menu name="EvoScan">
+                <item>LogID</item>
+                <item>LogEntrySeconds</item>
+            </menu>
+
+            <!-- Acceleration submenu (pattern: .*Accel.*) -->
+            <menu name="Acceleration">
+                <!-- Calculated fields from RPM are added here -->
+            </menu>
+
+            <!-- Power submenu -->
+            <menu name="Power">
+                <!-- Calculated fields from RPM are added here -->
+            </menu>
+
+            <!-- Calc MAF submenu -->
+            <menu name="Calc MAF">
+                <!-- Calculated fields from MAF are added here -->
+            </menu>
+
+            <!-- Calc Fuel submenu -->
+            <menu name="Calc Fuel">
+                <!-- Calculated fields from Fuel are added here -->
+            </menu>
+
+            <!-- Calc PID submenu -->
+            <menu name="Calc PID">
+                <calculated_field name="LDR error" submenu="Calc PID"/>
+                <calculated_field name="LDR de/dt" submenu="Calc PID"/>
+                <calculated_field name="LDR I e dt" submenu="Calc PID"/>
+                <calculated_field name="LDR PID" submenu="Calc PID"/>
+            </menu>
+
+            <!-- Calc IAT submenu -->
+            <menu name="Calc IAT">
+                <!-- Calculated fields from IntakeAirTemperature are added here -->
+            </menu>
+        </calculated_menus>
+
+        <!-- Test Configuration -->
+        <!-- Hard-coded strings used in test code that should be configurable -->
+        <test_config>
+            <!-- Submenu names to verify exist in testSubmenuStructure() -->
+            <submenus_to_check>
+                <submenu>TIME</submenu>
+                <submenu>Sample</submenu>
+                <submenu>Speed</submenu>
+                <submenu>RPM</submenu>
+                <submenu>Temperature</submenu>
+                <submenu>VVT</submenu>
+                <submenu>Boost</submenu>
+                <submenu>MAF</submenu>
+                <submenu>Fuel</submenu>
+                <submenu>Ignition</submenu>
+            </submenus_to_check>
+
+            <!-- Handler test cases: handler method name -> field names to test -->
+            <handler_tests>
+                <handler name="getRangeColumn">
+                    <field>TIME [Range]</field>
+                    <field>Sample [Range]</field>
+                </handler>
+                <handler name="getVelocityAccelerationColumn">
+                    <field>Calc Velocity</field>
+                    <field>Acceleration (RPM/s)</field>
+                    <field>Acceleration (m/s^2)</field>
+                </handler>
+                <handler name="getPowerTorqueColumn">
+                    <field>WHP</field>
+                    <field>HP</field>
+                    <field>WTQ</field>
+                    <field>TQ</field>
+                    <field>Drag</field>
+                </handler>
+                <handler name="getMafFuelColumn">
+                    <field>Sim Load</field>
+                    <field>Sim MAF</field>
+                    <field>MassAirFlow df/dt</field>
+                </handler>
+                <handler name="getAfrColumn">
+                    <field>Sim AFR</field>
+                    <field>Sim lambda</field>
+                </handler>
+                <handler name="getInjectorDutyCycleColumn">
+                    <field>FuelInjectorDutyCycle</field>
+                    <field>EffInjectorDutyCycle</field>
+                </handler>
+                <handler name="getBoostZeitronixColumn">
+                    <field>BoostDesired PR</field>
+                    <field>BoostActual PR</field>
+                </handler>
+                <handler name="getIgnitionTimingColumn">
+                    <field>IgnitionTimingAngleOverallDesired</field>
+                </handler>
+                <handler name="getEngineTorqueHpColumn">
+                    <field>Engine HP</field>
+                </handler>
+                <handler name="getMiscSimColumn">
+                    <field>Sim evtmod</field>
+                    <field>Sim ftbr</field>
+                </handler>
+            </handler_tests>
+
+            <!-- Dependency test fields: test that dependencies resolve correctly -->
+            <dependency_tests>
+                <test>
+                    <field>WHP</field>
+                    <dependencies>
+                        <dependency>Acceleration (m/s^2)</dependency>
+                        <dependency>Calc Velocity</dependency>
+                    </dependencies>
+                </test>
+                <test>
+                    <field>HP</field>
+                    <dependencies>
+                        <dependency>Acceleration (m/s^2)</dependency>
+                        <dependency>Calc Velocity</dependency>
+                    </dependencies>
+                </test>
+            </dependency_tests>
+
+            <!-- Smoothing test fields: test that smoothing registration works -->
+            <smoothing_tests>
+                <field>Acceleration (RPM/s)</field>
+                <field>WHP</field>
+                <field>HP</field>
+            </smoothing_tests>
+
+            <!-- Consistency test expected field sets -->
+            <!-- Fields that are expected to be in handlers but not in AxisMenu (debug-only, diagnostic) -->
+            <expected_handler_only_fields>
+                <field>HPMAW</field>
+                <field>AccelMAW</field>
+                <field>WTQMAW</field>
+                <field>TQMAW</field>
+                <field>DragMAW</field>
+                <field>Calc Velocity MAW</field>
+                <field>Acceleration (RPM/s) MAW</field>
+                <field>Acceleration (m/s^2) MAW</field>
+            </expected_handler_only_fields>
+
+            <!-- Fields that are expected to be in handlers but added dynamically in AxisMenu -->
+            <!-- (not in RPM_CALCULATED_FIELDS, added when specific CSV fields are detected) -->
+            <expected_dynamic_menu_fields>
+                <!-- MAF/Fuel fields (added when MassAirFlow detected) -->
+                <field>Sim Load</field>
+                <field>Sim Load Corrected</field>
+                <field>Sim MAF</field>
+                <field>MassAirFlow df/dt</field>
+                <field>Turbo Flow</field>
+                <field>Turbo Flow (lb/min)</field>
+                <field>Sim Fuel Mass</field>
+                <field>Sim AFR</field>
+                <field>Sim lambda</field>
+                <field>Sim lambda error</field>
+                <!-- Boost fields (added when BoostPressureActual/Desired detected) -->
+                <field>BoostDesired PR</field>
+                <field>BoostActual PR</field>
+                <field>Boost Spool Rate (RPM)</field>
+                <field>Boost Spool Rate Zeit (RPM)</field>
+                <field>Boost Spool Rate (time)</field>
+                <field>Sim BoostPressureDesired</field>
+                <field>Sim pspvds</field>
+                <field>ps_w error</field>
+                <field>LDR error</field>
+                <field>LDR de/dt</field>
+                <field>LDR I e dt</field>
+                <field>LDR PID</field>
+                <!-- Ignition fields (added when IgnitionTimingAngleOverall detected) -->
+                <field>IgnitionTimingAngleOverallDesired</field>
+                <!-- Engine torque/HP fields (added when TorqueDesired detected) -->
+                <field>Engine torque (ft-lb)</field>
+                <field>Engine HP</field>
+                <!-- IAT fields (added when IntakeAirTemperature detected) -->
+                <field>Sim evtmod</field>
+                <field>Sim ftbr</field>
+                <field>Sim BoostIATCorrection</field>
+                <!-- Range fields (added when TIME/Sample detected) -->
+                <field>TIME [Range]</field>
+                <field>Sample [Range]</field>
+                <!-- Injector duty cycle fields (added when FuelInjectorOnTime detected) -->
+                <field>FuelInjectorDutyCycle</field>
+                <field>EffInjectorDutyCycle</field>
+                <field>EffInjectorDutyCycleBank2</field>
+                <!-- Zeitronix fields (added when Zeitronix Boost detected) -->
+                <field>Zeitronix Boost</field>
+                <!-- Sim LoadSpecified correction (added when Sim LoadSpecified detected) -->
+                <field>Sim LoadSpecified correction</field>
+            </expected_dynamic_menu_fields>
+
+            <!-- Fields that are expected to be in AxisMenu but not in handlers (special cases, unit conversions) -->
+            <expected_menu_only_fields>
+                <!-- Unit conversions are handled by generic unit conversion handler, not specific handlers -->
+                <field>WTQ (Nm)</field>
+                <field>TQ (Nm)</field>
+            </expected_menu_only_fields>
+
+            <!-- Handler fields discovery: all fields that handlers can create -->
+            <!-- Used by consistency test to discover fields from DatasetHandlers -->
+            <handler_fields>
+                <!-- getVelocityAccelerationColumn -->
+                <field>Calc Velocity</field>
+                <field>Acceleration (RPM/s)</field>
+                <field>Acceleration (RPM/s) - raw</field>
+                <field>Acceleration (RPM/s) - from base RPM</field>
+                <field>Acceleration (m/s^2) - raw</field>
+                <field>Acceleration (m/s^2)</field>
+                <field>Acceleration (g)</field>
+                <!-- getMafFuelColumn -->
+                <field>Sim Load</field>
+                <field>Sim Load Corrected</field>
+                <field>Sim MAF</field>
+                <field>MassAirFlow df/dt</field>
+                <field>Turbo Flow</field>
+                <field>Turbo Flow (lb/min)</field>
+                <field>Sim Fuel Mass</field>
+                <!-- getAfrColumn -->
+                <field>Sim AFR</field>
+                <field>Sim lambda</field>
+                <field>Sim lambda error</field>
+                <!-- getInjectorDutyCycleColumn -->
+                <field>FuelInjectorDutyCycle</field>
+                <field>EffInjectorDutyCycle</field>
+                <field>EffInjectorDutyCycleBank2</field>
+                <!-- getRangeColumn -->
+                <field>TIME [Range]</field>
+                <field>Sample [Range]</field>
+                <!-- getBoostZeitronixColumn -->
+                <field>BoostDesired PR</field>
+                <field>BoostActual PR</field>
+                <field>Zeitronix Boost</field>
+                <field>Sim BoostIATCorrection</field>
+                <field>Sim BoostPressureDesired</field>
+                <field>Boost Spool Rate (RPM)</field>
+                <field>Boost Spool Rate Zeit (RPM)</field>
+                <field>Boost Spool Rate (time)</field>
+                <field>ps_w error</field>
+                <field>Sim pspvds</field>
+                <field>LDR error</field>
+                <field>LDR de/dt</field>
+                <field>LDR I e dt</field>
+                <field>LDR PID</field>
+                <!-- getIgnitionTimingColumn -->
+                <field>IgnitionTimingAngleOverallDesired</field>
+                <!-- getEngineTorqueHpColumn -->
+                <field>Engine torque (ft-lb)</field>
+                <field>Engine HP</field>
+                <!-- getMiscSimColumn -->
+                <field>Sim evtmod</field>
+                <field>Sim ftbr</field>
+                <field>Sim LoadSpecified correction</field>
+                <!-- getPowerTorqueColumn -->
+                <field>WHP</field>
+                <field>HP</field>
+                <field>WTQ</field>
+                <field>TQ</field>
+                <field>Drag</field>
+                <!-- getSmoothingDiagnosticColumn (debug-only, not in AxisMenu) -->
+                <field>HPMAW</field>
+                <field>AccelMAW</field>
+                <field>WTQMAW</field>
+                <field>TQMAW</field>
+                <field>DragMAW</field>
+                <field>Calc Velocity MAW</field>
+                <field>Acceleration (RPM/s) MAW</field>
+                <field>Acceleration (m/s^2) MAW</field>
+            </handler_fields>
+        </test_config>
+    </test_case>
+</axis_menu_expectations>

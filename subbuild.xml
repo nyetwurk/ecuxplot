@@ -43,6 +43,34 @@
 		<path refid="classpath"/>
 	    </classpath>
 	</java>
+	<echo message="Running comprehensive dataset test..."/>
+	<java classname="test.java.ComprehensiveDatasetTest" fork="true" failonerror="true">
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
+	<echo message="Running AxisMenu validation tests..."/>
+	<java classname="test.java.AxisMenuTest" fork="true" failonerror="true">
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
+	<echo message="Running AxisMenuHandlers validation tests..."/>
+	<java classname="test.java.AxisMenuItemsTest" fork="true" failonerror="true">
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
+	<echo message="Running AxisMenu ↔ AxisMenuHandlers consistency tests..."/>
+	<java classname="test.java.AxisMenuHandlersTest" fork="true" failonerror="true">
+	    <classpath>
+		<pathelement location="build/classes"/>
+		<path refid="classpath"/>
+	    </classpath>
+	</java>
     </target>
 
     <target name="test-detection" depends="compile">
