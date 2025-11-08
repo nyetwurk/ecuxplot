@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.awt.Component;
 
 import javax.swing.JMenu;
@@ -21,6 +20,7 @@ import javax.swing.ButtonGroup;
 import org.nyet.util.MenuListener;
 import org.nyet.util.SubActionListener;
 import org.nyet.logfile.Dataset.DatasetId;
+import org.nyet.ecuxplot.AxisMenuItems.MenuCalculatedField;
 
 public class AxisMenu extends JMenu {
     /**
@@ -73,7 +73,7 @@ public class AxisMenu extends JMenu {
      * Check if debug logging is enabled (verbose >= 1, i.e., -v or -vv flag).
      * @return true if debug level is enabled
      */
-    private boolean isDebugEnabled() {
+    boolean isDebugEnabled() {
         // Check if listener is ECUxPlot and has verbose option set
         if (this.listener instanceof ECUxPlot) {
             ECUxPlot plot = (ECUxPlot) this.listener;
@@ -82,50 +82,17 @@ public class AxisMenu extends JMenu {
         return false;
     }
 
-    /**
-     * Submenu name constants - single source of truth for all submenu names.
-     * Use these constants instead of string literals throughout the code.
-     */
-    private static final String SUBMENU_RPM = "RPM";
-    private static final String SUBMENU_TIME = "TIME";
-    private static final String SUBMENU_SAMPLE = "Sample";
-    private static final String SUBMENU_SPEED = "Speed";
-    private static final String SUBMENU_MAF = "MAF";
-    private static final String SUBMENU_FUEL = "Fuel";
-    private static final String SUBMENU_BOOST = "Boost";
-    private static final String SUBMENU_THROTTLE = "Throttle";
-    private static final String SUBMENU_IGNITION = "Ignition";
-    private static final String SUBMENU_TRUE_TIMING = "TrueTiming";
-    private static final String SUBMENU_TEMPERATURE = "Temperature";
-    private static final String SUBMENU_VVT = "VVT";
-    private static final String SUBMENU_CATS = "Cats";
-    private static final String SUBMENU_EGT = "EGT";
-    private static final String SUBMENU_IDLE = "Idle";
-    private static final String SUBMENU_KNOCK = "Knock";
-    private static final String SUBMENU_MISFIRES = "Misfires";
-    private static final String SUBMENU_O2_SENSORS = "O2 Sensor(s)";
-    private static final String SUBMENU_TORQUE = "Torque";
-    private static final String SUBMENU_ZEITRONIX = "Zeitronix";
-    private static final String SUBMENU_LOAD = "Load";
-    private static final String SUBMENU_ME7_LOGGER = "ME7 Logger";
-    private static final String SUBMENU_EVOSCAN = "EvoScan";
-
-    private static final String SUBMENU_ACCELERATION = "Acceleration";
-    private static final String SUBMENU_POWER = "Power";
-    private static final String SUBMENU_CALC_MAF = "Calc MAF";
-    private static final String SUBMENU_CALC_FUEL = "Calc Fuel";
-    private static final String SUBMENU_CALC_PID = "Calc PID";
-    private static final String SUBMENU_CALC_IAT = "Calc IAT";
-
+    // Submenu constants are now in AxisMenuItems - use AxisMenuItems.SUBMENU_* constants
     // Base menu names that should be pre-populated and available for X-axis
     private static final String[] BASE_MENU_NAMES = {
-        SUBMENU_RPM, SUBMENU_TIME, SUBMENU_SAMPLE, SUBMENU_SPEED
+        AxisMenuItems.SUBMENU_RPM, AxisMenuItems.SUBMENU_TIME, AxisMenuItems.SUBMENU_SAMPLE, AxisMenuItems.SUBMENU_SPEED
     };
 
     // Calc menu names that should be pre-populated and grouped near the top
     private static final String[] CALC_MENU_NAMES = {
-        SUBMENU_ACCELERATION, SUBMENU_POWER, SUBMENU_BOOST, SUBMENU_MAF, SUBMENU_FUEL,
-        SUBMENU_CALC_PID, SUBMENU_CALC_IAT
+        AxisMenuItems.SUBMENU_ACCELERATION, AxisMenuItems.SUBMENU_POWER, AxisMenuItems.SUBMENU_BOOST,
+        AxisMenuItems.SUBMENU_MAF, AxisMenuItems.SUBMENU_FUEL,
+        AxisMenuItems.SUBMENU_CALC_PID, AxisMenuItems.SUBMENU_CALC_IAT
     };
 
     /**
@@ -142,7 +109,7 @@ public class AxisMenu extends JMenu {
         return false;
     }
 
-    private void addToSubmenu(String submenu, JComponent item, boolean autoadd) {
+    void addToSubmenu(String submenu, JComponent item, boolean autoadd) {
         JMenu sub = this.subMenus.get(submenu);
         if(sub==null) {
             // Don't add "..." here - the AxisMenu(String, AxisMenu) constructor will add it
@@ -162,7 +129,7 @@ public class AxisMenu extends JMenu {
      * NOTE: Prefer addToSubmenu(String, String, String) or addToSubmenu(String, DatasetId) to enable unit conversions.
      * This overload is only for JSeparators and similar components.
      */
-    private void addToSubmenu(String submenu, JComponent item) {
+    void addToSubmenu(String submenu, JComponent item) {
         addToSubmenu(submenu, item, true);
     }
 
@@ -170,7 +137,7 @@ public class AxisMenu extends JMenu {
      * Add a menu item to a submenu without units (for calculated/derived fields).
      * This calls addToSubmenu(String, DatasetId) with null units.
      */
-    private void addToSubmenu(String submenu, String id) {
+    void addToSubmenu(String submenu, String id) {
         addToSubmenu(submenu, new DatasetId(id));
     }
 
@@ -193,7 +160,7 @@ public class AxisMenu extends JMenu {
      *
      * PREFERRED: Use this overload to ensure units are always passed.
      */
-    private void addToSubmenu(String submenu, DatasetId dsid) {
+    void addToSubmenu(String submenu, DatasetId dsid) {
         final AbstractButton item = makeMenuItem(dsid);
         addToSubmenu(submenu, item, true);
 
@@ -225,98 +192,11 @@ public class AxisMenu extends JMenu {
     private final Map<String, ColumnState> columnStates = new HashMap<>();
 
     /**
-     * Data structure for RPM-triggered calculated fields.
-     * Separates data (what fields to add) from code (how to add them).
-     */
-    private static class RpmCalculatedField {
-        final String fieldName;
-        final String submenu;
-        final String[] tooltipSteps;
-        final String rangeAwareSmoothing;  // null if none
-        final boolean debugOnly;
-        final String unitConversion;  // null if none (e.g., "Nm" for unit conversion)
-
-        RpmCalculatedField(String fieldName, String submenu, String[] tooltipSteps,
-                          String rangeAwareSmoothing, boolean debugOnly, String unitConversion) {
-            this.fieldName = fieldName;
-            this.submenu = submenu;
-            this.tooltipSteps = tooltipSteps;
-            this.rangeAwareSmoothing = rangeAwareSmoothing;
-            this.debugOnly = debugOnly;
-            this.unitConversion = unitConversion;
-        }
-    }
-
-    /**
-     * Calculated fields that are added when "RPM" field is detected.
-     * This data structure separates what fields to add from how to add them.
-     */
-    private static final RpmCalculatedField[] RPM_CALCULATED_FIELDS = {
-        // Power/Torque fields
-        new RpmCalculatedField("WHP", SUBMENU_POWER,
-            new String[]{
-                "Acceleration (m/s^2): MA+SG or SG -> accelMAW",
-                "Calc Velocity: MA+SG or SG",
-                "HPMAW"},
-            "HPMAW", false, null),
-        new RpmCalculatedField("WTQ", SUBMENU_POWER,
-            new String[]{"MA+SG or SG", "accelMAW", "HPMAW"},
-            null, false, null),
-        new RpmCalculatedField("WTQ", SUBMENU_POWER, null, null, false, UnitConstants.UNIT_NM),  // Unit conversion
-        new RpmCalculatedField("HP", SUBMENU_POWER,
-            new String[]{"MA+SG or SG", "accelMAW", "HPMAW"},
-            "HPMAW", false, null),
-        new RpmCalculatedField("TQ", SUBMENU_POWER,
-            new String[]{"MA+SG or SG", "accelMAW", "HPMAW"},
-            null, false, null),
-        new RpmCalculatedField("TQ", SUBMENU_POWER, null, null, false, UnitConstants.UNIT_NM),  // Unit conversion
-        new RpmCalculatedField("Drag", SUBMENU_POWER,
-            new String[]{"MA+SG or SG"},
-            null, false, null),
-
-        // Speed fields
-        new RpmCalculatedField("Calc Velocity", SUBMENU_SPEED,
-            new String[]{"MA+SG for quantized, SG for smooth"},
-            null, false, null),
-
-        // Acceleration fields (RPM/s group)
-        new RpmCalculatedField("Acceleration (RPM/s) - raw", SUBMENU_ACCELERATION,
-            new String[]{"MA+SG for quantized, SG for smooth", "derivative"},
-            null, true, null),  // Debug only
-        new RpmCalculatedField("Acceleration (RPM/s) - from base RPM", SUBMENU_ACCELERATION,
-            new String[]{"SG", "accelMAW", "derivative"},
-            null, true, null),  // Debug only
-        new RpmCalculatedField("Acceleration (RPM/s)", SUBMENU_ACCELERATION,
-            new String[]{
-                "MA+SG for quantized, SG for smooth",
-                "derivative (accelMAW during calculation)"},
-            "accelMAW (applied in getData())", false, null),
-
-        // Acceleration fields (m/s^2 group)
-        new RpmCalculatedField("Acceleration (m/s^2) - raw", SUBMENU_ACCELERATION,
-            new String[]{"MA+SG for quantized, SG for smooth", "derivative"},
-            null, true, null),  // Debug only
-        new RpmCalculatedField("Acceleration (m/s^2)", SUBMENU_ACCELERATION,
-            new String[]{
-                "MA+SG for quantized, SG for smooth",
-                "derivative (accelMAW during calculation)"},
-            "accelMAW (applied in getData())", false, null),
-
-        // Derived acceleration
-        new RpmCalculatedField("Acceleration (g)", SUBMENU_ACCELERATION,
-            new String[]{
-                "MA+SG for quantized, SG for smooth",
-                "derivative (accelMAW during calculation)",
-                "unit conversion to g"},
-            "accelMAW (applied in getData())", false, null),
-    };
-
-    /**
      * Add calculated fields that are triggered when RPM is detected.
      * Uses data-driven approach to separate field definitions from creation logic.
      */
-    private void addRpmCalculatedFields() {
-        for (RpmCalculatedField field : RPM_CALCULATED_FIELDS) {
+    void addRpmCalculatedFields() {
+        for (AxisMenuItems.RpmCalculatedField field : AxisMenuItems.RPM_CALCULATED_FIELDS) {
             // Skip debug-only fields if debug not enabled
             if (field.debugOnly && !isDebugEnabled()) {
                 continue;
@@ -338,76 +218,7 @@ public class AxisMenu extends JMenu {
         }
     }
 
-    /**
-     * Simple regex patterns for field-to-submenu mapping.
-     * Patterns are checked in order (most specific first).
-     * Only simple 1:1 mappings without nested conditionals are included here.
-     * Special cases with nested conditionals remain in the if/else chain.
-     *
-     * IMPORTANT: Special cases are checked BEFORE the pattern table.
-     * Fields that match both a pattern table pattern AND a special case
-     * will be handled by the special case (e.g., "RPM", "TorqueDesired", "IntakeAirTemperature").
-     * Do NOT add patterns here that would match fields needing special handling.
-     */
-    private static class PatternSubmenuPair {
-        final Pattern pattern;
-        final String submenu;
-
-        PatternSubmenuPair(String patternStr, String submenu) {
-            this.pattern = Pattern.compile(patternStr);
-            this.submenu = submenu;
-        }
-    }
-
-    private static final PatternSubmenuPair[] SUBMENU_PATTERNS = {
-        // Note: Pattern.matches() requires the entire string to match, so ^ and $ anchors are ignored/redundant
-        // Patterns use .* at start/end to match anywhere within the field name
-
-        // Exact matches first (most specific)
-        // Note: "TIME [Range]" and "Sample [Range]" are also handled by special cases,
-        // but included here for fields that come in directly from dataset
-        new PatternSubmenuPair("TIME \\[Range\\]", SUBMENU_TIME),
-        new PatternSubmenuPair("Sample \\[Range\\]", SUBMENU_SAMPLE),
-        // Pattern matches (less specific)
-        // Note: "RPM.*" matches "RPM" but "RPM" is handled by special case first
-        new PatternSubmenuPair("RPM.*", SUBMENU_RPM),
-        new PatternSubmenuPair(".*(Cam|NWS|Valve|VV).*", SUBMENU_VVT),
-        new PatternSubmenuPair(".*(Cat|MainCat).*", SUBMENU_CATS),
-        new PatternSubmenuPair(".*EGT.*", SUBMENU_EGT),
-        new PatternSubmenuPair(".*(Idle|Idling).*", SUBMENU_IDLE),
-        new PatternSubmenuPair(".*[Kk]nock.*", SUBMENU_KNOCK),
-        new PatternSubmenuPair(".*Misfire.*", SUBMENU_MISFIRES),
-        new PatternSubmenuPair(".*(OXS|O2|ResistanceSensor).*", SUBMENU_O2_SENSORS),
-        new PatternSubmenuPair(".*(Vehicle|Wheel).*Speed.*", SUBMENU_SPEED),
-        // Note: "IntakeAirTemperature" is handled by special case (adds calculated fields)
-        // Only match other temperature fields (CoolantTemperature, WaterTemperature, etc.)
-        // Also matches "Temp" (e.g., "Coolant Outlet Temp")
-        new PatternSubmenuPair(".*(Coolant|Water|Oil|Exhaust|EGT|Cat|MainCat|Ambient|Transmission).*(Temperature|Temp).*", SUBMENU_TEMPERATURE),
-        new PatternSubmenuPair("Log.*", SUBMENU_EVOSCAN),  // EvoScan
-        // Note: "TorqueDesired" is handled by special case (adds derived fields)
-        // Only match other torque fields (TorqueActual, TorqueAtClutch, etc.)
-        // Also matches variations with spaces: "Torque Actual", "Maximum Torque at Clutch"
-        new PatternSubmenuPair(".*Torque.*(Actual|Clutch|Requested|Corrected|Limit).*", SUBMENU_TORQUE),
-        new PatternSubmenuPair(".*Requested.*Torque.*", SUBMENU_TORQUE),
-    };
-
-    /**
-     * Find the submenu name for a field ID using pattern matching.
-     * Returns null if no pattern matches (field should be handled by special cases).
-     *
-     * @param id The field ID to look up
-     * @return Submenu name if pattern matches, null otherwise
-     */
-    private String findSubmenuForField(String id) {
-        for (PatternSubmenuPair pair : SUBMENU_PATTERNS) {
-            if (pair.pattern.matcher(id).matches()) {
-                return pair.submenu;
-            }
-        }
-        return null;
-    }
-
-    private AbstractButton makeMenuItem(DatasetId dsid) {
+    AbstractButton makeMenuItem(DatasetId dsid) {
         boolean checked = false;
 
         for (final Comparable<?> element : this.initialChecked) {
@@ -432,6 +243,27 @@ public class AxisMenu extends JMenu {
     }
 
     /* string */
+    /**
+     * Add calculated fields from AxisMenuItems data structure.
+     * This method retrieves calculated fields for a base field and adds them to the menu.
+     *
+     * @param baseFieldId The base field ID (e.g., "MassAirFlow")
+     * @param loggerType The logger type (e.g., "ME7LOGGER") or null
+     */
+    void addCalculatedFieldsFromData(String baseFieldId, Object loggerType) {
+        String loggerTypeStr = (loggerType != null) ? loggerType.toString() : null;
+        List<MenuCalculatedField> fields = AxisMenuItems.getCalculatedFieldsForBaseField(baseFieldId, loggerTypeStr);
+        for (MenuCalculatedField field : fields) {
+            if (field.submenu == null) {
+                // Standalone item (this.add)
+                this.add(field.fieldName);
+            } else {
+                // Submenu item
+                addToSubmenu(field.submenu, field.fieldName);
+            }
+        }
+    }
+
     /* process through this.add() to detect submenu */
     /* override add */
     public JMenuItem add(String id) {
@@ -439,7 +271,7 @@ public class AxisMenu extends JMenu {
     }
 
     /* dsid */
-    private JMenuItem add(DatasetId dsid) {
+    JMenuItem add(DatasetId dsid) {
         /* Return null if item already exists (duplicate) */
         if (this.members.containsKey(dsid.id)) return null;
 
@@ -447,148 +279,86 @@ public class AxisMenu extends JMenu {
 
         final String id = dsid.id;
 
-        // Special cases with nested conditionals or calculated fields (checked first)
-        // These take precedence over pattern table because they have complex logic
-        if(id.matches("RPM")) {
-            // Add RPM and variants to RPM submenu
-            // We are guaranteed top placement since the parent RPM menu is the first menu in the menu bar
-            addToSubmenu(SUBMENU_RPM, dsid);
-            addToSubmenu(SUBMENU_RPM, "RPM - raw");
+        // Try exact string matches with switch/case first (fastest, most specific)
+        boolean handled = false;
+        switch (id) {
+            case "RPM": {
+                // Add RPM and variants to RPM submenu
+                // We are guaranteed top placement since the parent RPM menu is the first menu in the menu bar
+                addToSubmenu(AxisMenuItems.SUBMENU_RPM, dsid);
+                addToSubmenu(AxisMenuItems.SUBMENU_RPM, "RPM - raw");
 
-            // Add debug columns if debug level is enabled
-            if (isDebugEnabled()) {
-                addToSubmenu(SUBMENU_RPM, "RPM - base");  // Base RPM for range detection (debug only)
-            }
-
-            // Add calculated fields using data-driven approach
-            addRpmCalculatedFields();
-
-        } else if(id.matches("TIME")) {
-            // Add TIME and variants to TIME submenu
-            addToSubmenu(SUBMENU_TIME, dsid);
-            addToSubmenu(SUBMENU_TIME, "TIME - raw");
-            addToSubmenu(SUBMENU_TIME, "TIME [Range]");
-        } else if(id.matches("Sample")) {
-            // Add Sample and variants to Sample submenu
-            addToSubmenu(SUBMENU_SAMPLE, dsid);
-            addToSubmenu(SUBMENU_SAMPLE, "Sample [Range]");
-        } else if(id.matches("TIME \\[Range\\]")) {
-            // Handle TIME [Range] when processed separately
-            // (Also in pattern table, but explicit check ensures correct handling)
-            addToSubmenu(SUBMENU_TIME, dsid);
-        } else if(id.matches("Sample \\[Range\\]")) {
-            // Handle Sample [Range] when processed separately
-            // (Also in pattern table, but explicit check ensures correct handling)
-            addToSubmenu(SUBMENU_SAMPLE, dsid);
-        } else if(id.matches(".*(Intake.*Air|MAF|Mass.*Air|Air.*Mass|Mass.*Flow|Intake.*Flow|Airflow).*")) {
-            // goes before .*Load.* to catch CalcLoad
-            addToSubmenu(SUBMENU_MAF, dsid);
-            if(id.matches("MassAirFlow")) {
-                this.add("MassAirFlow (kg/hr)");
-                if (dsid.type.equals("ME7LOGGER")) {
-                    addToSubmenu(SUBMENU_CALC_MAF, "Sim Load");
-                    addToSubmenu(SUBMENU_CALC_MAF, "Sim Load Corrected");
-                    addToSubmenu(SUBMENU_CALC_MAF, "Sim MAF");
+                // Add debug columns if debug level is enabled
+                if (isDebugEnabled()) {
+                    addToSubmenu(AxisMenuItems.SUBMENU_RPM, "RPM - base");  // Base RPM for range detection (debug only)
                 }
-                // MAF-related calc items always go to MAF submenu (not Calc MAF) for consistency
-                addToSubmenu(SUBMENU_MAF, "MassAirFlow df/dt");
-                addToSubmenu(SUBMENU_MAF, "Turbo Flow");
-                addToSubmenu(SUBMENU_MAF, "Turbo Flow (lb/min)");
-                addToSubmenu(SUBMENU_CALC_MAF, new JSeparator());
+
+                // Add calculated fields using data-driven approach
+                addRpmCalculatedFields();
+                handled = true;
+                break;
             }
-        } else if(id.matches(".*(AFR|AdaptationPartial|Injection|Fuel|Lambda|TFT|IDC|Inject|Ethanol|Methanol|E85|[LH]PFP|Rail|Combustion).*")) {
-            addToSubmenu(SUBMENU_FUEL, dsid);
-            if(id.matches("FuelInjectorOnTime")) {      // ti
-                this.add("FuelInjectorDutyCycle");
+            case "TIME": {
+                // Add TIME and variants to TIME submenu
+                addToSubmenu(AxisMenuItems.SUBMENU_TIME, dsid);
+                addToSubmenu(AxisMenuItems.SUBMENU_TIME, "TIME - raw");
+                addToSubmenu(AxisMenuItems.SUBMENU_TIME, "TIME [Range]");
+                handled = true;
+                break;
             }
-            if(id.matches("EffInjectionTime")) {        // te
-                this.add("EffInjectorDutyCycle");
-                addToSubmenu(SUBMENU_CALC_FUEL, "Sim Fuel Mass");
-                addToSubmenu(SUBMENU_CALC_FUEL, "Sim AFR");
-                addToSubmenu(SUBMENU_CALC_FUEL, "Sim lambda");
-                addToSubmenu(SUBMENU_CALC_FUEL, "Sim lambda error");
-                // addToSubmenu(SUBMENU_CALC_FUEL, new JSeparator());
+            case "Sample": {
+                // Add Sample and variants to Sample submenu
+                addToSubmenu(AxisMenuItems.SUBMENU_SAMPLE, dsid);
+                addToSubmenu(AxisMenuItems.SUBMENU_SAMPLE, "Sample [Range]");
+                handled = true;
+                break;
             }
-            if(id.matches("EffInjectionTimeBank2")) {   // te
-                this.add("EffInjectorDutyCycleBank2");
+            case "TIME [Range]": {
+                // Handle TIME [Range] when processed separately
+                // (Also in pattern table, but explicit check ensures correct handling)
+                addToSubmenu(AxisMenuItems.SUBMENU_TIME, dsid);
+                handled = true;
+                break;
             }
-        } else if(id.matches("^Zeitronix.*")) {
-            /* do zeitronix before boost so we get the conversions we want */
-            if(id.matches("^Zeitronix Boost")) {
-                this.add("Zeitronix Boost (PSI)");
-                addToSubmenu(SUBMENU_BOOST, "Boost Spool Rate Zeit (RPM)");
+            case "Sample [Range]": {
+                // Handle Sample [Range] when processed separately
+                // (Also in pattern table, but explicit check ensures correct handling)
+                addToSubmenu(AxisMenuItems.SUBMENU_SAMPLE, dsid);
+                handled = true;
+                break;
             }
-            if(id.matches("^Zeitronix AFR")) {
-                this.add("Zeitronix AFR (lambda)");
+            default: {
+                // Not an exact match - will try pattern routing below
+                break;
             }
-            if(id.matches("^Zeitronix Lambda")) {
-                this.add("Zeitronix Lambda (AFR)");
+        }
+
+        // If switch/case handled it, we're done
+        if (handled) {
+            this.members.put(dsid.id, item);
+            if (item instanceof JMenuItem) {
+                return (JMenuItem) item;
             }
-            addToSubmenu(SUBMENU_ZEITRONIX, dsid);
-        } else if(id.matches(".*(Load|ChargeLimit.*Protection).*")) {
-            // before Boost so we catch ChargeLimit*Protection before Charge
-            addToSubmenu(SUBMENU_LOAD, dsid);
-            if(id.matches("EngineLoad(Requested|Corrected)")) {
-                addToSubmenu(SUBMENU_BOOST, "Sim BoostPressureDesired");
-                addToSubmenu(SUBMENU_BOOST, "Sim LoadSpecified correction");
+            return null;
+        }
+
+        // Try pattern-based routing (for regex patterns, order matters)
+        if (AxisMenuItems.tryPatternRouting(this, id, dsid, item)) {
+            // Pattern handler processed the field
+            this.members.put(dsid.id, item);
+            if (item instanceof JMenuItem) {
+                return (JMenuItem) item;
             }
-        } else if(id.matches(".*([Bb]oost|Wastegate|Charge|WGDC|PSI|Baro|Press|PID|Turbine).*")) {
-            addToSubmenu(SUBMENU_BOOST, dsid);
-            if(id.matches("BoostPressureDesired")) {
-                addToSubmenu(SUBMENU_BOOST, "BoostDesired PR");
-                addToSubmenu(SUBMENU_CALC_PID, "LDR error");
-                addToSubmenu(SUBMENU_CALC_PID, "LDR de/dt");
-                addToSubmenu(SUBMENU_CALC_PID, "LDR I e dt");
-                addToSubmenu(SUBMENU_CALC_PID, "LDR PID");
-            }
-            if(id.matches("BoostPressureActual")) {
-                addToSubmenu(SUBMENU_BOOST, "BoostActual PR");
-                addToSubmenu(SUBMENU_BOOST, "Boost Spool Rate (RPM)");
-                addToSubmenu(SUBMENU_BOOST, "Boost Spool Rate (time)");
-            }
-            /* JB4 does noth boost pressure desired, its calc'd */
-            /* "target" is this delta */
-            if(id.matches("BoostPressureDesiredDelta")) {
-                this.add(new DatasetId("BoostPressureDesired", null, dsid.unit));
-            }
-        /* do this before Timing so we don't match Throttle Angle */
-        } else if(id.matches(".*(Pedal|Throttle).*")) {
-            addToSubmenu(SUBMENU_THROTTLE, dsid);
-        } else if(id.matches(".*Accel.*")) {
-            addToSubmenu(SUBMENU_ACCELERATION, dsid);
-        } else if(id.matches(".*(Eta|Avg|Adapted)?(Ign|Timing|Angle|Spark|Combustion).*")) {
-            addToSubmenu(SUBMENU_IGNITION, dsid);
-            if(id.matches("IgnitionTimingAngleOverall")) {
-                this.add("IgnitionTimingAngleOverallDesired");
-            }
-            final AbstractButton titem = makeMenuItem(new DatasetId(id + " (ms)", dsid.id2, UnitConstants.UNIT_MS));
-            addToSubmenu(SUBMENU_TRUE_TIMING, titem, true);
-        } else if(id.matches("TorqueDesired")) {
-            this.add(item);  /* Must add self - standalone item with derived ft-lb and HP versions */
-            this.add("Engine torque (ft-lb)");
-            this.add("Engine HP");
-        } else if(id.matches("IntakeAirTemperature")) {
-            addToSubmenu(SUBMENU_TEMPERATURE, dsid);
-            if (dsid.type.equals("ME7LOGGER")) {
-                addToSubmenu(SUBMENU_CALC_IAT, "Sim evtmod");
-                addToSubmenu(SUBMENU_CALC_IAT, "Sim ftbr");
-                addToSubmenu(SUBMENU_CALC_IAT, "Sim BoostIATCorrection");
-            }
-        } else if(id.matches("^ME7L.*")) {
-            addToSubmenu(SUBMENU_ME7_LOGGER, dsid);
-            if(id.matches("ME7L ps_w")) {
-                addToSubmenu(SUBMENU_BOOST, "Sim pspvds");
-                addToSubmenu(SUBMENU_BOOST, "ps_w error");
-            }
+            return null;
+        }
+
+        // Try pattern table for simple routing cases (fallback)
+        String submenu = AxisMenuItems.findSubmenuForField(id);
+        if (submenu != null) {
+            addToSubmenu(submenu, dsid);
         } else {
-            // Try pattern table for simple routing cases (after all special cases)
-            String submenu = findSubmenuForField(id);
-            if (submenu != null) {
-                addToSubmenu(submenu, dsid);
-            } else {
-                // No pattern match, add as standalone item
-                this.add(item);
-            }
+            // No pattern match, add as standalone item
+            this.add(item);
         }
 
         this.members.put(dsid.id, item);
@@ -683,7 +453,7 @@ public class AxisMenu extends JMenu {
             }
 
             // put ME7Log next
-            final JMenu me7l=this.subMenus.get(SUBMENU_ME7_LOGGER);
+            final JMenu me7l=this.subMenus.get(AxisMenuItems.SUBMENU_ME7_LOGGER);
             if(me7l!=null) {
                 super.add(new JSeparator());
                 super.add(me7l);

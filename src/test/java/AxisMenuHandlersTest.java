@@ -13,7 +13,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.nyet.ecuxplot.AxisMenu;
+import org.nyet.ecuxplot.AxisMenuItems;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,8 +169,8 @@ public class AxisMenuHandlersTest {
     private static Set<String> discoverAxisMenuFields() throws Exception {
         Set<String> fields = new HashSet<>();
 
-        // Use reflection to access private RPM_CALCULATED_FIELDS array
-        Field rpmFieldsField = AxisMenu.class.getDeclaredField("RPM_CALCULATED_FIELDS");
+        // Use reflection to access public RPM_CALCULATED_FIELDS array from AxisMenuItems
+        Field rpmFieldsField = AxisMenuItems.class.getDeclaredField("RPM_CALCULATED_FIELDS");
         rpmFieldsField.setAccessible(true);
         Object[] rpmFields = (Object[]) rpmFieldsField.get(null);
 
