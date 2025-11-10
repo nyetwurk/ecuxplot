@@ -36,3 +36,11 @@ public class Example {
     // Code here
 }
 ```
+
+## Project doc layout
+
+/README.md
+/INSTALL.md
+/BUILD.md
+/plans/* stuff in progress
+/docs/* user/dev oriented docs, focus on current state, not history
