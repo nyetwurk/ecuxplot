@@ -215,6 +215,35 @@ public final class Units {
         return u;
      }
 
+    /**
+     * Map of units to their preference (US_CUSTOMARY or METRIC).
+     * Each unit inherently belongs to one preference system.
+     */
+    private static final Map<String, UnitPreference> UNIT_PREFERENCE_MAP;
+
+    static {
+        Map<String, UnitPreference> preferenceMap = new HashMap<>();
+
+        // US Customary units
+        preferenceMap.put(UnitConstants.UNIT_PSI, UnitPreference.US_CUSTOMARY);
+        preferenceMap.put(UnitConstants.UNIT_MPH, UnitPreference.US_CUSTOMARY);
+        preferenceMap.put(UnitConstants.UNIT_FTLB, UnitPreference.US_CUSTOMARY);
+        preferenceMap.put(UnitConstants.UNIT_FAHRENHEIT, UnitPreference.US_CUSTOMARY);
+
+        // Metric units
+        preferenceMap.put(UnitConstants.UNIT_MBAR, UnitPreference.METRIC);
+        preferenceMap.put(UnitConstants.UNIT_MBAR_GAUGE, UnitPreference.METRIC);
+        preferenceMap.put(UnitConstants.UNIT_KPA, UnitPreference.METRIC);
+        preferenceMap.put(UnitConstants.UNIT_KMH, UnitPreference.METRIC);
+        preferenceMap.put(UnitConstants.UNIT_NM, UnitPreference.METRIC);
+        preferenceMap.put(UnitConstants.UNIT_CELSIUS, UnitPreference.METRIC);
+
+        // Units that are the same in both (no preference)
+        // RPM, %, V, ms, g/s, etc. - these don't need conversion
+
+        UNIT_PREFERENCE_MAP = Collections.unmodifiableMap(preferenceMap);
+    }
+
     // Unit conversion configuration
     private static final Map<String, List<String>> CONVERSIONS;
 
@@ -269,6 +298,97 @@ public final class Units {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Get the standard unit for a column based on global preference.
+     *
+     * Logic:
+     * 1. Check if column has special case override (e.g., BaroPressure always Metric)
+     * 2. Get native unit from column
+     * 3. Check if native unit's preference matches global preference
+     * 4. If doesn't match, find alternate unit with matching preference
+     * 5. Return standard unit (or null if no conversion needed)
+     *
+     * @param canonicalName The canonical column name (e.g., "BoostPressureActual")
+     * @param nativeUnit The native unit from the column (e.g., "PSI", "mBar", "kPa")
+     * @param preference The global unit preference (US_CUSTOMARY or METRIC)
+     * @return The standard unit string, or null if no conversion needed
+     */
+    public static String getStandardUnit(String canonicalName, String nativeUnit, UnitPreference preference) {
+        // 1. Check special case overrides first (e.g., BaroPressure always Metric)
+        String overrideUnit = getSpecialCaseUnit(canonicalName);
+        if (overrideUnit != null) {
+            return overrideUnit;
+        }
+
+        // 2. If no native unit, can't determine standard
+        if (nativeUnit == null || nativeUnit.isEmpty()) {
+            return null;
+        }
+
+        // 3. Check if native unit's preference matches global preference
+        UnitPreference nativeUnitPreference = UNIT_PREFERENCE_MAP.get(nativeUnit);
+        if (nativeUnitPreference == null) {
+            // Unit has no preference (e.g., RPM, %, V) - use native unit
+            return null;
+        }
+
+        if (nativeUnitPreference == preference) {
+            // Native unit already matches preference
+            // Check if there's a preferred unit in the same conversion category
+            // The order in CONVERSIONS lists encodes preference (first unit of matching preference is preferred)
+            List<String> alternates = getAlternateUnits(nativeUnit);
+            if (!alternates.isEmpty()) {
+                // Find the conversion category containing this unit
+                for (Map.Entry<String, List<String>> entry : CONVERSIONS.entrySet()) {
+                    List<String> categoryUnits = entry.getValue();
+                    if (categoryUnits.contains(nativeUnit)) {
+                        // Find first unit in category that matches preference and is available as alternate
+                        for (String unit : categoryUnits) {
+                            if (!unit.equals(nativeUnit) && alternates.contains(unit)) {
+                                UnitPreference unitPref = UNIT_PREFERENCE_MAP.get(unit);
+                                if (unitPref == preference) {
+                                    return unit;
+                                }
+                            }
+                        }
+                        break; // Found the category, no need to continue searching
+                    }
+                }
+            }
+            return null;
+        }
+
+        // 4. Native unit doesn't match preference - find alternate unit
+        // Use existing getAlternateUnits() to find conversion options
+        List<String> alternates = getAlternateUnits(nativeUnit);
+        for (String alt : alternates) {
+            UnitPreference altPreference = UNIT_PREFERENCE_MAP.get(alt);
+            if (altPreference == preference) {
+                return alt; // Found matching alternate unit
+            }
+        }
+
+        // Note: If no alternate found, return null (use native unit)
+        // This handles edge cases where conversion isn't available
+
+        // 5. No matching alternate found - use native unit
+        return null;
+    }
+
+    /**
+     * Get special case unit override from canonical_unit_standards config.
+     * Only for columns that have non-standard requirements (e.g., BaroPressure always Metric).
+     *
+     * @param canonicalName The canonical column name
+     * @return The override unit string, or null if no special case
+     */
+    private static String getSpecialCaseUnit(String canonicalName) {
+        // Get special case configuration from DataLogger
+        // Returns a single unit string that overrides global preference
+        // Examples: BaroPressure always mBar, Torque columns always Nm
+        return DataLogger.getCanonicalUnitStandard(canonicalName);
     }
 
 }

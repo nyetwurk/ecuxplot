@@ -1,3 +1,17 @@
+# Canonical unit standards - defines standard unit ONLY for special case exceptions
+# Most units have inherent preference (PSI=US, mBar=Metric, etc.) and are handled automatically
+# Format: column_name: "unit_string"
+# Maps a canonical column alias to a single preferred unit (overrides global preference)
+canonical_unit_standards:
+  # Format: [["pattern", "unit"], ...]
+  # Patterns are regex and matched in order, first match wins
+  # Ambient pressure: Always mBar/kPa (never PSI, even in US Customary mode)
+  - ["BaroPressure", "mBar"]
+
+  # Add other special cases here as needed
+  # Only list columns that have non-standard unit requirements
+  # Do NOT list columns that follow normal unit preference rules
+
 # Filter associations - canonical field names for common filter categories
 filter_associations:
   # Note: These are single canonical field names, not arrays

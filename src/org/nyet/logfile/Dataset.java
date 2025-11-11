@@ -20,8 +20,11 @@ public class Dataset {
 
     public static class DatasetId implements Comparable<Object> {
         public String id;
-        public String id2;
-        public String unit;
+        public String id2;     // Original field name (raw from CSV, unprocessed)
+        public String unit;    // Normalized unit (preference-based, for menu)
+        public String u2;       // Original unit intent (processed/normalized, but before preference conversion)
+                                // NOTE: Unlike id2 (truly original), u2 is the processed unit string
+                                // after Units.normalize() and Units.find(), but before preference conversion
         public Object type;
 
         @Override
@@ -35,6 +38,9 @@ public class Dataset {
         public DatasetId(String s) { this.id=s; }
         public DatasetId(String s, String id2, String unit) {
             this.id=s; this.id2=id2; this.unit=unit;
+        }
+        public DatasetId(String s, String id2, String unit, String u2) {
+            this.id=s; this.id2=id2; this.unit=unit; this.u2=u2;
         }
         public boolean equals(Comparable<?> o) {
             return this.id.equals(o.toString());
@@ -89,7 +95,7 @@ public class Dataset {
         }
         public Column(Comparable<?> id, String id2, String units,
             DoubleArray data, ColumnType columnType) {
-            this.id = new DatasetId(id.toString(), id2, units);
+            this.id = new DatasetId(id.toString(), id2, units, null);
             this.data = data;
             this.columnType = columnType;
         }
@@ -98,7 +104,7 @@ public class Dataset {
             this(id, data, ColumnType.COMPILE_TIME_CONSTANTS);
         }
         public Column(DatasetId id, DoubleArray data, ColumnType columnType) {
-            this.id = id;
+            this.id = id;  // Share reference - no copy!
             this.data = data;
             this.columnType = columnType;
         }
@@ -174,7 +180,19 @@ public class Dataset {
         }
         public String getUnits() {
             if(this.id==null) return null;
-            return this.id.unit;
+            // For CSV_NATIVE columns, return normalized unit (for display consistency)
+            // For calculated columns, return unit (normalized or calculated)
+            // NOTE: For unit conversion logic, use getNativeUnits() to get native units
+            return this.id.unit;  // Normalized or calculated unit
+        }
+        public String getNativeUnits() {
+            if(this.id==null) return null;
+            // Return native unit (u2) for CSV_NATIVE columns, normalized unit for others
+            // This is used by unit conversion logic which needs the original unit intent
+            if (this.columnType == ColumnType.CSV_NATIVE && this.id.u2 != null) {
+                return this.id.u2;  // Original unit intent (shares String reference)
+            }
+            return this.id.unit;  // Normalized or calculated unit
         }
         public String getLabel(boolean id2) {
             return (id2 && this.id.id2!=null)?this.id.id2:this.id.id;
@@ -428,7 +446,8 @@ public class Dataset {
 
         for (final DatasetId id : this.ids) {
             // Put column in map (will replace if duplicate ID exists, but shouldn't happen during CSV parsing)
-            Column col = new Column(id.id, id.id2, id.unit);
+            // Share DatasetId reference - Column.id will reference the same DatasetId from ids[]
+            Column col = new Column(id, new DoubleArray(), ColumnType.CSV_NATIVE);
             this.columns.put(id.id, col);
         }
 
@@ -613,8 +632,22 @@ public class Dataset {
     public String getFileId() { return this.fileId; }
 
     public DatasetId [] getIds() { return this.ids; }
-    public void setIds(org.nyet.ecuxplot.DataLogger.HeaderData h, org.nyet.ecuxplot.DataLogger.DataLoggerConfig config) {
-        this.ids = config.createDatasetIds(h);
+    /**
+     * Set DatasetId objects from processed header data with normalized and native units support.
+     *
+     * @param h Processed header data
+     * @param config DataLoggerConfig for creating DatasetId objects
+     * @param normalizedUnits Map of canonical column names to normalized unit strings,
+     *                       or null to use native units from h.u[]
+     * @param nativeUnits Map of canonical column names to original unit intent strings
+     *                    (processed/normalized, but before preference conversion),
+     *                    or null to use units from h.u[]
+     */
+    public void setIds(org.nyet.ecuxplot.DataLogger.HeaderData h,
+                       org.nyet.ecuxplot.DataLogger.DataLoggerConfig config,
+                       java.util.Map<String, String> normalizedUnits,
+                       java.util.Map<String, String> nativeUnits) {
+        this.ids = config.createDatasetIds(h, normalizedUnits, nativeUnits);
     }
 
     public ArrayList<String> getLastFilterReasons() { return this.lastFilterReasons; }

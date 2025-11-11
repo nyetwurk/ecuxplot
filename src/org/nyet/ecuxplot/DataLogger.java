@@ -46,6 +46,14 @@ public class DataLogger {
     private static Map<String, String[]> axisPresetCategories = new HashMap<>();
 
     // ============================================================================
+    // CANONICAL UNIT STANDARDS - LOADED FROM YAML/XML (GLOBAL)
+    // ============================================================================
+    // List of [pattern, unit] pairs for regex matching
+    // Overrides global unit preference for special case columns
+    // Patterns are matched in order, first match wins
+    private static java.util.List<String[]> canonicalUnitStandards = new java.util.ArrayList<>();
+
+    // ============================================================================
     // PRESET DEFAULTS - LOADED FROM YAML/XML (GLOBAL)
     // ============================================================================
     /**
@@ -1041,17 +1049,47 @@ public class DataLogger {
         }
 
         /**
-         * Create DatasetId objects from processed header data.
+         * Create DatasetId objects from processed header data with normalized and native units support.
+         *
+         * If normalizedUnits map is provided, uses normalized units for columns in the map;
+         * otherwise falls back to native units from h.u[].
+         * If nativeUnits map is provided, uses it for u2 (original unit intent);
+         * otherwise falls back to units from h.u[].
          *
          * @param h Processed header data
+         * @param normalizedUnits Map of canonical column names to normalized unit strings,
+         *                       or null to use native units from h.u[]
+         * @param nativeUnits Map of canonical column names to original unit intent strings
+         *                    (processed/normalized, but before preference conversion),
+         *                    or null to use units from h.u[]
          * @return Array of DatasetId objects
          */
-        public DatasetId[] createDatasetIds(HeaderData h) {
+        public DatasetId[] createDatasetIds(HeaderData h,
+                                            java.util.Map<String, String> normalizedUnits,
+                                            java.util.Map<String, String> nativeUnits) {
             DatasetId[] ids = new DatasetId[h.id.length];
             for (int i = 0; i < h.id.length; i++) {
-                ids[i] = new DatasetId(h.id[i]);
-                if (h.id2 != null && i < h.id2.length) ids[i].id2 = h.id2[i];
-                if (h.u != null && i < h.u.length) ids[i].unit = h.u[i];
+                // Normalized unit
+                String unit = null;
+                if (normalizedUnits != null && normalizedUnits.containsKey(h.id[i])) {
+                    unit = normalizedUnits.get(h.id[i]);
+                } else if (h.u != null && i < h.u.length) {
+                    unit = h.u[i];
+                }
+
+                // Original unit intent - prefer nativeUnits map (shares String reference)
+                // NOTE: This is the processed unit (after normalize/find), not the raw CSV unit
+                // Unlike id2 which is truly original, u2 represents "original unit intent" before preference conversion
+                String u2 = null;
+                if (nativeUnits != null && nativeUnits.containsKey(h.id[i])) {
+                    u2 = nativeUnits.get(h.id[i]);  // Share String reference
+                } else if (h.u != null && i < h.u.length) {
+                    u2 = h.u[i];  // Share String reference (processed unit from h.u[])
+                }
+
+                ids[i] = new DatasetId(h.id[i],
+                                      (h.id2 != null && i < h.id2.length) ? h.id2[i] : null,
+                                      unit, u2);
                 ids[i].type = this.type;
             }
             return ids;
@@ -1210,6 +1248,41 @@ public class DataLogger {
                 Element globalColumnsElement = (Element) globalColumnsNodes.item(0);
                 globalRequiredColumns = parseStringArrayFromItems(globalColumnsElement);
                 logger.debug("Loaded {} global required columns", globalRequiredColumns.length);
+            }
+
+            // Parse canonical unit standards if present
+            NodeList canonicalUnitStandardsNodes = document.getElementsByTagName("canonical_unit_standards");
+            if (canonicalUnitStandardsNodes.getLength() > 0) {
+                Element canonicalUnitStandardsElement = (Element) canonicalUnitStandardsNodes.item(0);
+
+                // Backward compatibility: Check if stored as attributes (old YAML format: BaroPressure: "mBar")
+                if (canonicalUnitStandardsElement.hasAttributes()) {
+                    var attributes = canonicalUnitStandardsElement.getAttributes();
+                    for (int i = 0; i < attributes.getLength(); i++) {
+                        var attr = attributes.item(i);
+                        String columnName = attr.getNodeName();
+                        String unit = attr.getNodeValue();
+                        // Convert exact match to regex pattern (escape special regex chars)
+                        // matches() automatically anchors, so no need for ^ and $
+                        String pattern = java.util.regex.Pattern.quote(columnName);
+                        canonicalUnitStandards.add(new String[]{pattern, unit});
+                        logger.debug("Loaded canonical unit standard (attribute format) '{}' = '{}'", columnName, unit);
+                    }
+                }
+
+                // New format: Parse as list of items (YAML list format: [["pattern", "unit"], ...])
+                // YAML converter uses "target" attribute for second element in 2-item list
+                NodeList itemList = canonicalUnitStandardsElement.getElementsByTagName("item");
+                for (int i = 0; i < itemList.getLength(); i++) {
+                    Element item = (Element) itemList.item(i);
+                    String pattern = item.getAttribute("pattern");
+                    String unit = item.getAttribute("target");
+                    if (pattern != null && !pattern.isEmpty() && unit != null && !unit.isEmpty()) {
+                        canonicalUnitStandards.add(new String[]{pattern, unit});
+                        logger.debug("Loaded canonical unit standard pattern '{}' = '{}'", pattern, unit);
+                    }
+                }
+                logger.debug("Loaded {} canonical unit standards", canonicalUnitStandards.size());
             }
 
             // Parse axis preset categories if present
@@ -1652,6 +1725,28 @@ public class DataLogger {
      */
     public static String[] getGlobalRequiredColumns() {
         return globalRequiredColumns;
+    }
+
+    /**
+     * Get canonical unit standard for a column.
+     * Returns the configured preferred unit string or null if no special case is configured.
+     * Matches patterns in order, first match wins.
+     *
+     * @param canonicalName The canonical column name
+     * @return Preferred unit string, or null if not configured
+     */
+    public static String getCanonicalUnitStandard(String canonicalName) {
+        if (canonicalName == null || canonicalName.isEmpty()) {
+            return null;
+        }
+        // Match patterns in order, first match wins
+        // Java's matches() requires full string match, so patterns must match entire canonical name
+        for (String[] patternUnit : canonicalUnitStandards) {
+            if (canonicalName.matches(patternUnit[0])) {
+                return patternUnit[1];
+            }
+        }
+        return null;
     }
 
     /**

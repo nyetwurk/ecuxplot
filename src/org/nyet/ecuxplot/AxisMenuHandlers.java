@@ -141,6 +141,21 @@ public class AxisMenuHandlers {
     };
 
     /**
+     * Get BaroPressure column normalized to mBar.
+     * Handles conversion from kPa, PSI, or other units to mBar.
+     *
+     * @param dataset The ECUxDataset instance
+     * @return BaroPressure column in mBar, or null if not found
+     */
+    private static Column getBaroPressureMbar(ECUxDataset dataset) {
+        Column baro = dataset.getCsvColumn("BaroPressure");
+        if (baro != null) {
+            return DatasetUnits.convertUnits(dataset, baro, UnitConstants.UNIT_MBAR, null, baro.getColumnType());
+        }
+        return null;
+    }
+
+    /**
      * Try all registered handlers in order.
      * Returns the first handler that matches and creates a column, or null if no handler matches.
      *
@@ -566,26 +581,34 @@ public class AxisMenuHandlers {
             case "BoostDesired PR": {
                 final Column act = dataset.getCsvColumn("BoostPressureDesired");
                 try {
-                    final DoubleArray ambient = dataset.getCsvColumn("BaroPressure").data;
-                    return dataset.createColumn(id, "PR", act.data.div(ambient));
+                    Column baroMbar = getBaroPressureMbar(dataset);
+                    if (baroMbar != null) {
+                        return dataset.createColumn(id, "PR", act.data.div(baroMbar.data));
+                    }
                 } catch (final Exception e) {
-                    if (act.getUnits().matches(UnitConstants.UNIT_PSI))
-                        return dataset.createColumn(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
-                    else
-                        return dataset.createColumn(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
+                    // Fallback to default
                 }
+                // Fallback: use standard atmospheric pressure
+                if (act.getUnits().matches(UnitConstants.UNIT_PSI))
+                    return dataset.createColumn(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
+                else
+                    return dataset.createColumn(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
             }
             case "BoostActual PR": {
                 final Column act = dataset.getCsvColumn("BoostPressureActual");
                 try {
-                    final DoubleArray ambient = dataset.getCsvColumn("BaroPressure").data;
-                    return dataset.createColumn(id, "PR", act.data.div(ambient));
+                    Column baroMbar = getBaroPressureMbar(dataset);
+                    if (baroMbar != null) {
+                        return dataset.createColumn(id, "PR", act.data.div(baroMbar.data));
+                    }
                 } catch (final Exception e) {
-                    if (act.getUnits().matches(UnitConstants.UNIT_PSI))
-                        return dataset.createColumn(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
-                    else
-                        return dataset.createColumn(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
+                    // Fallback to default
                 }
+                // Fallback: use standard atmospheric pressure
+                if (act.getUnits().matches(UnitConstants.UNIT_PSI))
+                    return dataset.createColumn(id, "PR", act.data.div(UnitConstants.STOICHIOMETRIC_AFR));
+                else
+                    return dataset.createColumn(id, "PR", act.data.div(UnitConstants.MBAR_PER_ATM));
             }
             case "Zeitronix Boost": {
                 // Get base column directly from map (no calculations) and convert units directly
@@ -597,8 +620,8 @@ public class AxisMenuHandlers {
                 // Convert to PSI using DatasetUnits (bypasses getColumnInUnits to avoid recursion)
                 java.util.function.Supplier<Double> ambientSupplier = () -> {
                     Column baro = dataset.getCsvColumn("BaroPressure");
-                    if (baro != null && baro.data != null && baro.data.size() > 0) {
-                        return baro.data.get(0);
+                    if (baro != null) {
+                        return DatasetUnits.normalizeBaroToMbar(baro);
                     }
                     return null;
                 };
@@ -637,7 +660,10 @@ public class AxisMenuHandlers {
 
                 DoubleArray ambient = ps.ident(UnitConstants.MBAR_PER_ATM); // pu
                 try {
-                    ambient = dataset.getCsvColumn("BaroPressure").data;
+                    Column baroMbar = getBaroPressureMbar(dataset);
+                    if (baroMbar != null) {
+                        ambient = baroMbar.data;
+                    }
                 } catch (final Exception e) { }
 
                 DoubleArray fupsrl = load.ident(0.1037); // KFURL
@@ -696,8 +722,8 @@ public class AxisMenuHandlers {
                 }
                 java.util.function.Supplier<Double> ambientSupplier = () -> {
                     Column baro = dataset.getCsvColumn("BaroPressure");
-                    if (baro != null && baro.data != null && baro.data.size() > 0) {
-                        return baro.data.get(0);
+                    if (baro != null) {
+                        return DatasetUnits.normalizeBaroToMbar(baro);
                     }
                     return null;
                 };

@@ -314,6 +314,10 @@ public class ECUxDataset extends Dataset {
             logger.warn("TIME column is null, cannot calculate samples_per_sec");
         }
 
+        // Convert CSV columns to standard units if needed
+        // This happens after CSV data is loaded (super() constructor completed)
+        convertCSVColumnsToStandardUnits();
+
         // check for 5120 logged without a 5120 template and double columns with unit of mBar if so
         final Column baroPressure = get("BaroPressure");
         if (baroPressure != null && baroPressure.data.size() > 0 && baroPressure.data.get(0) < 600) {
@@ -575,13 +579,16 @@ public class ECUxDataset extends Dataset {
         if (targetId == null && targetUnit != null && !targetUnit.isEmpty()) {
             targetId = columnName + " (" + targetUnit + ")";
         }
-        // Get base column - use _get() to allow calculation and go through recursion protection
-        Column column = _get(columnName);
+        // Get base column - use super.get() to get raw CSV_NATIVE column
+        // (normalization is handled in _get(), so we need the raw column for unit conversion)
+        // For calculated columns, we'd need _get(), but unit conversion only works on CSV_NATIVE columns
+        Column column = super.get(columnName);
         if(column == null || targetUnit == null || targetUnit.isEmpty()) {
             return column;
         }
 
-        String currentUnit = column.getUnits();
+        // Use native unit (u2) for conversion logic, not display unit (getUnits())
+        String currentUnit = column.getNativeUnits();
         if(currentUnit == null || currentUnit.isEmpty() || currentUnit.equals(targetUnit)) {
             return column;
         }
@@ -590,18 +597,8 @@ public class ECUxDataset extends Dataset {
         // Provide ambient pressure supplier that gets BaroPressure normalized to mBar
         java.util.function.Supplier<Double> ambientSupplier = () -> {
             Column baro = super.get("BaroPressure");
-            if (baro != null && baro.data != null && baro.data.size() > 0) {
-                double ambient = baro.data.get(0);
-                // Normalize to mBar if needed (inline conversion, no recursion risk)
-                String baroUnit = baro.getUnits();
-                if (baroUnit != null && baroUnit.equals(UnitConstants.UNIT_KPA)) {
-                    ambient = ambient * UnitConstants.MBAR_PER_KPA;
-                } else if (baroUnit != null && baroUnit.equals(UnitConstants.UNIT_PSI)) {
-                    // PSI gauge to mBar absolute (BaroPressure should never be PSI, but handle it)
-                    ambient = ambient * UnitConstants.MBAR_PER_PSI + UnitConstants.MBAR_PER_ATM;
-                }
-                // If mBar or null, use as-is
-                return ambient;
+            if (baro != null) {
+                return DatasetUnits.normalizeBaroToMbar(baro);
             }
             return null;
         };
@@ -618,6 +615,41 @@ public class ECUxDataset extends Dataset {
             // This ensures unit-converted columns (e.g., "WTQ (Nm)") get smoothing if base column ("WTQ") has it
             Metadata baseMetadata = this.smoothingWindows.get(columnName);
             if (baseMetadata != null && targetId != null) {
+                this.smoothingWindows.put(targetId, baseMetadata.windowSize);
+            }
+        }
+        return converted;
+    }
+
+    /**
+     * Convert a CSV_NATIVE column from native units to normalized units.
+     * This is used by _get() to automatically convert normalized columns for display.
+     * Uses direct conversion to avoid recursion (doesn't call _get() or getColumnInUnits()).
+     *
+     * @param baseColumn The base CSV_NATIVE column with native data
+     * @param nativeUnit The native unit (from u2)
+     * @param normalizedUnit The normalized unit (from unit)
+     * @param targetId The target ID for the converted column (usually same as base column ID)
+     * @return The converted column, or null if conversion fails
+     */
+    private Column convertColumnToNormalizedUnits(Column baseColumn, String nativeUnit, String normalizedUnit, String targetId) {
+        // Provide ambient pressure supplier that gets BaroPressure normalized to mBar
+        java.util.function.Supplier<Double> ambientSupplier = () -> {
+            Column baro = super.get("BaroPressure");
+            if (baro != null) {
+                return DatasetUnits.normalizeBaroToMbar(baro);
+            }
+            return null;
+        };
+        // Convert using DatasetUnits - this creates a new column with converted data
+        // Use COMPILE_TIME_CONSTANTS type for converted columns (inherited from CSV_NATIVE)
+        Column converted = DatasetUnits.convertUnits(this, baseColumn, normalizedUnit, ambientSupplier,
+            Dataset.ColumnType.COMPILE_TIME_CONSTANTS, targetId);
+        // Inherit smoothing registration from base column if base column is registered
+        if (converted != baseColumn && targetId != null) {
+            String baseColumnName = baseColumn.getId();
+            Metadata baseMetadata = this.smoothingWindows.get(baseColumnName);
+            if (baseMetadata != null) {
                 this.smoothingWindows.put(targetId, baseMetadata.windowSize);
             }
         }
@@ -748,8 +780,122 @@ public class ECUxDataset extends Dataset {
             return;
         }
 
-        // Create DatasetId objects
-        this.setIds(h, config);
+        // Normalize units to standard units based on default preference (US_CUSTOMARY)
+        // Keeps h.u[] in native units, stores normalized units separately
+        normalizeUnitsToStandard(h);
+
+        // Create DatasetId objects with normalized units (for menu consistency)
+        // Use normalized units for DatasetId while keeping Column units native
+        // Pass normalizedUnits and nativeUnits maps directly to setIds() - no temporary modification needed
+        this.setIds(h, config, this.normalizedUnits, this.nativeUnits);
+    }
+
+    // Track native units for columns that need conversion
+    // Maps canonical column name -> native unit string
+    // Must be initialized lazily because it's accessed from ParseHeaders() which is called
+    // from super() constructor before field initializers run
+    private Map<String, String> nativeUnits;
+
+    // Track normalized units for DatasetId generation
+    // Maps canonical column name -> normalized unit string
+    // Used to create DatasetId with normalized units while keeping Column units native
+    private Map<String, String> normalizedUnits;
+
+    /**
+     * Normalize units for DatasetId generation.
+     *
+     * Implementation:
+     * - Keeps h.u[] in native units (for Column creation - unit conversion system needs native units)
+     * - Stores normalized units separately (for DatasetId generation - menu needs normalized units)
+     * - Data remains in native units (no conversion at load time)
+     *
+     * @param h HeaderData containing canonical names (h.id[]) and native units (h.u[])
+     */
+    private void normalizeUnitsToStandard(DataLogger.HeaderData h) {
+        if (h == null || h.id == null || h.u == null) {
+            return;
+        }
+
+        UnitPreference preference = UnitPreference.US_CUSTOMARY;
+
+        // Normalize each column's unit for DatasetId, but keep h.u[] in native units
+        for (int i = 0; i < h.id.length && i < h.u.length; i++) {
+            try {
+                String canonicalName = h.id[i];
+                String nativeUnit = h.u[i];
+
+                // Skip if canonical name or native unit is null/empty
+                if (canonicalName == null || canonicalName.isEmpty() ||
+                    nativeUnit == null || nativeUnit.isEmpty()) {
+                    continue;
+                }
+
+                // Get standard unit for this column
+                // Units.getStandardUnit() will handle unit preference matching
+                // The unit strings themselves (e.g., "mBar[gauge]") already indicate gauge vs absolute
+                String standardUnit = Units.getStandardUnit(canonicalName, nativeUnit, preference);
+
+                if (standardUnit != null && !standardUnit.equals(nativeUnit)) {
+                    // Store native unit for unit conversion system
+                    if (this.nativeUnits == null) {
+                        this.nativeUnits = new HashMap<String, String>();
+                    }
+                    this.nativeUnits.put(canonicalName, nativeUnit);
+
+                    // Store normalized unit for DatasetId generation (menu consistency)
+                    if (this.normalizedUnits == null) {
+                        this.normalizedUnits = new HashMap<String, String>();
+                    }
+                    this.normalizedUnits.put(canonicalName, standardUnit);
+
+                    // DO NOT update h.u[] - keep it in native units for Column creation
+                    // This allows unit conversion system to work correctly with native units
+                }
+            } catch (Exception e) {
+                // If normalization fails for one column, log and continue with others
+                logger.warn("Failed to normalize unit for column {}: {}", i, e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Validate DatasetId.u2 is populated correctly.
+     *
+     * With shared DatasetId references, Column.getUnits() already returns u2.
+     * So we don't need to create new Columns - just validate that DatasetId.u2 is set.
+     * DatasetId units remain normalized (for menu consistency).
+     *
+     * This method is called from the constructor after super() completes (CSV data loaded).
+     */
+    private void convertCSVColumnsToStandardUnits() {
+        // With shared DatasetId references, Column.getUnits() already returns u2
+        // So we don't need to create new Columns!
+        // Just validate that DatasetId.u2 is populated correctly
+
+        if (this.nativeUnits != null) {
+            for (Map.Entry<String, String> entry : this.nativeUnits.entrySet()) {
+                String canonicalName = entry.getKey();
+                String expectedNativeUnit = entry.getValue();
+
+                // Find DatasetId and verify u2 is set
+                for (DatasetId id : this.getIds()) {
+                    if (id.id.equals(canonicalName)) {
+                        // Validate String reference is shared (optional assertion)
+                        assert id.u2 == expectedNativeUnit ||
+                               id.u2.equals(expectedNativeUnit);
+                        logger.debug("Verified {} u2 is set to {} (original unit intent)",
+                            canonicalName, id.u2);
+                        break;
+                    }
+                }
+            }
+        }
+
+        logger.debug("Validated {} columns have u2 set (DatasetId units remain normalized for menu)",
+            this.nativeUnits != null ? this.nativeUnits.size() : 0);
+
+        // DO NOT clear nativeUnits map - we need it for on-demand conversion
+        // The map will be used when charts request base columns that need normalization
     }
 
 
@@ -887,7 +1033,31 @@ public class ECUxDataset extends Dataset {
                 this.putColumn(c);
                 return c;
             }
-            return super.get(id);
+
+            // Fallback to base CSV_NATIVE column
+            // Check if this is a unit conversion request (has " (unit)" pattern)
+            // If so, don't normalize - unit conversion needs native data
+            boolean isUnitConversionRequest = Units.parseUnitConversion(idStr) != null;
+            Column baseColumn = super.get(id);
+            if (baseColumn != null && baseColumn.getColumnType() == Dataset.ColumnType.CSV_NATIVE && !isUnitConversionRequest) {
+                // Check if this column was normalized (unit != u2)
+                // If so, automatically convert to normalized units for display
+                // Skip normalization for unit conversion requests (they need native data)
+                String normalizedUnit = baseColumn.getUnits();
+                String nativeUnit = baseColumn.getNativeUnits();
+                if (normalizedUnit != null && nativeUnit != null && !normalizedUnit.equals(nativeUnit)) {
+                    // Column is normalized - convert data to normalized units for display
+                    // Use direct conversion to avoid recursion (we're already in _get())
+                    // Don't store converted column - preserve base column for unit conversion
+                    // Convert on-demand each time (inefficient but correct)
+                    Column converted = convertColumnToNormalizedUnits(baseColumn, nativeUnit, normalizedUnit, idStr);
+                    if (converted != null && converted != baseColumn) {
+                        // Return converted column without storing (base column remains for unit conversion)
+                        return converted;
+                    }
+                }
+            }
+            return baseColumn;
     }
 
     /**

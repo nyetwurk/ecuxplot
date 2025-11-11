@@ -46,34 +46,9 @@ public class DatasetUnits {
             (data, ambient) -> new ConversionResult(
                 data.mult(UnitConstants.LAMBDA_PER_AFR), UnitConstants.UNIT_LAMBDA));
 
-        // Temperature: Celsius <-> Fahrenheit
-        CONVERTERS.put(key(UnitConstants.UNIT_FAHRENHEIT, UnitConstants.UNIT_CELSIUS),
-            (data, ambient) -> new ConversionResult(
-                toFahrenheit(data), UnitConstants.UNIT_FAHRENHEIT));
-        CONVERTERS.put(key(UnitConstants.UNIT_CELSIUS, UnitConstants.UNIT_FAHRENHEIT),
-            (data, ambient) -> new ConversionResult(
-                toCelcius(data), UnitConstants.UNIT_CELSIUS));
-
-        // Pressure: mBar <-> PSI
-        // Note: PSI is typically gauge pressure, mBar is absolute pressure
-        CONVERTERS.put(key(UnitConstants.UNIT_PSI, UnitConstants.UNIT_MBAR),
-            (data, ambient) -> new ConversionResult(
-                toPSI(data, ambient), UnitConstants.UNIT_PSI));
-        CONVERTERS.put(key(UnitConstants.UNIT_MBAR, UnitConstants.UNIT_PSI),
-            (data, ambient) -> {
-                double a = getAmbientPressureMbar(ambient);
-                return new ConversionResult(
-                    data.mult(UnitConstants.MBAR_PER_PSI).add(a), UnitConstants.UNIT_MBAR);
-            });
-
-        // Pressure: mBar gauge <-> PSI
-        // Note: mBar gauge is already relative pressure, convert units directly
-        CONVERTERS.put(key(UnitConstants.UNIT_PSI, UnitConstants.UNIT_MBAR_GAUGE),
-            (data, ambient) -> new ConversionResult(
-                data.div(UnitConstants.MBAR_PER_PSI), UnitConstants.UNIT_PSI));
-        CONVERTERS.put(key(UnitConstants.UNIT_MBAR_GAUGE, UnitConstants.UNIT_PSI),
-            (data, ambient) -> new ConversionResult(
-                data.mult(UnitConstants.MBAR_PER_PSI), UnitConstants.UNIT_MBAR_GAUGE));
+        // Temperature, Pressure (PSI<->mBar), Speed, and Torque conversions
+        // are now handled by ConvertibleUnit enum (see convertUnits() method)
+        // Only keeping conversions not handled by ConvertibleUnit here
 
         // Pressure: kPa <-> mBar
         // Note: Both kPa and mBar are absolute pressure units (1 kPa = 10 mBar)
@@ -85,32 +60,12 @@ public class DatasetUnits {
                 data.mult(UnitConstants.KPA_PER_MBAR), UnitConstants.UNIT_KPA));
 
         // Pressure: kPa <-> PSI
-        // Note: PSI is typically gauge pressure, kPa is absolute pressure
-        CONVERTERS.put(key(UnitConstants.UNIT_PSI, UnitConstants.UNIT_KPA),
-            (data, ambient) -> {
-                // kPa absolute to PSI gauge: convert kPa -> mBar -> PSI
-                // Use actual ambient pressure for accuracy (especially at different altitudes)
-                double a = getAmbientPressureMbar(ambient);
-                return new ConversionResult(
-                    data.mult(UnitConstants.MBAR_PER_KPA).sub(a).mult(UnitConstants.PSI_PER_MBAR),
-                    UnitConstants.UNIT_PSI);
-            });
-        CONVERTERS.put(key(UnitConstants.UNIT_KPA, UnitConstants.UNIT_PSI),
-            (data, ambient) -> {
-                // PSI gauge to kPa absolute: convert PSI -> mBar -> kPa
-                double a = getAmbientPressureMbar(ambient);
-                return new ConversionResult(
-                    data.mult(UnitConstants.MBAR_PER_PSI).add(a).mult(UnitConstants.KPA_PER_MBAR),
-                    UnitConstants.UNIT_KPA);
-            });
+        // Note: These conversions are handled by chaining through mBar:
+        //   kPa -> mBar (simple conversion above) -> PSI (via ConvertibleUnit.PRESSURE_BOOST)
+        //   PSI -> mBar (via ConvertibleUnit.PRESSURE_BOOST) -> kPa (simple conversion above)
+        // The convertUnits() method explicitly handles this chaining for kPa↔PSI conversions
 
-        // Speed: mph <-> km/h
-        CONVERTERS.put(key(UnitConstants.UNIT_MPH, UnitConstants.UNIT_KMH),
-            (data, ambient) -> new ConversionResult(
-                data.mult(UnitConstants.MPH_PER_KPH), UnitConstants.UNIT_MPH));
-        CONVERTERS.put(key(UnitConstants.UNIT_KMH, UnitConstants.UNIT_MPH),
-            (data, ambient) -> new ConversionResult(
-                data.mult(UnitConstants.KMH_PER_MPH), UnitConstants.UNIT_KMH));
+        // Speed conversions are now handled by ConvertibleUnit.SPEED
 
         // Mass flow: g/sec <-> kg/hr
         CONVERTERS.put(key(UnitConstants.UNIT_KGH, UnitConstants.UNIT_GPS),
@@ -120,13 +75,7 @@ public class DatasetUnits {
             (data, ambient) -> new ConversionResult(
                 data.mult(UnitConstants.GPS_PER_KGH), UnitConstants.UNIT_GPS));
 
-        // Torque: ft-lb <-> Nm
-        CONVERTERS.put(key(UnitConstants.UNIT_NM, UnitConstants.UNIT_FTLB),
-            (data, ambient) -> new ConversionResult(
-                data.mult(UnitConstants.FTLB_PER_NM), UnitConstants.UNIT_NM));
-        CONVERTERS.put(key(UnitConstants.UNIT_FTLB, UnitConstants.UNIT_NM),
-            (data, ambient) -> new ConversionResult(
-                data.mult(UnitConstants.NM_PER_FTLB), UnitConstants.UNIT_FTLB));
+        // Torque conversions are now handled by ConvertibleUnit.TORQUE
     }
 
     /**
@@ -150,16 +99,65 @@ public class DatasetUnits {
         return convertUnits(dataset, baseColumn, targetUnit, getAmbientPressure, columnType, null);
     }
 
+    /**
+     * Create a new column with converted data.
+     * Helper method to avoid repeating column creation logic.
+     */
+    private static Dataset.Column createConvertedColumn(Dataset dataset, Dataset.Column baseColumn,
+            String targetUnit, DoubleArray convertedData, Dataset.ColumnType columnType, String targetId) {
+        String columnId = (targetId != null && !targetId.isEmpty()) ? targetId : baseColumn.getId();
+        return dataset.new Column(columnId, targetUnit, convertedData, columnType);
+    }
+
+    /**
+     * Check if a chained conversion succeeded.
+     * Returns true if the intermediate column was created and has the expected unit.
+     */
+    private static boolean isChainedConversionValid(Dataset.Column intermediateColumn, Dataset.Column baseColumn, String expectedUnit) {
+        return intermediateColumn != baseColumn && intermediateColumn.getUnits().equals(expectedUnit);
+    }
+
+    /**
+     * Attempt to chain a conversion through an intermediate unit.
+     * Returns the final converted column if successful, or null if chaining failed.
+     */
+    private static Dataset.Column tryChainedConversion(Dataset dataset, Dataset.Column baseColumn,
+            String intermediateUnit, String targetUnit, Supplier<Double> getAmbientPressure,
+            Dataset.ColumnType columnType, String targetId) {
+        Dataset.Column intermediateColumn = convertUnits(dataset, baseColumn, intermediateUnit,
+            getAmbientPressure, columnType, null);
+        if (isChainedConversionValid(intermediateColumn, baseColumn, intermediateUnit)) {
+            return convertUnits(dataset, intermediateColumn, targetUnit, getAmbientPressure, columnType, targetId);
+        }
+        return null;
+    }
+
     public static Dataset.Column convertUnits(Dataset dataset, Dataset.Column baseColumn, String targetUnit,
             Supplier<Double> getAmbientPressure, Dataset.ColumnType columnType, String targetId) {
-        String baseUnit = baseColumn.getUnits();
+        // Use native unit (u2) for conversion logic, not display unit (getUnits())
+        String baseUnit = baseColumn.getNativeUnits();
 
         // Early return if no conversion needed
         if (targetUnit == null || targetUnit.isEmpty() || targetUnit.equals(baseUnit)) {
             return baseColumn;
         }
 
-        // Lookup converter
+        // First, try to use ConvertibleUnit enum for conversions it supports
+        ConvertibleUnit convertibleUnit = ConvertibleUnit.fromUnit(baseUnit);
+        if (convertibleUnit != null) {
+            // Check if target unit matches this convertible unit
+            if ((baseUnit.equals(convertibleUnit.usCustomary) && targetUnit.equals(convertibleUnit.metric)) ||
+                (baseUnit.equals(convertibleUnit.metric) && targetUnit.equals(convertibleUnit.usCustomary))) {
+                // This is a ConvertibleUnit conversion
+                DoubleArray convertedData = convertibleUnit.convertTo(baseColumn.data, baseUnit, targetUnit, getAmbientPressure);
+                if (convertedData != baseColumn.data) {
+                    return createConvertedColumn(dataset, baseColumn, targetUnit, convertedData, columnType, targetId);
+                }
+            }
+        }
+
+        // Fall back to CONVERTERS map for conversions not handled by ConvertibleUnit
+        // (e.g., Air-Fuel Ratio, kPa conversions, mass flow)
         String lookupKey = key(targetUnit, baseUnit);
         UnitConverter converter = CONVERTERS.get(lookupKey);
 
@@ -167,9 +165,23 @@ public class DatasetUnits {
             ConversionResult result = converter.convert(baseColumn.data, getAmbientPressure);
             // If data was modified, create new column
             if (result.data != baseColumn.data) {
-                // Use targetId if provided (e.g., "BoostPressure (PSI)"), otherwise use base column ID
-                String columnId = (targetId != null && !targetId.isEmpty()) ? targetId : baseColumn.getId();
-                return dataset.new Column(columnId, result.newUnit, result.data, columnType);
+                return createConvertedColumn(dataset, baseColumn, result.newUnit, result.data, columnType, targetId);
+            }
+        }
+
+        // Try chaining conversions through intermediate units
+        // Example: kPa -> PSI via mBar (kPa -> mBar -> PSI)
+        if (baseUnit.equals(UnitConstants.UNIT_KPA) && targetUnit.equals(UnitConstants.UNIT_PSI)) {
+            Dataset.Column result = tryChainedConversion(dataset, baseColumn, UnitConstants.UNIT_MBAR,
+                UnitConstants.UNIT_PSI, getAmbientPressure, columnType, targetId);
+            if (result != null) {
+                return result;
+            }
+        } else if (baseUnit.equals(UnitConstants.UNIT_PSI) && targetUnit.equals(UnitConstants.UNIT_KPA)) {
+            Dataset.Column result = tryChainedConversion(dataset, baseColumn, UnitConstants.UNIT_MBAR,
+                UnitConstants.UNIT_KPA, getAmbientPressure, columnType, targetId);
+            if (result != null) {
+                return result;
             }
         }
 
@@ -178,84 +190,29 @@ public class DatasetUnits {
     }
 
     /**
-     * Get ambient pressure in mBar, normalizing from whatever unit it's stored in
-     * @param getAmbientPressure Function to get ambient pressure, or null
-     * @param dataset Dataset to get BaroPressure from if function is null
-     * @return Ambient pressure in mBar
+     * Normalize barometric pressure column to mBar.
+     * Handles conversion from kPa or PSI to mBar.
+     *
+     * @param baro Barometric pressure column
+     * @return Pressure in mBar, or UnitConstants.MBAR_PER_ATM if column is null/empty
      */
-    public static double getAmbientPressureMbar(java.util.function.Supplier<Double> getAmbientPressure,
-            Dataset dataset) {
-        if (getAmbientPressure != null) {
-            Double ambient = getAmbientPressure.get();
-            if (ambient != null) {
-                return ambient;
-            }
+    static double normalizeBaroToMbar(Dataset.Column baro) {
+        if (baro == null || baro.data == null || baro.data.size() == 0) {
+            return UnitConstants.MBAR_PER_ATM;
         }
-
-        // Fallback: try to get from dataset
-        if (dataset != null) {
-            try {
-                Dataset.Column baro = dataset.get("BaroPressure");
-                if (baro != null && baro.data != null && baro.data.size() > 0) {
-                    double ambient = baro.data.get(0);
-                    // Normalize to mBar if needed
-                    String baroUnit = baro.getUnits();
-                    if (baroUnit != null && baroUnit.equals(UnitConstants.UNIT_KPA)) {
-                        ambient = ambient * UnitConstants.MBAR_PER_KPA;
-                    } else if (baroUnit != null && baroUnit.equals(UnitConstants.UNIT_PSI)) {
-                        // PSI gauge to mBar absolute
-                        ambient = ambient * UnitConstants.MBAR_PER_PSI + UnitConstants.MBAR_PER_ATM;
-                    }
-                    // If mBar or null, use as-is
-                    return ambient;
-                }
-            } catch (Exception e) {
-                // Fall through to default
-            }
+        double ambient = baro.data.get(0);
+        // Use native unit (u2) for conversion logic
+        String baroUnit = baro.getNativeUnits();
+        if (baroUnit != null && baroUnit.equals(UnitConstants.UNIT_KPA)) {
+            return ambient * UnitConstants.MBAR_PER_KPA;
+        } else if (baroUnit != null && baroUnit.equals(UnitConstants.UNIT_PSI)) {
+            // PSI gauge to mBar absolute (BaroPressure should never be PSI, but handle it)
+            return ambient * UnitConstants.MBAR_PER_PSI + UnitConstants.MBAR_PER_ATM;
         }
-
-        // Use standard atmospheric pressure
-        return UnitConstants.MBAR_PER_ATM;
+        // If mBar or null, use as-is
+        return ambient;
     }
 
-    /**
-     * Get ambient pressure in mBar using only the supplier (no dataset fallback)
-     */
-    private static double getAmbientPressureMbar(java.util.function.Supplier<Double> getAmbientPressure) {
-        if (getAmbientPressure != null) {
-            Double ambient = getAmbientPressure.get();
-            if (ambient != null) {
-                return ambient;
-            }
-        }
-        return UnitConstants.MBAR_PER_ATM;
-    }
-
-    /**
-     * Convert mBar absolute to PSI gauge
-     */
-    private static DoubleArray toPSI(DoubleArray abs, java.util.function.Supplier<Double> getAmbientPressure) {
-        double ambient = getAmbientPressureMbar(getAmbientPressure);
-        if (ambient == UnitConstants.MBAR_PER_ATM && getAmbientPressure == null) {
-            // No ambient provided, use standard
-            return abs.add(-UnitConstants.MBAR_PER_ATM).div(UnitConstants.MBAR_PER_PSI);
-        }
-        return abs.sub(ambient).div(UnitConstants.MBAR_PER_PSI);
-    }
-
-    /**
-     * Convert Fahrenheit to Celsius
-     */
-    private static DoubleArray toCelcius(DoubleArray f) {
-        return f.add(-UnitConstants.CELSIUS_TO_FAHRENHEIT_OFFSET).mult(1.0/UnitConstants.CELSIUS_TO_FAHRENHEIT_FACTOR);
-    }
-
-    /**
-     * Convert Celsius to Fahrenheit
-     */
-    private static DoubleArray toFahrenheit(DoubleArray c) {
-        return c.mult(UnitConstants.CELSIUS_TO_FAHRENHEIT_FACTOR).add(UnitConstants.CELSIUS_TO_FAHRENHEIT_OFFSET);
-    }
 }
 
 // vim: set sw=4 ts=8 expandtab:

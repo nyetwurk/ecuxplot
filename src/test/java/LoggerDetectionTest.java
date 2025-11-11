@@ -138,8 +138,11 @@ public class LoggerDetectionTest {
                         // Test ID2s
                         testExpectedId2s(testCase, dataset, fileName);
 
-                        // Test Units
+                        // Test Units (normalized - DatasetId.unit)
                         testExpectedUnits(testCase, dataset, fileName);
+
+                        // Test Native Units (original unit intent - DatasetId.u2)
+                        testExpectedNativeUnits(testCase, dataset, fileName);
 
                         // Test category mappings
                         testExpectedCategories(testCase, dataset, fileName);
@@ -232,22 +235,95 @@ public class LoggerDetectionTest {
         }
     }
 
+    /**
+     * Test normalized units (DatasetId.unit).
+     *
+     * expected_us_units only lists columns that were normalized.
+     * For columns not listed, assume unit == u2 (no normalization occurred).
+     *
+     * This allows:
+     * 1. Separate expected_us_units / expected_metric_units sections for different unit preferences (US_CUSTOMARY vs METRIC)
+     * 2. Minimal duplication (only list what changed)
+     * 3. Native units as source of truth (exhaustive in expected_units)
+     */
     private static void testExpectedUnits(Element testCase, ECUxDataset dataset, String fileName) {
-        NodeList expectedUnits = testCase.getElementsByTagName("expected_units");
-        if (expectedUnits.getLength() == 0) return;
+        NodeList expectedNormalizedUnitsList = testCase.getElementsByTagName("expected_us_units");
+        if (expectedNormalizedUnitsList.getLength() == 0) return;
 
-        Element unitsElement = (Element) expectedUnits.item(0);
-        NodeList unitNodes = unitsElement.getElementsByTagName("unit");
+        Element normalizedUnitsElement = (Element) expectedNormalizedUnitsList.item(0);
+        NodeList unitNodes = normalizedUnitsElement.getElementsByTagName("unit");
 
+        // Build map of expected normalized units (only for columns that were normalized)
+        java.util.Map<Integer, String> expectedNormalizedUnits = new java.util.HashMap<>();
         for (int i = 0; i < unitNodes.getLength(); i++) {
             Element unitElement = (Element) unitNodes.item(i);
             int index = Integer.parseInt(unitElement.getAttribute("index"));
             String expectedUnit = unitElement.getTextContent();
+            expectedNormalizedUnits.put(index, expectedUnit);
+        }
 
-            if (index < dataset.getIds().length) {
-                String actualUnit = dataset.getIds()[index].unit;
+        // Get expected native units to determine which columns should be normalized
+        NodeList expectedUnitsList = testCase.getElementsByTagName("expected_units");
+        if (expectedUnitsList.getLength() == 0) return;
+
+        Element nativeUnitsElement = (Element) expectedUnitsList.item(0);
+        NodeList nativeUnitNodes = nativeUnitsElement.getElementsByTagName("unit");
+
+        // Build map of expected native units (exhaustive - all columns)
+        java.util.Map<Integer, String> expectedNativeUnitsMap = new java.util.HashMap<>();
+        for (int i = 0; i < nativeUnitNodes.getLength(); i++) {
+            Element nativeUnitElement = (Element) nativeUnitNodes.item(i);
+            int index = Integer.parseInt(nativeUnitElement.getAttribute("index"));
+            String expectedNativeUnit = nativeUnitElement.getTextContent();
+            expectedNativeUnitsMap.put(index, expectedNativeUnit);
+        }
+
+        // Test normalized units
+        // For columns in expected_us_units: verify normalized unit matches
+        // For columns NOT in expected_us_units: verify unit == u2 (no normalization)
+        for (int index = 0; index < dataset.getIds().length; index++) {
+            if (!expectedNativeUnitsMap.containsKey(index)) {
+                continue; // Skip columns not in expected_units
+            }
+
+            String actualUnit = dataset.getIds()[index].unit;
+            String actualU2 = dataset.getIds()[index].u2;
+
+            if (expectedNormalizedUnits.containsKey(index)) {
+                // Column was normalized - verify normalized unit matches
+                String expectedUnit = expectedNormalizedUnits.get(index);
                 assertTest("Unit[" + index + "] for " + fileName + ": expected '" + expectedUnit + "', got '" + actualUnit + "'",
                     expectedUnit.equals(actualUnit));
+            } else {
+                // Column was NOT normalized - verify unit == u2
+                assertTest("Unit[" + index + "] for " + fileName + ": expected unit == u2 (no normalization), got unit='" + actualUnit + "', u2='" + actualU2 + "'",
+                    actualUnit == actualU2 || (actualUnit != null && actualUnit.equals(actualU2)));
+            }
+        }
+    }
+
+    /**
+     * Test native units (DatasetId.u2).
+     *
+     * EXHAUSTIVE APPROACH: expected_units lists ALL columns (source of truth from CSV).
+     * This is the exhaustive list - every column should have a native unit entry.
+     */
+    private static void testExpectedNativeUnits(Element testCase, ECUxDataset dataset, String fileName) {
+        NodeList expectedUnitsList = testCase.getElementsByTagName("expected_units");
+        if (expectedUnitsList.getLength() == 0) return;
+
+        Element nativeUnitsElement = (Element) expectedUnitsList.item(0);
+        NodeList nativeUnitNodes = nativeUnitsElement.getElementsByTagName("unit");
+
+        for (int i = 0; i < nativeUnitNodes.getLength(); i++) {
+            Element nativeUnitElement = (Element) nativeUnitNodes.item(i);
+            int index = Integer.parseInt(nativeUnitElement.getAttribute("index"));
+            String expectedNativeUnit = nativeUnitElement.getTextContent();
+
+            if (index < dataset.getIds().length) {
+                String actualNativeUnit = dataset.getIds()[index].u2;
+                assertTest("NativeUnit[" + index + "] for " + fileName + ": expected '" + expectedNativeUnit + "', got '" + actualNativeUnit + "'",
+                    expectedNativeUnit.equals(actualNativeUnit));
             }
         }
     }
