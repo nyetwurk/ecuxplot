@@ -1,6 +1,13 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed [#118](https://github.com/nyetwurk/ecuxplot/issues/118): Allow log files with differing native CSV units to be compared using the same canonical column alias (e.g. BoostPressureActual) *and units* (e.g. PSI vs mBar)
+- Fix ambient pressure calculation to use normalized BaroPressure column instead of raw data
+
 ## [1.1.8] - 2025-11-10
 
 ### Fixed

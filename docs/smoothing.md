@@ -219,10 +219,10 @@ Smooths time intervals (deltas) rather than absolute time. Prevents drift while 
 **Usage Examples:**
 
 **Display/Rendering (uses `getData()` - smoothed):**
-- Main chart rendering: `ECUxChartFactory.java` (lines 242-243)
-- SmoothingWindow visualization: Shows pre/post smoothed values in table (lines 789, 810, 835, 856)
-- RangeSelectorWindow: Calculates max power for rewards using smoothed data (lines 81-105)
-- FATS calculations: Uses smoothed RPM data (line 1984)
+- Main chart rendering: `ECUxChartFactory.java`
+- SmoothingWindow visualization: Shows pre/post smoothed values in table
+- RangeSelectorWindow: Calculates max power for rewards using smoothed data
+- FATS calculations: Uses smoothed RPM data
 
 **Internal Calculations (uses `get().data` - raw/unsmoothed):**
 - Derivative calculations: `this.get("RPM").data.derivative(...)` (uses raw data)

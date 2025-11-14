@@ -552,7 +552,7 @@ Presets change columns only, not range selections
 
 **Location**: `src/org/nyet/ecuxplot/DatasetUnits.java`
 
-**Related**: See [Unit Conversion System](../plans/unit-conversion-system.md) for detailed documentation.
+**Related**: See [Unit Normalization System](unit-normalization.md) for detailed documentation.
 
 ### Implementation: Map-Based Converter Registry
 
@@ -604,12 +604,17 @@ Uses `HashMap<String, UnitConverter>` for converter registry:
 
 ### Adding a New Unit Conversion
 
-1. **Add converter to `DatasetUnits.java`**
-   - Add entry to static initialization block
+1. **Check if it's a ConvertibleUnit conversion** (temperature, pressure boost, speed, torque)
+   - If yes, add to `ConvertibleUnit` enum in `ConvertibleUnit.java`
+   - These handle US Customary ↔ Metric conversions with preference support
+
+2. **Otherwise, add converter to `DatasetUnits.java`**
+   - Add entry to static initialization block (`CONVERTERS` map)
    - Key format: `"targetUnit:baseUnit"`
    - Provide converter function
+   - Used for conversions not handled by ConvertibleUnit (e.g., lambda/AFR, kPa, mass flow)
 
-2. **Test**: Verify conversion works in both directions if applicable
+3. **Test**: Verify conversion works in both directions if applicable
 
 ### Debugging Race Conditions
 
