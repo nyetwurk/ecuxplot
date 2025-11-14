@@ -36,6 +36,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
      */
     private TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
 
+    /**
+     * Get fileDatasets map for access by AxisMenu to collect all id2 values.
+     * @return The fileDatasets map
+     */
+    TreeMap<String, ECUxDataset> getFileDatasets() {
+        return this.fileDatasets;
+    }
+
     // Track rebuild state to prevent race conditions
     private SwingWorker<Void, Void> currentRebuildWorker = null;
     private volatile boolean isRebuilding = false;

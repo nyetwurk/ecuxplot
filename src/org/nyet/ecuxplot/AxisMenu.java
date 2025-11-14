@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.awt.Component;
 
 import javax.swing.JMenu;
@@ -31,6 +33,7 @@ public class AxisMenu extends JMenu {
     private ButtonGroup buttonGroup = null;
     private final boolean radioButton;
     private final Comparable<?>[] initialChecked;
+    private TreeMap<String, ECUxDataset> fileDatasets = null;
 
     private final HashMap<String, AbstractButton> members =
         new HashMap<String, AbstractButton>();
@@ -231,9 +234,34 @@ public class AxisMenu extends JMenu {
         final AbstractButton item = (this.buttonGroup==null)?new JCheckBox(dsid.id, checked):
             new JRadioButtonMenuItem(dsid.id, checked);
 
-        // Only set tooltip if id2 exists and is different from the menu item text
-        if(dsid.id2!=null && !dsid.id2.equals(dsid.id)) {
-            item.setToolTipText(dsid.id2);
+        // Collect all id2 values from all datasets for this canonical name
+        // This handles the case where multiple files have different original column names
+        // that map to the same canonical alias
+        if (this.fileDatasets != null && !this.fileDatasets.isEmpty()) {
+            TreeSet<String> allId2Values = new TreeSet<String>();
+            for (final ECUxDataset dataset : this.fileDatasets.values()) {
+                final String id2 = dataset.id2(dsid.id);
+                if (id2 != null && !id2.equals(dsid.id) && !id2.isEmpty()) {
+                    allId2Values.add(id2);
+                }
+            }
+            // If we found id2 values from multiple files, combine them
+            if (!allId2Values.isEmpty()) {
+                String tooltipText;
+                if (allId2Values.size() == 1) {
+                    // Single id2 value - use it directly
+                    tooltipText = allId2Values.first();
+                } else {
+                    // Multiple id2 values - combine them with commas
+                    tooltipText = String.join(", ", allId2Values);
+                }
+                item.setToolTipText(tooltipText);
+            }
+        } else {
+            // Fallback to single DatasetId's id2 if fileDatasets not available
+            if(dsid.id2!=null && !dsid.id2.equals(dsid.id)) {
+                item.setToolTipText(dsid.id2);
+            }
         }
 
         item.addActionListener(new MenuListener(this.listener, this.getText()));
@@ -385,6 +413,11 @@ public class AxisMenu extends JMenu {
         this.radioButton = radioButton;
         this.initialChecked = initialChecked;
         if (maxItems>0) this.maxItems = maxItems;
+
+        // Store fileDatasets reference if listener is ECUxPlot
+        if (listener instanceof ECUxPlot) {
+            this.fileDatasets = ((ECUxPlot) listener).getFileDatasets();
+        }
 
         if (ids!=null) {
             // Pre-populate all calc menus and add them to the menu near the top

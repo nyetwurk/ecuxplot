@@ -106,7 +106,9 @@ public class DatasetUnits {
     private static Dataset.Column createConvertedColumn(Dataset dataset, Dataset.Column baseColumn,
             String targetUnit, DoubleArray convertedData, Dataset.ColumnType columnType, String targetId) {
         String columnId = (targetId != null && !targetId.isEmpty()) ? targetId : baseColumn.getId();
-        return dataset.new Column(columnId, targetUnit, convertedData, columnType);
+        // Preserve id2 (original field name) from base column when creating converted column
+        String id2 = baseColumn.getId2();
+        return dataset.new Column(columnId, id2, targetUnit, convertedData, columnType);
     }
 
     /**

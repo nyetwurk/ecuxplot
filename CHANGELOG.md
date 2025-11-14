@@ -5,6 +5,7 @@
 
 ### Fixed
 
+- Fixed [#119](https://github.com/nyetwurk/ecuxplot/issues/119): AxisMenu tooltip now shows all original column names for a canonical column name
 - Fixed [#118](https://github.com/nyetwurk/ecuxplot/issues/118): Allow log files with differing native CSV units to be compared using the same canonical column alias (e.g. BoostPressureActual) *and units* (e.g. PSI vs mBar)
 - Fix ambient pressure calculation to use normalized BaroPressure column instead of raw data
 
