@@ -365,7 +365,7 @@ public class Smoothing extends LinearSmoothing
     /** Maximum moving average window size (in samples) - safety limit */
     private static final int MA_WINDOW_MAX = 50;
     /** Multiplier for adaptive MA window size based on quantization run length */
-    private static final int MA_QUANTIZATION_MULTIPLIER = 10;
+    private static final int MA_QUANTIZATION_MULTIPLIER = 7;
     /** Minimum dataset size (in samples) required for Savitzky-Golay smoothing */
     private static final int SG_MIN_SAMPLES = 11;
     /** Minimum consecutive constant values to consider as quantization noise */
