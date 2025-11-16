@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
-## [Unreleased]
+## [1.1.9] - 2025-11-15
 
 ### Fixed
 
