@@ -488,11 +488,14 @@ public class AxisMenuHandlers {
                         if (range != null) {
                             result[i] = time.get(i) - time.get(range.start);
                         } else {
-                            // Not in any range: use absolute time
-                            result[i] = time.get(i);
+                            // Not in any range: use NaN so point is excluded from plots
+                            result[i] = Double.NaN;
                         }
                     }
-                    return dataset.createColumn(id, UnitConstants.UNIT_SECONDS, new DoubleArray(result), ColumnType.PROCESSED_VARIANT);
+                    // Use OTHER_RUNTIME because this column depends on filter ranges (runtime parameter).
+                    // Unlike PROCESSED_VARIANT (processed/transformed native data), this column's values
+                    // change when filter settings change, so it needs to be recalculated when ranges are rebuilt.
+                    return dataset.createColumn(id, UnitConstants.UNIT_SECONDS, new DoubleArray(result), ColumnType.OTHER_RUNTIME);
                 }
             }
             case "Sample [Range]": {
@@ -513,11 +516,14 @@ public class AxisMenuHandlers {
                         if (range != null) {
                             result[i] = i - range.start;
                         } else {
-                            // Not in any range: use absolute sample index
-                            result[i] = i;
+                            // Not in any range: use NaN so point is excluded from plots
+                            result[i] = Double.NaN;
                         }
                     }
-                    return dataset.createColumn(id, UnitConstants.UNIT_SAMPLE, new DoubleArray(result), ColumnType.PROCESSED_VARIANT);
+                    // Use OTHER_RUNTIME because this column depends on filter ranges (runtime parameter).
+                    // Unlike PROCESSED_VARIANT (processed/transformed native data), this column's values
+                    // change when filter settings change, so it needs to be recalculated when ranges are rebuilt.
+                    return dataset.createColumn(id, UnitConstants.UNIT_SAMPLE, new DoubleArray(result), ColumnType.OTHER_RUNTIME);
                 }
             }
             default:

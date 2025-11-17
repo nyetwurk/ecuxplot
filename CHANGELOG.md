@@ -1,36 +1,42 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- [#120](https://github.com/nyetwurk/ecuxplot/issues/120): Properly re-compute `Sample[range]` and `Time[range]` on Filter/Range change
+
 ## [1.1.9] - 2025-11-15
 
 ### Fixed
 
-- Fixed [#119](https://github.com/nyetwurk/ecuxplot/issues/119): AxisMenu tooltip now shows all original column names for a canonical column name
-- Fixed [#118](https://github.com/nyetwurk/ecuxplot/issues/118): Allow log files with differing native CSV units to be compared using the same canonical column alias (e.g. BoostPressureActual) *and units* (e.g. PSI vs mBar)
-- Fix ambient pressure calculation to use normalized BaroPressure column instead of raw data
+- [#119](https://github.com/nyetwurk/ecuxplot/issues/119): AxisMenu tooltip now shows all original column names for a canonical column name
+- [#118](https://github.com/nyetwurk/ecuxplot/issues/118): Allow log files with differing native CSV units to be compared using the same canonical column alias (e.g. BoostPressureActual) *and units* (e.g. PSI vs mBar)
+- Ambient pressure calculation now uses normalized (and mBar) BaroPressure column instead of raw data which might have had the wrong units
 
 ## [1.1.8] - 2025-11-10
 
 ### Fixed
 
-- Fixed [#112](https://github.com/nyetwurk/ecuxplot/issues/112): Unified logging in unit testing, default level INFO for CI
-- Fixed [#111](https://github.com/nyetwurk/ecuxplot/issues/111): Unify AxisMenu and ECUxDataset into AxisMenuItems and AxisMenuHandlers
-- Fixed Speed field incorrectly categorized as calculated menu item instead of base menu item
+- [#112](https://github.com/nyetwurk/ecuxplot/issues/112): Unified logging in unit testing, default level INFO for CI
+- [#111](https://github.com/nyetwurk/ecuxplot/issues/111): Unify AxisMenu and ECUxDataset into AxisMenuItems and AxisMenuHandlers
+- Speed field incorrectly categorized as calculated menu item instead of base menu item
 
 ## [1.1.7] - 2025-11-07
 
 ### Fixed
 
-- Fixed [#110](https://github.com/nyetwurk/ecuxplot/issues/110): Calc PID now requires both boost desired and boost actual fields
-- Fixed [#109](https://github.com/nyetwurk/ecuxplot/issues/109): Resolved circular dependency between range detection and RPM smoothing using three-tier architecture
-- Fixed torque unit conversion (ft/lb to Nm) for accurate calculations
-- Fixed max HP calculation in Range Selector to use smoothed data instead of raw data
-- Fixed smoothing inheritance so unit-converted columns (e.g., WTQ (Nm)) automatically inherit smoothing from base columns
-- Fixed derivative calculation to handle duplicate/near-zero time deltas preventing division by zero errors
-- Fixed acceleration calculations to avoid double-smoothing artifacts
-- Fixed FilterWindow to use base RPM for data visualization matching actual filter behavior
-- Fixed [#108](https://github.com/nyetwurk/ecuxplot/issues/108): Preset loading now updates axis labels when X-axis is unchanged but Y-axes change
-- Fixed [#106](https://github.com/nyetwurk/ecuxplot/issues/106): Improved Cobb Accessport boost pressure alias matching to handle variations in field names
+- [#110](https://github.com/nyetwurk/ecuxplot/issues/110): Calc PID now requires both boost desired and boost actual fields
+- [#109](https://github.com/nyetwurk/ecuxplot/issues/109): Resolved circular dependency between range detection and RPM smoothing using three-tier architecture
+- Torque unit conversion (ft/lb to Nm) for accurate calculations
+- Max HP calculation in Range Selector to use smoothed data instead of raw data
+- Smoothing inheritance so unit-converted columns (e.g., WTQ (Nm)) automatically inherit smoothing from base columns
+- Derivative calculation to handle duplicate/near-zero time deltas preventing division by zero errors
+- Acceleration calculations to avoid double-smoothing artifacts
+- FilterWindow to use base RPM for data visualization matching actual filter behavior
+- [#108](https://github.com/nyetwurk/ecuxplot/issues/108): Preset loading now updates axis labels when X-axis is unchanged but Y-axes change
+- [#106](https://github.com/nyetwurk/ecuxplot/issues/106): Improved Cobb Accessport boost pressure alias matching to handle variations in field names
 
 ### Changed
 
@@ -110,20 +116,20 @@
 
 ### Fixed
 
-- Fixed [#103](https://github.com/nyetwurk/ecuxplot/issues/103): Y2 axis units now display correctly when adding datasets to the secondary Y axis
+- [#103](https://github.com/nyetwurk/ecuxplot/issues/103): Y2 axis units now display correctly when adding datasets to the secondary Y axis
 - Unit extraction now correctly handles fields with descriptive metadata in parentheses
   - Lambda fields now correctly show `"λ"` unit instead of descriptive text
   - Units from alias targets (e.g., `"AirFuelRatioDesired (AFR)"`) are now properly extracted
 - Fix filter behavior when ranges are empty or selections missing
-- Fixed [#99](https://github.com/nyetwurk/ecuxplot/issues/99): OS "Open with" now replaces auto-loaded preference files instead of adding to them
-- Fixed [#95](https://github.com/nyetwurk/ecuxplot/issues/95): Changing vehicle constants now updates all dependent visualizations
+- [#99](https://github.com/nyetwurk/ecuxplot/issues/99): OS "Open with" now replaces auto-loaded preference files instead of adding to them
+- [#95](https://github.com/nyetwurk/ecuxplot/issues/95): Changing vehicle constants now updates all dependent visualizations
   - Main chart display updates with recalculated values when constants change
   - FATS window recalculates FATS times with new constants
   - Filter data visualization table shows updated calculated values (e.g., Calc Velocity, Calc MPH)
   - Range Selector window tooltips and node labels update with new power values
 - Main chart display uses original column names instead of aliases when "Original names" preference is enabled
-- Fixed [#97](https://github.com/nyetwurk/ecuxplot/issues/97): FATS restore defaults now restores mph/kph range defaults as well
-- Fixed [#104](https://github.com/nyetwurk/ecuxplot/issues/104): Time smoothing now uses interval smoothing instead of absolute time to prevent drift and accumulated errors
+- [#97](https://github.com/nyetwurk/ecuxplot/issues/97): FATS restore defaults now restores mph/kph range defaults as well
+- [#104](https://github.com/nyetwurk/ecuxplot/issues/104): Time smoothing now uses interval smoothing instead of absolute time to prevent drift and accumulated errors
 - Torque (TQ/WTQ) now calculated from smoothed HP/WHP for consistent power calculations
 
 ## [1.1.5] - 2025-10-31
@@ -159,7 +165,7 @@
 
 - Restore filter reasons in FilterWindow data visualization table
 - Fix bug where which window was on top was confusing
-- Fixed [#86](https://github.com/nyetwurk/ecuxplot/issues/86): Fix bug where ranges that should not be visible are visible on startup and when enabling filter
+- [#86](https://github.com/nyetwurk/ecuxplot/issues/86): Fix bug where ranges that should not be visible are visible on startup and when enabling filter
 
 ## [1.1.4] - 2025-10-29
 
@@ -183,7 +189,7 @@
 
 ### Fixed
 
-- Fixed [#32](https://github.com/nyetwurk/ecuxplot/issues/32): Apply moving average per-range to prevent filtered data interference in HP/TQ plots
+- [#32](https://github.com/nyetwurk/ecuxplot/issues/32): Apply moving average per-range to prevent filtered data interference in HP/TQ plots
 - Fix "Restore Defaults" setting wrong smoothing values due to UI field mapping bug
 - Fix FilterWindow Calc MPH display and add support for native MPH velocity data
 - Add protections to avoid invalid smoothing values (window size validation)
@@ -192,8 +198,8 @@
 - EGT sensor fields now properly detect temperature units
 - VCDS vehicle speed alias mapping
 - Fix regression in FATS window that caused FATS times to disappear
-- Fixed [#89](https://github.com/nyetwurk/ecuxplot/issues/89): Do not show "Empty" in chart titles
-- Fixed [#88](https://github.com/nyetwurk/ecuxplot/issues/88): Fix file loading and drag-and-drop for multiple files into Filter, Range, and FATS windows correctly
+- [#89](https://github.com/nyetwurk/ecuxplot/issues/89): Do not show "Empty" in chart titles
+- [#88](https://github.com/nyetwurk/ecuxplot/issues/88): Fix file loading and drag-and-drop for multiple files into Filter, Range, and FATS windows correctly
 - Fix macOS multiple file drag-and-drop: Read all files from URI list instead of just the first one
 - Fix filter initialization: Initialize filter selections per-file when adding files to existing datasets instead of all-or-nothing
 - Fix window updates: Ensure open windows (Filter, Range, FATS) are updated when files are added
@@ -218,13 +224,13 @@
 
 ### Fixed
 
-- Fixed [#88](https://github.com/nyetwurk/ecuxplot/issues/88): Adding files (including via drag and drop) now updates FATS, Ranges and Filters windows
+- [#88](https://github.com/nyetwurk/ecuxplot/issues/88): Adding files (including via drag and drop) now updates FATS, Ranges and Filters windows
 - Multiple file drag-and-drop on macOS now loads all files instead of just the first
 - File drop support added to Range Selector window
 - Filter initialization when adding files to existing datasets
 - URI parsing for file drag-and-drop using proper Paths.get() handling
-- Fixed [#84](https://github.com/nyetwurk/ecuxplot/issues/84): URI parsing error under cygwin
-- Fixed [#87](https://github.com/nyetwurk/ecuxplot/issues/87): FilterWindow sizing issue
+- [#84](https://github.com/nyetwurk/ecuxplot/issues/84): URI parsing error under cygwin
+- [#87](https://github.com/nyetwurk/ecuxplot/issues/87): FilterWindow sizing issue
 - Preferences save bug
 - Range controls availability logic when all files have only 1 range
 - Axis range application avoiding recursion with proper prevention
@@ -251,7 +257,7 @@
 - FATS window availability correctly tied to filter state
 - Menu item naming conventions standardized throughout application
 - Improved logical grouping of related functions
-- Fixed custom axis range calculation for negative values to include proper padding above zero
+- Custom axis range calculation for negative values to include proper padding above zero
 - Resolved infinite recursion issue in axis range application
 - Improved axis scaling consistency for datasets with negative or zero values
 

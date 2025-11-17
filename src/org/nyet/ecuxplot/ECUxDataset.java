@@ -1775,16 +1775,27 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
-     * Invalidate columns that depend on vehicle constants.
-     * Called when vehicle constants change to force recalculation on next access.
-     * Removes all columns with VEHICLE_CONSTANTS type.
+     * Invalidate columns of the specified types.
+     * Called when dependencies change to force recalculation on next access.
+     *
+     * @param columnTypes The ColumnTypes to invalidate (e.g., VEHICLE_CONSTANTS, OTHER_RUNTIME)
+     * @return The number of columns removed
      */
-    public void invalidateConstantDependentColumns() {
+    public int invalidateColumnsByType(Dataset.ColumnType... columnTypes) {
+        if (columnTypes == null || columnTypes.length == 0) {
+            return 0;
+        }
+
+        java.util.Set<Dataset.ColumnType> typesToInvalidate = new java.util.HashSet<>();
+        for (Dataset.ColumnType type : columnTypes) {
+            typesToInvalidate.add(type);
+        }
+
         java.util.ArrayList<Column> columns = this.getColumns();
         int removedCount = 0;
         java.util.List<String> idsToRemove = new java.util.ArrayList<>();
         for (Column col : columns) {
-            if (col.getColumnType() == Dataset.ColumnType.VEHICLE_CONSTANTS) {
+            if (typesToInvalidate.contains(col.getColumnType())) {
                 idsToRemove.add(col.getId());
             }
         }
@@ -1794,7 +1805,8 @@ public class ECUxDataset extends Dataset {
                 removedCount++;
             }
         }
-        logger.debug("invalidateConstantDependentColumns(): Removed {} vehicle constant columns", removedCount);
+        logger.debug("invalidateColumnsByType({}): Removed {} columns", java.util.Arrays.toString(columnTypes), removedCount);
+        return removedCount;
     }
 
 }

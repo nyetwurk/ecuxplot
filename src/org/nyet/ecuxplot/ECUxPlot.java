@@ -1343,11 +1343,14 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 }
 
                 try {
-                    // Invalidate constant-dependent columns so they're recreated with new values
+                    // Invalidate runtime-dependent columns (e.g., TIME [Range], Sample [Range])
+                    // so they're recreated with new ranges after buildRanges() completes
+                    // Also invalidate constant-dependent columns so they're recreated with new values
                     // This ensures columns are updated when vehicle constants or filter smoothing windows change
-                    for (ECUxDataset dataset : ECUxPlot.this.fileDatasets.values()) {
-                        dataset.invalidateConstantDependentColumns();
-                    }
+                    ECUxPlot.this.invalidateColumnsInAllDatasets(
+                        Dataset.ColumnType.OTHER_RUNTIME,
+                        Dataset.ColumnType.VEHICLE_CONSTANTS
+                    );
 
                     // Rebuild FATSDataset AFTER column invalidation
                     // This ensures FATS calculation uses columns recreated with new constants
@@ -1726,6 +1729,18 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             if (this.rangeSelectorWindow != null) {
                 this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
             }
+        }
+    }
+
+    /**
+     * Invalidate columns of the specified types in all datasets.
+     * Called when dependencies change (e.g., ranges rebuilt, constants changed).
+     *
+     * @param columnTypes The ColumnTypes to invalidate (e.g., VEHICLE_CONSTANTS, OTHER_RUNTIME)
+     */
+    private void invalidateColumnsInAllDatasets(Dataset.ColumnType... columnTypes) {
+        for (ECUxDataset dataset : this.fileDatasets.values()) {
+            dataset.invalidateColumnsByType(columnTypes);
         }
     }
 

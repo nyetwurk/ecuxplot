@@ -448,22 +448,27 @@ Vehicle constants (mass, rpm_per_mph, rpm_per_kph, Cd, FA, rolling_drag, static_
 
 **Location**: `src/org/nyet/ecuxplot/ECUxDataset.java`
 
-**Method**: `invalidateConstantDependentColumns()`
-- Removes all columns with `ColumnType.VEHICLE_CONSTANTS` type
+**Method**: `invalidateColumnsByType(ColumnType... columnTypes)`
+- Removes all columns with the specified `ColumnType`(s)
+- Accepts varargs to invalidate multiple column types in a single call
 - Called during `rebuild().done()` after `buildRanges()` completes
-- Ensures columns are recreated with new constants on next access
+- Ensures columns are recreated with new dependencies on next access
+- Used to invalidate `VEHICLE_CONSTANTS` and `OTHER_RUNTIME` column types
 
 #### Centralized Update Logic
 
 **Location**: `src/org/nyet/ecuxplot/ECUxPlot.java`
 
-**Method**: `handleConstantsChange()`
+**Methods**:
+- `invalidateColumnsInAllDatasets(ColumnType... columnTypes)` - Invalidates columns of specified types across all datasets
+- `handleConstantsChange()` - Handles vehicle constants change by invalidating caches and updating all windows
 
 **Key Features**:
 - Centralized update coordination
 - Proper sequencing: invalidation happens after `buildRanges()` but before chart rebuild
 - Updates all affected windows via callback
 - Prevents concurrent modification issues
+- Single method handles invalidation of multiple column types (e.g., `OTHER_RUNTIME` and `VEHICLE_CONSTANTS`)
 
 #### ConstantsEditor Integration
 
@@ -480,7 +485,7 @@ Vehicle constants (mass, rpm_per_mph, rpm_per_kph, Cd, FA, rolling_drag, static_
 ### Update Sequence in rebuild().done()
 
 1. `buildRanges()` completes (background thread)
-2. Invalidate constant-dependent columns
+2. Invalidate runtime-dependent columns (`OTHER_RUNTIME`) and constant-dependent columns (`VEHICLE_CONSTANTS`)
 3. Rebuild FATSDataset (clears cache, recalculates with new columns)
 4. Rebuild chart datasets (columns recalculated on access via `_get()`)
 
@@ -589,7 +594,7 @@ Uses `HashMap<String, UnitConverter>` for converter registry:
 
 2. **Handle invalidation** (if using constants)
    - Column will be automatically invalidated when constants change
-   - Ensure `invalidateConstantDependentColumns()` handles it correctly
+   - Ensure `invalidateColumnsByType()` handles it correctly
 
 3. **Update UI** (if needed)
    - Add to axis menus if it should be selectable
@@ -637,7 +642,7 @@ Uses `HashMap<String, UnitConverter>` for converter registry:
 
 2. **Column cache** (in `Dataset.getColumns()`):
    - Automatically managed by base class
-   - Use `invalidateConstantDependentColumns()` for constant-dependent columns
+   - Use `invalidateColumnsByType(ColumnType.VEHICLE_CONSTANTS)` for constant-dependent columns
    - Columns are recreated on next access after invalidation
 
 ---
