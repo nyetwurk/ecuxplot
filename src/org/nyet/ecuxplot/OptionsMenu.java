@@ -89,8 +89,6 @@ public final class OptionsMenu extends JMenu {
         item.addActionListener(plotFrame);
         this.add(item);
 
-        this.add(new JSeparator());
-
         // Update initial state
         updateFATSAvailability();
     }
