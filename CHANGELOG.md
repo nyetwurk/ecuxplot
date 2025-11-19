@@ -5,6 +5,8 @@
 
 ### Fixed
 
+- If there is no series for an axis, hide the axis completely
+- [#122](https://github.com/nyetwurk/ecuxplot/issues/122): Loading unit handling and stale reference bug
 - [#120](https://github.com/nyetwurk/ecuxplot/issues/120): Properly re-compute `Sample[range]` and `Time[range]` on Filter/Range change
 
 ## [1.1.9] - 2025-11-15
