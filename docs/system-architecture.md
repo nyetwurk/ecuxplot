@@ -122,8 +122,8 @@ After grouping consecutive valid points into ranges, each range is validated:
 ### Understanding "Not in valid range"
 
 **"Not in valid range"** means:
-- ✅ The individual data point **passed** all `dataValid()` checks
-- ❌ BUT the point is **not in any valid range** because the range it was part of **failed** `rangeValid()` checks
+- The individual data point **passed** all `dataValid()` checks
+- BUT the point is **not in any valid range** because the range it was part of **failed** `rangeValid()` checks
 
 **Common reasons a range fails**:
 1. **Too few points**: `pts 10 < 15`
@@ -190,7 +190,7 @@ The application maintains a clear hierarchy:
 
 **Why no cache needed**:
 - Performance analysis shows iteration cost is negligible (~6μs for 50 series)
-- Eliminates all cache sync complexity
+- Eliminates cache sync complexity
 - Eliminates cache invalidation race conditions
 - Single source of truth (chart datasets)
 
@@ -218,11 +218,11 @@ The application maintains a clear hierarchy:
 - Chart dataset updated via `setValue()` based on Filter selections
 
 **Cache Invalidation**:
-- ✅ `rebuildAll()` clears and recalculates all
-- ✅ `rebuild()` calculates only missing values (lazy population)
-- ✅ Chart dataset filtered by Filter state on each `rebuild()`
+- `rebuildAll()` clears and recalculates all
+- `rebuild()` calculates only missing values (lazy population)
+- Chart dataset filtered by Filter state on each `rebuild()`
 
-**Intentional Design**: `fatsDataMap` contains ALL ranges (for tree), while chart dataset contains only SELECTED ranges (for display). This asymmetry is intentional.
+**Design**: `fatsDataMap` contains ALL ranges (for tree), while chart dataset contains only SELECTED ranges (for display).
 
 ### Cache Coherency Rules
 
@@ -303,8 +303,6 @@ The application uses a hierarchical approach to data consistency with defense in
 - State mismatch between visibility request and chart state
 
 **Recovery**: Visibility will be correctly set when rebuild completes (rebuild sets visibility based on Filter state).
-
-**Status**: ✅ Guard is needed and working correctly. The warning serves as an indicator for future improvements.
 
 #### Guard 3: Worker Cancellation Check (Background)
 
@@ -436,11 +434,11 @@ Vehicle constants (mass, rpm_per_mph, rpm_per_kph, Cd, FA, rolling_drag, static_
 - ColumnType is explicitly assigned when columns are created in `_get()`
 
 **Benefits**:
-- ✅ Type-safe identification (no string matching)
-- ✅ Accurate - type assigned at creation time
-- ✅ Maintainable - adding new constant-dependent columns requires explicit type assignment
-- ✅ No risk of missing dependencies
-- ✅ Simple and efficient - direct enum comparison
+- Type-safe identification (no string matching)
+- Accurate - type assigned at creation time
+- Maintainable - adding new constant-dependent columns requires explicit type assignment
+- No risk of missing dependencies
+- Simple and efficient - direct enum comparison
 
 ### Constants Invalidation Implementation
 
@@ -537,23 +535,25 @@ Presets change columns only, not range selections
    - **DO NOT call `initializeFilterSelections()`** - this would override Range Selector selections
    - Call `updateChartVisibility()` to apply existing Filter state (preserves Range Selector selections)
 
-### Known Issues (Resolved)
+### Preset Loading Implementation Details
 
-#### Issue: Preset Loading and Filter Initialization Order
+#### Preset Loading and Filter Initialization Order
 
-**Problem**: When loading a preset, `loadPreset()` called `removeAllY()` then `addChartYFromPrefs()`, which tried to add series before the Filter was initialized. If Filter had no selections, no series got added.
+When loading a preset, `loadPreset()` removes all Y-keys then adds preset Y-keys. `addDataset()` adds ALL ranges regardless of Filter state. Filter initialization is needed for visibility, not for adding series. `initializeFilterSelections()` executes BEFORE `addChartYFromPrefs()` in `fileDatasetsChanged()` to ensure visibility is correct.
 
-**Root Cause**: In `fileDatasetsChanged()`, `addChartYFromPrefs()` was called before `initializeFilterSelections()`, causing series to be added with Filter having 0 ranges selected.
+#### Preset Loading with Unit-Converted Keys
 
-**Fix**: ✅ RESOLVED - `addDataset()` now adds ALL ranges regardless of Filter state. Filter initialization is still needed but for visibility, not for adding series. Moved `initializeFilterSelections()` to execute BEFORE `addChartYFromPrefs()` in `fileDatasetsChanged()` to ensure visibility is correct.
+After unit normalization was introduced (v1.1.9), presets stored unit-converted column names (e.g., `"BoostPressureActual (PSI)"`), but menus only contained base field names (e.g., `"BoostPressureActual"`) when PSI was already the normalized unit.
 
-**Status**: ✅ FIXED - Adding works regardless of Filter state; Filter initialization ensures correct visibility on initial load.
+**Implementation**:
+1. Return early after `addToSubmenu()` is called, preventing `members.put()` from overwriting the correct button with the stale original
+2. `Units.mapUnitConversionToBaseField()` utility maps unit-converted preset keys to base fields
+3. `makeMenuItem()`, `setOnlySelected()`, and `loadPreset()` use mapping logic
+4. Axis labels are cleared when presets have no data for an axis
 
 ---
 
 ## DatasetUnits System
-
-### Status: ✅ IMPLEMENTED
 
 **Location**: `src/org/nyet/ecuxplot/DatasetUnits.java`
 
@@ -569,12 +569,12 @@ Uses `HashMap<String, UnitConverter>` for converter registry:
 - Supports all conversions: lambda/AFR, temperature, pressure (mBar/PSI/kPa), speed (mph/kmh), mass flow, torque
 
 **Benefits**:
-- ✅ Cleaner and more maintainable
-- ✅ Easy to add new conversions (just add to map)
-- ✅ No long if/else chain
-- ✅ Clear separation of conversion logic
-- ✅ Supports complex converters with ambient pressure
-- ✅ Works with Java 8+ (no version requirement)
+- Cleaner and more maintainable
+- Easy to add new conversions (just add to map)
+- No long if/else chain
+- Clear separation of conversion logic
+- Supports complex converters with ambient pressure
+- Works with Java 8+ (no version requirement)
 
 **Trade-offs**:
 - Map lookup overhead is negligible (single hash map lookup per conversion)

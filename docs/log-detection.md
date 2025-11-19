@@ -633,9 +633,7 @@ For **VCDS** format (non-legacy):
 - VCDS files without group IDs: Falls back to numeric suffixes
 - Existing VCDS files: Enhanced naming but maintains functionality
 
-###### Current Implementation Status
-
-✅ **Implemented**:
+###### Current Implementation
 
 - Group ID extraction for VCDS and VCDS_LEGACY formats
 - Same-group duplicate numbering ("Field1", "Field2")
@@ -651,15 +649,15 @@ For **VCDS** format (non-legacy):
 - **Group Metadata**: Store group information in DatasetId for UI display
 - **Pattern Expansion**: Support additional VCDS group formats beyond "Group A:" and "Group 23"
 
-### Migration Status
+### Migration to YAML
 
-**✅ Fully Migrated to YAML**:
+**Fully Migrated to YAML**:
 
 - ME7LOGGER: Dynamic header finding via `skip_regex`
 - ZEITRONIX: Field prefixing via `field_transformations`
 - JB4, COBB_AP, ECUX, EVOSCAN, LOGWORKS, VOLVOLOGGER, SWCOMM: All parsing handled by YAML configuration
 
-**🔄 Partially Migrated**:
+**Partially Migrated**:
 
 - **VCDS/VCDS_LEGACY**: Detection, aliases, and basic parsing in YAML; complex header processing (group disambiguation, STAMP→TIME conversion) handled by `VCDSHeaderProcessor.java` (separated from `DataLogger.java` in 1.1.4)
 
@@ -721,7 +719,7 @@ Only if the logger requires special processing that cannot be expressed in YAML,
 - Create test file in `test-data/new-logger.csv`
 - Add expectations to `test-data/test-expectations.xml`
 
-## ✅ Supported Logger Types
+## Supported Logger Types
 
 - **VCDS**: German and English variants with complex header processing (uses `VCDSHeaderProcessor.java`)
 - **VCDS_LEGACY**: Legacy VCDS format with "g" and "u2" header columns (uses `VCDSHeaderProcessor.java`)

@@ -169,6 +169,28 @@ Column converted = get("VehicleSpeed (mph)");
 // 4. Returns converted column
 ```
 
+### Preset/Preference Key Mapping
+
+**Location**: `Units.mapUnitConversionToBaseField()`
+
+When presets or preferences store unit-converted column names (e.g., `"BoostPressureActual (PSI)"`), but the menu only contains base field names (e.g., `"BoostPressureActual"`) because PSI is already the normalized unit, the system automatically maps unit-converted keys to base fields.
+
+**Usage**:
+
+```java
+String mappedKey = Units.mapUnitConversionToBaseField(keyStr, (baseField) -> getNormalizedUnitForField(baseField));
+```
+
+**Behavior**:
+- If key is not unit-converted (no `(unit)` pattern), returns original key
+- If normalized unit matches requested unit, maps to base field name
+- Otherwise, returns original key (no mapping applies)
+
+**Used by**:
+- `AxisMenu.makeMenuItem()` - Maps unit-converted `initialChecked` elements during menu creation
+- `AxisMenu.setOnlySelected()` - Maps unit-converted preset keys when updating menu selections
+- `ECUxPlot.loadPreset()` - Maps unit-converted keys before calling `editChartY()`
+
 ## Testing
 
 ### Test Expectations
@@ -209,6 +231,8 @@ Tests verify both behaviors:
 - `src/org/nyet/ecuxplot/ECUxDataset.java`: Normalization and unit conversion logic
 - `src/org/nyet/logfile/Dataset.java`: `DatasetId` and `Column` classes
 - `src/org/nyet/ecuxplot/DataLogger.java`: `createDatasetIds()` method
-- `src/org/nyet/ecuxplot/Units.java`: Unit preference mapping
+- `src/org/nyet/ecuxplot/Units.java`: Unit preference mapping and preset key mapping (`mapUnitConversionToBaseField()`)
 - `src/org/nyet/ecuxplot/DatasetUnits.java`: Unit conversion engine
 - `src/org/nyet/ecuxplot/loggers.yaml`: Configuration (special cases)
+- `src/org/nyet/ecuxplot/AxisMenu.java`: Menu creation and selection logic (uses mapping for presets)
+- `src/org/nyet/ecuxplot/ECUxPlot.java`: Preset loading (uses mapping before adding series)

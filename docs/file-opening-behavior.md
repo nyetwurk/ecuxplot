@@ -3,7 +3,7 @@
 ## Scenarios
 
 ### Scenario A: OS launches ECUxPlot with CSV file (command-line)
-**Required Behavior:** REPLACE ✅
+**Required Behavior:** REPLACE
 
 ### Scenario B: OS "Open with" behavior via Desktop handler
 
@@ -11,10 +11,10 @@ The Desktop handler (`openFiles()`) is called when files are opened using "Open 
 The behavior is context-aware based on what files are currently loaded:
 
 #### Scenario B1: ECUxPlot is already running with manually loaded files (or mix of prefs + manual)
-**Required Behavior:** ADD ✅ (preserves user's manual file choices)
+**Required Behavior:** ADD (preserves user's manual file choices)
 
 #### Scenario B2: ECUxPlot is NOT running (fresh startup with all files from prefs)
-**Required Behavior:** REPLACE ✅ (clears auto-loaded prefs files, loads only "Open with" file)
+**Required Behavior:** REPLACE (clears auto-loaded prefs files, loads only "Open with" file)
 
 ## Implementation
 

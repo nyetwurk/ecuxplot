@@ -32,6 +32,8 @@ This document describes the current state of axis preset column support, focusin
 
 Unit conversion handled automatically via `ECUxDataset._get()` → `parseUnitConversion()` → `getColumnInUnits()`. No explicit alias needed.
 
+**Preset Key Mapping**: When presets store unit-converted keys (e.g., `"BoostPressureActual (PSI)"`) but the menu only contains base fields (e.g., `"BoostPressureActual"`) because PSI is already the normalized unit, the system automatically maps unit-converted keys to base fields using `Units.mapUnitConversionToBaseField()`. This ensures preset loading works correctly with the unit normalization system.
+
 ---
 
 ### Timing Preset Calculation Behavior

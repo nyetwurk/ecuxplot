@@ -39,8 +39,8 @@ public class Example {
 
 ## Project doc layout
 
-/README.md
-/INSTALL.md
-/BUILD.md
-/plans/* stuff in progress
-/docs/* user/dev oriented docs, focus on current state, not history
+`/README.md`
+`/INSTALL.md`
+`/BUILD.md`
+`/plans/*` - stuff in progress (not commited to repo)
+`/docs/*` - dev oriented docs, focus on current state, not history. Omit editorials and past time dependent information like "Resolved" or "Fixed".
