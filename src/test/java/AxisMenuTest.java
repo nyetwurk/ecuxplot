@@ -103,6 +103,7 @@ public class AxisMenuTest {
             testFieldRouting(yAxisMenu, fieldRouting);
             testCalculatedFieldCreation(yAxisMenu, calculatedFields);
             testSubmenuStructure(yAxisMenu);
+            testStaleReferenceDetection(yAxisMenu);
 
             // Print results
             logger.info("");
@@ -436,6 +437,95 @@ public class AxisMenuTest {
             }
         }
         return null;
+    }
+
+    /**
+     * Test that members map doesn't contain stale references.
+     * This ensures that all buttons in members are actually in the component tree.
+     * Stale references occur when pattern handlers call addToSubmenu() (creating a new button)
+     * but add() stores the original button in members, overwriting the correct reference.
+     */
+    private static void testStaleReferenceDetection(AxisMenu menu) {
+        logger.info("=== Test: Stale Reference Detection ===");
+        logger.info("  Verifies that all buttons in members map are actually in the component tree");
+
+        // Collect all AbstractButtons that are actually in the component tree
+        Set<AbstractButton> buttonsInTree = new HashSet<>();
+        collectButtonsInTree(menu, buttonsInTree);
+
+        logger.info("  Found {} buttons in component tree", buttonsInTree.size());
+
+        // Access members map using reflection (it's private)
+        Map<String, AbstractButton> members = getMembersMap(menu);
+        if (members == null) {
+            logger.warn("  ⚠️  Could not access members map - skipping stale reference test");
+            logger.info("");
+            return;
+        }
+
+        logger.info("  Found {} entries in members map", members.size());
+
+        // Check each entry in members to ensure it's in the component tree
+        int staleCount = 0;
+        for (Map.Entry<String, AbstractButton> entry : members.entrySet()) {
+            String fieldName = entry.getKey();
+            AbstractButton button = entry.getValue();
+            if (button == null) {
+                continue;
+            }
+            if (!buttonsInTree.contains(button)) {
+                staleCount++;
+                logger.error("  ❌ Stale reference found: '{}' -> button not in component tree", fieldName);
+            }
+        }
+
+        if (staleCount == 0) {
+            assertTest("No stale references in members map", true);
+        } else {
+            assertTest("No stale references in members map", false);
+            logger.error("  Found {} stale references in members map", staleCount);
+        }
+
+        logger.info("");
+    }
+
+    /**
+     * Recursively collect all AbstractButtons in the component tree.
+     * This mirrors the traversal logic in AxisMenu.uncheckAllRecursive().
+     */
+    private static void collectButtonsInTree(Component comp, Set<AbstractButton> buttons) {
+        if (comp == null) return;
+
+        // If this is an AbstractButton, add it to the set
+        if (comp instanceof AbstractButton) {
+            buttons.add((AbstractButton) comp);
+        }
+
+        // If this is a JMenu, traverse its components
+        if (comp instanceof JMenu) {
+            JMenu menu = (JMenu) comp;
+            for (int i = 0; i < menu.getMenuComponentCount(); i++) {
+                collectButtonsInTree(menu.getMenuComponent(i), buttons);
+            }
+        }
+    }
+
+    /**
+     * Access the private members map using reflection.
+     * @param menu The AxisMenu instance
+     * @return The members map, or null if access fails
+     */
+    private static Map<String, AbstractButton> getMembersMap(AxisMenu menu) {
+        try {
+            java.lang.reflect.Field membersField = AxisMenu.class.getDeclaredField("members");
+            membersField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, AbstractButton> members = (Map<String, AbstractButton>) membersField.get(menu);
+            return members;
+        } catch (Exception e) {
+            logger.warn("  ⚠️  Could not access members map via reflection: {}", e.getMessage());
+            return null;
+        }
     }
 }
 

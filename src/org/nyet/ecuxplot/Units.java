@@ -79,6 +79,37 @@ public final class Units {
     }
 
     /**
+     * Maps unit-converted preset/preference keys to base field names.
+     * This handles the case where presets request unit-converted columns (e.g., "BoostPressureActual (PSI)")
+     * but datasets/menus only contain base field names (e.g., "BoostPressureActual") because the normalized
+     * unit already matches the requested unit.
+     *
+     * @param key The preset/preference key (may be unit-converted like "BoostPressureActual (PSI)")
+     * @param normalizedUnitGetter Function to get normalized unit for a field name, or null if field doesn't exist
+     * @return The mapped base field name if mapping applies, otherwise the original key
+     */
+    public static String mapUnitConversionToBaseField(String key, java.util.function.Function<String, String> normalizedUnitGetter) {
+        if (key == null) return null;
+
+        ParsedUnitConversion parsed = parseUnitConversion(key);
+        if (parsed == null) {
+            // Not a unit conversion request, return as-is
+            return key;
+        }
+
+        // Get normalized unit for the base field
+        String normalizedUnit = normalizedUnitGetter != null ? normalizedUnitGetter.apply(parsed.baseField) : null;
+
+        // If normalized unit matches requested unit, map to base field
+        if (normalizedUnit != null && normalizedUnit.equals(parsed.targetUnit)) {
+            return parsed.baseField;
+        }
+
+        // No mapping applies, return original
+        return key;
+    }
+
+    /**
      * Infers unit from field name when unit cannot be determined from headers.
      * Called by DataLogger.processUnits() as a fallback when normalize() returns empty.
      *

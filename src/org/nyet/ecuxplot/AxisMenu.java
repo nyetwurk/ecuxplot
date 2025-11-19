@@ -41,6 +41,9 @@ public class AxisMenu extends JMenu {
     private final HashMap<String, JMenu> subMenus =
         new HashMap<String, JMenu>();
 
+    // Store DatasetId array for normalized unit lookups (avoids cache coherency issues)
+    private final DatasetId[] ids;
+
     private int count=0;
     private int maxItems=20;
     private AxisMenu more=null;
@@ -224,10 +227,25 @@ public class AxisMenu extends JMenu {
     AbstractButton makeMenuItem(DatasetId dsid) {
         boolean checked = false;
 
-        for (final Comparable<?> element : this.initialChecked) {
-            if(dsid.id.equals(element)) {
-                checked = true;
-                break;
+        if (this.initialChecked != null) {
+            for (final Comparable<?> element : this.initialChecked) {
+                String elementStr = element.toString();
+
+                // Direct match
+                if(dsid.id.equals(elementStr)) {
+                    checked = true;
+                    break;
+                }
+
+                // Try to map unit-converted requests to base fields
+                // This handles preferences containing "BoostPressureActual (PSI)" when the menu
+                // only has "BoostPressureActual" (because PSI is already the normalized unit)
+                // Use shared utility method for mapping
+                String mappedKey = Units.mapUnitConversionToBaseField(elementStr, (baseField) -> getNormalizedUnitForField(baseField));
+                if (mappedKey.equals(dsid.id) && !elementStr.equals(dsid.id)) {
+                    checked = true;
+                    break;
+                }
             }
         }
 
@@ -363,7 +381,7 @@ public class AxisMenu extends JMenu {
 
         // If switch/case handled it, we're done
         if (handled) {
-            this.members.put(dsid.id, item);
+            // addToSubmenu() already added the button to members, no need to add original item
             if (item instanceof JMenuItem) {
                 return (JMenuItem) item;
             }
@@ -373,7 +391,7 @@ public class AxisMenu extends JMenu {
         // Try pattern-based routing (for regex patterns, order matters)
         if (AxisMenuItems.tryPatternRouting(this, id, dsid, item)) {
             // Pattern handler processed the field
-            this.members.put(dsid.id, item);
+            // Handler may have called addToSubmenu() which already added to members
             if (item instanceof JMenuItem) {
                 return (JMenuItem) item;
             }
@@ -383,7 +401,14 @@ public class AxisMenu extends JMenu {
         // Try pattern table for simple routing cases (fallback)
         String submenu = AxisMenuItems.findSubmenuForField(id);
         if (submenu != null) {
+            // addToSubmenu creates its own button and adds it to members, so don't store the original item
             addToSubmenu(submenu, dsid);
+            // The button created by addToSubmenu is already in members, retrieve and return it
+            AbstractButton addedButton = this.members.get(dsid.id);
+            if (addedButton instanceof JMenuItem) {
+                return (JMenuItem) addedButton;
+            }
+            return null;
         } else {
             // No pattern match, add as standalone item
             this.add(item);
@@ -408,6 +433,7 @@ public class AxisMenu extends JMenu {
         boolean radioButton, Comparable<?>[] initialChecked, int maxItems) {
 
         super(text);
+        this.ids = ids;
 
         this.listener = listener;
         this.radioButton = radioButton;
@@ -601,11 +627,56 @@ public class AxisMenu extends JMenu {
     }
 
     public void setOnlySelected(Set<Comparable<?>> keys) {
+        // Build a set of string keys to actually select (may include mappings from unit-converted requests)
+        // Use Set<String> for consistent comparison with members.keySet() which contains Strings
+        Set<String> keysToSelect = new HashSet<>();
+
+        for (Comparable<?> key : keys) {
+            String keyStr = key.toString();
+
+            // If key exists in members, use it directly
+            if (this.members.containsKey(keyStr)) {
+                keysToSelect.add(keyStr);
+                continue;
+            }
+
+            // Try to map unit-converted requests to base fields
+            // This handles presets requesting "BoostPressureActual (PSI)" when the menu
+            // only has "BoostPressureActual" (because PSI is already the normalized unit)
+            // Use shared utility method for mapping
+            String mappedKey = Units.mapUnitConversionToBaseField(keyStr, (baseField) -> getNormalizedUnitForField(baseField));
+            if (!mappedKey.equals(keyStr) && this.members.containsKey(mappedKey)) {
+                keysToSelect.add(mappedKey);
+                continue;
+            }
+        }
+
+        // Apply selections
         for(final String ik : this.members.keySet()) {
             final AbstractButton item = this.members.get(ik);
-            item.setSelected(keys.contains(ik));
+            item.setSelected(keysToSelect.contains(ik));
         }
     }
+
+    /**
+     * Get the normalized unit for a field by looking it up in the DatasetId array.
+     * This avoids cache coherency issues by looking up directly from the source data.
+     *
+     * @param fieldName The canonical field name (e.g., "BoostPressureActual")
+     * @return The normalized unit string, or null if field not found
+     */
+    private String getNormalizedUnitForField(String fieldName) {
+        if (this.ids == null) {
+            return null;
+        }
+        for (DatasetId dsid : this.ids) {
+            if (dsid != null && dsid.id.equals(fieldName)) {
+                return dsid.unit;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Helper method to construct a unit-converted column ID.

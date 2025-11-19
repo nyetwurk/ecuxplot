@@ -204,7 +204,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.prefs.put("xkey", xkey.toString());
     }
     private void prefsPutYkeys(int axis, Comparable<?>[] ykeys) {
-        this.prefs.put("ykeys"+axis,Strings.join(",",ykeys));
+        this.prefs.put("ykeys"+axis, Strings.join(",",ykeys));
     }
     private void prefsPutYkeys(int axis) {
         final XYPlot plot = this.chartPanel.getChart().getXYPlot();
@@ -1482,8 +1482,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
     private void editChartY(ECUxDataset data, Comparable<?> ykey, int axis,
         boolean add) {
-        if(add && !(data.exists(ykey)) )
+        if(add && !(data.exists(ykey)) ) {
             return;
+        }
         final XYPlot plot = this.chartPanel.getChart().getXYPlot();
         final DefaultXYDataset pds = (DefaultXYDataset)plot.getDataset(axis);
         if(add) {
@@ -1547,7 +1548,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         if(p!=null) loadPreset(p);
     }
     private void loadPreset(ECUxPreset p) {
-        if(this.chartPanel==null) return;
+        if(this.chartPanel==null) {
+            return;
+        }
 
         if (p.xkey()==null) {
             try {
@@ -1581,9 +1584,24 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 }
 
                 // Add all preset Y-keys (in preset order - deterministic)
+                // Map unit-converted keys to base field names before calling editChartY()
+                // Use AxisMenu's mapping logic via shared utility method
                 Comparable<?>[] presetYkeys = p.ykeys(axis);
                 for (Comparable<?> ykey : presetYkeys) {
-                    editChartY(ykey, axis, true);
+                    String keyStr = ykey.toString();
+                    // Use shared mapping utility - get normalized unit from datasets
+                    String mappedKey = Units.mapUnitConversionToBaseField(keyStr, (baseField) -> {
+                        // Look up normalized unit from datasets
+                        for (final ECUxDataset dataset : this.fileDatasets.values()) {
+                            for (final DatasetId dsid : dataset.getIds()) {
+                                if (dsid != null && dsid.id.equals(baseField) && dsid.unit != null) {
+                                    return dsid.unit;
+                                }
+                            }
+                        }
+                        return null;
+                    });
+                    editChartY(mappedKey, axis, true);
                 }
 
                 // Update prefs to reflect new state
@@ -1605,10 +1623,19 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.chartTitle(p.tag());
         this.prefs.put("title", p.tag());
 
-        // update AxisMenu selections
-        this.xAxis.setSelected(p.xkey());
-        this.yAxis[0].setOnlySelected(p.ykeys(0));
-        this.yAxis[1].setOnlySelected(p.ykeys(1));
+        // Update AxisMenu selections
+        // Use keys from preferences (which were just saved by prefsPutYkeys()) instead of preset keys
+        // This ensures we select the actual keys that are in the chart dataset (base field names)
+        // rather than the unit-converted preset keys
+        if (this.xAxis != null) {
+            this.xAxis.setSelected(p.xkey());
+        }
+        if (this.yAxis != null && this.yAxis[0] != null) {
+            this.yAxis[0].setOnlySelected(this.ykeys(0));
+        }
+        if (this.yAxis != null && this.yAxis[1] != null) {
+            this.yAxis[1].setOnlySelected(this.ykeys(1));
+        }
 
         // update scatter checkbox to reflect the preset's scatter setting
         if (this.optionsMenu != null) {
