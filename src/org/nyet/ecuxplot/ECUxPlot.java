@@ -1051,6 +1051,13 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 title.add(Strings.join(", ", seriesTitle));
 
             plot.getRangeAxis(axis).setLabel(Strings.join(",",label));
+
+            // Hide axis if there are no series
+            if(dataset!=null && dataset.getSeriesCount()==0) {
+                plot.getRangeAxis(axis).setVisible(false);
+            } else {
+                plot.getRangeAxis(axis).setVisible(true);
+            }
         }
         this.chartTitle(Strings.join(" and ", title));
     }
