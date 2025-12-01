@@ -34,6 +34,9 @@ public class SAEEditor extends PreferencesEditor {
         }
 
         // Trigger rebuild to update chart with new SAE correction values
+        // CACHE COHERENCY: SAE correction affects WHP and HP columns which are marked as
+        // VEHICLE_CONSTANTS. rebuild() automatically invalidates VEHICLE_CONSTANTS columns,
+        // so columns will be recreated with new SAE correction values.
         // eplot is always set by showDialog() when owner is ECUxPlot
         if (this.eplot != null) {
             this.eplot.rebuild();

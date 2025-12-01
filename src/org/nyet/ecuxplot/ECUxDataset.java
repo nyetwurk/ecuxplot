@@ -41,6 +41,27 @@ public class ECUxDataset extends Dataset {
     private CubicSpline [] splines;     // rpm vs time splines
     private String log_detected;
     /**
+     * Filter cache for performance optimization during range detection.
+     * Caches expensive calculations that are reused across multiple filter checks.
+     */
+    private static class FilterCache {
+        DoubleArray accelerationDerivative = null;
+        Column boostActual = null;
+        Column boostDesired = null;
+        double accelMAW = Double.NaN; // Cache key: accelMAW value used for cached derivative
+        double samplesPerSec = Double.NaN; // Cache key: samples_per_sec used for cached derivative
+
+        void clear() {
+            accelerationDerivative = null;
+            boostActual = null;
+            boostDesired = null;
+            accelMAW = Double.NaN;
+            samplesPerSec = Double.NaN;
+        }
+    }
+
+    private final FilterCache filterCache = new FilterCache();
+    /**
      * Custom map for smoothing windows that provides a put(String, double) overload
      * to accept time in seconds and convert to samples internally.
      */
@@ -693,6 +714,42 @@ public class ECUxDataset extends Dataset {
     }
 
     /**
+     * Get the acceleration derivative array, computing and caching if necessary.
+     * Cache is validated against filter parameters to ensure coherency.
+     *
+     * @return The acceleration derivative array, or null if calculation not possible
+     */
+    private DoubleArray getAccelerationDerivative() {
+        if (this.baseRpm == null || this.filterCache == null) {
+            return null;
+        }
+
+        Column timeCol = super.get("TIME");
+        if (timeCol == null) {
+            return null;
+        }
+
+        // Validate cache - check if filter parameters have changed
+        double currentAccelMAW = this.filter != null ? this.filter.accelMAW() : 0.0;
+        boolean cacheValid = (this.filterCache.accelerationDerivative != null) &&
+                             (Double.compare(this.filterCache.accelMAW, currentAccelMAW) == 0) &&
+                             (Double.compare(this.filterCache.samplesPerSec, this.samples_per_sec) == 0);
+
+        if (!cacheValid) {
+            final DoubleArray y = this.baseRpm.data;
+            final DoubleArray x = timeCol.data;
+            // Convert accelMAW from seconds to samples for derivative smoothing
+            final int accelMAW = (int)Math.round(this.samples_per_sec * currentAccelMAW);
+            this.filterCache.accelerationDerivative = y.derivative(x, accelMAW).max(0);
+            // Store cache key values
+            this.filterCache.accelMAW = currentAccelMAW;
+            this.filterCache.samplesPerSec = this.samples_per_sec;
+        }
+
+        return this.filterCache.accelerationDerivative;
+    }
+
+    /**
      * Calculate acceleration from base RPM and TIME data using user-specified AccelMAW.
      * Used for range detection only - avoids dependency on final RPM.
      * This breaks the circular dependency: range detection uses base RPM.
@@ -706,6 +763,14 @@ public class ECUxDataset extends Dataset {
      * the full dataset during derivative calculation. Both approaches use the
      * same AccelMAW() window for consistency.
      *
+     * OPTIMIZATION: Uses cached derivative calculation to avoid recalculating
+     * the entire dataset for every row check.
+     *
+     * CACHE COHERENCY:
+     * - Cache is validated using cache keys: accelMAW and samplesPerSec
+     * - Cache is automatically invalidated if filter.accelMAW() or samples_per_sec changes
+     * - Cache is explicitly cleared at start of buildRanges() to ensure fresh calculation
+     *
      * @param i The current point index to check
      * @return Acceleration in RPM/s, or 0.0 if calculation not possible
      */
@@ -714,26 +779,42 @@ public class ECUxDataset extends Dataset {
             return 0.0;
         }
 
-        // Get TIME column for derivative calculation
-        Column timeCol = super.get("TIME");
-        if (timeCol == null || i >= timeCol.data.size()) {
-            return 0.0;
-        }
-
-        // Calculate derivative with smoothing applied during derivative calculation
-        // (Not range-aware because ranges don't exist yet - this is called during range detection)
-        final DoubleArray y = this.baseRpm.data;
-        final DoubleArray x = timeCol.data;
-        // Convert accelMAW from seconds to samples for derivative smoothing
-        final int accelMAW = (int)Math.round(this.samples_per_sec * this.filter.accelMAW());
-        final DoubleArray derivative = y.derivative(x, accelMAW).max(0);
-
-        // Extract value at index i (clamp to valid range)
-        if (i >= derivative.size()) {
+        DoubleArray derivative = getAccelerationDerivative();
+        if (derivative == null || i >= derivative.size()) {
             return 0.0;
         }
 
         return derivative.get(i);
+    }
+
+    /**
+     * Get the boost actual column, computing and caching if necessary.
+     *
+     * @return The boost actual column in mBar, or null if not available
+     */
+    private Column getBoostActualColumn() {
+        if (this.filterCache == null) {
+            return null;
+        }
+        if (this.filterCache.boostActual == null) {
+            this.filterCache.boostActual = getColumnInUnits("BoostPressureActual", UnitConstants.UNIT_MBAR);
+        }
+        return this.filterCache.boostActual;
+    }
+
+    /**
+     * Get the boost desired column, computing and caching if necessary.
+     *
+     * @return The boost desired column in mBar, or null if not available
+     */
+    private Column getBoostDesiredColumn() {
+        if (this.filterCache == null) {
+            return null;
+        }
+        if (this.filterCache.boostDesired == null) {
+            this.filterCache.boostDesired = getColumnInUnits("BoostPressureDesired", UnitConstants.UNIT_MBAR);
+        }
+        return this.filterCache.boostDesired;
     }
 
     /**
@@ -1109,8 +1190,8 @@ public class ECUxDataset extends Dataset {
         // Check for negative boost pressure (wheel spin detection)
         // Not user configurable
         // Threshold: 1000 mBar (atmospheric pressure) - work in mBar for consistency
-        final Column boostActual = getColumnInUnits("BoostPressureActual", UnitConstants.UNIT_MBAR);
-        if(boostActual!=null && i < boostActual.data.size()) {
+        Column boostActual = getBoostActualColumn();
+        if(boostActual != null && i < boostActual.data.size()) {
             double threshold = 1000.0; // 1000 mBar absolute
             if(boostActual.data.get(i) < threshold) {
                 reasons.add("boost " + String.format("%.0f", boostActual.data.get(i)) +
@@ -1121,8 +1202,8 @@ public class ECUxDataset extends Dataset {
         // Check for off throttle boost desired
         // Not user configurable
         // Threshold: 1000 mBar (atmospheric pressure) - work in mBar for consistency
-        final Column boostDesired = getColumnInUnits("BoostPressureDesired", UnitConstants.UNIT_MBAR);
-        if(boostDesired!=null && i < boostDesired.data.size()) {
+        Column boostDesired = getBoostDesiredColumn();
+        if(boostDesired != null && i < boostDesired.data.size()) {
             double threshold = 1000.0; // 1000 mBar absolute
             if(boostDesired.data.get(i) < threshold) {
                 reasons.add("boost req " + String.format("%.0f", boostDesired.data.get(i)) +
@@ -1396,6 +1477,10 @@ public class ECUxDataset extends Dataset {
      * Build valid ranges from the dataset using filter criteria.
      * Clears previous range failure reasons, calls parent method to build ranges,
      * and creates cubic splines for FATS calculations.
+     *
+     * CACHE COHERENCY: This method explicitly clears all filter caches at the start
+     * to ensure fresh calculations. Cache validation in calculateRangeDetectionAcceleration()
+     * provides additional safety if called outside of buildRanges().
      */
     @Override
     public void buildRanges() {
@@ -1403,6 +1488,14 @@ public class ECUxDataset extends Dataset {
         // Note: field should always be initialized, but check for safety
         if (this.rangeFailureReasons != null) {
             this.rangeFailureReasons.clear();
+        }
+
+        // Clear filter cache - will be recalculated/cached during filtering
+        // This ensures we don't use stale data if filter parameters changed
+        // SAFETY: Always clear cache at start of buildRanges() to prevent stale data
+        // Note: filterCache may be null if called from parent constructor before field initialization
+        if (this.filterCache != null) {
+            this.filterCache.clear();
         }
 
         // Build ranges - parent method will call rangeValid() which tracks failures
