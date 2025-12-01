@@ -1710,7 +1710,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
      */
     public void refreshRangeSelector() {
         if(this.rangeSelectorWindow != null) {
-            this.rangeSelectorWindow.setFileDatasets(this.fileDatasets);
+            // Force tree rebuild even if files haven't changed, since filter parameters may have changed
+            // which affects which files have valid ranges
+            this.rangeSelectorWindow.setFileDatasets(this.fileDatasets, true);
             if(this.fatsDataset != null) {
                 this.rangeSelectorWindow.setFATSDataset(this.fatsDataset);
             }

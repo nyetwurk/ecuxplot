@@ -1055,10 +1055,15 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
      * This preserves tree state (selections, expanded nodes) when window is shown/hidden
      */
     void setFileDatasets(TreeMap<String, ECUxDataset> fileDatasets) {
-        // Only rebuild if files have actually changed
-        if (this.fileDatasets == fileDatasets || (fileDatasets != null && this.fileDatasets != null &&
-            this.fileDatasets.keySet().equals(fileDatasets.keySet()))) {
-            // Files haven't changed, just update reference to preserve tree state
+        setFileDatasets(fileDatasets, false);
+    }
+
+    void setFileDatasets(TreeMap<String, ECUxDataset> fileDatasets, boolean forceRebuild) {
+        // Only rebuild if files have actually changed, or if forceRebuild is true
+        // forceRebuild is needed when filter parameters change (ranges may have changed even if files haven't)
+        if (!forceRebuild && (this.fileDatasets == fileDatasets || (fileDatasets != null && this.fileDatasets != null &&
+            this.fileDatasets.keySet().equals(fileDatasets.keySet())))) {
+            // Files haven't changed and not forcing rebuild, just update reference to preserve tree state
             this.fileDatasets = fileDatasets;
             return;
         }
@@ -1285,12 +1290,25 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
     private Map<String, List<FileNode>> groupFilesByPattern() {
         // First pass: create file nodes
         List<FileNode> allFiles = new ArrayList<>();
+        boolean filterEnabled = isFilterEnabled();
+
         for (Map.Entry<String, ECUxDataset> entry : fileDatasets.entrySet()) {
             ECUxDataset dataset = entry.getValue();
             String fileId = dataset.getFileId();
             if (fileId == null || fileId.trim().isEmpty()) {
                 throw new IllegalStateException("File ID is null or whitespace-only: '" + fileId + "'");
             }
+
+            // When filter is enabled, only include files that have at least one valid range
+            // When filter is disabled, include all files (acts as file selector)
+            if (filterEnabled) {
+                List<Dataset.Range> ranges = dataset.getRanges();
+                if (ranges == null || ranges.isEmpty()) {
+                    // File has no valid ranges - skip it
+                    continue;
+                }
+            }
+
             FileNode fileNode = new FileNode(fileId, dataset, this);
             allFiles.add(fileNode);
         }
