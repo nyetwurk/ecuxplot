@@ -1,6 +1,23 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [#124](https://github.com/nyetwurk/ecuxplot/issues/124): File loading progress dialog showing progress for reading, parsing, and filtering stages
+- Progress reporting interface (`ProgressCallback`) for file loading operations
+
+### Fixed
+
+- [#125](https://github.com/nyetwurk/ecuxplot/issues/125): Files with no valid ranges are no longer shown in the "Ranges..." tree when filter is enabled
+- Range selection visibility bug when filter parameters change
+
+### Changed
+
+- Filter performance optimized with caching
+- Missing field warnings for sim/turbo/maf calculations changed from warn to info level
+
 ## [1.2.0] - 2025-11-24
 
 ### Fixed
