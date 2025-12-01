@@ -917,7 +917,7 @@ public class ECUxDataset extends Dataset {
             if (cause != null && cause.contains("this.env")) {
                 logger.warn("get('{}'): NullPointerException - env is null (expected in test contexts): {}", id, cause);
             } else {
-                logger.warn("get('{}'): NullPointerException getting column: {}", id, cause != null ? cause : e.getClass().getName());
+                logger.info("get('{}'): NullPointerException getting column: {}", id, cause != null ? cause : e.getClass().getName());
             }
             return null;
         }
