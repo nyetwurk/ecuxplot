@@ -289,7 +289,23 @@ public class ECUxDataset extends Dataset {
      */
     public ECUxDataset(String filename, Env env, Filter filter, int verbose)
             throws Exception {
-        super(filename, verbose);
+        this(filename, env, filter, verbose, null);
+    }
+
+    /**
+     * Construct a new ECUxDataset from a CSV file with progress callback.
+     * Initializes the dataset, detects logger type, parses headers, and creates base columns.
+     *
+     * @param filename The path to the CSV file to load
+     * @param env The environment configuration (vehicle constants, preferences)
+     * @param filter The filter configuration for range detection
+     * @param verbose Verbosity level for logging (0=quiet, higher=more verbose)
+     * @param progressCallback Optional callback for progress reporting
+     * @throws Exception If file cannot be read, logger detection fails, or header parsing fails
+     */
+    public ECUxDataset(String filename, Env env, Filter filter, int verbose, org.nyet.logfile.ProgressCallback progressCallback)
+            throws Exception {
+        super(filename, verbose, progressCallback);
 
         this.env = env;
         this.filter = filter;
@@ -1506,13 +1522,24 @@ public class ECUxDataset extends Dataset {
         if (this.filter == null) {
             logger.trace("Spline creation disabled: filter is null (called from parent constructor before filter assignment)");
             this.splines = new CubicSpline[0];
+            // Report completion after all work is done (only during initial file loading)
+            if (this.progressCallback != null) {
+                String fileName = org.nyet.util.Files.filename(this.getFilePath());
+                int totalRows = this.length();
+                this.progressCallback.reportProgress(fileName, "Complete", totalRows, totalRows);
+            }
             return;
         }
 
         // Handle filter disabled case (user has explicitly disabled the filter)
         if (!this.filter.enabled()) {
-            logger.debug("Spline creation disabled: filter is explicitly disabled by user");
             this.splines = new CubicSpline[0];
+            // Report completion after all work is done (only during initial file loading)
+            if (this.progressCallback != null) {
+                String fileName = org.nyet.util.Files.filename(this.getFilePath());
+                int totalRows = this.length();
+                this.progressCallback.reportProgress(fileName, "Complete", totalRows, totalRows);
+            }
             return;
         }
 
@@ -1555,6 +1582,14 @@ public class ECUxDataset extends Dataset {
                 if(original != null) System.setOut(original);
                 logger.warn("  buildRanges(): Failed to create spline for range {}: {}", i, e.getMessage());
             }
+        }
+
+        // Report completion after all work is done (only during initial file loading)
+        // Note: progressCallback is only set during construction, so this won't fire during rebuild()
+        if (this.progressCallback != null) {
+            String fileName = org.nyet.util.Files.filename(this.getFilePath());
+            int totalRows = this.length();
+            this.progressCallback.reportProgress(fileName, "Complete", totalRows, totalRows);
         }
     }
 

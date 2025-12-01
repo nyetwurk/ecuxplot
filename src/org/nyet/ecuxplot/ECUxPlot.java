@@ -397,15 +397,76 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     public void loadFiles(ArrayList<String> files) {
-        WaitCursor.startWaitCursor(this);
-        final boolean markAsFromPrefs = this.filesAutoLoadedFromPrefs;
+        loadFiles(files, null);
+    }
+
+    /**
+     * Load multiple files with optional progress dialog.
+     * @param files the list of file paths to load
+     * @param progressDialog optional progress dialog to update (null if not needed)
+     */
+    public void loadFiles(ArrayList<String> files, FileLoadingProgressDialog progressDialog) {
+        if (progressDialog == null && !this.options.nogui) {
+            WaitCursor.startWaitCursor(this);
+        }
+
+        // Filter out empty file names
+        ArrayList<String> validFiles = new ArrayList<String>();
         for(final String s : files) {
             if(s.length()>0) {
-                _loadFile(new File(s), false, markAsFromPrefs);
+                validFiles.add(s);
             }
         }
-        fileDatasetsChanged();
-        WaitCursor.stopWaitCursor(this);
+
+        final boolean markAsFromPrefs = this.filesAutoLoadedFromPrefs;
+        final FileLoadingProgressDialog dialogRef = progressDialog;
+
+        Runnable loadFilesTask = () -> {
+            for(int i = 0; i < validFiles.size(); i++) {
+                final int fileIndex = i + 1;
+                File file = new File(validFiles.get(i));
+                org.nyet.logfile.ProgressCallback callback;
+                if (dialogRef != null) {
+                    SwingUtilities.invokeLater(() -> dialogRef.setCurrentFile(fileIndex, file.getName()));
+                    callback = dialogRef;
+                } else {
+                    callback = new LoggerProgressCallback(file.getName());
+                }
+                _loadFile(file, false, markAsFromPrefs, callback);
+            }
+            fileDatasetsChanged();
+        };
+
+        // In --no-gui mode, run synchronously; otherwise use SwingWorker
+        if (this.options.nogui) {
+            loadFilesTask.run();
+        } else {
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    loadFilesTask.run();
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        get();
+                    } catch (Exception e) {
+                        logger.error("Error loading files: {}", e.getMessage(), e);
+                        MessageDialog.showMessageDialog(ECUxPlot.this, "Error loading files: " + e.getMessage(), "File Loading Error", JOptionPane.ERROR_MESSAGE);
+                    } finally {
+                        if (dialogRef != null) {
+                            SwingUtilities.invokeLater(() -> dialogRef.setComplete());
+                        } else {
+                            WaitCursor.stopWaitCursor(ECUxPlot.this);
+                        }
+                        setMyVisible(true);
+                    }
+                }
+            };
+            worker.execute();
+        }
     }
 
     /**
@@ -475,6 +536,10 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     }
 
     private void _loadFile(File file, boolean replace, boolean loadedFromPrefs) {
+        _loadFile(file, replace, loadedFromPrefs, null);
+    }
+
+    private void _loadFile(File file, boolean replace, boolean loadedFromPrefs, org.nyet.logfile.ProgressCallback progressCallback) {
         try {
             // replacing, nuke all the currently loaded datasets
             if(replace) this.nuke();
@@ -488,7 +553,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
             }
 
             final ECUxDataset data = new ECUxDataset(file.getAbsolutePath(),
-                    this.env, this.filter, this.options.verbose);
+                    this.env, this.filter, this.options.verbose, progressCallback);
 
             // Mark dataset as loaded from preferences if applicable
             if(loadedFromPrefs) {
@@ -2150,17 +2215,40 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                 plot.pack();
                 RefineryUtilities.centerFrameOnScreen(plot);
 
-                // Load files from command line, or auto-load last files if none provided
+                // Determine files to load
+                final ArrayList<String> filesToLoad;
                 if (o.files != null && !o.files.isEmpty()) {
-                    plot.loadFiles(o.files);
+                    filesToLoad = o.files;
                 } else {
                     // Auto-load last files if no files provided via command line
-                    final ArrayList<String> lastFiles = loadLastLoadedFiles();
-                    if (!lastFiles.isEmpty()) {
-                        ecuxLogger.info("Auto-loading {} files from last session", lastFiles.size());
+                    filesToLoad = loadLastLoadedFiles();
+                    if (!filesToLoad.isEmpty()) {
+                        ecuxLogger.info("Auto-loading {} files from last session", filesToLoad.size());
                         plot.filesAutoLoadedFromPrefs = true;
-                        plot.loadFiles(lastFiles);
                     }
+                }
+
+                // Show progress dialog if loading files and GUI is enabled
+                FileLoadingProgressDialog progressDialog = null;
+                if (!filesToLoad.isEmpty() && !o.nogui) {
+                    // Filter out empty file names for accurate count
+                    int validFileCount = 0;
+                    for (String file : filesToLoad) {
+                        if (file != null && file.length() > 0) {
+                            validFileCount++;
+                        }
+                    }
+
+                    if (validFileCount > 0) {
+                        // Show progress dialog before loading files
+                        // The dialog is modal but we're already on EDT, so it will show immediately
+                        progressDialog = FileLoadingProgressDialog.showDialog(plot, validFileCount);
+                    }
+                }
+
+                // Load files from command line, or auto-load last files if none provided
+                if (!filesToLoad.isEmpty()) {
+                    plot.loadFiles(filesToLoad, progressDialog);
                 }
 
                 if(o.preset!=null)

@@ -1,15 +1,20 @@
 package org.nyet.logfile;
 
 import java.io.*;
+import java.io.File;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.opencsv.*;
 
 import org.nyet.util.DoubleArray;
 
 public class Dataset {
+    private static final Logger logger = LoggerFactory.getLogger(Dataset.class);
+
     public enum ColumnType {
         CSV_NATIVE,                    // Native from CSV file
         COMPILE_TIME_CONSTANTS,        // Calculated using only compile-time constants (UnitConstants)
@@ -55,6 +60,7 @@ public class Dataset {
     private int rows;
     protected ArrayList<String> lastFilterReasons = new ArrayList<String>();
     private ArrayList<String> comments = new ArrayList<String>();
+    protected ProgressCallback progressCallback; // Progress callback for reporting loading progress
 
     public class Range {
         public int start;
@@ -415,17 +421,31 @@ public class Dataset {
     }
 
     public Dataset(String filename, int verbose) throws Exception {
+        this(filename, verbose, null);
+    }
+
+    public Dataset(String filename, int verbose, ProgressCallback progressCallback) throws Exception {
         this.filePath = filename; // Store full path for detection purposes
         this.fileId = org.nyet.util.Files.filename(filename); // This was never meant to be a filename. It is just a key used to identify the dataset.
         this.rows = 0;
         this.columns = new LinkedHashMap<String, Column>();
+        this.progressCallback = progressCallback;
+
+        // Get file size for progress estimation
+        File file = new File(filename);
+        long fileSize = file.exists() ? file.length() : -1;
+        String fileName = file.getName();
 
         // Read file and separate comments from CSV data
         StringBuilder csvContent = new StringBuilder();
+        long bytesRead = 0;
+        long linesRead = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
 
             while ((line = reader.readLine()) != null) {
+                linesRead++;
+                bytesRead += line.length() + 1; // +1 for newline
                 line = line.trim();
                 if (line.length() == 0) continue; // skip empty lines
                 if (IsLineComment(line)) {
@@ -433,16 +453,38 @@ public class Dataset {
                 } else {
                     csvContent.append(line).append("\n");
                 }
+
+                // Report progress every 1000 lines or every 1MB
+                if (progressCallback != null && (linesRead % 1000 == 0 || bytesRead % (1024 * 1024) == 0)) {
+                    progressCallback.reportProgress(fileName, "Reading file", bytesRead, fileSize);
+                }
             }
+        }
+
+        logger.debug("File reading complete: bytesRead={}, fileSize={}, fileName={}", bytesRead, fileSize, fileName);
+
+        if (progressCallback != null) {
+            // Report completion with actual bytes read (may differ slightly from fileSize due to line ending differences)
+            long finalBytes = bytesRead > 0 ? bytesRead : fileSize;
+            long finalTotal = fileSize > 0 ? fileSize : bytesRead;
+            progressCallback.reportProgress(fileName, "Reading file", finalBytes, finalTotal);
         }
 
         // Do detection using collected comment lines BEFORE ParseHeaders
         this.detectLoggerType();
 
+        if (progressCallback != null) {
+            progressCallback.reportProgress(fileName, "Detecting logger type", 0, -1);
+        }
+
         // Create CSVReader from the filtered content
         CSVReader csvReader = createCSVReaderWithFallback(csvContent.toString(), (reader) -> {
             ParseHeaders(reader, verbose);
         });
+
+        if (progressCallback != null) {
+            progressCallback.reportProgress(fileName, "Parsing headers", 0, -1);
+        }
 
         for (final DatasetId id : this.ids) {
             // Put column in map (will replace if duplicate ID exists, but shouldn't happen during CSV parsing)
@@ -450,6 +492,12 @@ public class Dataset {
             Column col = new Column(id, new DoubleArray(), ColumnType.CSV_NATIVE);
             this.columns.put(id.id, col);
         }
+
+        // Estimate total rows for progress reporting (will be corrected at completion)
+        // Use a rough estimate based on CSV content length
+        String csvString = csvContent.toString();
+        long estimatedRows = csvString.length() > 0 ? csvString.split("\n").length : -1;
+        long rowsProcessed = 0;
 
         String [] nextLine;
         while((nextLine = csvReader.readNext()) != null) {
@@ -468,10 +516,29 @@ public class Dataset {
                         }
                     }
                 }
-                if (gotone) this.rows++;
+                if (gotone) {
+                    this.rows++;
+                    rowsProcessed++;
+
+                    // Report progress every 1000 rows
+                    // Use estimatedRows if available, otherwise use rowsProcessed (indeterminate-like)
+                    if (progressCallback != null && rowsProcessed % 1000 == 0) {
+                        long totalForProgress = estimatedRows > 0 ? estimatedRows : rowsProcessed;
+                        progressCallback.reportProgress(fileName, "Parsing CSV", rowsProcessed, totalForProgress);
+                    }
+                }
             }
         }
+
+        if (progressCallback != null) {
+            // Always report 100% completion for CSV parsing stage before moving to next stage
+            progressCallback.reportProgress(fileName, "Parsing CSV", this.rows, this.rows);
+            // Don't report "Building ranges" here - buildRanges() will report "Filtering data" with accurate progress
+        }
+
         buildRanges();
+
+        // Note: "Complete" is reported by ECUxDataset.buildRanges() after all work (including spline creation) is done
     }
 
     public ArrayList<Column> getColumns() {
@@ -574,6 +641,11 @@ public class Dataset {
     protected void buildRanges() {
         this.range_cache = new ArrayList<Range>();
         Range r = null;
+        String fileName = org.nyet.util.Files.filename(this.filePath);
+
+        // Report progress every 1000 rows for better visibility
+        long lastReported = 0;
+
         for(int i=0;i<this.rows; i++) {
             boolean end = false;
             if(dataValid(i)) {
@@ -598,6 +670,17 @@ public class Dataset {
                 }
                 r=null;
             }
+
+            // Report progress periodically (every 1000 rows for better visibility)
+            if (this.progressCallback != null && (i % 1000 == 0 || i == this.rows - 1)) {
+                this.progressCallback.reportProgress(fileName, "Filtering data", i + 1, this.rows);
+                lastReported = i + 1;
+            }
+        }
+
+        // Final progress report if we didn't report the last row
+        if (this.progressCallback != null && lastReported < this.rows) {
+            this.progressCallback.reportProgress(fileName, "Filtering data", this.rows, this.rows);
         }
     }
 
