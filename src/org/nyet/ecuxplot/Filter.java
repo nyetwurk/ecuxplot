@@ -106,6 +106,8 @@ public class Filter {
 
     // Per-file range selection support
     private Map<String, Set<Integer>> selectedRanges = new HashMap<>();
+    // Track which files have been user-selected (even if empty) to distinguish from "not set yet"
+    private Set<String> userSelectedFiles = new HashSet<>();
 
     /**
      * Get the selected ranges for a specific file
@@ -117,11 +119,21 @@ public class Filter {
     }
 
     /**
+     * Check if a file has been user-selected (even if empty)
+     * @param filename The filename to check
+     * @return true if this file's selection has been user-selected
+     */
+    public boolean hasUserSelection(String filename) {
+        return userSelectedFiles.contains(filename);
+    }
+
+    /**
      * Set the selected ranges for a specific file
      * @param filename The filename to set ranges for
      * @param ranges Set of selected range indices
      */
     public void setSelectedRanges(String filename, Set<Integer> ranges) {
+        userSelectedFiles.add(filename); // Mark as user-selected
         if (ranges == null || ranges.isEmpty()) {
             selectedRanges.remove(filename);
         } else {
@@ -134,6 +146,7 @@ public class Filter {
      */
     public void clearAllRangeSelections() {
         selectedRanges.clear();
+        userSelectedFiles.clear(); // Also clear the user selection tracking
     }
 
     /**

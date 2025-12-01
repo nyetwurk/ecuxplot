@@ -1721,20 +1721,22 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
         boolean filterDisabled = (filter == null || !filter.enabled());
         Set<String> selectedFiles = new HashSet<>();
         Map<String, Set<Integer>> newSelection = new HashMap<>();
+        Set<String> allFiles = new HashSet<>(); // Track all files to ensure we update them all
 
         while (enumeration.hasMoreElements()) {
             Object node = enumeration.nextElement();
             if (node instanceof FileNode) {
                 FileNode fileNode = (FileNode) node;
+                String filename = fileNode.getFilename();
+                allFiles.add(filename);
 
                 if (filterDisabled) {
                     // Filter disabled - Range Selector acts as file selector
                     if (fileNode.isSelected()) {
-                        selectedFiles.add(fileNode.getFilename());
+                        selectedFiles.add(filename);
                     }
                 } else {
                     // Filter enabled - Range Selector acts as range selector (normal mode)
-                    String filename = fileNode.getFilename();
                     ECUxDataset dataset = fileNode.getDataset();
                     List<Dataset.Range> ranges = dataset.getRanges();
 
@@ -1758,11 +1760,12 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
                                 }
                             }
                         }
-                        if (!rangeSet.isEmpty()) {
-                            newSelection.put(filename, rangeSet);
-                        }
+                        // Explicitly set selection, even if empty (to clear previous selection)
+                        newSelection.put(filename, rangeSet);
+                    } else {
+                        // Single range file that is not selected - explicitly set empty selection
+                        newSelection.put(filename, new HashSet<>());
                     }
-                    // For files with single range that are not selected, don't add anything
                 }
             }
         }
@@ -1776,9 +1779,22 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
             }
         } else {
             // Update filter's per-file range selection
+            // Clear all first, then set selections for all files (including empty sets)
             filter.clearAllRangeSelections();
-            for (Map.Entry<String, Set<Integer>> entry : newSelection.entrySet()) {
-                filter.setSelectedRanges(entry.getKey(), entry.getValue());
+
+            // Process all files to ensure selections are set (even if empty)
+            if (fileDatasets != null) {
+                for (Map.Entry<String, ECUxDataset> entry : fileDatasets.entrySet()) {
+                    String filename = entry.getKey();
+                    Set<Integer> ranges = newSelection.getOrDefault(filename, new HashSet<>());
+                    filter.setSelectedRanges(filename, ranges);
+                }
+            } else {
+                // Fallback: use allFiles if fileDatasets not available
+                for (String filename : allFiles) {
+                    Set<Integer> ranges = newSelection.getOrDefault(filename, new HashSet<>());
+                    filter.setSelectedRanges(filename, ranges);
+                }
             }
         }
 
