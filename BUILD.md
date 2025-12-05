@@ -16,14 +16,23 @@ make all         # Build everything for current platform
 
 ### Required Tools
 
-- **Java Development Kit (JDK) 18** or later
-- **Make** (GNU Make)
-- **Ant** (Apache Ant)
+- **Java Development Kit (JDK) 17** or later
+- **make** (GNU Make)
+- **ant** ([Apache Ant](https://ant.apache.org/))
+- **jq** (jqlang JSON Query)
+- **python** (Python 3 or later)
+- **python yaml** (Cygwin `python-yaml`, debian `apt get install python3-yaml`, or `pip3 install pyyaml`)
+- **cygwin** (if on Windows)
 
-### Platform-Specific Tools
+#### MacOS
 
-- **macOS**: Xcode Command Line Tools (for `hdiutil`)
-- **Linux/Windows**: NSIS, Launch4j, MinGW-w64
+- **Xcode** Command Line Tools (for `hdiutil`)
+
+#### Linux/Cygwin
+
+- **NSIS** ([Nullsoft Scriptable Install System](https://sourceforge.net/projects/nsis/))
+- **Launch4j** ([Cross-platform Java executable wrapper](https://launch4j.sourceforge.net/))
+- **MinGW-w64**
 
 ## Build Targets
 
@@ -33,7 +42,7 @@ make all         # Build everything for current platform
 | `archive` | Create compressed archive | All | `build/$(TARGET).tar.gz` |
 | `installers` | Build platform-appropriate installer | All | Auto-detects platform |
 | `dmg` | Create macOS DMG installer | macOS only | `build/$(TARGET).dmg` |
-| `exes` | Create Windows executables | Linux only | `build/CYGWIN_NT/*.exe` |
+| `exes` | Create Windows executables | Linux/Cygwin only | `build/CYGWIN_NT/*.exe` |
 
 ## Output Files
 
@@ -87,7 +96,7 @@ For detailed installation instructions, see [INSTALL.md](INSTALL.md).
 ### macOS/Linux Builds
 
 - Uses system JDK (no download needed)
-- Requires Java 18+ installed
+- Requires Java 17+ installed
 
 ## Troubleshooting
 
@@ -107,7 +116,7 @@ ECUxPlot uses `jpackage` for macOS app bundle creation, which provides better co
 
 1. Ensure Xcode Command Line Tools are installed
 2. Check available disk space
-3. Verify Java 18+ is installed and accessible
+3. Verify Java 17+ is installed and accessible
 
 ## Development Notes
 

@@ -3,6 +3,8 @@
 
 set -e
 
+jq . /dev/null > /dev/null 2>&1 || (echo "jq not installed" && exit 1)
+
 JAVA_TARGET_VER=${1:-18}
 PLATFORM=${2:-}
 RUNTIME_DIR=${3:-}

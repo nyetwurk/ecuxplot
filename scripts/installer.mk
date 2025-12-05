@@ -1,4 +1,6 @@
+# Platform-specific includes
 ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
+include scripts/Windows.mk
 # cygwin under Windows
 LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
     "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc 2> /dev/null)'
@@ -7,10 +9,16 @@ MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
 OPT_PRE := '/'
 else # !cygwin
 # Darwin or Linux
+ifeq ($(UNAME),Darwin)
+include scripts/MacOS.mk
+else ifeq ($(UNAME),Linux)
+# We build Windows installers on Linux hosts
+include scripts/Windows.mk
+endif
 LAUNCH4J := $(shell PATH="$(PATH):/usr/local/launch4j" which launch4j)
 MAKENSIS := $(shell which makensis 2> /dev/null)
 OPT_PRE := '-'
-endif
+endif # !cygwin
 
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
 
@@ -35,14 +43,6 @@ install: $(ARCHIVE)
 	rm -f $(INSTALL_DIR)/*.jar
 	rm -rf $(INSTALL_DIR)/lib
 	tar -C $(INSTALL_DIR) -xzf $(ARCHIVE) --strip-components=1
-
-# Platform-specific includes
-ifeq ($(UNAME),Darwin)
-include scripts/MacOS.mk
-else ifeq ($(UNAME),Linux)
-# We build Windows installers on Linux hosts
-include scripts/Windows.mk
-endif
 
 .PHONY: archive installers rsync
 installers: $(WIN_INSTALLER) $(MAC_ZIP) $(MAC_INSTALLER) $(ARCHIVE)
