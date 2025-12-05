@@ -17,6 +17,7 @@
 
 - Filter performance optimized with caching
 - Missing field warnings for sim/turbo/maf calculations changed from warn to info level
+- Removed awt.useSystemAAFontSettings=gasp since antialiasing defaults should be fine for modern runtimes
 
 ## [1.2.0] - 2025-11-24
 

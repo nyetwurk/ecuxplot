@@ -23,4 +23,4 @@ else
 fi
 
 #echo exec java -jar $jar ${args[@]}
-exec java -Dawt.useSystemAAFontSettings=gasp -jar $jar ${args[@]}
+exec java -jar $jar ${args[@]}
