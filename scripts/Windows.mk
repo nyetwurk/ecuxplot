@@ -1,3 +1,16 @@
+ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
+# cygwin under Windows
+LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
+    "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc 2> /dev/null)'
+MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
+    "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis 2> /dev/null)'
+OPT_PRE := '/'
+else
+LAUNCH4J := $(shell PATH="$(PATH):/usr/local/launch4j" which launch4j)
+MAKENSIS := $(shell which makensis 2> /dev/null)
+OPT_PRE := '-'
+endif
+
 # Install Launch4j for Linux
 install-launch4j:
 	@echo "Installing Launch4j..."

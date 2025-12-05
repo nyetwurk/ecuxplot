@@ -1,24 +1,8 @@
-# Platform-specific includes
-ifeq ($(findstring CYGWIN,$(UNAME)),CYGWIN)
-include scripts/Windows.mk
-# cygwin under Windows
-LAUNCH4J := '$(shell PATH='$(PATH):$(shell cygpath -pu \
-    "C:\Program Files\Launch4j;C:\Program Files (x86)\Launch4j")' which launch4jc 2> /dev/null)'
-MAKENSIS := '$(shell PATH='$(PATH):$(shell cygpath -pu \
-    "C:\Program Files\NSIS;C:\Program Files (x86)\NSIS")' which makensis 2> /dev/null)'
-OPT_PRE := '/'
-else # !cygwin
-# Darwin or Linux
 ifeq ($(UNAME),Darwin)
 include scripts/MacOS.mk
-else ifeq ($(UNAME),Linux)
-# We build Windows installers on Linux hosts
+else # linux/cygwin both build windows installers
 include scripts/Windows.mk
 endif
-LAUNCH4J := $(shell PATH="$(PATH):/usr/local/launch4j" which launch4j)
-MAKENSIS := $(shell which makensis 2> /dev/null)
-OPT_PRE := '-'
-endif # !cygwin
 
 PROFILES:= $(addprefix profiles/,B5S4/fueling.xml B5S4/constants.xml B8S4/constants.xml)
 
