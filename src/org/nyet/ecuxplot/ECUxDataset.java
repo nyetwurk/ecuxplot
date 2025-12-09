@@ -407,7 +407,7 @@ public class ECUxDataset extends Dataset {
         // Use standard SG smoothing - effective for range detection
         final DoubleArray smoothedData = this.csvRpm.data.smooth();
 
-        return new Column("RPM", this.csvRpm.getId2(), UnitConstants.UNIT_RPM,
+        return new Column("RPM", this.csvRpm.getIdOrig(), UnitConstants.UNIT_RPM,
                          smoothedData, Dataset.ColumnType.PROCESSED_VARIANT);
     }
 
@@ -453,9 +453,9 @@ public class ECUxDataset extends Dataset {
         // Transform data if needed
         DoubleArray rawData = dataTransform != null ? dataTransform.apply(baseColumn.data) : baseColumn.data;
 
-        // Create and store raw column, preserving id2 (original name) from base column
-        String id2 = baseColumn.getId2();
-        Column rawColumn = new Column(rawColumnName, id2, units, rawData, Dataset.ColumnType.PROCESSED_VARIANT);
+        // Create and store raw column, preserving id_orig (original name) from base column
+        String id_orig = baseColumn.getIdOrig();
+        Column rawColumn = new Column(rawColumnName, id_orig, units, rawData, Dataset.ColumnType.PROCESSED_VARIANT);
         this.putColumn(rawColumn);
 
         return rawColumn;
@@ -493,9 +493,9 @@ public class ECUxDataset extends Dataset {
         // Transform data if needed
         DoubleArray rawData = dataTransform != null ? dataTransform.apply(baseColumn.data) : baseColumn.data;
 
-        // Create and store raw column, preserving id2 (original name) from base column
-        String id2 = baseColumn.getId2();
-        Column rawColumn = new Column(rawColumnName, id2, units, rawData, Dataset.ColumnType.PROCESSED_VARIANT);
+        // Create and store raw column, preserving id_orig (original name) from base column
+        String id_orig = baseColumn.getIdOrig();
+        Column rawColumn = new Column(rawColumnName, id_orig, units, rawData, Dataset.ColumnType.PROCESSED_VARIANT);
         this.putColumn(rawColumn);
 
         return rawColumn;
@@ -553,9 +553,9 @@ public class ECUxDataset extends Dataset {
             processedData = processedData.smooth();
         }
 
-        // Create and return final column, preserving id2 (original name) from base column
-        String id2 = baseColumn.getId2();
-        return new Column(baseColumnName, id2, units, processedData, Dataset.ColumnType.PROCESSED_VARIANT);
+        // Create and return final column, preserving id_orig (original name) from base column
+        String id_orig = baseColumn.getIdOrig();
+        return new Column(baseColumnName, id_orig, units, processedData, Dataset.ColumnType.PROCESSED_VARIANT);
     }
 
     /**
@@ -587,9 +587,9 @@ public class ECUxDataset extends Dataset {
             logger.debug("_get('TIME'): Applied smoothing to time deltas (samples_per_sec={})", this.samples_per_sec);
         }
 
-        // Create and return final column, preserving id2 (original name) from base column
-        String id2 = baseColumn.getId2();
-        return new Column("TIME", id2, UnitConstants.UNIT_SECONDS, processedData, Dataset.ColumnType.PROCESSED_VARIANT);
+        // Create and return final column, preserving id_orig (original name) from base column
+        String id_orig = baseColumn.getIdOrig();
+        return new Column("TIME", id_orig, UnitConstants.UNIT_SECONDS, processedData, Dataset.ColumnType.PROCESSED_VARIANT);
     }
 
     /**
@@ -1866,13 +1866,13 @@ public class ECUxDataset extends Dataset {
         this.smoothingWindows.put(columnName, seconds);
     }
     /**
-     * Check if alternate column names (id2) should be used for display.
+     * Check if alternate column names (id_orig) should be used for display.
      * Determined by the "altnames" preference in environment settings.
      *
      * @return true if alternate names should be used, false otherwise
      */
     @Override
-    public boolean useId2() {
+    public boolean useIdOrig() {
         // Handle null env gracefully (e.g., in test contexts where env is not provided)
         if (this.env == null || this.env.prefs == null) {
             return false;

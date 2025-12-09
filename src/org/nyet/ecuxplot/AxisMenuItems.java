@@ -544,7 +544,7 @@ public class AxisMenuItems {
                 if (id.equals("IgnitionTimingAngleOverall")) {
                     menu.addCalculatedFieldsFromData("IgnitionTimingAngleOverall", dsid.type);
                 }
-                final AbstractButton titem = menu.makeMenuItem(new DatasetId(id + " (ms)", dsid.id2, org.nyet.ecuxplot.UnitConstants.UNIT_MS));
+                final AbstractButton titem = menu.makeMenuItem(new DatasetId(id + " (ms)", dsid.id_orig, org.nyet.ecuxplot.UnitConstants.UNIT_MS));
                 menu.addToSubmenu(SUBMENU_TRUE_TIMING, titem, true);
                 return true;
             }),

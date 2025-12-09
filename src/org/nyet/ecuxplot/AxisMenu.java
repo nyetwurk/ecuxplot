@@ -252,33 +252,33 @@ public class AxisMenu extends JMenu {
         final AbstractButton item = (this.buttonGroup==null)?new JCheckBox(dsid.id, checked):
             new JRadioButtonMenuItem(dsid.id, checked);
 
-        // Collect all id2 values from all datasets for this canonical name
+        // Collect all id_orig values from all datasets for this canonical name
         // This handles the case where multiple files have different original column names
         // that map to the same canonical alias
         if (this.fileDatasets != null && !this.fileDatasets.isEmpty()) {
-            TreeSet<String> allId2Values = new TreeSet<String>();
+            TreeSet<String> allIdOrigValues = new TreeSet<String>();
             for (final ECUxDataset dataset : this.fileDatasets.values()) {
-                final String id2 = dataset.id2(dsid.id);
-                if (id2 != null && !id2.equals(dsid.id) && !id2.isEmpty()) {
-                    allId2Values.add(id2);
+                final String id_orig = dataset.idOrig(dsid.id);
+                if (id_orig != null && !id_orig.equals(dsid.id) && !id_orig.isEmpty()) {
+                    allIdOrigValues.add(id_orig);
                 }
             }
-            // If we found id2 values from multiple files, combine them
-            if (!allId2Values.isEmpty()) {
+            // If we found id_orig values from multiple files, combine them
+            if (!allIdOrigValues.isEmpty()) {
                 String tooltipText;
-                if (allId2Values.size() == 1) {
-                    // Single id2 value - use it directly
-                    tooltipText = allId2Values.first();
+                if (allIdOrigValues.size() == 1) {
+                    // Single id_orig value - use it directly
+                    tooltipText = allIdOrigValues.first();
                 } else {
-                    // Multiple id2 values - combine them with commas
-                    tooltipText = String.join(", ", allId2Values);
+                    // Multiple id_orig values - combine them with commas
+                    tooltipText = String.join(", ", allIdOrigValues);
                 }
                 item.setToolTipText(tooltipText);
             }
         } else {
-            // Fallback to single DatasetId's id2 if fileDatasets not available
-            if(dsid.id2!=null && !dsid.id2.equals(dsid.id)) {
-                item.setToolTipText(dsid.id2);
+            // Fallback to single DatasetId's id_orig if fileDatasets not available
+            if(dsid.id_orig!=null && !dsid.id_orig.equals(dsid.id)) {
+                item.setToolTipText(dsid.id_orig);
             }
         }
 

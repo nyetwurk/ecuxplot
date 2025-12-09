@@ -135,8 +135,8 @@ public class LoggerDetectionTest {
                         // Test IDs
                         testExpectedIds(testCase, dataset, fileName);
 
-                        // Test ID2s
-                        testExpectedId2s(testCase, dataset, fileName);
+                        // Test ID_ORIGs
+                        testExpectedIdOrigs(testCase, dataset, fileName);
 
                         // Test Units (normalized - DatasetId.unit)
                         testExpectedUnits(testCase, dataset, fileName);
@@ -215,22 +215,22 @@ public class LoggerDetectionTest {
         }
     }
 
-    private static void testExpectedId2s(Element testCase, ECUxDataset dataset, String fileName) {
-        NodeList expectedId2s = testCase.getElementsByTagName("expected_id2s");
-        if (expectedId2s.getLength() == 0) return;
+    private static void testExpectedIdOrigs(Element testCase, ECUxDataset dataset, String fileName) {
+        NodeList expectedIdOrigs = testCase.getElementsByTagName("expected_id_origs");
+        if (expectedIdOrigs.getLength() == 0) return;
 
-        Element id2sElement = (Element) expectedId2s.item(0);
-        NodeList id2Nodes = id2sElement.getElementsByTagName("id2");
+        Element idOrigsElement = (Element) expectedIdOrigs.item(0);
+        NodeList idOrigNodes = idOrigsElement.getElementsByTagName("id_orig");
 
-        for (int i = 0; i < id2Nodes.getLength(); i++) {
-            Element id2Element = (Element) id2Nodes.item(i);
-            int index = Integer.parseInt(id2Element.getAttribute("index"));
-            String expectedId2 = id2Element.getTextContent();
+        for (int i = 0; i < idOrigNodes.getLength(); i++) {
+            Element idOrigElement = (Element) idOrigNodes.item(i);
+            int index = Integer.parseInt(idOrigElement.getAttribute("index"));
+            String expectedIdOrig = idOrigElement.getTextContent();
 
             if (index < dataset.getIds().length) {
-                String actualId2 = dataset.getIds()[index].id2;
-                assertTest("ID2[" + index + "] for " + fileName + ": expected '" + expectedId2 + "', got '" + actualId2 + "'",
-                    expectedId2.equals(actualId2));
+                String actualIdOrig = dataset.getIds()[index].id_orig;
+                assertTest("ID_ORIG[" + index + "] for " + fileName + ": expected '" + expectedIdOrig + "', got '" + actualIdOrig + "'",
+                    expectedIdOrig.equals(actualIdOrig));
             }
         }
     }

@@ -512,7 +512,7 @@ loggers:
     unit_regex: "([\\S\\s]+)\\(([\\S\\s]+)\\)\\s*(.*)"
 
     # Header structure configuration (Level 1 - ready for implementation)
-    header_format: "id2,u,id"  # ME7LOGGER: raw names, units, canonical names (3 header lines)
+    header_format: "id_orig,u,id"  # ME7LOGGER: raw names, units, canonical names (3 header lines)
 
     # Conditional prepend for empty field names
     field_transformations:

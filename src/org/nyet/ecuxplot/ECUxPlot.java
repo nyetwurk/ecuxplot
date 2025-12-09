@@ -37,7 +37,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
     private TreeMap<String, ECUxDataset> fileDatasets = new TreeMap<String, ECUxDataset>();
 
     /**
-     * Get fileDatasets map for access by AxisMenu to collect all id2 values.
+     * Get fileDatasets map for access by AxisMenu to collect all id_orig values.
      * @return The fileDatasets map
      */
     TreeMap<String, ECUxDataset> getFileDatasets() {
@@ -1077,7 +1077,7 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
                         boolean altnames = this.prefs.getBoolean("altnames", false);
                         // Iterate through fileDatasets like X axis for consistency
                         // This reads from current Column instead of cached id_cache, ensuring
-                        // we get the correct id2 even if Column was replaced after Key was created
+                        // we get the correct id_orig even if Column was replaced after Key was created
                         if (altnames) {
                             s = k.getString(); // fallback
                             for (final ECUxDataset data : this.fileDatasets.values()) {

@@ -106,17 +106,17 @@ public class DataLogger {
     public static class HeaderData {
         private static final Logger logger = LoggerFactory.getLogger(HeaderData.class);
 
-        public String[] g;     // Group line
-        public String[] id;    // Field names array - post Aliasing
-        public String[] u;     // Units array - sometimes a continuation of id
-        public String[] id2;   // Original field names array, as read directly from the CSV, possibly modified by field transformations
-        public String[] u2;    // Second units array - units if u is not a continuation of id or empty
+        public String[] g;        // Group line
+        public String[] id_orig;  // Original field names array, as read directly from the CSV, possibly modified by field transformations
+        public String[] id;       // Field names array - post Aliasing
+        public String[] u;        // Units array - sometimes a continuation of id
+        public String[] u2;       // Second units array - units if u is not a continuation of id or empty
 
-        public HeaderData(String[] g, String[] id, String[] u, String[] id2, String[] u2) {
+        public HeaderData(String[] g, String[] id_orig, String[] id, String[] u, String[] u2) {
             this.g = g;
+            this.id_orig = id_orig;
             this.id = id;
             this.u = u;
-            this.id2 = id2;
             this.u2 = u2;
         }
 
@@ -279,12 +279,12 @@ public class DataLogger {
                         break; // Stop after first matching alias
                     }
                 }
-                // If no match against id, try matching against id2 (original field name)
+                // If no match against id, try matching against id_orig (original field name)
                 // This handles cases where unit_regex removed info needed for aliasing
-                if (!matched && this.id2 != null && i < this.id2.length && this.id2[i] != null) {
+                if (!matched && this.id_orig != null && i < this.id_orig.length && this.id_orig[i] != null) {
                     for (final String [] s: aliasesToUse) {
-                        if (this.id2[i].matches(s[0])) {
-                            logger.debug("{}: alias (using id2) '{}'->'{}'", i, this.id2[i], s[1]);
+                        if (this.id_orig[i].matches(s[0])) {
+                            logger.debug("{}: alias (using id_orig) '{}'->'{}'", i, this.id_orig[i], s[1]);
                             this.id[i] = s[1];
                             matched = true;
                             break; // Stop after first matching alias
@@ -370,10 +370,10 @@ public class DataLogger {
         @Override
         public String toString() {
             java.lang.StringBuilder sb = new java.lang.StringBuilder();
+            dumpArray(sb, "id_orig", this.id_orig);
             dumpArray(sb, "g", this.g);
             dumpArray(sb, "id", this.id);
             dumpArray(sb, "u", this.u);
-            dumpArray(sb, "id2", this.id2);
             dumpArray(sb, "u2", this.u2);
             return sb.toString();
         }
@@ -405,7 +405,7 @@ public class DataLogger {
         /**
          * Process headers for a specific logger type.
          *
-         * @param h Header data containing id, u, and id2 arrays (will be modified)
+         * @param h Header data containing id, u, and id_orig arrays (will be modified)
          * @param loggerType Logger type name
          */
         void processHeaders(HeaderData h, String loggerType);
@@ -740,7 +740,7 @@ public class DataLogger {
          * Process headers using registered processor for this logger type.
          * If no processor is registered for the logger type, no processing is performed.
          *
-         * @param h Header data containing id, u, and id2 arrays (will be modified)
+         * @param h Header data containing id, u, and id_orig arrays (will be modified)
          */
         public void processLoggerHeaders(HeaderData h) {
             HeaderProcessor processor = headerProcessors.get(this.type);
@@ -831,7 +831,7 @@ public class DataLogger {
          *
          * @param reader CSVReader to read header lines from
          * @param matchedLine Previously matched line from skip processing, or null
-         * @return HeaderData containing id, u, and id2 arrays, or null if parsing fails
+         * @return HeaderData containing id, u, and id_orig arrays, or null if parsing fails
          * @throws Exception if reading fails
          */
         public HeaderData parseHeaderFormat(CSVReader reader, String[] matchedLine) throws Exception {
@@ -862,7 +862,7 @@ public class DataLogger {
             }
 
             // Parse the header format tokens
-            String[] g = null, id = null, u = null, u2 = null, id2 = null;
+            String[] g = null, id = null, u = null, u2 = null, id_orig = null;
 
             // If lineNum < formatTokens.length, we will not be able to handle all the tokens
             for (int i = 0; i < lineNum; i++) {
@@ -873,10 +873,10 @@ public class DataLogger {
                         break;
                     case "id":
                         id = copyAndTrim(headerLines[i]);
-                        // Only populate id2 with original field names if no explicit id2 token exists
-                        if (!this.hasToken("id2")) {
-                            id2 = copyAndTrim(headerLines[i]);
-                            logger.debug("ID2 from ID: Using {}: {} fields", id2, headerLines[i].length);
+                        // Only populate id_orig with original field names if no explicit id_orig token exists
+                        if (!this.hasToken("id_orig")) {
+                            id_orig = copyAndTrim(headerLines[i]);
+                            logger.debug("ID_ORIG from ID: Using {}: {} fields", id_orig, headerLines[i].length);
                         }
                         logger.debug("ID: Using {}: {} fields", id, headerLines[i].length);
                         break;
@@ -896,9 +896,9 @@ public class DataLogger {
                         u2 = copyAndTrim(headerLines[i]);
                         logger.debug("Units2: {}: {} fields", u2, headerLines[i].length);
                         break;
-                    case "id2":
-                        id2 = copyAndTrim(headerLines[i]);
-                        logger.debug("ID2: Using {}: {} fields", id2, headerLines[i].length);
+                    case "id_orig":
+                        id_orig = copyAndTrim(headerLines[i]);
+                        logger.debug("ID_ORIG: Using {}: {} fields", id_orig, headerLines[i].length);
                         break;
                     default:
                         logger.error("Unknown token '{}' at position {}", formatTokens[i], i);
@@ -906,14 +906,14 @@ public class DataLogger {
                 }
             }
 
-            return new HeaderData(g, id, u, id2, u2);
+           return new HeaderData(g, id_orig, id, u, u2);
         }
 
         /**
          * Apply unit regex parsing if configured.
          * This extracts field names and units from combined field names using regex patterns.
          *
-         * @param h Header data containing id, u, and id2 arrays (will be modified)
+         * @param h Header data containing id, u, and id_orig arrays (will be modified)
          */
         public void applyUnitRegex(HeaderData h) {
             if (this.parser.unitRegex == null) {
@@ -923,9 +923,9 @@ public class DataLogger {
             logger.debug("Applying unit_regex: '{}'", this.parser.unitRegex);
             java.util.regex.Pattern unitRegexPattern = java.util.regex.Pattern.compile(this.parser.unitRegex);
 
+            String[] id_orig = h.id_orig;
             String[] id = h.id;
             String[] u = h.u;
-            String[] id2 = h.id2;
 
             // Initialize units array if not already done
             if (u == null || u.length == 0) {
@@ -933,43 +933,43 @@ public class DataLogger {
                 h.u = u;
             }
 
-            // Initialize id2 array to preserve original field names
-            if (id2 == null) {
-                id2 = new String[id.length];
-                h.id2 = id2;
+            // Initialize id_orig array to preserve original field names
+            if (id_orig == null) {
+                id_orig = new String[id.length];
+                h.id_orig = id_orig;
             }
 
             for (int i = 0; i < id.length; i++) {
                 if (id[i] != null) {
-                    // Always preserve original field name in id2 before any processing
+                    // Always preserve original field name in id_orig before any processing
                     String originalField = id[i];
-                    if (id2[i] == null) {
-                        id2[i] = originalField;
+                    if (id_orig[i] == null) {
+                        id_orig[i] = originalField;
                     }
 
                     java.util.regex.Matcher matcher = unitRegexPattern.matcher(id[i]);
                     if (matcher.find()) {
-                        // Group 1 -> field name, Group 2 -> unit, Group 3 -> additional info (optional, e.g., id2 for VOLVOLOGGER)
+                        // Group 1 -> field name, Group 2 -> unit, Group 3 -> additional info (optional, e.g., id_orig for VOLVOLOGGER)
                         id[i] = matcher.group(1).trim();
                         u[i] = matcher.group(2).trim();
-                        // Use Group 3 for id2 ONLY if it's non-empty AND looks like a valid field name
+                        // Use Group 3 for id_orig ONLY if it's non-empty AND looks like a valid field name
                         // (e.g., VOLVOLOGGER's short field names like "RPM", "BoostPressure")
                         // Don't use Group 3 if it's just punctuation (e.g., "]" from incorrectly matched nested parens)
-                        // If Group 3 is empty or invalid, keep the original field name in id2 (for alias mechanism to work)
+                        // If Group 3 is empty or invalid, keep the original field name in id_orig (for alias mechanism to work)
                         if (matcher.groupCount() >= 3 && matcher.group(3) != null) {
                             String group3 = matcher.group(3).trim();
                             // Only use Group 3 if it looks like a field name (not just punctuation/short garbage)
                             if (!group3.isEmpty() && group3.length() > 2 && !group3.matches("^[\\]\\[\\)\\(,\\.]+$")) {
-                                id2[i] = group3;
+                                id_orig[i] = group3;
                             }
-                            // If group3 is empty or invalid, do nothing - id2 already has original field name from line 685
+                            // If group3 is empty or invalid, do nothing - id_orig already has original field name
                         }
-                        // Otherwise, id2 already has the original field name from line 685
-                        logger.debug("Unit regex matched field {}: '{}' -> id='{}', unit='{}', id2='{}'", i, originalField, id[i], u[i], id2[i]);
+                        // Otherwise, id_orig already has the original field name
+                        logger.debug("Unit regex matched field {}: '{}' -> id='{}', unit='{}', id_orig='{}'", i, originalField, id[i], u[i], id_orig[i]);
                     } else {
-                        // No regex match - keep original field name in both id and id2
-                        // id2 already has the original field name
-                        logger.debug("Unit regex did not match field {}: '{}', preserving in id2", i, id[i]);
+                        // No regex match - keep original field name in both id and id_orig
+                        // id_orig already has the original field name
+                        logger.debug("Unit regex did not match field {}: '{}', preserving in id_orig", i, id[i]);
                     }
                 }
             }
@@ -979,7 +979,7 @@ public class DataLogger {
          * Apply general unit parsing for loggers that don't have their own unit processing.
          * Only applies if logger doesn't have header_format with units ("u" token).
          *
-         * @param h Header data containing id, u, and id2 arrays (will be modified)
+         * @param h Header data containing id, u, and id_orig arrays (will be modified)
          * @param verbose Verbose logging level
          */
         public void applyGeneralUnitParsing(HeaderData h, int verbose) {
@@ -1022,7 +1022,7 @@ public class DataLogger {
             }
 
             this.applyUnitRegex(h); // Extract units first before aliasing (uses: unit_regex)
-            h.processAliases(this.type); // Convert id to canonical names, save original to id2 for later use (uses: aliases, aliases_from, ME7_ALIASES, DEFAULT aliases)
+            h.processAliases(this.type); // Convert id to canonical names, save original to id_orig for later use (uses: aliases, aliases_from, ME7_ALIASES, DEFAULT aliases)
             this.processLoggerHeaders(h); // Log format specific header processing, post aliasing (uses: registered header processors, e.g. VCDS/VCDS_LEGACY)
             this.applyGeneralUnitParsing(h, verbose); // Now units can be found for fully processed fields (uses: header_format to check for "u" token)
 
@@ -1038,8 +1038,8 @@ public class DataLogger {
 
             // Log final results
             for (int i = 0; i < h.id.length; i++) {
-                if (h.id2 != null && i < h.id2.length) {
-                    logger.debug("Final field {}: '{}' (original: '{}') [{}]", i, h.id[i], h.id2[i], h.u[i]);
+                if (h.id_orig != null && i < h.id_orig.length) {
+                    logger.debug("Final field {}: '{}' (original: '{}') [{}]", i, h.id[i], h.id_orig[i], h.u[i]);
                 } else {
                     logger.debug("Final field {}: '{}' [{}]", i, h.id[i], h.u[i]);
                 }
@@ -1079,7 +1079,7 @@ public class DataLogger {
 
                 // Original unit intent - prefer nativeUnits map (shares String reference)
                 // NOTE: This is the processed unit (after normalize/find), not the raw CSV unit
-                // Unlike id2 which is truly original, u2 represents "original unit intent" before preference conversion
+                // Unlike id_orig which is truly original, u2 represents "original unit intent" before preference conversion
                 String u2 = null;
                 if (nativeUnits != null && nativeUnits.containsKey(h.id[i])) {
                     u2 = nativeUnits.get(h.id[i]);  // Share String reference
@@ -1088,7 +1088,7 @@ public class DataLogger {
                 }
 
                 ids[i] = new DatasetId(h.id[i],
-                                      (h.id2 != null && i < h.id2.length) ? h.id2[i] : null,
+                                      (h.id_orig != null && i < h.id_orig.length) ? h.id_orig[i] : null,
                                       unit, u2);
                 ids[i].type = this.type;
             }
@@ -1119,8 +1119,8 @@ public class DataLogger {
 
                 // For empty fields with ifEmpty=true, use original field name if available
                 String fieldToTransform = h.id[i];
-                if (transformation.ifEmpty && isEmpty && h.id2 != null && i < h.id2.length && h.id2[i] != null) {
-                    fieldToTransform = h.id2[i];
+                if (transformation.ifEmpty && isEmpty && h.id_orig != null && i < h.id_orig.length && h.id_orig[i] != null) {
+                    fieldToTransform = h.id_orig[i];
                 }
 
                 // Apply prepend

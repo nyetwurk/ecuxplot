@@ -24,11 +24,11 @@ public class Dataset {
     }
 
     public static class DatasetId implements Comparable<Object> {
+        public String id_orig;  // Original field name (raw from CSV, unprocessed)
         public String id;
-        public String id2;     // Original field name (raw from CSV, unprocessed)
-        public String unit;    // Normalized unit (preference-based, for menu)
+        public String unit;     // Normalized unit (preference-based, for menu)
         public String u2;       // Original unit intent (processed/normalized, but before preference conversion)
-                                // NOTE: Unlike id2 (truly original), u2 is the processed unit string
+                                // NOTE: Unlike id_orig (truly original), u2 is the processed unit string
                                 // after Units.normalize() and Units.find(), but before preference conversion
         public Object type;
 
@@ -41,11 +41,11 @@ public class Dataset {
         @Override
         public String toString() { return this.id; }
         public DatasetId(String s) { this.id=s; }
-        public DatasetId(String s, String id2, String unit) {
-            this.id=s; this.id2=id2; this.unit=unit;
+        public DatasetId(String s, String id_orig, String unit) {
+            this.id=s; this.id_orig=id_orig; this.unit=unit;
         }
-        public DatasetId(String s, String id2, String unit, String u2) {
-            this.id=s; this.id2=id2; this.unit=unit; this.u2=u2;
+        public DatasetId(String s, String id_orig, String unit, String u2) {
+            this.id=s; this.id_orig=id_orig; this.unit=unit; this.u2=u2;
         }
         public boolean equals(Comparable<?> o) {
             return this.id.equals(o.toString());
@@ -84,8 +84,8 @@ public class Dataset {
         public Column(Comparable<?> id, String units) {
             this(id, null, units, new DoubleArray(), ColumnType.CSV_NATIVE);
         }
-        public Column(Comparable<?> id, String id2, String units) {
-            this(id, id2, units, new DoubleArray(), ColumnType.CSV_NATIVE);
+        public Column(Comparable<?> id, String id_orig, String units) {
+            this(id, id_orig, units, new DoubleArray(), ColumnType.CSV_NATIVE);
         }
 
         // Calculated column constructors - default to COMPILE_TIME_CONSTANTS (most common)
@@ -95,13 +95,13 @@ public class Dataset {
         public Column(Comparable<?> id, String units, DoubleArray data, ColumnType columnType) {
             this(id, null, units, data, columnType);
         }
-        public Column(Comparable<?> id, String id2, String units,
+        public Column(Comparable<?> id, String id_orig, String units,
             DoubleArray data) {
-            this(id, id2, units, data, ColumnType.COMPILE_TIME_CONSTANTS);
+            this(id, id_orig, units, data, ColumnType.COMPILE_TIME_CONSTANTS);
         }
-        public Column(Comparable<?> id, String id2, String units,
+        public Column(Comparable<?> id, String id_orig, String units,
             DoubleArray data, ColumnType columnType) {
-            this.id = new DatasetId(id.toString(), id2, units, null);
+            this.id = new DatasetId(id.toString(), id_orig, units, null);
             this.data = data;
             this.columnType = columnType;
         }
@@ -180,9 +180,9 @@ public class Dataset {
             if(this.id==null) return null;
             return this.id.id;
         }
-        public String getId2() {
+        public String getIdOrig() {
             if(this.id==null) return null;
-            return this.id.id2;
+            return this.id.id_orig;
         }
         public String getUnits() {
             if(this.id==null) return null;
@@ -200,8 +200,8 @@ public class Dataset {
             }
             return this.id.unit;  // Normalized or calculated unit
         }
-        public String getLabel(boolean id2) {
-            return (id2 && this.id.id2!=null)?this.id.id2:this.id.id;
+        public String getLabel(boolean id_orig) {
+            return (id_orig && this.id.id_orig!=null)?this.id.id_orig:this.id.id;
         }
     }
 
@@ -249,14 +249,14 @@ public class Dataset {
          *
          * public Key (String fn, String s) { this(fn, s, 0, new BitSet(2)); }
          */
-        private boolean useId2() {
-            return (this.data_cache != null && this.data_cache.useId2()
-                    && this.id_cache != null && this.id_cache.id2 != null);
+        private boolean useIdOrig() {
+            return (this.data_cache != null && this.data_cache.useIdOrig()
+                    && this.id_cache != null && this.id_cache.id_orig != null);
         }
 
         @Override
         public String toString() {
-            String ret = this.useId2()?this.id_cache.id2:this.s;
+            String ret = this.useIdOrig()?this.id_cache.id_orig:this.s;
 
             // don't skip file name, add to beginning
             if(!this.flags.get(0))
@@ -275,7 +275,7 @@ public class Dataset {
         public void showRange() { this.flags.clear(1); }
 
         public String getFilename() { return this.fn; }
-        public String getId2()  { return (this.id_cache!=null && this.id_cache.id2!=null)?this.id_cache.id2:this.s; }
+        public String getIdOrig()  { return (this.id_cache!=null && this.id_cache.id_orig!=null)?this.id_cache.id_orig:this.s; }
         public String getString() { return this.s; }
         public Integer getRange() { return this.range; }
         public void setRange(int r) { this.range=r; }
@@ -288,7 +288,7 @@ public class Dataset {
          * @return Elided version of the label suitable for display
          */
         public String getDisplayLabel(int maxLength) {
-            String ret = this.useId2()?this.id_cache.id2:this.s;
+            String ret = this.useIdOrig()?this.id_cache.id_orig:this.s;
 
             // Elide filename if present
             if(!this.flags.get(0)) {
@@ -612,10 +612,10 @@ public class Dataset {
         return c.getUnits();
     }
 
-    public String id2(Comparable<?> id) {
+    public String idOrig(Comparable<?> id) {
         final Column c = this.get(id);
         if(c==null) return null;
-        return c.getId2();
+        return c.getIdOrig();
     }
 
     public String getLabel(Comparable<?> id, boolean altnames) {
@@ -735,7 +735,7 @@ public class Dataset {
 
     public ArrayList<String> getLastFilterReasons() { return this.lastFilterReasons; }
     public int length() { return this.rows; }
-    public boolean useId2() { return false; }
+    public boolean useIdOrig() { return false; }
 }
 
 // vim: set sw=4 ts=8 expandtab:

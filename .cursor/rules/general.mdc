@@ -52,3 +52,7 @@ The `-v` option will set the logging level to DEBUG. More verbose logging can be
 - Vi modelines (`// vim: set sw=4 ts=8 expandtab:`) added to all Java files
 - Follows standard Java coding conventions
 - Build and tests validated after migration
+
+## Public API restrictions - NONE
+
+Project is standalone. None of the API is public or used by other projects. Remove all API methods, instances, classes, overloaded functions, and parameters/arguments that are not used in the project.
