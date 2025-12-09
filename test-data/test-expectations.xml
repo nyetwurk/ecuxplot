@@ -2187,7 +2187,7 @@
             <id index="1">TIME</id>
             <id index="2">RPM</id>
             <id index="3">MassAirFlow</id>
-            <id index="4">ThrottleAngle</id>
+            <id index="4">ThrottlePlateAngle</id>
             <id index="5">IgnitionTimingAngleOverall</id>
             <id index="6"></id> <!-- 114 --> <!-- oddity, this actually time in 114, but there are 4 times in the group -->
             <id index="7">WastegateOnTime</id> <!-- 114 -->
@@ -2244,7 +2244,7 @@
         </expected_preset_columns>
         <expected_filter_columns>
             <category name="pedal"></category>
-            <category name="throttle"></category>
+            <category name="throttle">4</category>
             <category name="gear"></category>
         </expected_filter_columns>
         <sanity_check row="0" col="1">0.0</sanity_check>
