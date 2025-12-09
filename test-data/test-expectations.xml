@@ -2309,6 +2309,74 @@
         <sanity_check row="0" col="1">0.25</sanity_check>
     </test_case>
 
+    <!-- VCDS German IDE Format: Groups in G### format with location identifiers -->
+    <test_case file="vcds-IDE-german.csv">
+        <expected_type>VCDS</expected_type>
+        <expected_ids>
+            <id index="0"></id>
+            <id index="1">TIME</id> <!-- Group 004 -->
+            <id index="2">RPM</id> <!-- Group 004 -->
+            <id index="3"></id> <!-- Group 026 -->
+            <id index="4">BoostPressureDesired</id> <!-- Group 026 -->
+            <id index="5"></id> <!-- Group 027 -->
+            <id index="6">BoostPressureActual</id> <!-- Group 027 -->
+            <id index="7"></id> <!-- Group 035 -->
+            <id index="8">MassAirFlow</id> <!-- Group 035: Luftmasse: Istwert -->
+            <id index="9"></id> <!-- Group 204 -->
+            <id index="10">EGTSensor1</id> <!-- Group 204 -->
+            <id index="11"></id> <!-- Group 206 -->
+            <id index="12">EGTSensor2</id> <!-- Group 206 -->
+            <id index="13"></id> <!-- Group 207 -->
+            <id index="14">EGTSensor3</id> <!-- Group 207 -->
+            <id index="15"></id> <!-- Group 208 -->
+            <id index="16">EGTSensor4</id> <!-- Group 208 -->
+        </expected_ids>
+        <expected_id_origs>
+            <id_orig index="0"></id_orig>
+            <id_orig index="1">MARKE</id_orig>
+            <id_orig index="2">Motordrehzahl</id_orig>
+            <id_orig index="3">MARKE</id_orig>
+            <id_orig index="4">Ladedruck: Sollwert</id_orig>
+            <id_orig index="5">MARKE</id_orig>
+            <id_orig index="6">Ladedruck: Istwert</id_orig>
+            <id_orig index="7">MARKE</id_orig>
+            <id_orig index="8">Luftmasse: Istwert</id_orig>
+            <id_orig index="9">MARKE</id_orig>
+            <id_orig index="10">Abgastemperatursensor 1</id_orig>
+            <id_orig index="11">MARKE</id_orig>
+            <id_orig index="12">Abgastemperatursensor 2</id_orig>
+            <id_orig index="13">MARKE</id_orig>
+            <id_orig index="14">Abgastemperatursensor 3</id_orig>
+            <id_orig index="15">MARKE</id_orig>
+            <id_orig index="16">Abgastemperatursensor 4</id_orig>
+        </expected_id_origs>
+        <expected_units>
+            <unit index="0"></unit>
+            <unit index="1">s</unit>
+            <unit index="2">RPM</unit>
+            <unit index="3"></unit>
+            <unit index="4">mBar</unit>
+            <unit index="5"></unit>
+            <unit index="6">mBar</unit>
+            <unit index="7"></unit>
+            <unit index="8">g/sec</unit>
+            <unit index="9"></unit>
+            <unit index="10">°C</unit>
+            <unit index="11"></unit>
+            <unit index="12">°C</unit>
+            <unit index="13"></unit>
+            <unit index="14">°C</unit>
+            <unit index="15"></unit>
+            <unit index="16">°C</unit>
+        </expected_units>
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
+        <sanity_check row="0" col="2">1498.0</sanity_check>
+    </test_case>
+
     <!-- VCDS Multi-Group Test: Multiple groups with different structure -->
     <test_case file="vcds.csv">
         <expected_type>VCDS</expected_type>

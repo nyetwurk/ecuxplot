@@ -690,12 +690,12 @@ loggers:
 
   VCDS_LEGACY:
     field_signatures:
-      - regex: ".*VCDS Version:.*"  # Match files with VCDS Version text
       - regex: ".*(Group|Block) [A-Z]:.*"  # Format 1: Group A:, Group B: markers (alphabetic)
 
     skip_lines: 10
     skip_regex:
       - regex: ".*(Group|Block) [A-Z]:.*"  # Format 1: Group A:, Group B: markers (separate line)
+      - regex: "G[0-9]+"
 
     header_format: "g,id,id2,u"
     aliases_from: "VCDS"
@@ -703,10 +703,12 @@ loggers:
   VCDS:
     field_signatures:
       - regex: ".*Group \\d+.*"  # Format 2: Group 23, Group 23 - Field 0 (numeric groups only)
+      - regex: ".*Loc\\. IDE\\d+.*"
 
     skip_lines: 10
     skip_regex:
       - regex: ".*Group \\d+ - Field.*"  # Format 2: Group 23 - Field 0 (in field names)
+      - regex: ".*Loc\\. IDE\\d+.*"
 
     header_format: "g,id,u"
 
@@ -716,7 +718,7 @@ loggers:
     #   disambiguation: "2 [024]" # before group suffix
 
     aliases:
-      - ["(STAMP|Zeit)", "TIME"]
+      - ["(STAMP|MARKE|Zeit)", "TIME"]
       - ["Absolute Pres.", "BoostPressure"]
       - ["Charge pressure control; charge press\\.before throttle valve", "BoostPressureRelative (mBar[gauge])"]  # Unit in parentheses with [gauge] modifier
       - ["Accelerator [Pp]osition", "AccelPedalPosition"]
@@ -744,12 +746,19 @@ loggers:
       - ["Engine torque", "TorqueActual"]
       # German VCDS field name aliases
       - ["angesaugte.*", "MassAirFlow"]
+      - ["Abgastemperatursensor 1", "EGTSensor1"]
+      - ["Abgastemperatursensor 2", "EGTSensor2"]
+      - ["Abgastemperatursensor 3", "EGTSensor3"]
+      - ["Abgastemperatursensor 4", "EGTSensor4"]
       - ["Einspritzzeit", "FuelInjectorOnTime"]
       - ["Einspritzzeit.*\\(korrigiert\\)", "FuelInjectorOnTimeCorrected"]
+      - ["Ladedruck: Sollwert", "BoostPressureDesired"]
+      - ["Ladedruck: Istwert", "BoostPressureActual"]
       - ["Lambda.*Korrekturfaktor", "LambdaCorrectionFactor"]
       - ["Lambda.*Regler", "LambdaControl"]
       - ["Lambdasonden-[Ss]pannung", "O2SVoltageSensor"] # spannung = voltage
       - ["Lambdasonden-.*", "LambdaActual"] # sonden = sensor
+      - ["Luftmasse: Istwert", "MassAirFlow"]
       - ["Motorlast", "EngineLoad"] # last == load
       - ["Tastverh.ltnis.*", "WastegateDutyCycle"] # tastverhältnis == duty cycle
 

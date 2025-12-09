@@ -1,6 +1,12 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- [#126](https://github.com/nyetwurk/ecuxplot/issues/126): Better VCDS support
+
 ## [1.2.1] - 2025-12-04
 
 ### Added
