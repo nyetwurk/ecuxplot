@@ -697,7 +697,7 @@ loggers:
     skip_regex:
       - regex: ".*(Group|Block) [A-Z]:.*"  # Format 1: Group A:, Group B: markers (separate line)
 
-    header_format: "g,id,u,u2"
+    header_format: "g,id,id2,u"
     aliases_from: "VCDS"
 
   VCDS:

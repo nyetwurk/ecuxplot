@@ -2017,7 +2017,7 @@
             <id index="5">MassAirFlow</id> <!-- block 002 -->
             <id index="6"></id> <!-- block 007 -->
             <id index="7">LambdaControl</id> <!-- block 007 -->
-            <id index="8">O2SVoltageSensor</id> <!-- block 007 -->
+            <id index="8">LambdaActual</id> <!-- block 007 -->
             <id index="9">WastegateDutyCycle</id> <!-- block 007 -->
             <id index="10">LambdaCorrectionFactor</id> <!-- block 007 -->
             <id index="11"></id> <!-- block C (Läuft nicht) -->
@@ -2027,13 +2027,13 @@
             <id_orig index="1"></id_orig>
             <id_orig index="2">Motordrehzahl</id_orig>
             <id_orig index="3">Motorlast</id_orig>
-            <id_orig index="4">Einspritzzeit</id_orig>
-            <id_orig index="5">angesaugte</id_orig>
+            <id_orig index="4">Einspritzzeit (korrigiert)</id_orig>
+            <id_orig index="5">angesaugte Luftmasse</id_orig>
             <id_orig index="6"></id_orig>
-            <id_orig index="7">Lambda</id_orig>
-            <id_orig index="8">Lambdasonden-</id_orig>
-            <id_orig index="9">Tastverh�ltnis</id_orig>
-            <id_orig index="10">Lambda</id_orig>
+            <id_orig index="7">Lambda Regler</id_orig>
+            <id_orig index="8">Lambdasonden- spannung</id_orig>
+            <id_orig index="9">Tastverh�ltnis Magnetventil 1</id_orig>
+            <id_orig index="10">Lambda Korrekturfaktor</id_orig>
             <id_orig index="11"></id_orig>
         </expected_id_origs>
         <expected_units>

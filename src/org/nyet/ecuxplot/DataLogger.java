@@ -862,7 +862,7 @@ public class DataLogger {
             }
 
             // Parse the header format tokens
-            String[] g = null, id = null, u = null, u2 = null, id_orig = null;
+            String[] g = null, id_orig = null, id = null, u = null, u2 = null, id2 = null;
 
             // If lineNum < formatTokens.length, we will not be able to handle all the tokens
             for (int i = 0; i < lineNum; i++) {
@@ -874,7 +874,8 @@ public class DataLogger {
                     case "id":
                         id = copyAndTrim(headerLines[i]);
                         // Only populate id_orig with original field names if no explicit id_orig token exists
-                        if (!this.hasToken("id_orig")) {
+                        // Note: If id2 token exists, id_orig will be updated after combination
+                        if (!this.hasToken("id_orig") && !this.hasToken("id2")) {
                             id_orig = copyAndTrim(headerLines[i]);
                             logger.debug("ID_ORIG from ID: Using {}: {} fields", id_orig, headerLines[i].length);
                         }
@@ -900,13 +901,66 @@ public class DataLogger {
                         id_orig = copyAndTrim(headerLines[i]);
                         logger.debug("ID_ORIG: Using {}: {} fields", id_orig, headerLines[i].length);
                         break;
+                    case "id2":
+                        id2 = copyAndTrim(headerLines[i]);
+                        logger.debug("ID2: Using {}: {} fields", id2, headerLines[i].length);
+                        break;
                     default:
                         logger.error("Unknown token '{}' at position {}", formatTokens[i], i);
                         break;
                 }
             }
 
-           return new HeaderData(g, id_orig, id, u, u2);
+            // Combine line continuation if id2 token exists (e.g., VCDS_LEGACY)
+            if (id2 != null && id != null) {
+                // Combine id + id2, storing result in id
+                combineLineContinuation(id, id2);
+                // After combination, preserve combined result in id_orig (before aliasing)
+                // id_orig contains the concatenated id + id2 before alias processing
+                id_orig = new String[id.length];
+                for (int i = 0; i < id.length; i++) {
+                    id_orig[i] = id[i];
+                }
+                logger.debug("ID_ORIG updated with combined ID (id + id2) before aliasing: {} fields", id_orig.length);
+            } else if (id_orig == null && id != null) {
+                // If id_orig wasn't explicitly set and we have id (no id2), populate it now
+                id_orig = new String[id.length];
+                for (int i = 0; i < id.length; i++) {
+                    id_orig[i] = id[i];
+                }
+                logger.debug("ID_ORIG auto-populated from ID: {} fields", id_orig.length);
+            }
+
+            return new HeaderData(g, id_orig, id, u, u2);
+        }
+
+        /**
+         * Combine line continuation: id (first part) + id2 (second part) → complete field name.
+         * Used for VCDS_LEGACY format where field names span multiple rows.
+         * After combination, the result is stored in id.
+         * The combined result will be preserved in id_orig by the caller.
+         *
+         * @param id First part of field names (will be modified to contain combined result)
+         * @param id2 Second part of field names (line continuation)
+         */
+        private void combineLineContinuation(String[] id, String[] id2) {
+            int maxLen = Math.min(id.length, id2.length);
+            for (int i = 0; i < maxLen; i++) {
+                String idField = id[i] != null ? id[i].trim() : "";
+                String id2Field = id2[i] != null ? id2[i].trim() : "";
+
+                // Only combine when both fields are non-empty
+                if (!idField.isEmpty() && !id2Field.isEmpty()) {
+                    // Check if id2 already contains id (avoid duplicates like "Engine Engine Speed")
+                    if (!id2Field.toLowerCase().contains(idField.toLowerCase())) {
+                        String combined = idField + " " + id2Field;
+                        id[i] = combined;
+                        logger.debug("Combined line continuation at column {}: '{}' + '{}' -> '{}'", i, idField, id2Field, combined);
+                    } else {
+                        logger.debug("Skipped combining at column {}: id2 '{}' already contains id '{}'", i, id2Field, idField);
+                    }
+                }
+            }
         }
 
         /**
