@@ -502,6 +502,10 @@ public class Dataset {
         String [] nextLine;
         while((nextLine = csvReader.readNext()) != null) {
             if (nextLine.length>0) {
+                // Allow subclasses to skip non-data lines (e.g., header sections mid-file)
+                if (shouldSkipDataLine(nextLine)) {
+                    continue;
+                }
                 boolean gotone=false;
                 for(int i=0;i<nextLine.length;i++) {
                     if (nextLine[i].trim().length()>0
@@ -539,6 +543,56 @@ public class Dataset {
         buildRanges();
 
         // Note: "Complete" is reported by ECUxDataset.buildRanges() after all work (including spline creation) is done
+    }
+
+    /**
+     * Hook for subclasses to skip non-data lines during CSV parsing.
+     * Called for each CSV line after header parsing is complete.
+     *
+     * Default implementation skips lines that are not mostly numeric (non-data lines).
+     * Subclasses can override for more specific logic (e.g., VCDS header detection).
+     *
+     * @param line The CSV line as an array of strings
+     * @return true if this line should be skipped, false if it should be processed as data
+     */
+    protected boolean shouldSkipDataLine(String[] line) {
+        return !isDataLine(line); // Default: skip non-data lines
+    }
+
+    /**
+     * Check if a CSV line appears to be a data line (mostly numeric fields).
+     * Used to distinguish data lines from header/metadata lines.
+     *
+     * @param line The CSV line as an array of strings
+     * @return true if the line appears to be data (majority of fields are numeric), false otherwise
+     */
+    protected boolean isDataLine(String[] line) {
+        if (line == null || line.length == 0) {
+            return false;
+        }
+
+        int numericCount = 0;
+        int nonEmptyCount = 0;
+
+        for (String field : line) {
+            if (field != null && field.trim().length() > 0) {
+                nonEmptyCount++;
+                try {
+                    Double.parseDouble(field.trim());
+                    numericCount++;
+                } catch (NumberFormatException e) {
+                    // Not numeric
+                }
+            }
+        }
+
+        // If no non-empty fields, not a data line
+        if (nonEmptyCount == 0) {
+            return false;
+        }
+
+        // Consider it a data line if majority of non-empty fields are numeric
+        return numericCount * 2 >= nonEmptyCount;
     }
 
     public ArrayList<Column> getColumns() {
