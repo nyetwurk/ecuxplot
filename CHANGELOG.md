@@ -1,6 +1,12 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- [#127](https://github.com/nyetwurk/ecuxplot/issues/127): Custom autorange now ignores hidden range series
+
 ## [1.2.2] - 2025-12-09
 
 ### Fixed

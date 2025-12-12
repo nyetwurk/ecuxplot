@@ -113,6 +113,7 @@ public class ECUxChartFactory {
     /**
      * Apply custom axis range calculation to ensure proper padding.
      * Only called when we want to override JFreeChart's default auto-ranging behavior.
+     * Only considers visible series when calculating the range (ignores hidden ranges).
      * @param chart the chart to modify
      * @param axisIndex the axis index to modify (0 or 1)
      * @param dataset the dataset to analyze for range calculation
@@ -125,12 +126,20 @@ public class ECUxChartFactory {
             return;
         }
 
-        // Find min and max values across all series
+        // Get the renderer for this axis to check series visibility
+        final XYItemRenderer renderer = plot.getRenderer(axisIndex);
+
+        // Find min and max values across visible series only
         double minValue = Double.MAX_VALUE;
         double maxValue = Double.MIN_VALUE;
         boolean hasData = false;
 
         for (int series = 0; series < dataset.getSeriesCount(); series++) {
+            // Skip hidden series - only include visible series in range calculation
+            if (renderer != null && !renderer.isSeriesVisible(series)) {
+                continue;
+            }
+
             for (int item = 0; item < dataset.getItemCount(series); item++) {
                 double yValue = dataset.getYValue(series, item);
                 if (!Double.isNaN(yValue)) {
