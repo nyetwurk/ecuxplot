@@ -333,14 +333,14 @@ public class AxisMenuHandlers {
             case "Sim Load": {
                 // g/sec to kg/hr
                 // Use getCsvColumn() to get raw CSV data without triggering calculations
-                final DoubleArray a = dataset.getCsvColumn("MassAirFlow").data.mult(UnitConstants.GPS_PER_KGH);
+                final DoubleArray a = dataset.getCsvColumn("MassAirFlow").data.mult(UnitConstants.KGH_PER_GPS);
                 final DoubleArray b = dataset.getCsvColumn("RPM").data.smooth();
                 // KUMSRL
                 return dataset.createColumn(id, UnitConstants.UNIT_PERCENT, a.div(b).div(.001072));
             }
             case "Sim Load Corrected": {
                 // g/sec to kg/hr
-                final DoubleArray a = dataset.get("Sim MAF").data.mult(UnitConstants.GPS_PER_KGH);
+                final DoubleArray a = dataset.get("Sim MAF").data.mult(UnitConstants.KGH_PER_GPS);
                 final DoubleArray b = dataset.get("RPM").data;
                 // KUMSRL
                 return dataset.createColumn(id, UnitConstants.UNIT_PERCENT, a.div(b).div(.001072));

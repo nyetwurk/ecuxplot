@@ -44,10 +44,10 @@ public class UnitConstants {
     public static final double HP_PER_WATT = 745.699872;
 
     // Mass flow conversions
-    /** Conversion factor from grams per second to kilograms per hour */
-    public static final double GPS_PER_KGH = 3.6;
-    /** Conversion factor from kilograms per hour to grams per second */
-    public static final double KGH_PER_GPS = 1.0 / GPS_PER_KGH;
+    /** Conversion factor from grams per second to kilograms per hour (kg/hr per g/sec) */
+    public static final double KGH_PER_GPS = 3.6;
+    /** Conversion factor from kilograms per hour to grams per second (g/sec per kg/hr) */
+    public static final double GPS_PER_KGH = 1.0 / KGH_PER_GPS;
 
     // Torque conversions
     /** Conversion factor from foot-pounds to Newton-meters */

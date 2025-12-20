@@ -1,6 +1,12 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [1.2.4] - 2025-12-19
+
+### Fixed
+
+- [#131](https://github.com/nyetwurk/ecuxplot/issues/131): Fix g/sec to kg/hr conversion
+
 ## [1.2.3] - 2025-12-15
 
 ### Fixed
