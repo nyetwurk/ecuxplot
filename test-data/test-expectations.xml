@@ -2377,6 +2377,80 @@
         <sanity_check row="0" col="2">1498.0</sanity_check>
     </test_case>
 
+    <!-- VCDS G### Format Test: Groups in G002 format with "Group 2 - Field 0" placeholder line -->
+    <test_case file="vcds-01-02D-03C-114F.csv">
+        <expected_type>VCDS</expected_type>
+        <expected_ids>
+            <id index="0"></id>
+            <id index="1">TIME</id> <!-- STAMP -->
+            <id index="2">RPM</id> <!-- Engine - Speed -->
+            <id index="3"></id> <!-- STAMP -->
+            <id index="4">FuelInjectorOnTime</id> <!-- Fuel Injectors - Average Time -->
+            <id index="5"></id> <!-- STAMP -->
+            <id index="6">MassAirFlow</id> <!-- Air - Mass Flow -->
+            <id index="7"></id> <!-- STAMP -->
+            <id index="8">ThrottlePlateAngle</id> <!-- Throttle - Angle -->
+            <id index="9"></id> <!-- STAMP -->
+            <id index="10">IgnitionTimingAngleOverall</id> <!-- Ignition - Timing -->
+            <id index="11"></id> <!-- STAMP -->
+            <id index="12">EngineLoadSpecified</id> <!-- Engine - Specified Load -->
+            <id index="13"></id> <!-- STAMP -->
+            <id index="14">EngineLoadCorrected</id> <!-- Engine - Corrected Load -->
+            <id index="15"></id> <!-- STAMP -->
+            <id index="16">EngineLoad</id> <!-- Engine - Actual Load -->
+            <id index="17"></id> <!-- STAMP -->
+            <id index="18">WastegateDutyCycle</id> <!-- Wastegate Valve - Duty Cycle -->
+        </expected_ids>
+        <expected_id_origs>
+            <id_orig index="0"></id_orig>
+            <id_orig index="1">STAMP</id_orig>
+            <id_orig index="2">Engine - Speed</id_orig>
+            <id_orig index="3">STAMP</id_orig>
+            <id_orig index="4">Fuel Injectors - Average Time</id_orig>
+            <id_orig index="5">STAMP</id_orig>
+            <id_orig index="6">Air - Mass Flow</id_orig>
+            <id_orig index="7">STAMP</id_orig>
+            <id_orig index="8">Throttle - Angle</id_orig>
+            <id_orig index="9">STAMP</id_orig>
+            <id_orig index="10">Ignition - Timing</id_orig>
+            <id_orig index="11">STAMP</id_orig>
+            <id_orig index="12">Engine - Specified Load</id_orig>
+            <id_orig index="13">STAMP</id_orig>
+            <id_orig index="14">Engine - Corrected Load</id_orig>
+            <id_orig index="15">STAMP</id_orig>
+            <id_orig index="16">Engine - Actual Load</id_orig>
+            <id_orig index="17">STAMP</id_orig>
+            <id_orig index="18">Wastegate Valve - Duty Cycle</id_orig>
+        </expected_id_origs>
+        <expected_units>
+            <unit index="0"></unit>
+            <unit index="1">s</unit>
+            <unit index="2">RPM</unit>
+            <unit index="3"></unit>
+            <unit index="4">ms</unit>
+            <unit index="5"></unit>
+            <unit index="6">g/sec</unit>
+            <unit index="7"></unit>
+            <unit index="8">°</unit>
+            <unit index="9"></unit>
+            <unit index="10">°</unit>
+            <unit index="11"></unit>
+            <unit index="12">ms</unit>
+            <unit index="13"></unit>
+            <unit index="14">ms</unit>
+            <unit index="15"></unit>
+            <unit index="16">ms</unit>
+            <unit index="17"></unit>
+            <unit index="18">%</unit>
+        </expected_units>
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle">5</category>
+            <category name="gear"></category>
+        </expected_filter_columns>
+        <sanity_check row="0" col="2">2040.0</sanity_check>
+    </test_case>
+
     <!-- VCDS Multi-Group Test: Multiple groups with different structure -->
     <test_case file="vcds.csv">
         <expected_type>VCDS</expected_type>

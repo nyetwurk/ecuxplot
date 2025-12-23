@@ -122,8 +122,9 @@ public class VCDSHeaderProcessor {
 
         groupData.columnToGroupId = new String[h.g.length];
 
-        // Unified regex: matches "Group A:" or "Group 23"
-        java.util.regex.Pattern groupPattern = java.util.regex.Pattern.compile("Group ([A-Z0-9]+)");
+        // Matches "Group A:", "Group 23", or "G###" format (e.g., G002, G003)
+        java.util.regex.Pattern groupPattern = java.util.regex.Pattern.compile("^(?:(?:Group|Block)\s+([A-Z0-9]+)|G([0-9]+))");
+        // Legacy VCDS format: quoted numbers like '002
         java.util.regex.Pattern quotedNumPattern = java.util.regex.Pattern.compile("'?([0-9]+)");
 
         // Phase 1: Extract group markers
@@ -135,7 +136,7 @@ public class VCDSHeaderProcessor {
             }
             java.util.regex.Matcher m = groupPattern.matcher(h.g[i]);
             if (m.find()) {
-                String capture = m.group(1);
+                String capture = m.group(1) != null ? m.group(1) : m.group(2);
                 if (capture == null) {
                     continue;
                 }
@@ -312,6 +313,27 @@ public class VCDSHeaderProcessor {
 
                 if (col.hasIdenticalInSameGroup(columns)) {
                     // RULE 1: Multiple occurrences in same group - add numbers only: "Field1", "Field2", etc.
+                    // Exception: If this is the first global TIME occurrence, keep it as "TIME" (don't number it)
+                    boolean isTimeField = "TIME".equals(col.fieldName);
+                    boolean isFirstGlobalTime = false;
+                    if (isTimeField) {
+                        // Check if this is the first global TIME occurrence (before any Pass 3a modifications)
+                        isFirstGlobalTime = true;
+                        for (int j = 0; j < col.index; j++) {
+                            ColumnInfo prevCol = columns[j];
+                            if (prevCol.fieldName != null && "TIME".equals(prevCol.fieldName)) {
+                                isFirstGlobalTime = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isFirstGlobalTime) {
+                        // Keep first global TIME unchanged (don't number it)
+                        continue;
+                    }
+
+                    // Number all duplicates (TIME2, TIME3, etc. or Field1, Field2, etc.)
                     int position = col.positionInSameGroup(columns);
                     h.id[col.index] = col.fieldName + position;
                 }
@@ -339,7 +361,7 @@ public class VCDSHeaderProcessor {
 
                 // Compute isFirstGlobally regardless of appearsInOtherGroups
                 // For TIME columns: check against any TIME variant; for others: check exact match
-		// This is required because all columns are disambiguated before this step.
+                // This is required because all columns are disambiguated before this step.
                 boolean isFirstGlobally = true;
                 for (int j = 0; j < col.index; j++) {
                     String prevFieldName = h.id[j];

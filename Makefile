@@ -54,7 +54,7 @@ TARGET:=ECUxPlot
 # Filename for final assets (e.g. installers, archives)
 ASSET_FILENAME:=$(TARGET)-$(ASSET_VER)
 
-.PHONY: all compile run test test-detection binclean clean help
+.PHONY: all compile run test test-debug test-detection binclean clean help
 
 # ant build target
 all $(TARGET).jar build/$(TARGET)-$(ECUXPLOT_VER).jar mapdump.jar: build/version.txt
@@ -73,6 +73,11 @@ run: $(TARGET).jar
 test: compile
 	@echo "Running unit tests..."
 	@$(ANT) -e test || (echo "Tests failed!" && exit 1)
+
+# Test logger detection and parsing with DEBUG
+test-debug: compile
+	@echo "Running unit tests..."
+	@VERBOSTY=debug $(ANT) -e test || (echo "Tests failed!" && exit 1)
 
 # Test only logger detection (faster, for debugging detection issues)
 test-detection: compile
@@ -135,6 +140,7 @@ help:
 	@echo "Testing targets:"
 	@echo ""
 	@echo "  make test           - Run full tests (detection + parsing + validation)"
+	@echo "  make test-debug     - Run full tests with VERBOSITY=debug"
 	@echo "  make test-detection - Run detection-only tests (faster, for debugging)"
 	@echo ""
 	@echo "Platform-specific targets:"

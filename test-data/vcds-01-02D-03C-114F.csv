@@ -1,0 +1,10 @@
+Monday,22,December,2025,15:32:14:47126-VCID:3B7F288D29DDB643C6-4ADE,VCDS Version: Release 25.3.2 (x64),Data version: 20250822 DS365.0
+8D0 907 558 M,ADVMB,1.8L R4/5VT MOTR AT D01,
+,,G002,F0,G002,F2,G002,F3,G003,F2,G003,F3,G114,F0,G114,F1,G114,F2,G114,F3,G000,F0,G000,F0,G000,F0,
+
+Marker,TIME,Group 2 - Field 0,TIME,Group 2 - Field 2,TIME,Group 2 - Field 3,TIME,Group 3 - Field 2,TIME,Group 3 - Field 3,TIME,Group 114 - Field 0,TIME,Group 114 - Field 1,TIME,Group 114 - Field 2,TIME,Group 114 - Field 3,,,,,,,
+,STAMP,Engine - Speed,STAMP,Fuel Injectors - Average Time,STAMP,Air - Mass Flow,STAMP,Throttle - Angle,STAMP,Ignition - Timing,STAMP,Engine - Specified Load,STAMP,Engine - Corrected Load,STAMP,Engine - Actual Load,STAMP,Wastegate Valve - Duty Cycle,,,,,,,
+,, /min,, ms,, g/s,,°,, °BTDC,, ms,, ms,, ms,, %,,,,,,,
+,84.30,2040,84.30,8.13,84.30,25.62,84.57,23.9,84.57,20.3,84.02,6.10,84.02,5.50,84.02,3.75,84.02,0.0,,,,,,,
+,85.08,2280,85.08,9.98,85.08,32.15,85.35,26.5,85.35,19.5,84.81,6.25,84.81,5.50,84.81,4.20,84.81,0.0,,,,,,,
+,85.85,2560,85.85,9.98,85.85,36.39,86.11,26.9,86.11,21.8,85.60,6.30,85.60,5.50,85.60,4.50,85.60,0.0,,,,,,,
