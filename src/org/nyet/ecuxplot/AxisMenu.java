@@ -101,6 +101,11 @@ public class AxisMenu extends JMenu {
         AxisMenuItems.SUBMENU_CALC_PID, AxisMenuItems.SUBMENU_CALC_IAT
     };
 
+    // Dynamically created calc submenus (not pre-populated, but should be checked for emptiness)
+    private static final String[] DYNAMIC_CALC_MENU_NAMES = {
+        AxisMenuItems.SUBMENU_CALC_MAF, AxisMenuItems.SUBMENU_CALC_FUEL
+    };
+
     /**
      * Check if a menu has any items (excluding separators).
      */
@@ -526,6 +531,13 @@ public class AxisMenu extends JMenu {
 
             // Remove empty menus last (calc menus and base menus) - same pattern for all
             for (String calcMenuName : CALC_MENU_NAMES) {
+                JMenu calcMenu = this.subMenus.get(calcMenuName);
+                if (calcMenu != null && !hasMenuItems(calcMenu)) {
+                    this.remove(calcMenu);
+                }
+            }
+            // Remove empty dynamically created calc submenus (e.g., Calc MAF, Calc Fuel)
+            for (String calcMenuName : DYNAMIC_CALC_MENU_NAMES) {
                 JMenu calcMenu = this.subMenus.get(calcMenuName);
                 if (calcMenu != null && !hasMenuItems(calcMenu)) {
                     this.remove(calcMenu);

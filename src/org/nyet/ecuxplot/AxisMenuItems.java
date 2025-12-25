@@ -460,7 +460,6 @@ public class AxisMenuItems {
                 menu.addToSubmenu(SUBMENU_MAF, dsid);
                 if (id.equals("MassAirFlow")) {
                     menu.addCalculatedFieldsFromData("MassAirFlow", dsid.type);
-                    menu.addToSubmenu(SUBMENU_CALC_MAF, new javax.swing.JSeparator());
                 }
                 return true;
             }),
