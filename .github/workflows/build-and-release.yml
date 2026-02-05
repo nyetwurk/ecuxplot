@@ -17,7 +17,31 @@ env:
   BUILD_CACHE_KEY: latest-build-cache
 
 jobs:
+  check-nightly-skip:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Compare with last nightly run
+        id: check
+        run: |
+          CURRENT_SHA="${{ github.sha }}"
+          # Second run in list is the previous scheduled run (first is this run)
+          PREVIOUS_SHA=$(gh run list --repo ${{ github.repository }} --workflow=build-and-release.yml --event schedule --limit 2 --json headSha -q '.[1].headSha // empty')
+          if [ -z "$PREVIOUS_SHA" ] || [ "$CURRENT_SHA" != "$PREVIOUS_SHA" ]; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Running build (current=$CURRENT_SHA, previous=$PREVIOUS_SHA)"
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping build - default branch unchanged ($CURRENT_SHA)"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   build-all-platforms:
+    needs: [check-nightly-skip]
+    if: always() && (github.event_name != 'schedule' || needs.check-nightly-skip.outputs.skip != 'true')
     uses: ./.github/workflows/build-matrix.yml
     with:
       use-cache: true
