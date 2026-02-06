@@ -172,6 +172,10 @@ chmod +x ECUxPlot.sh
 - Check that Java is properly installed
 - Review any error messages for clues
 
+#### Corrupted or reset preferences
+
+If ECUxPlot misbehaves after a crash or you want a clean slate, you can clear all preferences. See [Preferences and profiles locations](docs/prefs-and-profiles-locations.md#clearing-preferences-reset--fix-corrupted-prefs) for platform-specific steps (quit the app first, then remove the prefs store).
+
 #### Still having problems?
 
 - Check the [README troubleshooting section](README.md#troubleshooting)

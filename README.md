@@ -207,6 +207,12 @@ Access via **"Options → Show Events"** to:
 - If detection fails, ECUxPlot will still try to parse generic CSV
 - Please post your log file on the issue tracker for format support
 
+#### Where are profiles and preferences stored?
+
+- **Profiles** (saved vehicle profiles): macOS/Linux `~/.ECUxPlot/profiles`; Windows `%USERPROFILE%\Application Data\ECUxPlot\profiles`
+- **Preferences** (window size, last files, settings): Java Preferences API (Registry on Windows; `~/Library/Preferences/org.nyet.ecuxplot.plist` on macOS, or `~/.java/.userPrefs/` on Linux)
+- See [Preferences and profiles locations](docs/prefs-and-profiles-locations.md) for full paths and how to clear corrupted preferences.
+
 ### Getting Help
 
 - 📁 **Post your log file** for assistance with detection or parsing issues

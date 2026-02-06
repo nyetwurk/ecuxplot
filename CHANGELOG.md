@@ -1,6 +1,20 @@
 <!-- markdownlint-disable MD024 -->
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [#77](https://github.com/nyetwurk/ecuxplot/issues/77): Document prefs and profiles locations for macOS, Linux, and Windows; document how to clear corrupted preferences ([docs/prefs-and-profiles-locations.md](docs/prefs-and-profiles-locations.md))
+
+### Fixed
+
+- Calc MAF menu: remove if empty, remove excess separator
+
+### Changed
+
+- CI: attempt to skip nightly workflow when the last nightly run was for the same commit
+
 ## [1.2.5] - 2025-12-22
 
 ### Added
