@@ -70,40 +70,30 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Parse changelog for release notes
-        id: parse_changelog
+      - name: Prepare git-cliff args
+        id: prepare_cliff
         run: |
-          TAG_NAME="${{ inputs.tag-name }}"
-          VERSION=${TAG_NAME#v}
-
-          if [ "$TAG_NAME" = "latest" ]; then
-            echo "Using Unreleased section for 'latest' tag"
-            if grep -q "## \[Unreleased\]" CHANGELOG.md; then
-              awk "/## \[Unreleased\]/,/^## \[[0-9]/ { if (!/^## \[Unreleased\]/ && !/^## \[[0-9]/) print }" CHANGELOG.md > /tmp/changelog_section.txt
-            else
-              echo "No Unreleased section found in changelog"
-              echo "changelog_content=" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-          elif grep -q "## \[$VERSION\]" CHANGELOG.md; then
-            sed -n "/## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | sed '1d;$d' > /tmp/changelog_section.txt
-          elif grep -q "## \[Unreleased\]" CHANGELOG.md; then
-            awk "/## \[Unreleased\]/,/^## \[[0-9]/ { if (!/^## \[Unreleased\]/ && !/^## \[[0-9]/) print }" CHANGELOG.md > /tmp/changelog_section.txt
+          TAG="${{ inputs.tag-name }}"
+          # latest: unreleased changes since any tag (stable or rc)
+          if [[ "$TAG" == "latest" ]]; then
+            echo "args=-u --tag-pattern '^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' --strip header" >> "$GITHUB_OUTPUT"
+          # rc tag: changes since last rc or non-rc (--current limits to this release only)
+          elif [[ "$TAG" == *"-rc"* ]] || [[ "$TAG" == *"-beta"* ]] || [[ "$TAG" == *"-alpha"* ]]; then
+            echo "args=--current --tag $TAG --tag-pattern '^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' --strip header" >> "$GITHUB_OUTPUT"
+          # stable tag: changes since last non-rc (--current limits to this release only)
           else
-            echo "No changelog section found for version $VERSION or Unreleased"
-            echo "changelog_content=" >> $GITHUB_OUTPUT
-            exit 0
+            echo "args=--current --tag $TAG --tag-pattern '^v[0-9]+\.[0-9]+\.[0-9]+$' --strip header" >> "$GITHUB_OUTPUT"
           fi
 
-          if [ -s /tmp/changelog_section.txt ]; then
-            sed '/^$/d' /tmp/changelog_section.txt | sed 's/^### /#### /g' | sed 's/^- /- /g' > /tmp/changelog_clean.txt
-            CHANGELOG_CONTENT=$(cat /tmp/changelog_clean.txt)
-            echo "changelog_content<<EOF" >> $GITHUB_OUTPUT
-            echo "$CHANGELOG_CONTENT" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          else
-            echo "changelog_content=" >> $GITHUB_OUTPUT
-          fi
+      - name: Generate release notes with git-cliff
+        id: git_cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: ${{ steps.prepare_cliff.outputs.args }}
+        env:
+          OUTPUT: /tmp/release-notes.md
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: Backup & force-move tag to this commit
         id: move_tag
@@ -133,13 +123,13 @@ jobs:
           draft: false
           prerelease: ${{ inputs.is-prerelease }}
           target_commitish: ${{ github.sha }}
-          generate_release_notes: true
+          generate_release_notes: false
           body: |
             ${{ inputs.release-body }}
 
             ## Changelog
 
-            ${{ steps.parse_changelog.outputs.changelog_content }}
+            ${{ steps.git_cliff.outputs.content }}
           files: ${{ steps.files.outputs.list }}
           fail_on_unmatched_files: false
         env:
