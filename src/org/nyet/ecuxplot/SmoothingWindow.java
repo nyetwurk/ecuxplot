@@ -12,6 +12,7 @@ import javax.swing.table.*;
 import org.nyet.logfile.Dataset;
 import org.nyet.util.Strings;
 import org.nyet.util.Smoothing;
+import org.nyet.util.ThemeManager;
 import static org.nyet.util.Smoothing.Padding;
 import static org.nyet.util.Smoothing.Strategy;
 
@@ -1215,7 +1216,7 @@ public class SmoothingWindow extends ECUxPlotWindow {
             }
 
             if (rowIndexMapping == null || row >= rowIndexMapping.size()) {
-                c.setBackground(Color.WHITE);
+                c.setBackground(ThemeManager.getTableBackground());
                 return c;
             }
 
@@ -1227,7 +1228,7 @@ public class SmoothingWindow extends ECUxPlotWindow {
                         currentRanges = new ArrayList<>();
                     }
                 } else {
-                    c.setBackground(Color.WHITE);
+                    c.setBackground(ThemeManager.getTableBackground());
                     return c;
                 }
             }
@@ -1245,13 +1246,13 @@ public class SmoothingWindow extends ECUxPlotWindow {
             Dataset.Range range = findRangeForIndex(displayRanges, dataIndex);
 
             // Base background color by range - make more visible
-            Color baseColor = Color.WHITE;
+            Color baseColor = ThemeManager.getTableBackground();
             if (range != null) {
                 int rangeIndex = displayRanges.indexOf(range);
                 if (rangeIndex % 2 == 0) {
-                    baseColor = new Color(230, 230, 255); // More visible light blue
+                    baseColor = ThemeManager.getRangeEvenBackground();
                 } else {
-                    baseColor = new Color(255, 255, 230); // More visible light yellow
+                    baseColor = ThemeManager.getRangeOddBackground();
                 }
             }
 
@@ -1298,17 +1299,15 @@ public class SmoothingWindow extends ECUxPlotWindow {
 
             if (isProblematic) {
                 if (isRawData) {
-                    // Yellow for sign reversals in raw data
-                    c.setBackground(new Color(255, 255, 150)); // Bright yellow
+                    c.setBackground(ThemeManager.getSignReversalRawBackground());
                 } else {
-                    // Bright red for sign reversals in smoothed/post data - very visible
-                    c.setBackground(new Color(255, 150, 150)); // Bright red
+                    c.setBackground(ThemeManager.getSignReversalSmoothedBackground());
                 }
-                c.setForeground(Color.BLACK);
+                c.setForeground(ThemeManager.getTextForeground());
             } else if (isBoundary) {
-                // Orange/yellow tint for boundary samples - very visible
-                if (baseColor.equals(Color.WHITE)) {
-                    c.setBackground(new Color(255, 240, 200)); // Light orange for white background
+                Color defaultBg = ThemeManager.getTableBackground();
+                if (baseColor.equals(defaultBg)) {
+                    c.setBackground(ThemeManager.getBoundaryBackground());
                 } else {
                     // Shift base color toward orange
                     Color boundaryColor = new Color(
@@ -1318,10 +1317,10 @@ public class SmoothingWindow extends ECUxPlotWindow {
                     );
                     c.setBackground(boundaryColor);
                 }
-                c.setForeground(Color.BLACK);
+                c.setForeground(ThemeManager.getTextForeground());
             } else {
                 c.setBackground(baseColor);
-                c.setForeground(Color.BLACK);
+                c.setForeground(ThemeManager.getTextForeground());
             }
 
             return c;

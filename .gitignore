@@ -4,6 +4,7 @@
 *.tmp
 *.log
 .metadata
+/.idea
 /.vscode
 /build
 /runtime

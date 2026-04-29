@@ -12,6 +12,7 @@ import javax.swing.ToolTipManager;
 import org.nyet.logfile.Dataset;
 import org.nyet.util.FileDropListener;
 import org.nyet.util.FileDropHost;
+import org.nyet.util.ThemeManager;
 
 /**
  * Range Selector Window - Provides a browser-like interface for selecting
@@ -832,18 +833,17 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
                 // Style based on node type
                 if (node instanceof GroupNode) {
                     setFont(tree.getFont());
-                    setForeground(new Color(0, 100, 0)); // Dark green
+                    setForeground(ThemeManager.getGroupNodeColor());
                     String tooltip = createGroupTooltip((GroupNode) node);
                     setToolTipText(tooltip != null && !tooltip.trim().isEmpty() ? tooltip : null);
                 } else if (node instanceof FileNode) {
                     setFont(tree.getFont());
-                    // All files are black
-                    setForeground(Color.BLACK);
+                    setForeground(ThemeManager.getFileNodeColor());
                     String tooltip = createFileTooltip((FileNode) node);
                     setToolTipText(tooltip != null && !tooltip.trim().isEmpty() ? tooltip : null);
                 } else if (node instanceof RangeNode) {
                     setFont(tree.getFont());
-                    setForeground(Color.BLUE);
+                    setForeground(ThemeManager.getRangeNodeColor());
                     String tooltip = createRangeTooltip((RangeNode) node);
                     setToolTipText(tooltip != null && !tooltip.trim().isEmpty() ? tooltip : null);
                 }

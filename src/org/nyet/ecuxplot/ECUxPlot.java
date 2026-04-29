@@ -113,7 +113,6 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         this.plotlist.add(this);
 
         this.exitOnClose=exitOnClose;
-        WindowUtilities.setNativeLookAndFeel();
         this.menuBar = new JMenuBar();
 
         this.filter = new Filter(this.prefs);
@@ -965,6 +964,34 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
         } else if(source.getText().equals("SAE constants...")) {
             if(this.sae == null) this.sae = new SAEEditor(this.prefs, this.env.sae);
             this.sae.showDialog(this, "SAE");
+        } else if(source.getText().equals("Auto (follow OS)")
+                || source.getText().equals("Light")
+                || source.getText().equals("Dark")) {
+            String mode;
+            switch (source.getText()) {
+                case "Light": mode = ThemeManager.THEME_LIGHT; break;
+                case "Dark": mode = ThemeManager.THEME_DARK; break;
+                default: mode = ThemeManager.THEME_AUTO; break;
+            }
+            ThemeManager.applyTheme(mode, this.prefs);
+            // Update all open windows
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                SwingUtilities.updateComponentTreeUI(w);
+            }
+            // Re-theme the chart
+            if (this.chartPanel != null && this.chartPanel.getChart() != null) {
+                ECUxChartFactory.applyChartTheme(this.chartPanel.getChart());
+                this.chartPanel.getChart().fireChartChanged();
+            }
+        } else if(event.getActionCommand() != null
+                && event.getActionCommand().startsWith("palette:")) {
+            String paletteKey = event.getActionCommand().substring("palette:".length());
+            ThemeManager.setPalette(paletteKey, this.prefs);
+            // Re-apply series colors to existing chart
+            if (this.chartPanel != null && this.chartPanel.getChart() != null) {
+                ECUxChartFactory.reapplySeriesColors(this.chartPanel.getChart());
+                this.chartPanel.getChart().fireChartChanged();
+            }
         } else if(source.getText().equals("About...")) {
             JOptionPane.showMessageDialog(this, new AboutPanel(),
                     "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
@@ -2174,6 +2201,9 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
                 // Set up MessageDialog for --no-gui mode
                 MessageDialog.setNoGui(o.nogui);
+
+                // Initialize theme before creating any Swing components
+                ThemeManager.initialize(getPreferences());
 
                 // exit on close
                 final ECUxPlot plot = new ECUxPlot("ECUxPlot", o, true);

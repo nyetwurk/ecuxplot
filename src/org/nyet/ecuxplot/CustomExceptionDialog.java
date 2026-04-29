@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import org.nyet.util.ThemeManager;
+
 /**
  * Custom exception dialog with better styling and branding.
  * Provides a more professional appearance than the default JOptionPane.
@@ -35,11 +37,11 @@ public class CustomExceptionDialog extends JDialog {
         // Create main panel with custom styling
         JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
-        mainPanel.setBackground(Color.WHITE);
+        mainPanel.setBackground(ThemeManager.getDialogBackground());
 
         // Create icon panel
         JPanel iconPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        iconPanel.setBackground(Color.WHITE);
+        iconPanel.setBackground(ThemeManager.getDialogBackground());
 
         // Load the application icon
         ImageIcon appIcon = null;
@@ -62,13 +64,13 @@ public class CustomExceptionDialog extends JDialog {
 
         // Create message panel
         JPanel messagePanel = new JPanel(new BorderLayout());
-        messagePanel.setBackground(Color.WHITE);
+        messagePanel.setBackground(ThemeManager.getDialogBackground());
 
         // Main message
         messageLabel = new JLabel("<html><div style='width: 400px;'>" +
             message.replace("\n", "<br>") + "</div></html>");
         messageLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
-        messageLabel.setForeground(new Color(60, 60, 60));
+        messageLabel.setForeground(ThemeManager.getDialogMessageColor());
         messageLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         messagePanel.add(messageLabel, BorderLayout.NORTH);
 
@@ -76,10 +78,10 @@ public class CustomExceptionDialog extends JDialog {
         if (details != null && !details.trim().isEmpty()) {
             detailsArea = new JTextArea(details);
             detailsArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
-            detailsArea.setBackground(new Color(248, 248, 248));
-            detailsArea.setForeground(new Color(80, 80, 80));
+            detailsArea.setBackground(ThemeManager.getDialogDetailsBackground());
+            detailsArea.setForeground(ThemeManager.getDialogDetailsTextColor());
             detailsArea.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createLineBorder(ThemeManager.getDialogBorderColor()),
                 BorderFactory.createEmptyBorder(8, 8, 8, 8)
             ));
             detailsArea.setEditable(false);
@@ -98,7 +100,7 @@ public class CustomExceptionDialog extends JDialog {
 
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBackground(ThemeManager.getDialogBackground());
 
         // Details toggle button (if details exist)
         if (details != null && !details.trim().isEmpty()) {
@@ -118,8 +120,8 @@ public class CustomExceptionDialog extends JDialog {
         okButton = new JButton("OK");
         okButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
         okButton.setPreferredSize(new Dimension(80, 30));
-        okButton.setBackground(new Color(0, 120, 215));
-        okButton.setForeground(Color.WHITE);
+        okButton.setBackground(ThemeManager.getDialogButtonBackground());
+        okButton.setForeground(ThemeManager.getDialogButtonForeground());
         okButton.setFocusPainted(false);
         okButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         okButton.addActionListener(new ActionListener() {

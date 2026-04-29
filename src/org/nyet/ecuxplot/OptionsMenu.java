@@ -2,10 +2,14 @@ package org.nyet.ecuxplot;
 
 import java.util.prefs.Preferences;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBox;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
+
+import org.nyet.util.ThemeManager;
 
 public final class OptionsMenu extends JMenu {
     /**
@@ -16,6 +20,9 @@ public final class OptionsMenu extends JMenu {
     private JCheckBox filterCheckBox;
     private JCheckBox scatterCheckBox;
     private JCheckBox saeCheckBox;
+    private JRadioButtonMenuItem themeAuto;
+    private JRadioButtonMenuItem themeLight;
+    private JRadioButtonMenuItem themeDark;
 
     public OptionsMenu(String id, ECUxPlot plotFrame) {
         super(id);
@@ -48,6 +55,52 @@ public final class OptionsMenu extends JMenu {
         jcb.addActionListener(plotFrame);
         this.add(jcb);
         this.saeCheckBox = jcb;
+
+        this.add(new JSeparator());
+
+        // Theme submenu
+        JMenu themeMenu = new JMenu("Theme");
+        themeMenu.setToolTipText("Select UI theme");
+        ButtonGroup themeGroup = new ButtonGroup();
+        String currentTheme = ThemeManager.getCurrentMode();
+
+        themeAuto = new JRadioButtonMenuItem("Auto (follow OS)",
+                ThemeManager.THEME_AUTO.equals(currentTheme));
+        themeAuto.addActionListener(plotFrame);
+        themeGroup.add(themeAuto);
+        themeMenu.add(themeAuto);
+
+        themeLight = new JRadioButtonMenuItem("Light",
+                ThemeManager.THEME_LIGHT.equals(currentTheme));
+        themeLight.addActionListener(plotFrame);
+        themeGroup.add(themeLight);
+        themeMenu.add(themeLight);
+
+        themeDark = new JRadioButtonMenuItem("Dark",
+                ThemeManager.THEME_DARK.equals(currentTheme));
+        themeDark.addActionListener(plotFrame);
+        themeGroup.add(themeDark);
+        themeMenu.add(themeDark);
+
+        this.add(themeMenu);
+
+        // Color Palette submenu
+        JMenu paletteMenu = new JMenu("Color Palette");
+        paletteMenu.setToolTipText("Select chart color palette");
+        ButtonGroup paletteGroup = new ButtonGroup();
+        String currentPalette = ThemeManager.getCurrentPalette();
+
+        for (String name : ThemeManager.PALETTE_NAMES) {
+            String key = name.toLowerCase();
+            JRadioButtonMenuItem paletteItem = new JRadioButtonMenuItem(
+                    name, key.equals(currentPalette));
+            paletteItem.setActionCommand("palette:" + key);
+            paletteItem.addActionListener(plotFrame);
+            paletteGroup.add(paletteItem);
+            paletteMenu.add(paletteItem);
+        }
+
+        this.add(paletteMenu);
 
         this.add(new JSeparator());
 
