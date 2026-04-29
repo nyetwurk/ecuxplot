@@ -65,9 +65,13 @@ filter_unconventional = false
 split_commits = false
 # Group commits by type. Prefix "<!-- N -->" controls section order (stripped in template).
 commit_parsers = [
-  # Dependabot first (before [Ff]ix/[Ii]ssue which match "fix"/"issue" in merge messages)
+  # Dependabot first (before generic Merge pull request → Other)
   { message = "^Merge pull request.*dependabot", group = "<!-- 10 -->Dependabot" },
   { message = "^Bump", skip = true },
+  # Git merges before [Ii]ssue — preprocessors rewrite #N to …/issues/N, which matches [Ii]ssue
+  { message = "^Merge pull request", group = "<!-- 09 -->Other" },
+  { message = "^Merge remote-tracking branch", group = "<!-- 09 -->Other" },
+  { message = "^Merge branch", group = "<!-- 09 -->Other" },
   # Conventional commits
   { message = "^doc", group = "<!-- 03 -->Documentation" },
   { message = "^refactor", group = "<!-- 04 -->Refactor" },
