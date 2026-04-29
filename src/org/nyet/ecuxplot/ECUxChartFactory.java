@@ -18,6 +18,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.nyet.logfile.Dataset;
 import org.nyet.util.Strings;
+import org.nyet.util.ThemeManager;
 
 public class ECUxChartFactory {
     /**
@@ -94,7 +95,43 @@ public class ECUxChartFactory {
         plot.getRangeAxis(0).setVisible(false);
         plot.getRangeAxis(1).setVisible(false);
 
+        applyChartTheme(chart);
+
         return chart;
+    }
+
+    /**
+     * Apply theme colors to chart backgrounds, gridlines, axes, and legend.
+     */
+    public static void applyChartTheme(JFreeChart chart) {
+        chart.setBackgroundPaint(ThemeManager.getChartLegendBackground());
+
+        // Title text
+        if (chart.getTitle() != null) {
+            chart.getTitle().setPaint(ThemeManager.getChartAxisLabelColor());
+        }
+
+        final XYPlot plot = chart.getXYPlot();
+        plot.setBackgroundPaint(ThemeManager.getChartBackground());
+        plot.setDomainGridlinePaint(ThemeManager.getChartGridlineColor());
+        plot.setRangeGridlinePaint(ThemeManager.getChartGridlineColor());
+
+        Color labelColor = ThemeManager.getChartAxisLabelColor();
+        for (int i = 0; i < plot.getRangeAxisCount(); i++) {
+            if (plot.getRangeAxis(i) != null) {
+                plot.getRangeAxis(i).setLabelPaint(labelColor);
+                plot.getRangeAxis(i).setTickLabelPaint(labelColor);
+            }
+        }
+        if (plot.getDomainAxis() != null) {
+            plot.getDomainAxis().setLabelPaint(labelColor);
+            plot.getDomainAxis().setTickLabelPaint(labelColor);
+        }
+
+        if (chart.getLegend() != null) {
+            chart.getLegend().setBackgroundPaint(ThemeManager.getChartLegendBackground());
+            chart.getLegend().setItemPaint(ThemeManager.getChartLegendTextColor());
+        }
     }
 
     public static void setChartStyle(JFreeChart chart, boolean lines,
@@ -162,6 +199,60 @@ public class ECUxChartFactory {
         axis.setAutoRange(false);
     }
 
+    /**
+     * Re-apply series colors to all series on all axes of the chart.
+     * Used when the color palette changes without rebuilding data.
+     */
+    public static void reapplySeriesColors(JFreeChart chart) {
+        final XYPlot plot = chart.getXYPlot();
+        for (int axis = 0; axis < plot.getDatasetCount(); axis++) {
+            if (!(plot.getDataset(axis) instanceof DefaultXYDataset)) continue;
+            final DefaultXYDataset d = (DefaultXYDataset) plot.getDataset(axis);
+            if (d.getSeriesCount() == 0) continue;
+
+            final Color colors[][] = ThemeManager.getSeriesColors();
+            int axisIdx = axis % colors.length;
+            final XYItemRenderer renderer = plot.getRenderer(axis);
+            if (renderer == null) continue;
+
+            final String[] ykeys = getDatasetYkeys(d);
+
+            // For each series, figure out which ykey it belongs to and apply color
+            for (int s = 0; s < d.getSeriesCount(); s++) {
+                final Comparable<?> key = d.getSeriesKey(s);
+                String ystr = (key instanceof Dataset.Key)
+                    ? ((Dataset.Key) key).getString() : key.toString();
+
+                // Find ykey index
+                int yki = 0;
+                for (int k = 0; k < ykeys.length; k++) {
+                    if (ykeys[k].equals(ystr)) { yki = k; break; }
+                }
+
+                // Find all series with this ykey to compute shade offsets
+                ArrayList<Integer> group = new ArrayList<>();
+                for (int gs = 0; gs < d.getSeriesCount(); gs++) {
+                    Comparable<?> gk = d.getSeriesKey(gs);
+                    String gs_ystr = (gk instanceof Dataset.Key)
+                        ? ((Dataset.Key) gk).getString() : gk.toString();
+                    if (gs_ystr.equals(ystr)) group.add(gs);
+                }
+
+                Color baseColor = colors[axisIdx][yki % colors[axisIdx].length];
+                int posInGroup = group.indexOf(s);
+                int mid = group.size() / 2;
+
+                Color c = baseColor;
+                if (posInGroup <= mid) {
+                    for (int j = 0; j < (mid - posInGroup); j++) c = c.darker();
+                } else {
+                    for (int j = 0; j < (posInGroup - mid); j++) c = c.brighter();
+                }
+                renderer.setSeriesPaint(s, c);
+            }
+        }
+    }
+
     // set all series of a given ykey different shades of a base paint
     public static void setAxisPaint(JFreeChart chart, int axis,
         DefaultXYDataset d, Dataset.Key ykey, Integer[] series) {
@@ -169,20 +260,7 @@ public class ECUxChartFactory {
         final XYPlot plot = chart.getXYPlot();
         final XYItemRenderer renderer = plot.getRenderer(axis);
 
-        final Color colors[][] = {
-            {
-            new Color(0xff, 0x00, 0x00),
-            new Color(0x00, 0x16, 0xff),
-            new Color(0x00, 0xe0, 0xff),
-            new Color(0xff, 0xc8, 0x00)
-            },
-            {
-            new Color(0xb9, 0x00, 0xff),
-            new Color(0x00, 0xff, 0x48),
-            new Color(0xb2, 0xff, 0x00),
-            new Color(0xff, 0x70, 0x00)
-            }
-        };
+        final Color colors[][] = ThemeManager.getSeriesColors();
 
         axis = axis%colors.length;
 

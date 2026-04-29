@@ -133,7 +133,8 @@ def main():
     jar_names = [
         "jcommon", "jfreechart", "opencsv", "commons-cli",
         "commons-lang3", "slf4j-api",
-        "logback-classic", "logback-core"
+        "logback-classic", "logback-core",
+        "flatlaf"
     ]
 
     jar_versions = {}

@@ -14,6 +14,7 @@ import javax.swing.table.*;
 
 import org.nyet.logfile.Dataset;
 import org.nyet.util.Strings;
+import org.nyet.util.ThemeManager;
 
 /**
  * Filter Window - Integrates filter parameter editing with real-time data visualization
@@ -1046,15 +1047,16 @@ public class FilterWindow extends ECUxPlotWindow {
                 if (statusValue != null) {
                     String status = statusValue.toString();
                     if ("PASS".equals(status)) {
-                        c.setBackground(new Color(200, 255, 200)); // Light green
+                        c.setBackground(ThemeManager.getPassBackground());
                     } else if ("FAIL".equals(status)) {
-                        c.setBackground(new Color(255, 200, 200)); // Light red
+                        c.setBackground(ThemeManager.getFailBackground());
                     } else {
-                        c.setBackground(Color.WHITE);
+                        c.setBackground(ThemeManager.getTableBackground());
                     }
                 } else {
-                    c.setBackground(Color.WHITE);
+                    c.setBackground(ThemeManager.getTableBackground());
                 }
+                c.setForeground(ThemeManager.getTextForeground());
             }
 
             return c;

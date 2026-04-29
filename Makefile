@@ -35,6 +35,7 @@ ECUXPLOT_JARS := \
     jfreechart-$(JFREECHART_VER).jar \
     jspline.jar \
     flanagan.jar \
+    flatlaf-$(FLATLAF_VER).jar \
     slf4j-api-$(SLF4J_API_VER).jar \
     logback-classic-$(LOGBACK_CLASSIC_VER).jar \
     logback-core-$(LOGBACK_CORE_VER).jar
