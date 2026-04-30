@@ -5,6 +5,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -43,6 +44,9 @@ public class SmoothingWindow extends ECUxPlotWindow {
     private JTextField HPMAW;
     private JTextField ZeitMAW;
     private JButton okButton; // Store reference to OK button
+
+    // State snapshot for avoiding redundant applies (Issue #121)
+    private Object[] lastAppliedState;
 
     // Data
     private TreeMap<String, ECUxDataset> fileDatasets;
@@ -95,6 +99,9 @@ public class SmoothingWindow extends ECUxPlotWindow {
 
         initializeComponents();
         setupLayout();
+
+        // Snapshot the initial state so the first Apply is a no-op if nothing changed
+        lastAppliedState = captureState();
 
         // Add window listener to save size when window is closed
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -923,12 +930,33 @@ public class SmoothingWindow extends ECUxPlotWindow {
     }
 
     /**
+     * Capture the current UI state for comparison.
+     * Used to detect whether settings have changed since the last apply.
+     */
+    private Object[] captureState() {
+        return new Object[] {
+            smoothingStrategyCombo.getSelectedItem(),
+            leftPaddingCombo.getSelectedItem(),
+            rightPaddingCombo.getSelectedItem(),
+            HPMAW.getText(),
+            ZeitMAW.getText()
+        };
+    }
+
+    /**
      * Apply smoothing changes and rebuild the plot
      * @throws Exception if any error occurs during the process
      */
     private void applySmoothingChanges() throws Exception {
+        if (Arrays.equals(captureState(), lastAppliedState)) {
+            clearTopWindow();
+            return;
+        }
+
         // Process smoothing changes from UI controls
         processSmoothingChanges();
+
+        lastAppliedState = captureState();
 
         // Window is already set as top by the button action listener
 
@@ -991,19 +1019,25 @@ public class SmoothingWindow extends ECUxPlotWindow {
         final Strategy defaultStrategy = Strategy.MAW;
         final Smoothing.PaddingConfig defaultPadding = Smoothing.PaddingConfig.forStrategy(defaultStrategy);
 
-        // Restore HPMAW and ZeitMAW to defaults
-        if (filter != null) {
-            filter.HPMAW(1.5); // defaultHPMAW
-            filter.ZeitMAW(1.5); // defaultZeitMAW
-        }
-
         // Update UI controls to show default values
         smoothingStrategyCombo.setSelectedItem(defaultStrategy);
         leftPaddingCombo.setSelectedItem(defaultPadding.left);
         rightPaddingCombo.setSelectedItem(defaultPadding.right);
         if (filter != null) {
-            HPMAW.setText(String.valueOf(filter.HPMAW()));
-            ZeitMAW.setText(String.valueOf(filter.ZeitMAW()));
+            HPMAW.setText(String.valueOf(1.5));
+            ZeitMAW.setText(String.valueOf(1.5));
+        }
+
+        // Skip rebuild if the defaults match what was last applied
+        if (Arrays.equals(captureState(), lastAppliedState)) {
+            clearTopWindow();
+            return;
+        }
+
+        // Restore HPMAW and ZeitMAW to defaults
+        if (filter != null) {
+            filter.HPMAW(1.5); // defaultHPMAW
+            filter.ZeitMAW(1.5); // defaultZeitMAW
         }
 
         // Apply defaults to all datasets
@@ -1016,6 +1050,8 @@ public class SmoothingWindow extends ECUxPlotWindow {
 
         // Process the smoothing changes (same as Apply button)
         processSmoothingChanges();
+
+        lastAppliedState = captureState();
 
         if (this.eplot != null) {
             this.eplot.rebuild(() -> {

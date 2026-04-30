@@ -6,6 +6,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.TreeMap;
 
 import javax.swing.*;
@@ -37,6 +38,9 @@ public class FilterWindow extends ECUxPlotWindow {
     private JTextField minAcceleration;
     private JTextField accelMAW;
     private JTextField minPoints;
+
+    // State snapshot for avoiding redundant applies (Issue #121)
+    private Object[] lastAppliedState;
 
     // Data visualization components
     private ECUxDataset dataset;
@@ -167,6 +171,9 @@ public class FilterWindow extends ECUxPlotWindow {
         initializeComponents();
         setupLayout();
         updateDialog();
+
+        // Snapshot the initial state so the first Apply is a no-op if nothing changed
+        lastAppliedState = captureState();
 
         // Add window listener to save size when window is closed
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -1067,9 +1074,35 @@ public class FilterWindow extends ECUxPlotWindow {
      * Apply filter changes and rebuild the plot
      * @throws Exception if any error occurs during the process
      */
+    /**
+     * Capture the current UI state for comparison.
+     * Used to detect whether settings have changed since the last apply.
+     */
+    private Object[] captureState() {
+        return new Object[] {
+            gear.getValue(),
+            minRPM.getText(),
+            maxRPM.getText(),
+            minRPMRange.getText(),
+            monotonicRPMfuzz.getText(),
+            minPedal.getText(),
+            minThrottle.getText(),
+            minAcceleration.getText(),
+            accelMAW.getText(),
+            minPoints.getText()
+        };
+    }
+
     private void applyFilterChanges() throws Exception {
+        if (Arrays.equals(captureState(), lastAppliedState)) {
+            clearTopWindow();
+            return;
+        }
+
         // Actually read the values from the text fields and apply them
         processFilterChanges();
+
+        lastAppliedState = captureState();
 
         // Window is already set as top by the button action listener
 
@@ -1112,8 +1145,16 @@ public class FilterWindow extends ECUxPlotWindow {
         // Update the dialog to show default values
         updateDialog();
 
+        // Skip rebuild if the defaults match what was last applied
+        if (Arrays.equals(captureState(), lastAppliedState)) {
+            clearTopWindow();
+            return;
+        }
+
         // Process the filter changes (same as Apply button)
         processFilterChanges();
+
+        lastAppliedState = captureState();
 
         if (this.eplot != null) {
             this.eplot.rebuild(() -> {

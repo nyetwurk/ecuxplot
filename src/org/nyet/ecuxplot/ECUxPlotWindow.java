@@ -28,6 +28,13 @@ public abstract class ECUxPlotWindow extends JFrame {
     protected final Logger logger;
 
     /**
+     * Dirty flag to track whether user has made changes since last apply.
+     * Used to avoid redundant rebuilds when Apply/OK/Restore Defaults is
+     * clicked multiple times without intervening user changes.
+     */
+    private boolean dirty = false;
+
+    /**
      * File datasets - shared by windows that display file-based data
      */
     protected TreeMap<String, ECUxDataset> fileDatasets;
@@ -83,6 +90,30 @@ public abstract class ECUxPlotWindow extends JFrame {
      */
     protected boolean isFilterDisabled() {
         return filter != null && !filter.enabled();
+    }
+
+    /**
+     * Mark this window as dirty (user has made changes).
+     * Call this from change listeners on UI controls.
+     */
+    protected void markDirty() {
+        this.dirty = true;
+    }
+
+    /**
+     * Clear the dirty flag (changes have been applied).
+     * Call this after Apply/OK/Restore Defaults successfully completes.
+     */
+    protected void clearDirty() {
+        this.dirty = false;
+    }
+
+    /**
+     * Check if the window has unapplied user changes.
+     * @return true if the user has made changes since the last apply
+     */
+    protected boolean isDirty() {
+        return this.dirty;
     }
 }
 

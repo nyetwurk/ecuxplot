@@ -139,6 +139,17 @@ public class FATSEditor extends PreferencesEditor {
     }
 
     @Override
+    protected Object[] captureState() {
+        // Capture custom fields directly (addPairs fields are replaced)
+        return new Object[] {
+            this.start.getText(),
+            this.end.getText(),
+            this.rpmPerMph.getText(),
+            this.speedUnitCombo.getSelectedItem()
+        };
+    }
+
+    @Override
     public void updateDialog() {
         FATS.SpeedUnit speedUnit = this.s.speedUnit();
         switch (speedUnit) {
