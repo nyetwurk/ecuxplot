@@ -69,16 +69,26 @@ public class AxisMenuItems {
         public final String submenu;  // null for standalone items (this.add), non-null for submenu items
         public final BiFunction<ECUxDataset, Comparable<?>, Column> handlerMethod;  // Method reference to handler, or null
         public final boolean me7loggerOnly;  // true if this field should only be added for ME7LOGGER
+        public final String tooltipText;  // tooltip describing the calculation, or null
 
         public MenuCalculatedField(String fieldName, String submenu, BiFunction<ECUxDataset, Comparable<?>, Column> handlerMethod) {
-            this(fieldName, submenu, handlerMethod, false);
+            this(fieldName, submenu, handlerMethod, false, null);
         }
 
         public MenuCalculatedField(String fieldName, String submenu, BiFunction<ECUxDataset, Comparable<?>, Column> handlerMethod, boolean me7loggerOnly) {
+            this(fieldName, submenu, handlerMethod, me7loggerOnly, null);
+        }
+
+        public MenuCalculatedField(String fieldName, String submenu, BiFunction<ECUxDataset, Comparable<?>, Column> handlerMethod, String tooltipText) {
+            this(fieldName, submenu, handlerMethod, false, tooltipText);
+        }
+
+        public MenuCalculatedField(String fieldName, String submenu, BiFunction<ECUxDataset, Comparable<?>, Column> handlerMethod, boolean me7loggerOnly, String tooltipText) {
             this.fieldName = fieldName;
             this.submenu = submenu;  // null means standalone (this.add), non-null means addToSubmenu
             this.handlerMethod = handlerMethod;
             this.me7loggerOnly = me7loggerOnly;
+            this.tooltipText = tooltipText;
         }
     }
 
@@ -259,94 +269,130 @@ public class AxisMenuItems {
     public static final BaseFieldCalculatedFields[] MENU_CALCULATED_FIELDS = {
         // MassAirFlow -> calculated fields (ME7LOGGER only for some)
         new BaseFieldCalculatedFields("MassAirFlow", Arrays.asList(
-            new MenuCalculatedField("MassAirFlow (kg/hr)", null, null),  // unit conversion, standalone
-            new MenuCalculatedField("Sim Load", SUBMENU_CALC_MAF, AxisMenuHandlers::getMafFuelColumn, true),  // ME7LOGGER only
-            new MenuCalculatedField("Sim Load Corrected", SUBMENU_CALC_MAF, AxisMenuHandlers::getMafFuelColumn, true),  // ME7LOGGER only
-            new MenuCalculatedField("Sim MAF", SUBMENU_CALC_MAF, AxisMenuHandlers::getMafFuelColumn, true),  // ME7LOGGER only
-            new MenuCalculatedField("MassAirFlow df/dt", SUBMENU_MAF, AxisMenuHandlers::getMafFuelColumn),
-            new MenuCalculatedField("Turbo Flow", SUBMENU_MAF, AxisMenuHandlers::getMafFuelColumn),
-            new MenuCalculatedField("Turbo Flow (lb/min)", SUBMENU_MAF, AxisMenuHandlers::getMafFuelColumn)
+            new MenuCalculatedField("MassAirFlow (kg/hr)", null, null,
+                "Unit conversion: g/s \u2192 kg/hr"),
+            new MenuCalculatedField("Sim Load", SUBMENU_CALC_MAF, AxisMenuHandlers::getMafFuelColumn, true,
+                "MAF(g/s) \u00d7 3.6 / RPM / 0.001072 (KUMSRL)"),
+            new MenuCalculatedField("Sim Load Corrected", SUBMENU_CALC_MAF, AxisMenuHandlers::getMafFuelColumn, true,
+                "Corrected MAF \u00d7 3.6 / RPM / 0.001072 (KUMSRL)"),
+            new MenuCalculatedField("Sim MAF", SUBMENU_CALC_MAF, AxisMenuHandlers::getMafFuelColumn, true,
+                "MAF \u00d7 MAF_correction + MAF_offset"),
+            new MenuCalculatedField("MassAirFlow df/dt", SUBMENU_MAF, AxisMenuHandlers::getMafFuelColumn,
+                "Time derivative of MassAirFlow"),
+            new MenuCalculatedField("Turbo Flow", SUBMENU_MAF, AxisMenuHandlers::getMafFuelColumn,
+                "Sim MAF / (1225 \u00d7 turbos) [m\u00b3/s]"),
+            new MenuCalculatedField("Turbo Flow (lb/min)", SUBMENU_MAF, AxisMenuHandlers::getMafFuelColumn,
+                "Sim MAF / (7.55 \u00d7 turbos) [lb/min]")
         ), null),
 
         // EffInjectionTime -> calculated fields
         new BaseFieldCalculatedFields("EffInjectionTime", Arrays.asList(
-            new MenuCalculatedField("EffInjectorDutyCycle", null, AxisMenuHandlers::getInjectorDutyCycleColumn),  // standalone
-            new MenuCalculatedField("Sim Fuel Mass", SUBMENU_CALC_FUEL, AxisMenuHandlers::getMafFuelColumn),
-            new MenuCalculatedField("Sim AFR", SUBMENU_CALC_FUEL, AxisMenuHandlers::getAfrColumn),
-            new MenuCalculatedField("Sim lambda", SUBMENU_CALC_FUEL, AxisMenuHandlers::getAfrColumn),
-            new MenuCalculatedField("Sim lambda error", SUBMENU_CALC_FUEL, AxisMenuHandlers::getAfrColumn)
+            new MenuCalculatedField("EffInjectorDutyCycle", null, AxisMenuHandlers::getInjectorDutyCycleColumn,
+                "ti(ms) / 60000 \u00d7 RPM/2 \u00d7 100 [%]"),
+            new MenuCalculatedField("Sim Fuel Mass", SUBMENU_CALC_FUEL, AxisMenuHandlers::getMafFuelColumn,
+                "avg(IDC, IDC_B2) \u00d7 cylinders \u00d7 injector_flow / 100 [g/s]"),
+            new MenuCalculatedField("Sim AFR", SUBMENU_CALC_FUEL, AxisMenuHandlers::getAfrColumn,
+                "Sim MAF / Sim Fuel Mass"),
+            new MenuCalculatedField("Sim lambda", SUBMENU_CALC_FUEL, AxisMenuHandlers::getAfrColumn,
+                "Sim AFR / 14.7"),
+            new MenuCalculatedField("Sim lambda error", SUBMENU_CALC_FUEL, AxisMenuHandlers::getAfrColumn,
+                "(AirFuelRatioDesired / Sim lambda - 1) \u00d7 100 [%]")
         ), null),
 
         // FuelInjectorOnTime -> calculated fields
         new BaseFieldCalculatedFields("FuelInjectorOnTime", Arrays.asList(
-            new MenuCalculatedField("FuelInjectorDutyCycle", null, AxisMenuHandlers::getInjectorDutyCycleColumn)  // standalone
+            new MenuCalculatedField("FuelInjectorDutyCycle", null, AxisMenuHandlers::getInjectorDutyCycleColumn,
+                "ti(ms) / 60000 \u00d7 RPM/2 \u00d7 100 [%]")
         ), null),
 
         // EffInjectionTimeBank2 -> calculated fields
         new BaseFieldCalculatedFields("EffInjectionTimeBank2", Arrays.asList(
-            new MenuCalculatedField("EffInjectorDutyCycleBank2", null, AxisMenuHandlers::getInjectorDutyCycleColumn)  // standalone
+            new MenuCalculatedField("EffInjectorDutyCycleBank2", null, AxisMenuHandlers::getInjectorDutyCycleColumn,
+                "ti(ms) / 60000 \u00d7 RPM/2 \u00d7 100 [%]")
         ), null),
 
         // Zeitronix Boost -> calculated fields
         new BaseFieldCalculatedFields("Zeitronix Boost", Arrays.asList(
-            new MenuCalculatedField("Zeitronix Boost (PSI)", null, null),  // unit conversion, standalone
-            new MenuCalculatedField("Boost Spool Rate Zeit (RPM)", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn)
+            new MenuCalculatedField("Zeitronix Boost (PSI)", null, null,
+                "Unit conversion: mBar \u2192 PSI"),
+            new MenuCalculatedField("Boost Spool Rate Zeit (RPM)", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn,
+                "d(Zeitronix Boost) / d(RPM) [mBar/RPM]")
         ), null),
 
         // Zeitronix AFR -> calculated fields
         new BaseFieldCalculatedFields("Zeitronix AFR", Arrays.asList(
-            new MenuCalculatedField("Zeitronix AFR (lambda)", null, AxisMenuHandlers::getBoostZeitronixColumn)  // formula conversion, standalone
+            new MenuCalculatedField("Zeitronix AFR (lambda)", null, AxisMenuHandlers::getBoostZeitronixColumn,
+                "Zeitronix AFR / 14.7")
         ), null),
 
         // Zeitronix Lambda -> calculated fields
         new BaseFieldCalculatedFields("Zeitronix Lambda", Arrays.asList(
-            new MenuCalculatedField("Zeitronix Lambda (AFR)", null, AxisMenuHandlers::getBoostZeitronixColumn)  // formula conversion, standalone
+            new MenuCalculatedField("Zeitronix Lambda (AFR)", null, AxisMenuHandlers::getBoostZeitronixColumn,
+                "Zeitronix Lambda \u00d7 14.7")
         ), null),
 
         // EngineLoad(Requested|Corrected) -> calculated fields
         new BaseFieldCalculatedFields("EngineLoad(Requested|Corrected)", Arrays.asList(
-            new MenuCalculatedField("Sim BoostPressureDesired", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn),
-            new MenuCalculatedField("Sim LoadSpecified correction", SUBMENU_BOOST, AxisMenuHandlers::getMiscSimColumn)
+            new MenuCalculatedField("Sim BoostPressureDesired", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn,
+                "Boost from rlsol, ambient pressure, IAT/coolant corrections"),
+            new MenuCalculatedField("Sim LoadSpecified correction", SUBMENU_BOOST, AxisMenuHandlers::getMiscSimColumn,
+                "EngineLoadCorrected / EngineLoadSpecified")
         ), null),
 
         // BoostPressureDesired -> calculated fields
         new BaseFieldCalculatedFields("BoostPressureDesired", Arrays.asList(
-            new MenuCalculatedField("BoostDesired PR", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn),
-            new MenuCalculatedField("LDR error", SUBMENU_CALC_PID, AxisMenuHandlers::getBoostZeitronixColumn),
-            new MenuCalculatedField("LDR de/dt", SUBMENU_CALC_PID, AxisMenuHandlers::getBoostZeitronixColumn),
-            new MenuCalculatedField("LDR I e dt", SUBMENU_CALC_PID, AxisMenuHandlers::getBoostZeitronixColumn),
-            new MenuCalculatedField("LDR PID", SUBMENU_CALC_PID, AxisMenuHandlers::getBoostZeitronixColumn)
+            new MenuCalculatedField("BoostDesired PR", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn,
+                "BoostPressureDesired / BaroPressure"),
+            new MenuCalculatedField("LDR error", SUBMENU_CALC_PID, AxisMenuHandlers::getBoostZeitronixColumn,
+                "(BoostDesired - BoostActual) / 100"),
+            new MenuCalculatedField("LDR de/dt", SUBMENU_CALC_PID, AxisMenuHandlers::getBoostZeitronixColumn,
+                "d(BoostDesired - BoostActual)/dt \u00d7 time_constant / 100"),
+            new MenuCalculatedField("LDR I e dt", SUBMENU_CALC_PID, AxisMenuHandlers::getBoostZeitronixColumn,
+                "\u222b(BoostDesired - BoostActual) dt / time_constant / 100"),
+            new MenuCalculatedField("LDR PID", SUBMENU_CALC_PID, AxisMenuHandlers::getBoostZeitronixColumn,
+                "P + I + D terms, clamped [0, 95]%")
         ), null),
 
         // BoostPressureActual -> calculated fields
         new BaseFieldCalculatedFields("BoostPressureActual", Arrays.asList(
-            new MenuCalculatedField("BoostActual PR", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn),
-            new MenuCalculatedField("Boost Spool Rate (RPM)", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn),
-            new MenuCalculatedField("Boost Spool Rate (time)", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn)
+            new MenuCalculatedField("BoostActual PR", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn,
+                "BoostPressureActual / BaroPressure"),
+            new MenuCalculatedField("Boost Spool Rate (RPM)", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn,
+                "d(BoostPressureActual) / d(RPM) [mBar/RPM]"),
+            new MenuCalculatedField("Boost Spool Rate (time)", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn,
+                "d(BoostPressureActual) / dt [PSI/s]")
         ), null),
 
         // IgnitionTimingAngleOverall -> calculated fields
         new BaseFieldCalculatedFields("IgnitionTimingAngleOverall", Arrays.asList(
-            new MenuCalculatedField("IgnitionTimingAngleOverallDesired", null, AxisMenuHandlers::getIgnitionTimingColumn)  // standalone
+            new MenuCalculatedField("IgnitionTimingAngleOverallDesired", null, AxisMenuHandlers::getIgnitionTimingColumn,
+                "IgnitionTiming + avg(IgnitionRetard per cylinder)")
         ), null),
 
         // TorqueDesired -> calculated fields
         new BaseFieldCalculatedFields("TorqueDesired", Arrays.asList(
-            new MenuCalculatedField("Engine torque (ft-lb)", null, AxisMenuHandlers::getEngineTorqueHpColumn),  // standalone
-            new MenuCalculatedField("Engine HP", null, AxisMenuHandlers::getEngineTorqueHpColumn)  // standalone
+            new MenuCalculatedField("Engine torque (ft-lb)", null, AxisMenuHandlers::getEngineTorqueHpColumn,
+                "TorqueDesired \u00d7 0.7376 [Nm \u2192 ft-lb]"),
+            new MenuCalculatedField("Engine HP", null, AxisMenuHandlers::getEngineTorqueHpColumn,
+                "Engine torque(ft-lb) \u00d7 RPM / 5252")
         ), null),
 
         // IntakeAirTemperature -> calculated fields (ME7LOGGER only)
         new BaseFieldCalculatedFields("IntakeAirTemperature", Arrays.asList(
-            new MenuCalculatedField("Sim evtmod", SUBMENU_CALC_IAT, AxisMenuHandlers::getBoostZeitronixColumn, true),  // ME7LOGGER only
-            new MenuCalculatedField("Sim ftbr", SUBMENU_CALC_IAT, AxisMenuHandlers::getBoostZeitronixColumn, true),  // ME7LOGGER only
-            new MenuCalculatedField("Sim BoostIATCorrection", SUBMENU_CALC_IAT, AxisMenuHandlers::getBoostZeitronixColumn, true)  // ME7LOGGER only
+            new MenuCalculatedField("Sim evtmod", SUBMENU_CALC_IAT, AxisMenuHandlers::getBoostZeitronixColumn, true,
+                "IAT + (CoolantTemp - IAT) \u00d7 0.02"),
+            new MenuCalculatedField("Sim ftbr", SUBMENU_CALC_IAT, AxisMenuHandlers::getBoostZeitronixColumn, true,
+                "273 / (evtmod + 273) \u00d7 (IAT + 673.425) / 731.334"),
+            new MenuCalculatedField("Sim BoostIATCorrection", SUBMENU_CALC_IAT, AxisMenuHandlers::getBoostZeitronixColumn, true,
+                "1 / Sim ftbr")
         ), null),
 
         // ME7L ps_w -> calculated fields
         new BaseFieldCalculatedFields("ME7L ps_w", Arrays.asList(
-            new MenuCalculatedField("Sim pspvds", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn),
-            new MenuCalculatedField("ps_w error", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn)
+            new MenuCalculatedField("Sim pspvds", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn,
+                "ME7L ps_w / BoostPressureActual"),
+            new MenuCalculatedField("ps_w error", SUBMENU_BOOST, AxisMenuHandlers::getBoostZeitronixColumn,
+                "ME7L ps_w / BoostPressureActual (clamped min 900 mBar)")
         ), null),
     };
 
