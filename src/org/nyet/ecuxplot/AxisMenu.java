@@ -312,6 +312,13 @@ public class AxisMenu extends JMenu {
                 // Submenu item
                 addToSubmenu(field.submenu, field.fieldName);
             }
+            // Set tooltip if defined
+            if (field.tooltipText != null) {
+                AbstractButton item = this.members.get(field.fieldName);
+                if (item != null) {
+                    item.setToolTipText(field.tooltipText);
+                }
+            }
         }
     }
 
