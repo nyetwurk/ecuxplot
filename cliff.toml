@@ -17,7 +17,7 @@ body = """
   {%- else -%}
     {%- set commit_message = commit.message -%}
   {%- endif %}
-  * {{ commit_message | split(pat="\n") | first | trim | replace_regex(from="(^|[^\\[])#([0-9]+)", to=["$1[#$2](", self::remote_url(), "/issues/$2)"] | join(sep="")) }}\
+  * {% if commit.merge_commit %}{% set section = group | striptags | trim %}{% if section != "Merged pull requests" and section != "Dependabot" %}Merged: {% endif %}{% endif %}{{ commit_message | split(pat="\n") | first | trim | replace_regex(from="(^|[^\\[])#([0-9]+)", to=["$1[#$2](", self::remote_url(), "/issues/$2)"] | join(sep="")) }}\
     {%- if commit.remote.username %} by @{{ commit.remote.username }}{% endif -%}
     {%- if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}){% endif %}
 {%- endfor -%}
@@ -65,13 +65,14 @@ filter_unconventional = false
 split_commits = false
 # Group commits by type. Prefix "<!-- N -->" controls section order (stripped in template).
 commit_parsers = [
-  # Dependabot first (before generic Merge pull request → Other)
-  { message = "^Merge pull request.*dependabot", group = "<!-- 10 -->Dependabot" },
+  # Dependabot first (before generic Merge pull request)
+  { message = "^Merge pull request.*dependabot", group = "<!-- 11 -->Dependabot" },
   { message = "^Bump", skip = true },
-  # Git merges before [Ii]ssue — preprocessors rewrite #N to …/issues/N, which matches [Ii]ssue
-  { message = "^Merge pull request", group = "<!-- 09 -->Other" },
-  { message = "^Merge remote-tracking branch", group = "<!-- 09 -->Other" },
-  { message = "^Merge branch", group = "<!-- 09 -->Other" },
+  # All other GitHub PR merges (section title replaces per-line "Merged:" prefix)
+  { message = "^Merge pull request", group = "<!-- 09 -->Merged pull requests" },
+  # Non-PR merges (local / upstream sync)
+  { message = "^Merge remote-tracking branch", group = "<!-- 10 -->Other" },
+  { message = "^Merge branch", group = "<!-- 10 -->Other" },
   # Conventional commits
   { message = "^doc", group = "<!-- 03 -->Documentation" },
   { message = "^refactor", group = "<!-- 04 -->Refactor" },
@@ -80,24 +81,24 @@ commit_parsers = [
   { message = "^cosmetic", group = "<!-- 06 -->Chore" },
   { message = "^style", group = "<!-- 07 -->Styling" },
   { message = "^test", group = "<!-- 08 -->Testing" },
-  # Legacy fallthrough
+  # Legacy fallthrough (use ^fix\\b — bare [Ff]ix matches "Fix" inside "Bug Fixes", etc.)
   { message = "[Cc]rash", group = "<!-- 01 -->Bug Fixes" },
-  { message = "[Ff]ix", group = "<!-- 01 -->Bug Fixes" },
+  { message = "(?i)^fix\\b", group = "<!-- 01 -->Bug Fixes" },
   { message = "[Nn]ull", group = "<!-- 01 -->Bug Fixes" },
   { message = "[Ww]orkaround", group = "<!-- 01 -->Bug Fixes" },
   { message = "^[Aa]dd", group = "<!-- 00 -->Features" },
   { message = "^[Rr]emove", group = "<!-- 04 -->Refactor" },
-  { message = "^[Ff]eat", group = "<!-- 00 -->Features" },
+  { message = "(?i)^feat\\b", group = "<!-- 00 -->Features" },
   { message = "^[Ii]mplement", group = "<!-- 00 -->Features" },
   { message = "[Cc]osmetic", group = "<!-- 07 -->Styling" },
   { message = "[Ii]ndent", group = "<!-- 07 -->Styling" },
   { message = "[Ww]hitespace", group = "<!-- 07 -->Styling" },
   { message = "README", group = "<!-- 03 -->Documentation" },
   { message = "\\.md", group = "<!-- 03 -->Documentation" },
-  # Put last as a fallthru for "issues"
-  { message = "[Ii]ssue", group = "<!-- 01 -->Bug Fixes" },
+  # Put last as a fallthru for "issues" (use \\bissue\\b — [Ii]ssue matches "issue" inside ".../issues/…")
+  { message = "(?i)\\bissue\\b", group = "<!-- 01 -->Bug Fixes" },
   # Catchall
-  { message = ".*", group = "<!-- 09 -->Other" },
+  { message = ".*", group = "<!-- 10 -->Other" },
 ]
 # Rewrite commit messages before display: (#123) → link; bare #123 → link (avoids matching inside [...])
 # Note: replace strings are not Tera-evaluated; URLs here stay hardcoded. Template uses remote_url().
