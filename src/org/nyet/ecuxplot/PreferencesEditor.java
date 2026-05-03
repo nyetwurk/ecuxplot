@@ -2,6 +2,8 @@ package org.nyet.ecuxplot;
 
 import java.lang.reflect.*;
 import java.util.prefs.Preferences;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -20,6 +22,39 @@ public class PreferencesEditor extends JPanel {
     private final JPanel prefsPanel;
 
     private final Preferences prefs;
+
+    // State snapshot for avoiding redundant applies (Issue #121)
+    private final ArrayList<JTextField> trackedFields = new ArrayList<>();
+    private Object[] lastAppliedState;
+
+    /**
+     * Capture the current UI state for comparison.
+     * Used to detect whether settings have changed since the last apply.
+     * Subclasses that create custom fields (not via addPairs) should override this.
+     */
+    protected Object[] captureState() {
+        Object[] state = new Object[trackedFields.size()];
+        for (int i = 0; i < trackedFields.size(); i++) {
+            state[i] = trackedFields.get(i).getText();
+        }
+        return state;
+    }
+
+    /**
+     * Register a text field for state tracking.
+     * Use this for fields created outside addPairs() (e.g., in subclass constructors).
+     */
+    protected void trackField(JTextField field) {
+        trackedFields.add(field);
+    }
+
+    /**
+     * Update the state snapshot to reflect the currently applied values.
+     * Called after successful apply or restore defaults.
+     */
+    protected void snapshotState() {
+        lastAppliedState = captureState();
+    }
 
     protected void Process(ActionEvent event) {
         if(this.eplot!=null) this.eplot.rebuild();
@@ -62,8 +97,13 @@ public class PreferencesEditor extends JPanel {
                 }
             }
 
-            if(this.eplot!=null) this.eplot.rebuild();
             updateDialog();
+
+            // Skip rebuild if the defaults match what was last applied
+            if (Arrays.equals(captureState(), lastAppliedState)) return;
+
+            if(this.eplot!=null) this.eplot.rebuild();
+            snapshotState();
         }
     }
 
@@ -111,6 +151,11 @@ public class PreferencesEditor extends JPanel {
                     tf = new JLabel("");
                 fld.set(this, tf);
 
+                // Track text fields for state snapshot (Issue #121)
+                if (tf instanceof JTextField) {
+                    trackedFields.add((JTextField) tf);
+                }
+
                 gbc.gridx = 1;
                 gbc.gridy = i;
                 gbc.anchor = GridBagConstraints.WEST;
@@ -148,7 +193,10 @@ public class PreferencesEditor extends JPanel {
             @Override
             public void actionPerformed(ActionEvent event) {
                 PreferencesEditor.this.ok = true;
-                Process(event);
+                if (!Arrays.equals(captureState(), lastAppliedState)) {
+                    Process(event);
+                    snapshotState();
+                }
                 PreferencesEditor.this.dialog.setVisible(false);
             }
         });
@@ -159,8 +207,10 @@ public class PreferencesEditor extends JPanel {
         jbtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
+                if (Arrays.equals(captureState(), lastAppliedState)) return;
                 PreferencesEditor.this.ok = true;
                 Process(event);
+                snapshotState();
             }
         });
         panel.add(jbtn);
@@ -209,6 +259,8 @@ public class PreferencesEditor extends JPanel {
 
     public boolean showDialog(Component parent, String title) {
         updateDialog();
+        // Snapshot state after updateDialog so Apply is a no-op if nothing changed
+        snapshotState();
         this.ok = false;
         Frame owner;
 
