@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.swing.*;
 
@@ -33,8 +32,8 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     private JLabel unitLabel;
     private JPanel conversionGroup;
 
-    // State snapshot for avoiding redundant applies (Issue #121)
-    private Object[] lastAppliedState;
+    // State tracking for avoiding redundant applies (Issue #121)
+    private final UIStateTracker stateTracker = new UIStateTracker();
     private boolean suppressComboAction = false;
 
     public static FATSChartFrame createFATSChartFrame(FATSDataset dataset, ECUxPlot plotFrame) {
@@ -96,7 +95,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
                 FATSChartFrame.this.getChartPanel().getChart().setTitle(FATSChartFrame.this.dataset.getTitle());
                 notifyRangeSelector();
                 // Combo box auto-applies, update snapshot so Apply is a no-op
-                lastAppliedState = captureState();
+                stateTracker.snapshot();
             }
         });
 
@@ -188,21 +187,14 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         updateComboBoxSelection();
         updateRpmFieldsVisibility();
 
-        // Snapshot the initial state so the first Apply is a no-op if nothing changed
-        lastAppliedState = captureState();
-    }
+        // Register components for state tracking (Issue #121)
+        stateTracker.track(this.speedUnitCombo);
+        stateTracker.track(this.start);
+        stateTracker.track(this.end);
+        stateTracker.track(this.rpmPerMphField);
 
-    /**
-     * Capture the current UI state for comparison.
-     * Used to detect whether settings have changed since the last apply.
-     */
-    private Object[] captureState() {
-        return new Object[] {
-            this.speedUnitCombo.getSelectedItem(),
-            this.start.getText(),
-            this.end.getText(),
-            this.rpmPerMphField != null ? this.rpmPerMphField.getText() : null
-        };
+        // Snapshot the initial state so the first Apply is a no-op if nothing changed
+        stateTracker.snapshot();
     }
 
     public FATSDataset getDataset() {
@@ -282,7 +274,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent event) {
         if(event.getActionCommand().equals("Apply")) {
-            if (Arrays.equals(captureState(), lastAppliedState)) return;
+            if (!stateTracker.hasChanged()) return;
 
             FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
             this.fats.speedUnit(speedUnit);
@@ -314,7 +306,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
                 this.plotFrame.env.c.rpm_per_mph(newRpmPerMph);
             }
 
-            lastAppliedState = captureState();
+            stateTracker.snapshot();
 
             // If rpm_per_mph changed, invalidate column caches and rebuild charts
             // This ensures Calc Velocity, WHP, HP, etc. are recalculated with new constant
@@ -334,7 +326,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
             suppressComboAction = false;
 
             // Skip rebuild if the defaults match what was last applied
-            if (Arrays.equals(captureState(), lastAppliedState)) return;
+            if (!stateTracker.hasChanged()) return;
 
             // Restore all defaults: RPM, mph, and kph
             this.fats.speedUnit(FATS.SpeedUnit.RPM);
@@ -350,7 +342,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
             updateRpmFieldsVisibility();
             notifyRangeSelector();
 
-            lastAppliedState = captureState();
+            stateTracker.snapshot();
         }
         this.getChartPanel().getChart().setTitle(this.dataset.getTitle());
     }

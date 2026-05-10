@@ -116,15 +116,15 @@ public class PIDEditor extends PreferencesEditor {
         pp.add(pd, gbc);
 
         // Register fields for state tracking (Issue #121)
-        trackField(this.time_constant);
-        trackField(this.P_deadband);
-        trackField(this.I_limit);
-        trackField(this.P);
-        trackField(this.I);
-        trackField(this.D0);
-        trackField(this.D1);
-        trackField(this.D2);
-        trackField(this.D3);
+        stateTracker.track(this.time_constant);
+        stateTracker.track(this.P_deadband);
+        stateTracker.track(this.I_limit);
+        stateTracker.track(this.P);
+        stateTracker.track(this.I);
+        stateTracker.track(this.D0);
+        stateTracker.track(this.D1);
+        stateTracker.track(this.D2);
+        stateTracker.track(this.D3);
     }
 
     @Override

@@ -136,17 +136,13 @@ public class FATSEditor extends PreferencesEditor {
         // Initialize labels and visibility
         updateLabels();
         updateRpmFieldsVisibility();
-    }
 
-    @Override
-    protected Object[] captureState() {
-        // Capture custom fields directly (addPairs fields are replaced)
-        return new Object[] {
-            this.start.getText(),
-            this.end.getText(),
-            this.rpmPerMph.getText(),
-            this.speedUnitCombo.getSelectedItem()
-        };
+        // Replace parent's addPairs tracking with our custom fields
+        stateTracker.clear();
+        stateTracker.track(this.start);
+        stateTracker.track(this.end);
+        stateTracker.track(this.rpmPerMph);
+        stateTracker.track(this.speedUnitCombo);
     }
 
     @Override

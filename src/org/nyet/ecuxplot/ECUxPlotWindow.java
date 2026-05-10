@@ -28,9 +28,14 @@ public abstract class ECUxPlotWindow extends JFrame {
     protected final Logger logger;
 
     /**
-     * Dirty flag to track whether user has made changes since last apply.
-     * Used to avoid redundant rebuilds when Apply/OK/Restore Defaults is
-     * clicked multiple times without intervening user changes.
+     * Tracks UI component state for change detection.
+     * Register components with stateTracker.track() at creation time.
+     */
+    protected final UIStateTracker stateTracker = new UIStateTracker();
+
+    /**
+     * Dirty flag for windows that cannot use component-based state tracking
+     * (e.g. tree-based selection in RangeSelectorWindow).
      */
     private boolean dirty = false;
 
