@@ -32,6 +32,10 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     private JLabel unitLabel;
     private JPanel conversionGroup;
 
+    // State tracking for avoiding redundant applies (Issue #121)
+    private final UIStateTracker stateTracker = new UIStateTracker();
+    private boolean suppressComboAction = false;
+
     public static FATSChartFrame createFATSChartFrame(FATSDataset dataset, ECUxPlot plotFrame) {
         final FATS fats = plotFrame.fats; // Use the FATS instance from ECUxPlot
         final JFreeChart chart = ECUxChartFactory.createFATSChart(dataset);
@@ -82,6 +86,7 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         // Add action listener to combo box
         this.speedUnitCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if (suppressComboAction) return;
                 FATSChartFrame.this.fats.speedUnit(getSelectedSpeedUnit());
                 updateLabelsAndValues(FATSChartFrame.this.startLabel, FATSChartFrame.this.endLabel, FATSChartFrame.this.start, FATSChartFrame.this.end);
                 updateRpmFieldsVisibility();
@@ -89,6 +94,8 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
                 FATSChartFrame.this.dataset.refreshFromFATS();
                 FATSChartFrame.this.getChartPanel().getChart().setTitle(FATSChartFrame.this.dataset.getTitle());
                 notifyRangeSelector();
+                // Combo box auto-applies, update snapshot so Apply is a no-op
+                stateTracker.snapshot();
             }
         });
 
@@ -179,6 +186,15 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
         // Set initial combo box selection and visibility
         updateComboBoxSelection();
         updateRpmFieldsVisibility();
+
+        // Register components for state tracking (Issue #121)
+        stateTracker.track(this.speedUnitCombo);
+        stateTracker.track(this.start);
+        stateTracker.track(this.end);
+        stateTracker.track(this.rpmPerMphField);
+
+        // Snapshot the initial state so the first Apply is a no-op if nothing changed
+        stateTracker.snapshot();
     }
 
     public FATSDataset getDataset() {
@@ -258,6 +274,8 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent event) {
         if(event.getActionCommand().equals("Apply")) {
+            if (!stateTracker.hasChanged()) return;
+
             FATS.SpeedUnit speedUnit = getSelectedSpeedUnit();
             this.fats.speedUnit(speedUnit);
 
@@ -288,6 +306,8 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
                 this.plotFrame.env.c.rpm_per_mph(newRpmPerMph);
             }
 
+            stateTracker.snapshot();
+
             // If rpm_per_mph changed, invalidate column caches and rebuild charts
             // This ensures Calc Velocity, WHP, HP, etc. are recalculated with new constant
             if (rpmPerMphChanged) {
@@ -298,6 +318,16 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
                 notifyRangeSelector();
             }
         } else if(event.getActionCommand().equals("Defaults")) {
+            // Update text fields and combo to show defaults first
+            this.start.setText("4200");
+            this.end.setText("6500");
+            suppressComboAction = true;
+            this.speedUnitCombo.setSelectedItem("RPM");
+            suppressComboAction = false;
+
+            // Skip rebuild if the defaults match what was last applied
+            if (!stateTracker.hasChanged()) return;
+
             // Restore all defaults: RPM, mph, and kph
             this.fats.speedUnit(FATS.SpeedUnit.RPM);
             this.fats.start(4200);
@@ -307,13 +337,12 @@ public class FATSChartFrame extends ChartFrame implements ActionListener {
             this.fats.startKph(100.0);
             this.fats.endKph(150.0);
             this.dataset.refreshFromFATS();
-            // Update text fields to show defaults
-            this.start.setText("4200");
-            this.end.setText("6500");
-            // Update radio buttons to reflect defaults
+            // Update combo and visibility to reflect defaults
             updateComboBoxSelection();
             updateRpmFieldsVisibility();
             notifyRangeSelector();
+
+            stateTracker.snapshot();
         }
         this.getChartPanel().getChart().setTitle(this.dataset.getTitle());
     }

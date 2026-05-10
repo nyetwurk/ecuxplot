@@ -168,6 +168,9 @@ public class FilterWindow extends ECUxPlotWindow {
         setupLayout();
         updateDialog();
 
+        // Snapshot the initial state so the first Apply is a no-op if nothing changed
+        stateTracker.snapshot();
+
         // Add window listener to save size when window is closed
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -204,6 +207,18 @@ public class FilterWindow extends ECUxPlotWindow {
         minAcceleration = new JTextField(10);
         minPoints = new JTextField(10);
         accelMAW = new JTextField(10);
+
+        // Register components for state tracking (Issue #121)
+        stateTracker.track(gear);
+        stateTracker.track(minRPM);
+        stateTracker.track(maxRPM);
+        stateTracker.track(minRPMRange);
+        stateTracker.track(monotonicRPMfuzz);
+        stateTracker.track(minPedal);
+        stateTracker.track(minThrottle);
+        stateTracker.track(minAcceleration);
+        stateTracker.track(accelMAW);
+        stateTracker.track(minPoints);
 
         // Add change listeners to automatically refresh visualization
         addChangeListeners();
@@ -1068,8 +1083,15 @@ public class FilterWindow extends ECUxPlotWindow {
      * @throws Exception if any error occurs during the process
      */
     private void applyFilterChanges() throws Exception {
+        if (!stateTracker.hasChanged()) {
+            clearTopWindow();
+            return;
+        }
+
         // Actually read the values from the text fields and apply them
         processFilterChanges();
+
+        stateTracker.snapshot();
 
         // Window is already set as top by the button action listener
 
@@ -1112,8 +1134,16 @@ public class FilterWindow extends ECUxPlotWindow {
         // Update the dialog to show default values
         updateDialog();
 
+        // Skip rebuild if the defaults match what was last applied
+        if (!stateTracker.hasChanged()) {
+            clearTopWindow();
+            return;
+        }
+
         // Process the filter changes (same as Apply button)
         processFilterChanges();
+
+        stateTracker.snapshot();
 
         if (this.eplot != null) {
             this.eplot.rebuild(() -> {
