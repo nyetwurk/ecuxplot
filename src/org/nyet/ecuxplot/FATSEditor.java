@@ -136,6 +136,13 @@ public class FATSEditor extends PreferencesEditor {
         // Initialize labels and visibility
         updateLabels();
         updateRpmFieldsVisibility();
+
+        // Replace parent's addPairs tracking with our custom fields
+        stateTracker.clear();
+        stateTracker.track(this.start);
+        stateTracker.track(this.end);
+        stateTracker.track(this.rpmPerMph);
+        stateTracker.track(this.speedUnitCombo);
     }
 
     @Override
