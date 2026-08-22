@@ -122,13 +122,6 @@ def main():
     # Get javac path from command line argument if provided
     javac_path = sys.argv[1] if len(sys.argv) > 1 else None
 
-    # Detect build type
-    github_ref = os.environ.get('GITHUB_REF', '')
-    github_event = os.environ.get('GITHUB_EVENT_NAME', '')
-
-    is_ci = any(os.environ.get(var) for var in ['CI', 'GITHUB_ACTIONS', 'GITLAB_CI', 'TRAVIS', 'CIRCLECI'])
-    is_triggered_build = github_event in ['schedule', 'workflow_dispatch']
-
     # Get JAR versions
     jar_names = [
         "jcommon", "jfreechart", "opencsv", "commons-cli",
@@ -148,7 +141,7 @@ def main():
     # Output all variables in Makefile format
     print(f"ECUXPLOT_VER := {get_git_describe()}")
     print(f"SEM_VER ?= {get_jpackage_ver()}")
-    print(f"ASSET_VER ?= {'latest' if (is_ci and is_triggered_build) else get_git_describe()}")
+    print(f"ASSET_VER ?= {get_git_describe()}")
     print(f"JPACKAGE_VER := {get_jpackage_ver()}")
     print(f"RC := {get_git_describe().split('-', 1)[1] if '-' in get_git_describe() else ''}")
     for key, value in jar_versions.items():

@@ -8,7 +8,7 @@
 
 **Downloads**: [Latest Release](https://github.com/nyetwurk/ecuxplot/releases/latest) | [All Downloads](https://github.com/nyetwurk/ecuxplot/releases)
 
-> **Note**: This README may describe features in the `master` branch which may not be available in the latest release or nightly build.
+> **Note**: This README may describe features in the `master` branch which may not be available in the latest release.
 
 ## What is ECUxPlot?
 

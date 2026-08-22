@@ -117,5 +117,4 @@ sort_commits = "newest"
 # CI overrides via --tag-pattern:
 #   - stable tag (v1.2.6): same pattern (changes since last non-rc)
 #   - rc tag (v1.2.6-rc3): '^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' (changes since last rc or non-rc)
-#   - latest: unreleased since any tag (same pattern as rc)
 tag_pattern = "^v[0-9]+\\.[0-9]+\\.[0-9]+$"

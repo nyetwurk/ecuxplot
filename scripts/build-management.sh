@@ -78,7 +78,7 @@ check_changes() {
 
 # Trigger a manual build
 trigger_build() {
-    log_info "Triggering build and release workflow..."
+    log_info "Triggering build workflow..."
 
     check_gh_cli
 

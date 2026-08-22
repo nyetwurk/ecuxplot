@@ -21,11 +21,6 @@ on:
         required: false
         type: string
         description: 'Release body text'
-      is-latest:
-        required: false
-        type: boolean
-        default: false
-        description: 'Whether this is a latest build (affects which files are included)'
 
 permissions:
   contents: write
@@ -58,17 +53,12 @@ jobs:
         id: files
         shell: bash
         run: |
-          if [[ "${{ inputs.is-latest }}" == "true" ]]; then
-            JAR_PATTERN='linux-windows-builds/build/ECUxPlot-latest.jar'
-          else
-            JAR_PATTERN='linux-windows-builds/build/ECUxPlot-*.jar'
-          fi
           {
             echo "list<<EOF"
             echo "macos-builds/build/*.dmg"
             echo "macos-builds/ECUxPlot.dmg"
             echo "macos-builds/build/*.zip"
-            echo "$JAR_PATTERN"
+            echo "linux-windows-builds/build/ECUxPlot-*.jar"
             echo "linux-windows-builds/build/*.tar.gz"
             echo "linux-windows-builds/build/*.exe"
             echo "linux-windows-builds/ECUxPlot-setup.exe"
@@ -81,11 +71,8 @@ jobs:
         id: prepare_cliff
         run: |
           TAG="${{ inputs.tag-name }}"
-          # latest: unreleased changes since any tag (stable or rc)
-          if [[ "$TAG" == "latest" ]]; then
-            echo "args=-u --tag-pattern '^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' --strip header" >> "$GITHUB_OUTPUT"
           # rc tag: changes since last rc or non-rc (--current limits to this release only)
-          elif [[ "$TAG" == *"-rc"* ]] || [[ "$TAG" == *"-beta"* ]] || [[ "$TAG" == *"-alpha"* ]]; then
+          if [[ "$TAG" == *"-rc"* ]] || [[ "$TAG" == *"-beta"* ]] || [[ "$TAG" == *"-alpha"* ]]; then
             echo "args=--current --tag $TAG --tag-pattern '^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' --strip header" >> "$GITHUB_OUTPUT"
           # stable tag: changes since last non-rc (--current limits to this release only)
           else

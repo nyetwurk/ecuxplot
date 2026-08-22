@@ -128,47 +128,48 @@ ECUxPlot uses `jpackage` for macOS app bundle creation, which provides better co
 
 ### CI/CD
 
-- **Build and Release Workflow**: Runs on every push to any branch and latest, builds all platforms using `build-matrix.yml` → `build-common.yml` with `installers` target
-- **Release Workflow**: Runs on tags, creates full installers using `build-matrix.yml` → `build-common.yml`
+- **Build Workflow** (`build-and-release.yml`): Runs on every push to any branch
+  (and manual dispatch); builds all platforms via `build-matrix.yml` →
+  `build-common.yml` with `installers` target; uploads Actions artifacts
+  (30-day retention)
+- **Release Workflow** (`release.yml`): Runs on version tags; creates full
+  installers and GitHub releases via `create-release.yml`
 - **Build Common**: Reusable workflow for single-platform builds + tests
 - **Build Matrix**: Shared multi-platform build orchestration
-- **Create Release**: Shared workflow for consistent release creation across build and release workflows
+- **Create Release**: Shared workflow for versioned release creation
 - **Caching**: Windows runtime directories cached between runs
 
 ### Build Artifacts
 
-The build process creates different artifacts depending on the platform and build type:
+The build process creates different artifacts depending on the platform and
+build type:
 
-**Note**: GitHub Actions preserves the directory structure when uploading artifacts. Files uploaded with `build/` prefix are stored in `build/` subdirectories, while files uploaded from root are stored directly in the artifact root. Simple installer names are created in the root level for easy access.
+**Note**: GitHub Actions preserves the directory structure when uploading
+artifacts. Files uploaded with `build/` prefix are stored in `build/`
+subdirectories, while files uploaded from root are stored directly in the
+artifact root. Simple installer names are created in the root level for easy
+access.
 
-#### Latest Build Artifacts
+#### CI Push Build Artifacts
 
 ```text
 GitHub Actions Artifacts (30-day retention):
 ├── macos-builds/
-│   ├── build/                      # Latest files
-│   │   ├── ECUxPlot-latest.dmg    # Latest DMG installer
-│   │   └── ECUxPlot-latest-MacOS.zip # Latest ZIP archive
-│   └── ECUxPlot.dmg                # Simple DMG installer (root level)
+│   ├── build/
+│   │   ├── ECUxPlot-*.dmg
+│   │   └── ECUxPlot-*-MacOS.zip
+│   └── ECUxPlot.dmg
 └── linux-windows-builds/
-    ├── build/                      # Latest files
-    │   ├── ECUxPlot-latest.tar.gz # Latest Linux archive
-    │   └── ECUxPlot-latest-setup.exe # Latest Windows installer
-    ├── ECUxPlot.jar              # Simple JAR file
-    ├── mapdump.jar               # Map dump utility
-    └── ECUxPlot-setup.exe          # Simple Windows installer (root level)
-
-GitHub Release (latest):
-├── ECUxPlot.dmg                    # Simple macOS installer
-├── ECUxPlot-setup.exe              # Simple Windows installer
-├── ECUxPlot-latest.dmg            # Latest macOS installer
-├── ECUxPlot-latest.tar.gz         # Latest Linux archive
-├── ECUxPlot-latest-setup.exe      # Latest Windows installer
-├── ECUxPlot-latest-MacOS.zip      # Latest macOS ZIP
-├── ECUxPlot-latest.jar            # Latest JAR file
-├── ECUxPlot.jar                    # Simple JAR file
-└── mapdump.jar                     # Map dump utility
+    ├── build/
+    │   ├── ECUxPlot-*.tar.gz
+    │   └── ECUxPlot-*-setup.exe
+    ├── ECUxPlot.jar
+    ├── mapdump.jar
+    └── ECUxPlot-setup.exe
 ```
+
+Download from the Actions run for the push you care about (workflow:
+**Build**).
 
 #### Release Build Artifacts
 
