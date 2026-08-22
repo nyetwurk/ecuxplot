@@ -67,7 +67,8 @@ Test files for various logger formats:
 - `logworks.csv` - LogWorks format
 - `m-tuner-speed.csv` - M-Tuner format with vehicle speed
 - `m-tuner.csv` - M-Tuner format
-- `me7l-1.csv` - ME7-Logger format variant
+- `me7l-1.csv` - ME7-Logger format variant 1
+- `me7l-2.csv` - ME7-Logger format variant 2
 - `me7l-semicolons.csv` - ME7-Logger format with semicolon separators
 - `me7l.csv` - ME7-Logger format
 - `obdlink.csv` - OBDLink/OBD-II scan tool format

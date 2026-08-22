@@ -1,0 +1,27 @@
+
+###################################################################################
+Logfile created by ME7-Logger v1.20 (c) mki, 12/2010-07/2013
+
+Used EcuDefinition file: 8N0 906 018 J - Stage 1+, Deletes, Hardcut 7000, Little Overrun, EGT Off.ecu
+
+ECU identified with following data:
+HWNumber    = 0261206794       (requested was 0261206794)
+SWNumber    = 1037360314       (requested was 1037360314)
+PartNumber  = 8N0906018J       (requested was 8N0906018J)
+SWVersion   = 0004             (requested was 0004)
+EngineId    = 1.8L R4/5VT      (requested was 1.8L R4/5VT)
+VAGHWNumber = 
+ModelId     = G
+
+Log packet size: 38 bytes
+Logging with:    20 samples/second
+Used speed is:   56000 baud
+Used mode is:    HM0
+Log started at:  21.08.2026 18:23:26.997
+
+TimeStamp, dwkrz_0   , dwkrz_1   , dwkrz_2   , dwkrz_3   , fr_w      , lambts_w  , lamsbg_w  , lamsoni_w , ldtvm     , misol_w   , mrfa_w    , mshfm_w   , nmot_w    , plsol_w   , pvdks_w   , rl_w      , rlmax_w   , rlsol_w   , tans      , ti_b1     , tmot      , uulsuv_w  , zwout     
+  sec.ms , °KW       , °KW       , °KW       , °KW       , -         , -         , -         , -         , , , , g/s       , rpm       , mbar      , mbar      , , , , °C        , ms        , °C        , V         , °KW       
+"TIME","IgnitionRetardCyl1","IgnitionRetardCyl4","IgnitionRetardCyl2","IgnitionRetardCyl3","LambdaControl","LambdaPartProtection","AirFuelRatioDesired","AirFuelRatioCurrent","WastegateDutyCycle","","DriverRequestedRelTorque","MassAirFlow","EngineSpeed","BoostPressureDesired","BoostPressureActual","EngineLoad","EngineLoadCorrected","EngineLoadRequested","IntakeAirTemperature","FuelInjectorOnTime","CoolantTemperature","O2SVoltageWideband","IgnitionTimingAngleOverall"
+    0.000, 0         , 0         , 0         , 0         , 1         , 1         , 0.999757  , 0.998537  , 0         , 21.521    , 33.9173   , 7.69445   , 1161      , 1004.8    , 1013.79   , 23.3672   , 103.758   , 43.9219   , 38.25     , 2.95467   , 91.5      , 1.48926   , 24.75     
+    0.050, 0         , 0         , 0         , 0         , 1         , 1         , 0.999757  , 0.998537  , 0         , 21.6797   , 34.6192   , 10.1111   , 1132.25   , 1004.8    , 1011.17   , 28.7578   , 102.961   , 44.6484   , 38.25     , 3.968     , 91.5      , 1.48926   , 23.25     
+    0.100, 0         , 0         , 0         , 0         , 1         , 1         , 0.999757  , 0.998537  , 0         , 21.8048   , 35.2631   , 10.1389   , 1074.5    , 1004.8    , 1011.17   , 33.6328   , 101.156   , 44.9766   , 38.25     , 4.21867   , 91.5      , 1.48926   , 21        

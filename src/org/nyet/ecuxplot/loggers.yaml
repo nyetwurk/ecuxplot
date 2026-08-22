@@ -526,6 +526,11 @@ loggers:
       - ["EngineLoadCorrectedSpecified", "EngineLoadCorrected"]
       - ["AtmosphericPressure", "BaroPressure"]
       - ["AirFuelRatioRequired", "AirFuelRatioDesired"]
+      # ME7LOGGER English alias line uses AirFuelRatioCurrent; canonicalize to AirFuelRatioActual.
+      # Include (lambda): ME7LOGGER values are λ, but Units.find(AirFuelRatioActual) is AFR for other
+      # formats (e.g. winlog). Alias-target units apply only to this logger.
+      - ["AirFuelRatioCurrent", "AirFuelRatioActual (lambda)"]
+      - ["AirFuelRatioCurrentBank2", "AirFuelRatioActualBank2 (lambda)"]
       - ["InjectionTime", "EffInjectionTime"]
       - ["InjectionTimeBank2", "EffInjectionTimeBank2"]
 

@@ -1448,6 +1448,110 @@
         <sanity_check row="0" col="0">0.0</sanity_check>
     </test_case>
 
+    <!-- ME7L variant with lamsoni_w (AirFuelRatioActual); values are lambda, not AFR -->
+    <test_case file="me7l-2.csv">
+        <expected_type>ME7LOGGER</expected_type>
+        <expected_preset_columns>
+            <preset name="Fueling">
+                <profile_ref name="partial_fueling"/>
+            </preset>
+            <preset name="Timing">
+                <profile_ref name="full_timing"/>
+            </preset>
+        </expected_preset_columns>
+        <expected_ids>
+            <id index="0">TIME</id>
+            <id index="1">IgnitionRetardCyl1</id>
+            <id index="2">IgnitionRetardCyl4</id>
+            <id index="3">IgnitionRetardCyl2</id>
+            <id index="4">IgnitionRetardCyl3</id>
+            <id index="5">LambdaControl</id>
+            <id index="6">LambdaPartProtection</id>
+            <id index="7">AirFuelRatioDesired</id>
+            <id index="8">AirFuelRatioActual</id>
+            <id index="9">WastegateDutyCycle</id>
+            <id index="10">ME7L misol_w</id>
+            <id index="11">DriverRequestedRelTorque</id>
+            <id index="12">MassAirFlow</id>
+            <id index="13">RPM</id>
+            <id index="14">BoostPressureDesired</id>
+            <id index="15">BoostPressureActual</id>
+            <id index="16">EngineLoad</id>
+            <id index="17">EngineLoadCorrected</id>
+            <id index="18">EngineLoadRequested</id>
+            <id index="19">IntakeAirTemperature</id>
+            <id index="20">FuelInjectorOnTime</id>
+            <id index="21">CoolantTemperature</id>
+            <id index="22">O2SVoltageWideband</id>
+            <id index="23">IgnitionTimingAngleOverall</id>
+        </expected_ids>
+        <expected_id_origs>
+            <id_orig index="0">TimeStamp</id_orig>
+            <id_orig index="1">dwkrz_0</id_orig>
+            <id_orig index="2">dwkrz_1</id_orig>
+            <id_orig index="3">dwkrz_2</id_orig>
+            <id_orig index="4">dwkrz_3</id_orig>
+            <id_orig index="5">fr_w</id_orig>
+            <id_orig index="6">lambts_w</id_orig>
+            <id_orig index="7">lamsbg_w</id_orig>
+            <id_orig index="8">lamsoni_w</id_orig>
+            <id_orig index="9">ldtvm</id_orig>
+            <id_orig index="10">misol_w</id_orig>
+            <id_orig index="11">mrfa_w</id_orig>
+            <id_orig index="12">mshfm_w</id_orig>
+            <id_orig index="13">nmot_w</id_orig>
+            <id_orig index="14">plsol_w</id_orig>
+            <id_orig index="15">pvdks_w</id_orig>
+            <id_orig index="16">rl_w</id_orig>
+            <id_orig index="17">rlmax_w</id_orig>
+            <id_orig index="18">rlsol_w</id_orig>
+            <id_orig index="19">tans</id_orig>
+            <id_orig index="20">ti_b1</id_orig>
+            <id_orig index="21">tmot</id_orig>
+            <id_orig index="22">uulsuv_w</id_orig>
+            <id_orig index="23">zwout</id_orig>
+        </expected_id_origs>
+        <expected_units>
+            <unit index="0">s</unit>
+            <unit index="1">°</unit>
+            <unit index="2">°</unit>
+            <unit index="3">°</unit>
+            <unit index="4">°</unit>
+            <unit index="5"></unit>
+            <unit index="6">λ</unit>
+            <unit index="7">λ</unit>
+            <unit index="8">λ</unit>
+            <unit index="9">%</unit>
+            <unit index="10"></unit>
+            <unit index="11"></unit>
+            <unit index="12">g/sec</unit>
+            <unit index="13">RPM</unit>
+            <unit index="14">mBar</unit>
+            <unit index="15">mBar</unit>
+            <unit index="16">%</unit>
+            <unit index="17">%</unit>
+            <unit index="18">%</unit>
+            <unit index="19">°C</unit>
+            <unit index="20">ms</unit>
+            <unit index="21">°C</unit>
+            <unit index="22">V</unit>
+            <unit index="23">°</unit>
+        </expected_units>
+        <expected_us_units>
+            <unit index="14">PSI</unit>
+            <unit index="15">PSI</unit>
+            <unit index="19">°F</unit>
+            <unit index="21">°F</unit>
+        </expected_us_units>
+        <expected_filter_columns>
+            <category name="pedal"></category>
+            <category name="throttle"></category>
+            <category name="gear"></category>
+        </expected_filter_columns>
+        <sanity_check row="0" col="0">0.0</sanity_check>
+        <sanity_check row="0" col="8">0.998537</sanity_check>
+    </test_case>
+
     <!-- OBDLink Logger Test Expectations -->
     <test_case file="obdlink.csv">
         <expected_type>OBDLINK</expected_type>
