@@ -112,6 +112,7 @@ Section "install" InstallationInfo
   File "lib\slf4j-api-${SLF4J_API_VER}.jar"
   File "lib\logback-classic-${LOGBACK_CLASSIC_VER}.jar"
   File "lib\logback-core-${LOGBACK_CORE_VER}.jar"
+  File "lib\flatlaf-${FLATLAF_VER}.jar"
   File "lib\jspline.jar"
   File "lib\flanagan.jar"
 

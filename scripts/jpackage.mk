@@ -35,6 +35,7 @@ build/$(UNAME)/ECUxPlot$(APP_EXT): $(ARCHIVE)
 	@mkdir -p build/ECUxPlot; rm -rf build/ECUxPlot build/$(UNAME)/ECUxPlot$(APP_EXT)
 	tar -C build -xzf $(ARCHIVE)
 	"$(JAVA_HOME)/bin/jpackage" $(PACKAGER_OPTS) $(PACKAGER_APP_OPTS_$(UNAME)) --type app-image \
+	    --java-options "--enable-native-access=ALL-UNNAMED" \
 	    --input build/ECUxPlot \
 	    --icon src/org/nyet/ecuxplot/icons/ECUxPlot$(ICON_EXT) \
 	    --main-jar $(TARGET).jar \

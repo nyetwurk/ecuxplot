@@ -55,6 +55,13 @@ JRE_DIR=$(shell ls -d1 runtime/CYGWIN_NT/jdk-* | sort -r | head -1)
 $(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runtime/CYGWIN_NT/java-$(JAVA_TARGET_VER).stamp
 	@echo Building $(WIN_INSTALLER) with ASSET_VER=$(ASSET_VER)
 	@[ -x $(MAKENSIS) ] || (echo "Can't find NSIS!"; false)
+	@for jar in $(ECUXPLOT_JARS) $(COMMON_JARS); do \
+	    name=$$(echo "$$jar" | sed 's/-[0-9][0-9.]*\.jar$$//' | sed 's/\.jar$$//'); \
+	    if ! grep -q "$$name" scripts/ECUxPlot.nsi; then \
+	        echo "ERROR: scripts/ECUxPlot.nsi does not install $$jar"; \
+	        exit 1; \
+	    fi; \
+	done
 	$(MAKENSIS) $(OPT_PRE)NOCD \
 	    $(OPT_PRE)DJRE_DIR=$(JRE_DIR) \
 	    $(OPT_PRE)DVERSION=$(ECUXPLOT_VER) \
@@ -66,6 +73,7 @@ $(WIN_INSTALLER): $(EXES) $(INSTALL_FILES) ECUxPlot.sh scripts/ECUxPlot.nsi runt
 	    $(OPT_PRE)DSLF4J_API_VER=$(SLF4J_API_VER) \
 	    $(OPT_PRE)DLOGBACK_CLASSIC_VER=$(LOGBACK_CLASSIC_VER) \
 	    $(OPT_PRE)DLOGBACK_CORE_VER=$(LOGBACK_CORE_VER) \
+	    $(OPT_PRE)DFLATLAF_VER=$(FLATLAF_VER) \
 	    $(OPT_PRE)DASSET_VER=$(ASSET_VER) \
 	    scripts/ECUxPlot.nsi
 	@chmod +x $(WIN_INSTALLER)

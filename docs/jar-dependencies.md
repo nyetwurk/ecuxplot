@@ -16,6 +16,7 @@ Core application dependencies that are included in the main application JAR's cl
 - `jfreechart-*.jar` - Charting library
 - `jspline.jar` - Spline interpolation
 - `flanagan.jar` - Mathematical utilities
+- `flatlaf-*.jar` - Look and feel (light/dark theme)
 - `slf4j-api-*.jar` - Logging API
 - `logback-classic-*.jar` - Logging implementation
 - `logback-core-*.jar` - Logging core
@@ -53,6 +54,7 @@ ECUXPLOT_JARS := \
     jfreechart-$(JFREECHART_VER).jar \
     jspline.jar \
     flanagan.jar \
+    flatlaf-$(FLATLAF_VER).jar \
     slf4j-api-$(SLF4J_API_VER).jar \
     logback-classic-$(LOGBACK_CLASSIC_VER).jar \
     logback-core-$(LOGBACK_CORE_VER).jar \
@@ -95,10 +97,32 @@ File "lib\commons-lang3-${COMMONS_LANG3_VER}.jar"
 File "lib\slf4j-api-${SLF4J_API_VER}.jar"
 File "lib\logback-classic-${LOGBACK_CLASSIC_VER}.jar"
 File "lib\logback-core-${LOGBACK_CORE_VER}.jar"
+File "lib\flatlaf-${FLATLAF_VER}.jar"
 File "lib\jspline.jar"
 File "lib\flanagan.jar"
 File "lib\newlib-${NEWLIB_VER}.jar"
 ```
+
+### `scripts/Windows.mk`
+
+**Purpose**: Passes JAR versions to NSIS (`makensis /D...`) when building the Windows installer
+
+**Required Changes**:
+
+- Add `$(OPT_PRE)DNEWLIB_VER=$(NEWLIB_VER)` to the `makensis` invocation
+
+**Example**:
+
+```makefile
+$(MAKENSIS) $(OPT_PRE)NOCD \
+    ...
+    $(OPT_PRE)DFLATLAF_VER=$(FLATLAF_VER) \
+    $(OPT_PRE)DNEWLIB_VER=$(NEWLIB_VER) \
+    $(OPT_PRE)DASSET_VER=$(ASSET_VER) \
+    scripts/ECUxPlot.nsi
+```
+
+The installer recipe also checks that every JAR in `ECUXPLOT_JARS` and `COMMON_JARS` is mentioned in `scripts/ECUxPlot.nsi`.
 
 ### `scripts/installer.mk`
 
@@ -191,6 +215,10 @@ This would significantly reduce the manual effort required to add new JAR depend
 
 - [ ] Add `File "lib\newlib-${NEWLIB_VER}.jar"` line
 - [ ] Place in correct section (after other JAR file declarations)
+
+#### Checklist: `scripts/Windows.mk`
+
+- [ ] Add `$(OPT_PRE)DNEWLIB_VER=$(NEWLIB_VER)` to the `makensis` invocation
 
 #### `lib/` directory
 

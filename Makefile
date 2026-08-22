@@ -191,6 +191,7 @@ vars:
 	@echo 'SLF4J_API_VER=$(SLF4J_API_VER)'
 	@echo 'LOGBACK_CLASSIC_VER=$(LOGBACK_CLASSIC_VER)'
 	@echo 'LOGBACK_CORE_VER=$(LOGBACK_CORE_VER)'
+	@echo 'FLATLAF_VER=$(FLATLAF_VER)'
 	@echo '### Java Compiler Info (from scripts/get-version.py) ###'
 	@echo 'JAVAC_VER=$(JAVAC_VER)'
 	@echo 'JAVAC_MAJOR_VER=$(JAVAC_MAJOR_VER)'
@@ -215,7 +216,8 @@ GEN:=	sed -e 's/%VERSION/$(SEM_VER)/g' \
 	-e 's/%COMMONS_CLI_VER/$(COMMONS_CLI_VER)/g' \
 	-e 's/%SLF4J_API_VER/$(SLF4J_API_VER)/g' \
 	-e 's/%LOGBACK_CLASSIC_VER/$(LOGBACK_CLASSIC_VER)/g' \
-	-e 's/%LOGBACK_CORE_VER/$(LOGBACK_CORE_VER)/g'
+	-e 's/%LOGBACK_CORE_VER/$(LOGBACK_CORE_VER)/g' \
+	-e 's/%FLATLAF_VER/$(FLATLAF_VER)/g'
 
 %: %.template Makefile
 	@echo Creating $@

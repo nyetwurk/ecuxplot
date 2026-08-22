@@ -23,6 +23,7 @@
     <initialHeapSize>0</initialHeapSize>
     <maxHeapSize>0</maxHeapSize>
     <opt>-Djava.awt.headless=false</opt>
+    <opt>--enable-native-access=ALL-UNNAMED</opt>
   </jre>
   <versionInfo>
     <fileVersion>%VERSION.0</fileVersion>

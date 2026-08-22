@@ -23,4 +23,5 @@ else
 fi
 
 #echo exec java -jar $jar ${args[@]}
-exec java -jar $jar ${args[@]}
+# FlatLaf calls System.load; JDK 24+ warns unless native access is enabled
+exec java --enable-native-access=ALL-UNNAMED -jar $jar ${args[@]}

@@ -14,6 +14,7 @@ public class Version extends ArrayList<Object> {
     public static final String SLF4J_API = "%SLF4J_API_VER";
     public static final String LogbackClassic = "%LOGBACK_CLASSIC_VER";
     public static final String LogbackCore = "%LOGBACK_CORE_VER";
+    public static final String FlatLaf = "%FLATLAF_VER";
 
     public Version () {
 	this.add("ECUxPlot " + Version.ECUxPlot);
@@ -25,6 +26,7 @@ public class Version extends ArrayList<Object> {
 	this.add("slf4j-api " + Version.SLF4J_API);
 	this.add("logback-classic " + Version.LogbackClassic);
 	this.add("logback-core " + Version.LogbackCore);
+	this.add("FlatLaf " + Version.FlatLaf);
 	this.add("Java compiler " + Version.JavacMajor);
 	this.add("Java runtime "+ System.getProperty("java.version"));
     }
