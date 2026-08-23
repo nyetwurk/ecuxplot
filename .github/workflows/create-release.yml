@@ -21,11 +21,6 @@ on:
         required: false
         type: string
         description: 'Release body text'
-      is-latest:
-        required: false
-        type: boolean
-        default: false
-        description: 'Whether this is a latest build (affects which files are included)'
 
 permissions:
   contents: write
@@ -58,17 +53,12 @@ jobs:
         id: files
         shell: bash
         run: |
-          if [[ "${{ inputs.is-latest }}" == "true" ]]; then
-            JAR_PATTERN='linux-windows-builds/build/ECUxPlot-latest.jar'
-          else
-            JAR_PATTERN='linux-windows-builds/build/ECUxPlot-*.jar'
-          fi
           {
             echo "list<<EOF"
             echo "macos-builds/build/*.dmg"
             echo "macos-builds/ECUxPlot.dmg"
             echo "macos-builds/build/*.zip"
-            echo "$JAR_PATTERN"
+            echo "linux-windows-builds/build/ECUxPlot-*.jar"
             echo "linux-windows-builds/build/*.tar.gz"
             echo "linux-windows-builds/build/*.exe"
             echo "linux-windows-builds/ECUxPlot-setup.exe"
@@ -79,18 +69,7 @@ jobs:
 
       - name: Prepare git-cliff args
         id: prepare_cliff
-        run: |
-          TAG="${{ inputs.tag-name }}"
-          # latest: unreleased changes since any tag (stable or rc)
-          if [[ "$TAG" == "latest" ]]; then
-            echo "args=-u --tag-pattern '^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' --strip header" >> "$GITHUB_OUTPUT"
-          # rc tag: changes since last rc or non-rc (--current limits to this release only)
-          elif [[ "$TAG" == *"-rc"* ]] || [[ "$TAG" == *"-beta"* ]] || [[ "$TAG" == *"-alpha"* ]]; then
-            echo "args=--current --tag $TAG --tag-pattern '^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' --strip header" >> "$GITHUB_OUTPUT"
-          # stable tag: changes since last non-rc (--current limits to this release only)
-          else
-            echo "args=--current --tag $TAG --tag-pattern '^v[0-9]+\.[0-9]+\.[0-9]+$' --strip header" >> "$GITHUB_OUTPUT"
-          fi
+        run: ./scripts/release-notes.sh "${{ inputs.tag-name }}" --print-args >> "$GITHUB_OUTPUT"
 
       - name: Generate release notes with git-cliff
         id: git_cliff
@@ -101,23 +80,6 @@ jobs:
         env:
           OUTPUT: /tmp/release-notes.md
           GITHUB_REPO: ${{ github.repository }}
-
-      - name: Backup & force-move tag to this commit
-        id: move_tag
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --tags --prune --force origin
-
-          TAG="${{ inputs.tag-name }}"
-          PREV_HASH="$(git rev-list -n1 "refs/tags/$TAG" 2>/dev/null || true)"
-          if [[ -z "$PREV_HASH" ]]; then
-            PREV_HASH="$(git ls-remote --tags origin "refs/tags/$TAG" | awk '{print $1}' || true)"
-          fi
-          echo "prev_hash=${PREV_HASH}" >> "$GITHUB_OUTPUT"
-
-          git tag -f "$TAG" "${GITHUB_SHA}"
-          git push -f origin "refs/tags/$TAG"
 
       - name: Create release
         id: create_release
@@ -138,14 +100,6 @@ jobs:
           files: ${{ steps.files.outputs.list }}
           fail_on_unmatched_files: false
 
-      - name: Restore previous tag if release failed
-        if: steps.create_release.outcome != 'success' && steps.move_tag.outputs.prev_hash != ''
-        shell: bash
-        run: |
-          echo "Release failed, restoring ${{ inputs.tag-name }} to ${{ steps.move_tag.outputs.prev_hash }}"
-          git tag -f "${{ inputs.tag-name }}" "${{ steps.move_tag.outputs.prev_hash }}"
-          git push -f origin "refs/tags/${{ inputs.tag-name }}"
-
       - name: Purge stale prereleases and orphan releases
         if: always()
         shell: bash
@@ -162,9 +116,8 @@ jobs:
               ' \
             | while IFS=$'\t' read -r rel_id tag_name is_draft is_pre; do
                 if [[ -n "$tag_name" ]]; then
-                  echo "Deleting $( [[ "$is_draft" == "true" ]] && echo draft || echo pre-release ) by tag: $tag_name"
+                  echo "Removing $( [[ "$is_draft" == "true" ]] && echo draft || echo pre-release ) release: $tag_name (git tag ref kept)"
                   gh release delete "$tag_name" -R "$GITHUB_REPOSITORY" -y || true
-                  gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/$tag_name" >/dev/null 2>&1 || true
                 else
                   echo "Deleting draft with no tag by id: $rel_id"
                   gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/$rel_id" || true

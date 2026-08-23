@@ -1,9 +1,6 @@
-name: Build and Release
+name: Build
 
 on:
-  schedule:
-    # Run every night at 2 AM PST (10 AM UTC)
-    - cron: '0 10 * * *'
   workflow_dispatch: # Allow manual triggering
   push:
     branches: [ '*' ]
@@ -17,31 +14,7 @@ env:
   BUILD_CACHE_KEY: latest-build-cache
 
 jobs:
-  check-nightly-skip:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    outputs:
-      skip: ${{ steps.check.outputs.skip }}
-    steps:
-      - name: Compare with last nightly run
-        id: check
-        run: |
-          CURRENT_SHA="${{ github.sha }}"
-          # Second run in list is the previous scheduled run (first is this run)
-          PREVIOUS_SHA=$(gh run list --repo ${{ github.repository }} --workflow=build-and-release.yml --event schedule --limit 2 --json headSha -q '.[1].headSha // empty')
-          if [ -z "$PREVIOUS_SHA" ] || [ "$CURRENT_SHA" != "$PREVIOUS_SHA" ]; then
-            echo "skip=false" >> $GITHUB_OUTPUT
-            echo "Running build (current=$CURRENT_SHA, previous=$PREVIOUS_SHA)"
-          else
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "Skipping build - default branch unchanged ($CURRENT_SHA)"
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-
   build-all-platforms:
-    needs: [check-nightly-skip]
-    if: always() && (github.event_name != 'schedule' || needs.check-nightly-skip.outputs.skip != 'true')
     uses: ./.github/workflows/build-matrix.yml
     with:
       use-cache: true
@@ -63,26 +36,3 @@ jobs:
         run: |
           echo "❌ Build failed"
           exit 1
-
-  create-latest-release:
-    needs: [build-all-platforms]
-    if: needs.build-all-platforms.result == 'success' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-    uses: ./.github/workflows/create-release.yml
-    with:
-      # Only here to ensure order of releases is correct in the UI
-      # Side benefit is that we can tell the last time this jobs was triggered and ran successfully
-      tag-name: latest
-      release-name: ECUxPlot latest build
-      is-prerelease: true
-      is-latest: true
-      release-body: |
-        Latest build from commit ${{ github.sha }}
-
-        **Downloads:**
-        - **Windows**: [ECUxPlot-latest-setup.exe](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest-setup.exe)
-        - **macOS**: [ECUxPlot-latest.dmg](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.dmg), [ECUxPlot-latest-MacOS.zip](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest-MacOS.zip)
-        - **Linux**: [ECUxPlot-latest.tar.gz](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.tar.gz)
-        - **Portable**: [ECUxPlot-latest.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot-latest.jar), [ECUxPlot.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/ECUxPlot.jar), [mapdump.jar](https://github.com/nyetwurk/ecuxplot/releases/download/latest/mapdump.jar)
-
-        Built on: ${{ github.run_number }}
-    secrets: inherit
