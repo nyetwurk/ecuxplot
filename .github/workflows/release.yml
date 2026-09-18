@@ -11,6 +11,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 env:
   JAVA_VERSION: '18'
 
@@ -40,6 +43,8 @@ jobs:
 
   build-for-release:
     needs: get-tag
+    permissions:
+      contents: read
     uses: ./.github/workflows/build-matrix.yml
     with:
       use-cache: true
@@ -47,6 +52,10 @@ jobs:
 
   create-release:
     needs: [get-tag, build-for-release]
+    permissions:
+      contents: write
+      packages: write
+      actions: read
     uses: ./.github/workflows/create-release.yml
     with:
       tag-name: ${{ needs.get-tag.outputs.tag_name }}

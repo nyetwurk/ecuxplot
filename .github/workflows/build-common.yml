@@ -22,6 +22,9 @@ on:
         default: false
         description: 'Whether to use runtime caching'
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}

@@ -9,9 +9,14 @@ on:
         default: false
         description: 'Whether to use runtime caching'
 
+permissions:
+  contents: read
+
 jobs:
 
   build-macos:
+    permissions:
+      contents: read
     uses: ./.github/workflows/build-common.yml
     with:
       platform: 'macos'
@@ -24,6 +29,8 @@ jobs:
     secrets: inherit
 
   build-linux-windows:
+    permissions:
+      contents: read
     uses: ./.github/workflows/build-common.yml
     with:
       platform: linux
