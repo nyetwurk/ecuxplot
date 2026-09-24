@@ -42,13 +42,22 @@ Unit conversion handled automatically via `ECUxDataset._get()` → `parseUnitCon
 
 **Formula**: `IgnitionTimingAngleOverallDesired = IgnitionTimingAngleOverall + average(abs(IgnitionRetardCyl0-7))`
 
-**Implementation Note**: The code uses 0-indexed loop (`for(int i=0;i<8;i++)`) looking for `IgnitionRetardCyl0` through `IgnitionRetardCyl7`, but canonical field names from aliases are 1-indexed (`IgnitionRetardCyl1` through `IgnitionRetardCyl8`). Since `Dataset.get()` uses exact string matching, this loop will not find 1-indexed canonical fields. The calculation may only work via the `AverageIgnitionRetard` fallback for loggers that don't provide per-cylinder retard fields.
+**Implementation note**:
+
+- The loop is 0-indexed: `for (int i = 0; i < 8; i++)`.
+- It looks for `IgnitionRetardCyl0` through `IgnitionRetardCyl7`.
+- Alias canonical names are 1-indexed: `IgnitionRetardCyl1` through `IgnitionRetardCyl8`.
+- `Dataset.get()` matches the string exactly, so the loop misses those canonical names.
+- Loggers without per-cylinder retard fields fall back to `AverageIgnitionRetard`.
 
 **Unexpected Cases**:
 
 #### Partial Cylinder Support (SWCOMM)
-- Only logs 3 of 6 cylinders: `IGA_ADJ_KNK[0,3,5]` → `IgnitionRetardCyl1,4,6` (canonical 1-indexed names)
-- **Implementation Note**: The calculation code looks for `IgnitionRetardCyl0-7` (0-indexed), but canonical names are `IgnitionRetardCyl1-8` (1-indexed). Since `Dataset.get()` uses exact string matching, this loop will not find these 1-indexed fields. The calculation may rely on fallback to `AverageIgnitionRetard` if available.
+- Only 3 of 6 cylinders are logged.
+- Source fields: `IGA_ADJ_KNK[0]`, `IGA_ADJ_KNK[3]`, `IGA_ADJ_KNK[5]`.
+- Canonical names: `IgnitionRetardCyl1`, `IgnitionRetardCyl4`, `IgnitionRetardCyl6`.
+- The 0-indexed lookup (`IgnitionRetardCyl0` through `IgnitionRetardCyl7`) does not match these names.
+- Fallback is `AverageIgnitionRetard` when that field is present.
 
 #### Average Retard Fallback (JB4)
 - No per-cylinder retard fields

@@ -21,7 +21,10 @@ make all         # Build everything for current platform
 - **ant** ([Apache Ant](https://ant.apache.org/))
 - **jq** (jqlang JSON Query)
 - **python** (Python 3 or later)
-- **python yaml** (Cygwin `python-yaml`, debian `apt get install python3-yaml`, or `pip3 install pyyaml`)
+- **python yaml**
+  - Cygwin: `python-yaml`
+  - Debian: `apt get install python3-yaml`
+  - Other: `pip3 install pyyaml`
 - **cygwin** (if on Windows)
 
 #### MacOS

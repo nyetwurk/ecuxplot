@@ -659,7 +659,10 @@ For **VCDS** format (non-legacy):
 
 **Partially Migrated**:
 
-- **VCDS/VCDS_LEGACY**: Detection, aliases, and basic parsing in YAML; complex header processing (group disambiguation, STAMP→TIME conversion) handled by `VCDSHeaderProcessor.java` (separated from `DataLogger.java` in 1.1.4)
+- **VCDS / VCDS_LEGACY**
+  - Detection, aliases, and basic parsing are in YAML.
+  - Header processing (group disambiguation and STAMP to TIME) is in `VCDSHeaderProcessor.java`.
+  - That class was split out of `DataLogger.java` in 1.1.4.
 
 #### Other Logger-Specific Conditionals
 
