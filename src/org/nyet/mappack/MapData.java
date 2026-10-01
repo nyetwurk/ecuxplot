@@ -42,8 +42,13 @@ public class MapData {
             }
         }
     }
-    public double getMaximumValue() { return this.map.value.convert(this.maximum); }
-    public double getMinimumValue() { return this.map.value.convert(this.minimum); }
+    // reciprocal or negative conversions swap the raw extremes
+    public double getMaximumValue() {
+        return Math.max(this.map.value.convert(this.maximum), this.map.value.convert(this.minimum));
+    }
+    public double getMinimumValue() {
+        return Math.min(this.map.value.convert(this.maximum), this.map.value.convert(this.minimum));
+    }
     public long getMaximum() { return this.maximum & this.widthmask; }
     public long getMinimum() { return this.minimum & this.widthmask; }
     public Double[][] get() { return this.data; }

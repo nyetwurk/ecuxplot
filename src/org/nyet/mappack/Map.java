@@ -1,5 +1,6 @@
 package org.nyet.mappack;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -133,6 +134,7 @@ public class Map implements Comparable<Object> {
         public ValueType type=null;
         public int precision=0;
         public boolean sign=false;
+        public boolean reciprocal=false;
 
         @Override
         public String toString() {
@@ -156,14 +158,24 @@ public class Map implements Comparable<Object> {
             limitPrecision(XDF_MaxDigits);
         }
 
-        public double convert(double in) { return in*this.factor+this.offset; }
+        public double convert(double in) {
+            return (this.reciprocal?this.factor/in:in*this.factor)+this.offset;
+        }
+
+        private static String eqNum(double v) {
+            return BigDecimal.valueOf(v).stripTrailingZeros().toPlainString();
+        }
+
+        private String eqFactor() {
+            return eqNum(this.factor) + (this.reciprocal ? " / X" : " * X");
+        }
 
         public String eqOldXDF (int off, String tag) {
             String out="";
-            if(this.factor != 1 || this.offset != 0) {
-                out += String.format(XDF_LBL+"%f * X", off, tag, this.factor);
+            if(this.reciprocal || this.factor != 1 || this.offset != 0) {
+                out += String.format(XDF_LBL, off, tag) + eqFactor();
                 if(this.offset!=0)
-                    out += String.format("+ %f",this.offset);
+                    out += "+ " + eqNum(this.offset);
                 out+=",TH|0|0|0|0|\n";
             }
             return out;
@@ -171,10 +183,10 @@ public class Map implements Comparable<Object> {
 
         public String eqXDF () {
             String out="X";
-            if(this.factor != 1 || this.offset != 0) {
-                out = String.format("%f * X", this.factor);
+            if(this.reciprocal || this.factor != 1 || this.offset != 0) {
+                out = eqFactor();
                 if(this.offset!=0)
-                    out += String.format("+ %f",this.offset);
+                    out += "+ " + eqNum(this.offset);
             }
             return out;
         }
@@ -192,8 +204,8 @@ public class Map implements Comparable<Object> {
         protected int limitPrecision(int maxDigits) {
             final int width = this.sign?(this.type.width()*8)-1:this.type.width()*8;
 
-            // get maximum possible value
-            final double max = convert(((1<<width)-1));
+            // get maximum possible value (raw 1 for reciprocal, since raw 0 is infinite)
+            final double max = convert(this.reciprocal?1:((1<<width)-1));
 
             // digits left of decimal
             final int intdigits = (int)(Math.floor(Math.log10(max))+1);
@@ -254,6 +266,7 @@ public class Map implements Comparable<Object> {
                 Parse.buffer(b,this.header1a);
             this.header2 = b.get();             // unk
             this.reciprocal = b.get()==1;
+            this.value.reciprocal = this.reciprocal;
             this.value.precision = b.get();
             Parse.buffer(b, this.header3);      // unk
             this.value.sign = (b.get()==1);
@@ -499,6 +512,8 @@ public class Map implements Comparable<Object> {
         Parse.buffer(b, this.header3);  // unk
         final int precision = b.getInt();
         this.value = new Value(b, vt, sign, precision);
+        this.value.reciprocal = this.reciprocal;
+        this.value.limitPrecision(XDF_MaxDigits);
         Parse.buffer(b, this.extent);
         this.header4 = new HexValue(b);
         if (kpv == Map.INPUT_KP_v2)
