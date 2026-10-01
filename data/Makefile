@@ -24,7 +24,7 @@ clean:
 %.csv: %.kp %.bin ../mapdump.jar
 	../mapdump.sh $(REFS_$(*)) -i $*.bin $< $@
 
-%.xdf: %.kp ../mapdump.jar
+%.xdf: %.kp %.bin ../mapdump.jar
 	../mapdump.sh -i $*.bin -x $< $@
 
 %.zip: %.kp %.xdf %.csv
@@ -49,4 +49,6 @@ $(foreach bin,$(ZIP_BINS),$(eval $(call ZIP_template,$(bin))))
 zips: $(ZIPS)
 
 upload: zips
-	rsync -l $(ZIPS) stupid:/var/www/s4wiki-files/public/defs/
+	rsync -avl $(ZIPS) $(TARGETS) stupid:/var/www/s4wiki-files/public/defs/
+
+.DELETE_ON_ERROR:
