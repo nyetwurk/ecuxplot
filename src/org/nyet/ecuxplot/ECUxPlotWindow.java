@@ -28,6 +28,18 @@ public abstract class ECUxPlotWindow extends JFrame {
     protected final Logger logger;
 
     /**
+     * Tracks UI component state for change detection.
+     * Register components with stateTracker.track() at creation time.
+     */
+    protected final UIStateTracker stateTracker = new UIStateTracker();
+
+    /**
+     * Dirty flag for windows that cannot use component-based state tracking
+     * (e.g. tree-based selection in RangeSelectorWindow).
+     */
+    private boolean dirty = false;
+
+    /**
      * File datasets - shared by windows that display file-based data
      */
     protected TreeMap<String, ECUxDataset> fileDatasets;
@@ -83,6 +95,30 @@ public abstract class ECUxPlotWindow extends JFrame {
      */
     protected boolean isFilterDisabled() {
         return filter != null && !filter.enabled();
+    }
+
+    /**
+     * Mark this window as dirty (user has made changes).
+     * Call this from change listeners on UI controls.
+     */
+    protected void markDirty() {
+        this.dirty = true;
+    }
+
+    /**
+     * Clear the dirty flag (changes have been applied).
+     * Call this after Apply/OK/Restore Defaults successfully completes.
+     */
+    protected void clearDirty() {
+        this.dirty = false;
+    }
+
+    /**
+     * Check if the window has unapplied user changes.
+     * @return true if the user has made changes since the last apply
+     */
+    protected boolean isDirty() {
+        return this.dirty;
     }
 }
 

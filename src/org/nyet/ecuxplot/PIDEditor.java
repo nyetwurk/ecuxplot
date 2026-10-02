@@ -114,6 +114,17 @@ public class PIDEditor extends PreferencesEditor {
         gbc.gridx = 1; gbc.gridy = 5;
         gbc.anchor = GridBagConstraints.WEST;
         pp.add(pd, gbc);
+
+        // Register fields for state tracking (Issue #121)
+        stateTracker.track(this.time_constant);
+        stateTracker.track(this.P_deadband);
+        stateTracker.track(this.I_limit);
+        stateTracker.track(this.P);
+        stateTracker.track(this.I);
+        stateTracker.track(this.D0);
+        stateTracker.track(this.D1);
+        stateTracker.track(this.D2);
+        stateTracker.track(this.D3);
     }
 
     @Override

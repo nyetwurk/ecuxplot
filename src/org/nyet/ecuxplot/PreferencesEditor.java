@@ -21,6 +21,12 @@ public class PreferencesEditor extends JPanel {
 
     private final Preferences prefs;
 
+    /**
+     * Tracks UI component state for change detection.
+     * Register components with stateTracker.track() at creation time.
+     */
+    protected final UIStateTracker stateTracker = new UIStateTracker();
+
     protected void Process(ActionEvent event) {
         if(this.eplot!=null) this.eplot.rebuild();
     }
@@ -62,8 +68,13 @@ public class PreferencesEditor extends JPanel {
                 }
             }
 
-            if(this.eplot!=null) this.eplot.rebuild();
             updateDialog();
+
+            // Skip rebuild if the defaults match what was last applied
+            if (!stateTracker.hasChanged()) return;
+
+            if(this.eplot!=null) this.eplot.rebuild();
+            stateTracker.snapshot();
         }
     }
 
@@ -111,6 +122,11 @@ public class PreferencesEditor extends JPanel {
                     tf = new JLabel("");
                 fld.set(this, tf);
 
+                // Track text fields for state snapshot (Issue #121)
+                if (tf instanceof JTextField) {
+                    stateTracker.track((JTextField) tf);
+                }
+
                 gbc.gridx = 1;
                 gbc.gridy = i;
                 gbc.anchor = GridBagConstraints.WEST;
@@ -148,7 +164,10 @@ public class PreferencesEditor extends JPanel {
             @Override
             public void actionPerformed(ActionEvent event) {
                 PreferencesEditor.this.ok = true;
-                Process(event);
+                if (stateTracker.hasChanged()) {
+                    Process(event);
+                    stateTracker.snapshot();
+                }
                 PreferencesEditor.this.dialog.setVisible(false);
             }
         });
@@ -159,8 +178,10 @@ public class PreferencesEditor extends JPanel {
         jbtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
+                if (!stateTracker.hasChanged()) return;
                 PreferencesEditor.this.ok = true;
                 Process(event);
+                stateTracker.snapshot();
             }
         });
         panel.add(jbtn);
@@ -209,6 +230,8 @@ public class PreferencesEditor extends JPanel {
 
     public boolean showDialog(Component parent, String title) {
         updateDialog();
+        // Snapshot state after updateDialog so Apply is a no-op if nothing changed
+        stateTracker.snapshot();
         this.ok = false;
         Frame owner;
 
