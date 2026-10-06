@@ -677,6 +677,7 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
 
                         rangeTree.repaint();
                         updateStatus();
+                        markDirty();
                     }
                 }
             }
@@ -1716,6 +1717,7 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
         }
         rangeTree.repaint();
         updateStatus();
+        markDirty();
     }
 
     private void selectNone() {
@@ -1730,9 +1732,12 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
         }
         rangeTree.repaint();
         updateStatus();
+        markDirty();
     }
 
     private void applySelection() {
+        if (!isDirty()) return;
+
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
         Enumeration<?> enumeration = root.depthFirstEnumeration();
 
@@ -1830,6 +1835,8 @@ public class RangeSelectorWindow extends ECUxPlotWindow implements FileDropHost 
 
             updateStatus();
         }
+
+        clearDirty();
     }
 
 

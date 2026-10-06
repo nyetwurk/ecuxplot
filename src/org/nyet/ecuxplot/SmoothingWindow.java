@@ -96,6 +96,9 @@ public class SmoothingWindow extends ECUxPlotWindow {
         initializeComponents();
         setupLayout();
 
+        // Snapshot the initial state so the first Apply is a no-op if nothing changed
+        stateTracker.snapshot();
+
         // Add window listener to save size when window is closed
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -281,6 +284,13 @@ public class SmoothingWindow extends ECUxPlotWindow {
         // ZeitMAW control
         ZeitMAW = new JTextField(10);
         ZeitMAW.setToolTipText("Zeitronix boost pressure smoothing window (seconds). Affects: Zeitronix Boost (PSI) - range-aware smoothing");
+
+        // Register components for state tracking (Issue #121)
+        stateTracker.track(smoothingStrategyCombo);
+        stateTracker.track(leftPaddingCombo);
+        stateTracker.track(rightPaddingCombo);
+        stateTracker.track(HPMAW);
+        stateTracker.track(ZeitMAW);
     }
 
     private void setupLayout() {
@@ -927,8 +937,15 @@ public class SmoothingWindow extends ECUxPlotWindow {
      * @throws Exception if any error occurs during the process
      */
     private void applySmoothingChanges() throws Exception {
+        if (!stateTracker.hasChanged()) {
+            clearTopWindow();
+            return;
+        }
+
         // Process smoothing changes from UI controls
         processSmoothingChanges();
+
+        stateTracker.snapshot();
 
         // Window is already set as top by the button action listener
 
@@ -991,19 +1008,25 @@ public class SmoothingWindow extends ECUxPlotWindow {
         final Strategy defaultStrategy = Strategy.MAW;
         final Smoothing.PaddingConfig defaultPadding = Smoothing.PaddingConfig.forStrategy(defaultStrategy);
 
-        // Restore HPMAW and ZeitMAW to defaults
-        if (filter != null) {
-            filter.HPMAW(1.5); // defaultHPMAW
-            filter.ZeitMAW(1.5); // defaultZeitMAW
-        }
-
         // Update UI controls to show default values
         smoothingStrategyCombo.setSelectedItem(defaultStrategy);
         leftPaddingCombo.setSelectedItem(defaultPadding.left);
         rightPaddingCombo.setSelectedItem(defaultPadding.right);
         if (filter != null) {
-            HPMAW.setText(String.valueOf(filter.HPMAW()));
-            ZeitMAW.setText(String.valueOf(filter.ZeitMAW()));
+            HPMAW.setText(String.valueOf(1.5));
+            ZeitMAW.setText(String.valueOf(1.5));
+        }
+
+        // Skip rebuild if the defaults match what was last applied
+        if (!stateTracker.hasChanged()) {
+            clearTopWindow();
+            return;
+        }
+
+        // Restore HPMAW and ZeitMAW to defaults
+        if (filter != null) {
+            filter.HPMAW(1.5); // defaultHPMAW
+            filter.ZeitMAW(1.5); // defaultZeitMAW
         }
 
         // Apply defaults to all datasets
@@ -1016,6 +1039,8 @@ public class SmoothingWindow extends ECUxPlotWindow {
 
         // Process the smoothing changes (same as Apply button)
         processSmoothingChanges();
+
+        stateTracker.snapshot();
 
         if (this.eplot != null) {
             this.eplot.rebuild(() -> {
