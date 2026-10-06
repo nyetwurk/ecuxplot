@@ -251,6 +251,9 @@ public class Map implements Comparable<Object> {
         public HexValue signature = null;
 
         private boolean isZ = false;
+        // false for the unused axis slot on a single-value map, or the missing
+        // dimension of a 1d map. The kp record is still parsed so the cursor stays aligned.
+        private boolean defined = true;
 
         public Axis(ByteBuffer b, String n, int s) throws ParserException {
             this.value = new Value(b);
@@ -268,6 +271,13 @@ public class Map implements Comparable<Object> {
             this.reciprocal = b.get()==1;
             this.value.reciprocal = this.reciprocal;
             this.value.precision = b.get();
+            // v2: unused slot is h1a[0]=1 and precision 0xff. v1: unused slot is header2=1.
+            if (Map.this.kpv == Map.INPUT_KP_v2)
+                this.defined = this.header1a[0] == 0;
+            else
+                this.defined = this.header2 != 1;
+            if (!this.defined)
+                this.value.precision = 0;
             Parse.buffer(b, this.header3);      // unk
             this.value.sign = (b.get()==1);
             this.header4_size = b.getInt();             // unk
@@ -304,6 +314,8 @@ public class Map implements Comparable<Object> {
 
         @Override
         public String toString() {
+            if (!this.defined)
+                return "none";
             String out = super.toString() + "\n";
             out += "\t   ds: " + this.datasource + "\n";
             out += "\t addr: " + this.addr + " " + this.value.type + "\n";
@@ -620,11 +632,17 @@ public class Map implements Comparable<Object> {
         row.add(this.value.units);
         row.add(this.x_axis.addr!=null?String.format("0x%x", this.x_axis.addr.v):"-");
         row.add(this.y_axis.addr!=null?String.format("0x%x", this.y_axis.addr.v):"-");
-        row.add(this.x_axis.value.units);
-        row.add(this.y_axis.value.units);
+        row.add(this.x_axis.defined ? this.x_axis.value.units : "-");
+        row.add(this.y_axis.defined ? this.y_axis.value.units : "-");
         row.add(this.value.factor);
-        row.add(this.x_axis.value.factor);
-        row.add(this.y_axis.value.factor);
+        if (this.x_axis.defined)
+            row.add(this.x_axis.value.factor);
+        else
+            row.add("-");
+        if (this.y_axis.defined)
+            row.add(this.y_axis.value.factor);
+        else
+            row.add("-");
         if(image!=null && image.limit()>0) {
             final MapData mapdata = new MapData(this, image);
             row.add(mapdata.getMinimumValue());
