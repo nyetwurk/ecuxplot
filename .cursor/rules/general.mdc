@@ -46,7 +46,7 @@ The `-v` option will set the logging level to DEBUG. More verbose logging can be
 
 ### Code Formatting
 
-**COMPLETED**: Migration to conventional Java indentation completed as part of [Issue #60](https://github.com/nyetwurk/ecuxplot/issues/60)
+**COMPLETED**: Migration to conventional Java indentation completed as part of [Issue #60](https://github.com/nyetlabs/ecuxplot/issues/60)
 
 - All Java files now use pure space indentation (4 spaces per level)
 - Vi modelines (`// vim: set sw=4 ts=8 expandtab:`) added to all Java files

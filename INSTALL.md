@@ -6,7 +6,7 @@ Welcome! This guide will help you install ECUxPlot on your computer. Choose your
 
 **New to ECUxPlot?** Here's the fastest way to get started:
 
-1. **Download**: Go to the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
+1. **Download**: Go to the [releases page](https://github.com/nyetlabs/ECUxPlot/releases)
 2. **Pick your platform**: See the sections below for your operating system
 3. **Install**: Follow the simple steps for your platform
 4. **Run**: Launch ECUxPlot and load your first log file!
@@ -25,7 +25,7 @@ Welcome! This guide will help you install ECUxPlot on your computer. Choose your
 
 #### Option 1: DMG Installer (Recommended - includes Java runtime)
 
-1. **Download** the `.dmg` file from the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
+1. **Download** the `.dmg` file from the [releases page](https://github.com/nyetlabs/ECUxPlot/releases)
 2. **Clear quarantine** (required step):
    - Open **Terminal** (press Cmd+Space, type "Terminal", press Enter)
    - Type: `cd ~/Downloads` (or wherever you saved the file)
@@ -68,7 +68,7 @@ Then try running the app again and return to Privacy & Security settings.
 
 #### Recommended: `setup.exe` Installer
 
-1. **Download** the `ECUxPlot-*-setup.exe` file from the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
+1. **Download** the `ECUxPlot-*-setup.exe` file from the [releases page](https://github.com/nyetlabs/ECUxPlot/releases)
 2. **Double-click** the installer to run it
 3. **Click "Next"** through the installation wizard
 4. ECUxPlot will be installed to `C:\Program Files\ECUxPlot`
@@ -94,7 +94,7 @@ If you prefer a portable version:
 
 #### Install from Archive
 
-1. **Download** the `.tar.gz` file from the [releases page](https://github.com/nyetwurk/ECUxPlot/releases)
+1. **Download** the `.tar.gz` file from the [releases page](https://github.com/nyetlabs/ECUxPlot/releases)
 2. **Extract** the archive:
 
    ```bash
@@ -179,7 +179,7 @@ If ECUxPlot misbehaves after a crash or you want a clean slate, you can clear al
 #### Still having problems?
 
 - Check the [README troubleshooting section](README.md#troubleshooting)
-- Post your issue on [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues)
+- Post your issue on [GitHub Issues](https://github.com/nyetlabs/ecuxplot/issues)
 - Include your operating system version and any error messages
 
 ---

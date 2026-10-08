@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-REPO_OWNER="nyetwurk"
+REPO_OWNER="nyetlabs"
 REPO_NAME="ecuxplot"
 GITHUB_API="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}"
 

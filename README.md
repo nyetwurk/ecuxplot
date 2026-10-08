@@ -1,12 +1,12 @@
 # ECUxPlot
 
-[![Build and Release](https://github.com/nyetwurk/ecuxplot/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/nyetwurk/ecuxplot/actions/workflows/build-and-release.yml)
-[![Release](https://github.com/nyetwurk/ecuxplot/actions/workflows/release.yml/badge.svg)](https://github.com/nyetwurk/ecuxplot/actions/workflows/release.yml)
+[![Build and Release](https://github.com/nyetlabs/ecuxplot/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/nyetlabs/ecuxplot/actions/workflows/build-and-release.yml)
+[![Release](https://github.com/nyetlabs/ecuxplot/actions/workflows/release.yml/badge.svg)](https://github.com/nyetlabs/ecuxplot/actions/workflows/release.yml)
 [![Java](https://img.shields.io/badge/Java-18-orange.svg)](https://openjdk.java.net/)
 [![License](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/nyetwurk/ecuxplot)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/nyetlabs/ecuxplot)
 
-**Downloads**: [Latest Release](https://github.com/nyetwurk/ecuxplot/releases/latest) | [All Downloads](https://github.com/nyetwurk/ecuxplot/releases)
+**Downloads**: [Latest Release](https://github.com/nyetlabs/ecuxplot/releases/latest) | [All Downloads](https://github.com/nyetlabs/ecuxplot/releases)
 
 > **Note**: This README may describe features in the `master` branch which may not be available in the latest release.
 
@@ -186,7 +186,7 @@ Access via **"Options → Show Events"** to:
 ### My HP/TQ graphs are all super wiggly
 
 - This is often caused by excessive jitter in the data. You can try increasing the smoothing window(s) in the **"Options → Filter"** menu.
-- If all else fails, report the issue on the [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues) tracker **with a sample of your log file**.
+- If all else fails, report the issue on the [GitHub Issues](https://github.com/nyetlabs/ecuxplot/issues) tracker **with a sample of your log file**.
 
 #### FATS calculation shows no results
 
@@ -214,7 +214,7 @@ Saved vehicle profiles and application settings (window size, last files, consta
 ### Getting Help
 
 - 📁 **Post your log file** for assistance with detection or parsing issues
-- 🐛 **Found a bug?** Open an issue on [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues)
+- 🐛 **Found a bug?** Open an issue on [GitHub Issues](https://github.com/nyetlabs/ecuxplot/issues)
 - ❓ **Need help?** Check the [troubleshooting section in INSTALL.md](INSTALL.md#troubleshooting-installation)
 
 > **Note**: Issues without a sample log file may be closed without investigation.
@@ -257,7 +257,7 @@ ECUxPlot is free and open source. If you find it useful, contributions are appre
 
 **Contribute:**
 
-- 🐛 **Report bugs** or request features on [GitHub Issues](https://github.com/nyetwurk/ecuxplot/issues)
+- 🐛 **Report bugs** or request features on [GitHub Issues](https://github.com/nyetlabs/ecuxplot/issues)
 - 💻 **Contribute code** via pull requests
 - 📝 **Improve documentation**
 - 🔗 **Spread the word** to others who might benefit from ECUxPlot

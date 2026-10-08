@@ -2,7 +2,7 @@
 
 This document describes the process for adding new JAR libraries to the ECUxPlot project. Currently, adding JAR dependencies requires manual changes to multiple files, making it error-prone and time-consuming.
 
-**Related Issue**: [Make adding jar libraries easier, automate where possible #61](https://github.com/nyetwurk/ecuxplot/issues/61)
+**Related Issue**: [Make adding jar libraries easier, automate where possible #61](https://github.com/nyetlabs/ecuxplot/issues/61)
 
 ## Current JAR Dependency System
 
@@ -191,7 +191,7 @@ Create scripts to validate that all JAR references are consistent across all fil
 
 ## Future Improvements
 
-As mentioned in [Issue #61](https://github.com/nyetwurk/ecuxplot/issues/61), the goal is to automate this process where possible and document the remaining manual steps. Potential improvements include:
+As mentioned in [Issue #61](https://github.com/nyetlabs/ecuxplot/issues/61), the goal is to automate this process where possible and document the remaining manual steps. Potential improvements include:
 
 - Automatic JAR discovery and version detection
 - Template-based file generation
