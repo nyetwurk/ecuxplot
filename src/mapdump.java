@@ -15,6 +15,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
 
+import org.nyet.logfile.CSVRow;
 import org.nyet.mappack.*;
 import org.nyet.util.*;
 
@@ -136,7 +137,7 @@ public class mapdump {
         String refsHeader="";
         for(final String s: opts.refs) {
             refs.add(new Parser(s));
-            refsHeader+=",\"" + s + "\"";
+            refsHeader+="," + CSVRow.quote(s);
         }
         if(opts.image!=null) {
             final MMapFile mmap = new MMapFile(opts.image, ByteOrder.LITTLE_ENDIAN);
@@ -174,7 +175,7 @@ public class mapdump {
                         final ArrayList<Map> matches = pa.find(m);
                         if(matches.size()>0) {
                             final Map r = matches.get(0);
-                            opts.output.print(",\"" + r.name + "\"");
+                            opts.output.print("," + CSVRow.quote(r.name));
                         } else {
                             opts.output.print(",\"\"");
                         }

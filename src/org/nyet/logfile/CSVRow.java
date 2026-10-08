@@ -8,9 +8,16 @@ public class CSVRow extends ArrayList<String> {
      */
     private static final long serialVersionUID = 1L;
 
+    /** Quote one CSV field, doubling embedded quotes. */
+    public static String quote(String s) {
+        return "\"" + s.replace("\"", "\"\"") + "\"";
+    }
+
     @Override
     public String toString() {
-        return "\"" + org.nyet.util.Strings.join("\",\"", this) + "\"";
+        final String[] q = new String[size()];
+        for (int i = 0; i < q.length; i++) q[i] = quote(get(i));
+        return String.join(",", q);
     }
 
     public CSVRow() { super(); }

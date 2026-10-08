@@ -35,17 +35,24 @@ public class XmlString implements CharSequence, Appendable {
 
     // Methods
     /**
-     * Escape XML special characters. Standard XML escaping for the 5 special characters.
+     * Escape XML special characters, and write non-ASCII as character
+     * references: TunerPro reads XML without a declaration as Windows-1252.
      * Note: Must escape '&' first to avoid double-escaping.
      */
     private String escape(String s)
     {
         s = s.trim();
-        return s.replace("&", "&amp;")
+        s = s.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&apos;");
+        final StringBuilder out = new StringBuilder(s.length());
+        s.codePoints().forEach(c -> {
+            if (c < 0x80) out.append((char)c);
+            else out.append(String.format("&#x%04X;", c));
+        });
+        return out.toString();
     }
     /*
     private Appendable tagIt(String tag, int value)

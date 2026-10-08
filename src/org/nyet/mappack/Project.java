@@ -167,7 +167,7 @@ public class Project {
                         this.name);
                 out += String.format(Map.XDF_LBL+"0x%X\n",1007, "DescSize",
                         this.name.length()+1);
-                out += String.format(Map.XDF_LBL+"\"%s\"\n",1010, "Author", "mesim translator");
+                out += String.format(Map.XDF_LBL+"\"%s\"\n",1010, "Author", "");
                 if(imagebuf!=null && imagebuf.limit()>0)
                     out += String.format(Map.XDF_LBL+"0x%X\n",1030, "BinSize", imagebuf.limit());
                 out += String.format(Map.XDF_LBL+"%d\n",1035, "BaseOffset", 0);
@@ -188,7 +188,6 @@ public class Project {
                 xs.append("fileversion", this.version);
                 xs.append("deftitle",this.stem);
                 xs.append("description",this.name);
-                xs.append("author","mesim translator");
                 xs.append("baseoffset", 0);
                 final LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
                 m.put("datasizeinbits",8);

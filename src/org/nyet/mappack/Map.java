@@ -83,16 +83,22 @@ public class Map implements Comparable<Object> {
         public boolean isLE() {
             return (this.enm>1 && (this.enm & 1)==1);
         }
+        public boolean isFloat() {
+            return this.enm == 6 || this.enm == 7;
+        }
         public int width() { return this.width; }
     }
 
+    // Names in WinOLS UI order (OLS_LangE.dll). 4 and 5 are unconfirmed
+    // (older mapdump called 4 "Free editable"), so neither reads the image.
     private class DataSource extends Enm {
         private final String[] l = {
             "1,2,3",            // 0
             "EEPROM",           // 1
-            "EEPROM, add",              // 2
+            "EEPROM, add",      // 2
             "EEPROM, subtract", // 3
-            "Free editable"             // 4
+            "EEPROM, backwards",// 4
+            "Free editable"     // 5
         };
 
         public DataSource(ByteBuffer b) {
@@ -106,8 +112,11 @@ public class Map implements Comparable<Object> {
         public boolean isEeprom() {
             return this.enm>0 && this.enm<4;
         }
+        public boolean isSubtract() {
+            return this.enm == 3;
+        }
         public boolean isOrdinal() {
-            return this.enm == 0 || this.enm == 4;
+            return this.enm == 0 || this.enm == 4 || this.enm == 5;
         }
     }
 
@@ -160,6 +169,17 @@ public class Map implements Comparable<Object> {
 
         public double convert(double in) {
             return (this.reciprocal?this.factor/in:in*this.factor)+this.offset;
+        }
+
+        // converted {min, max} over the raw range of the type, or null for
+        // floats and unknown types
+        public double[] limits() {
+            final int bits = this.type.width()*8;
+            if (bits == 0 || this.type.isFloat()) return null;
+            final long lo = this.sign ? -(1L<<(bits-1)) : (this.reciprocal ? 1 : 0);
+            final long hi = this.sign ? (1L<<(bits-1))-1 : (1L<<bits)-1;
+            final double a = convert(lo), b = convert(hi);
+            return new double[] { Math.min(a, b), Math.max(a, b) };
         }
 
         private static String eqNum(double v) {
@@ -253,7 +273,11 @@ public class Map implements Comparable<Object> {
         private boolean isZ = false;
         // false for the unused axis slot on a single-value map, or the missing
         // dimension of a 1d map. The kp record is still parsed so the cursor stays aligned.
+        // Set from the map's organisation (setUsed), as WinOLS does.
         private boolean defined = true;
+        // WinOLS "Mirror map": the axis (and the map along it) is shown in
+        // descending order; storage is unchanged. v2: h1a[0], v1: header2.
+        public boolean mirror = false;
 
         public Axis(ByteBuffer b, String n, int s) throws ParserException {
             this.value = new Value(b);
@@ -271,13 +295,10 @@ public class Map implements Comparable<Object> {
             this.reciprocal = b.get()==1;
             this.value.reciprocal = this.reciprocal;
             this.value.precision = b.get();
-            // v2: unused slot is h1a[0]=1 and precision 0xff. v1: unused slot is header2=1.
             if (Map.this.kpv == Map.INPUT_KP_v2)
-                this.defined = this.header1a[0] == 0;
+                this.mirror = this.header1a[0] == 1;
             else
-                this.defined = this.header2 != 1;
-            if (!this.defined)
-                this.value.precision = 0;
+                this.mirror = this.header2 == 1;
             Parse.buffer(b, this.header3);      // unk
             this.value.sign = (b.get()==1);
             this.header4_size = b.getInt();             // unk
@@ -312,6 +333,18 @@ public class Map implements Comparable<Object> {
             this.isZ = true;
         }
 
+        // Unused slots often have mirror set and, in v2, precision 0xff; some
+        // keep the axis the map had before its organisation changed. Write them
+        // as ordinal, as WinOLS ignores them.
+        private void setUsed(boolean used) {
+            this.defined = used;
+            if (!used) {
+                this.value.precision = 0;
+                this.datasource.enm = 0;
+                this.addr = null;
+            }
+        }
+
         @Override
         public String toString() {
             if (!this.defined)
@@ -327,6 +360,7 @@ public class Map implements Comparable<Object> {
             out += "\tflags: ";
             if(this.reciprocal) out += "R";
             if(this.value.sign) out += "S";
+            if(this.mirror) out += "M";
             out += "\n";
             out += "\t prec: " + this.value.precision + " (byte)\n";
             out += "\t   h3: " + Arrays.toString(this.header3) + "\n";
@@ -338,8 +372,32 @@ public class Map implements Comparable<Object> {
             return out;
         }
 
+        // Points of an "EEPROM, subtract" axis as WinOLS shows them:
+        // point i = 2^bits - (raw[i] + ... + raw[n-1]). Null if the axis
+        // doesn't fit in the image.
+        private double[] subtracted(ByteBuffer image) {
+            final int w = this.value.type.width();
+            if (image == null || w == 0 || this.value.type.isFloat()
+                || (long)this.addr.v + (long)this.size*w > image.limit())
+                return null;
+            final double[] out = new double[this.size];
+            long t = 1L << (8*w);
+            for (int i = this.size-1; i >= 0; i--) {
+                long raw = 0;
+                for (int j = 0; j < w; j++) {
+                    final int k = this.value.type.isLE() ? j : w-1-j;
+                    raw |= (image.get(this.addr.v + i*w + k) & 0xffL) << (8*j);
+                }
+                if (this.value.sign && (raw & (1L << (8*w-1))) != 0)
+                    raw -= 1L << (8*w);
+                t -= raw;
+                out[i] = t;
+            }
+            return out;
+        }
+
         // Axis.toXDF()
-        public String toXDF(XmlString xs) {
+        public String toXDF(XmlString xs, ByteBuffer image) {
             final int xsAt=xs.length();
 
             if (!this.isZ)
@@ -349,8 +407,11 @@ public class Map implements Comparable<Object> {
 
             xs.indent();
 
+            // XDF can't compute a "subtract" axis, so write its points as labels
+            final double[] labels = this.defined && this.datasource.isSubtract() ? subtracted(image) : null;
+
             final LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
-            if(this.datasource.isOrdinal()) {
+            if(this.datasource.isOrdinal() || labels != null) {
                 m.put("mmedelementsizebits",16);
                 m.put("mmedmajorstridebits",-32);
                 xs.append("EMBEDDEDDATA",m);
@@ -369,7 +430,7 @@ public class Map implements Comparable<Object> {
                     xs.append("DALINK index=\"0\" /");
                 }
 
-                genLabelsXDF(xs);
+                genLabelsXDF(xs, labels);
             } else {
                 int flags = this.value.sign?1:0;
                 if (this.value.type.isLE()) flags |= 2;
@@ -401,9 +462,11 @@ public class Map implements Comparable<Object> {
                     xs.append("decimalpl",this.value.precision);
 
                 if (XDF_Pedantic && this.isZ) {
-                    xs.append("min","0.000000");
-                    // if (this.value.type.width()==1)
-                        xs.append("max","255.000000");
+                    final double[] lim = this.value.limits();
+                    if (lim != null) {
+                        xs.append("min",String.format("%f", lim[0]));
+                        xs.append("max",String.format("%f", lim[1]));
+                    }
                     if (this.value.precision!=0)
                         xs.append("outputtype",1);
                 }
@@ -426,15 +489,17 @@ public class Map implements Comparable<Object> {
             return xs.subSequence(xsAt, xs.length()).toString();
         }
 
-        private void genLabelsXDF(XmlString xs) {
+        // raw: the raw point values, or null for an ordinal axis
+        private void genLabelsXDF(XmlString xs, double[] raw) {
             final LinkedHashMap<String, Object> m = new LinkedHashMap<String, Object>();
             for(int i=0; i<this.size; i++) {
                 m.put("index",i);
                 // wow. don't ask.
-                if ((this.size==1 && !XDF_Pedantic) || (XDF_Pedantic && i==0 && this.value.precision==0))
+                if (raw == null && ((this.size==1 && !XDF_Pedantic) || (XDF_Pedantic && i==0 && this.value.precision==0)))
                     m.put("value","");
                 else
-                    m.put("value",String.format("%." + this.value.precision + "f",this.value.convert(i)));
+                    m.put("value",String.format("%." + this.value.precision + "f",
+                        this.value.convert(raw != null ? raw[i] : i)));
                 xs.append("LABEL",m);
             }
             if (XDF_Pedantic)
@@ -536,6 +601,8 @@ public class Map implements Comparable<Object> {
         this.header7 = b.getInt();
         this.x_axis = new Axis(b, "x", this.size.x);
         this.y_axis = new Axis(b, "y", this.size.y);
+        this.x_axis.setUsed(this.organization.isTable());
+        this.y_axis.setUsed(this.organization.isTable() && !this.organization.is1D());
         this.header8 = b.getInt();              // unk
         this.header8a = b.getShort();   // unk
         Parse.buffer(b, this.header9);  // unk
@@ -580,20 +647,6 @@ public class Map implements Comparable<Object> {
     public boolean equals(String id) {
         if(id.length()==0 || this.id.length() == 0) return false;
         return (id.equals(this.id.split("[? ]")[0]));
-    }
-
-    // swap x and y; tunerpro crashes on Cols > 256
-    private void swapXY() {
-        final Axis tmpa = this.y_axis;
-        this.y_axis = this.x_axis;
-        this.x_axis = tmpa;
-
-        this.x_axis.name = "x";
-        this.y_axis.name = "y";
-
-        final int tmp = this.size.y;
-        this.size.y = this.size.x;
-        this.size.x = tmp;
     }
 
     public static final int INPUT_KP_v1 = 1;
@@ -726,10 +779,6 @@ public class Map implements Comparable<Object> {
         out += this.value.eqOldXDF(off+200, table?"ZEq":"Equation");
 
         if(table) {
-            // swap x and y; tunerpro crashes on Cols > 256
-            if (this.size.x > 0x100 && this.size.y <= 0x100)
-                this.swapXY();
-
             // X (columns)
             if (this.x_axis.value.sign) flags |= 0x40;
             if (this.x_axis.value.type.isLE()) flags |= 0x100;
@@ -835,14 +884,10 @@ public class Map implements Comparable<Object> {
         return out + "%%END%%\n";
     }
 
-    private void tableToXDF(XmlString xs) {
-        // swap x and y; tunerpro crashes on Cols > 256
-        if (this.size.x > 0x100 && this.size.y <= 0x100)
-            this.swapXY();
-
-        this.x_axis.toXDF(xs);
-        this.y_axis.toXDF(xs);
-        this.z_axis.toXDF(xs);
+    private void tableToXDF(XmlString xs, ByteBuffer image) {
+        this.x_axis.toXDF(xs, image);
+        this.y_axis.toXDF(xs, image);
+        this.z_axis.toXDF(xs, image);
     }
 
     private void constantToXDF(XmlString xs) {
@@ -876,13 +921,15 @@ public class Map implements Comparable<Object> {
         final boolean table = this.organization.isTable();
         String tag;
 
+        // TunerPro numbers tables and constants on save and leaves axes at 0x0
+        final String uid = String.format("uniqueid=\"0x%X\"", this.index+1);
         final XmlString xs = new XmlString(1);
         if (table) {
             tag = "XDFTABLE";
-            xs.append("XDFTABLE uniqueid=\"0x0\" flags=\"0x0\"");
+            xs.append("XDFTABLE " + uid + " flags=\"0x0\"");
         } else {
             tag = "XDFCONSTANT";
-            xs.append("XDFCONSTANT uniqueid=\"0x0\"");
+            xs.append("XDFCONSTANT " + uid);
         }
         xs.indent();
 
@@ -900,7 +947,7 @@ public class Map implements Comparable<Object> {
         xs.append("description", desc);
         xs.append("CATEGORYMEM index=\"0\" category=\"" + (this.folderId+1) + "\" /");
 
-        if(table) tableToXDF(xs);
+        if(table) tableToXDF(xs, image);
         else constantToXDF(xs);
 
         xs.unindent();
